@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contratos FHSL</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#2a3140;
+  --text:#e6edf3;--text2:#9aa7b8;--text3:#6b7888;
+  --accent:#3b9eff;--accent-bg:#15243a;--accent-text:#79c0ff;
+  --green:#3fb950;--green-bg:#11271a;--green-text:#56d364;
+  --yellow:#d29922;--yellow-bg:#2b2310;--yellow-text:#e3b341;
+  --red:#f85149;--red-bg:#2d1416;--red-text:#ff7b72;
+  --purple:#a371f7;--purple-bg:#21193a;--purple-text:#bc8cff;
+  --orange:#db6d28;--orange-bg:#2c1a0e;--orange-text:#f0883e;
+  --radius:9px;--shadow:0 1px 3px rgba(0,0,0,.4);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+a{color:var(--accent)}
+/* LOGIN */
+.login-screen{position:fixed;inset:0;background:radial-gradient(circle at 30% 20%,#16314f 0%,#0d1117 60%);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.login-logo{text-align:center;margin-bottom:1.75rem}
+.login-logo .icon{width:56px;height:56px;background:var(--accent);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;margin:0 auto 12px}
+.login-logo h1{font-size:20px;font-weight:700;color:var(--text)}
+.login-logo p{font-size:13px;color:var(--text3);margin-top:4px}
+.login-field{margin-bottom:14px}
+.login-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.login-field input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--surface2);color:var(--text);transition:.15s}
+.login-field input::placeholder{color:var(--text3)}
+.login-field input:focus{outline:none;border-color:var(--accent);background:var(--bg)}
+.login-err{color:var(--red);font-size:12px;margin-bottom:10px;display:none;background:var(--red-bg);padding:8px 10px;border-radius:6px;border:1px solid #fca5a5}
+.login-btn{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.login-btn:hover{background:#2b8ae6}
+.login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;line-height:1.5}
+/* APP */
+.app{display:flex;min-height:100vh}
+.sidebar{width:248px;background:var(--surface);border-right:1px solid var(--border);padding:1.25rem 1rem;flex-shrink:0;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;z-index:100}
+.main{margin-left:248px;padding:2rem;flex:1;min-width:0}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.logo-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
+.logo-text{font-size:12px;font-weight:700;line-height:1.25}
+.logo-sub{font-size:10px;color:var(--text3)}
+.user-card{background:var(--surface2);border-radius:8px;padding:9px 11px;margin-bottom:1.1rem;display:flex;align-items:center;gap:9px}
+.user-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
+.user-name{font-size:12px;font-weight:700;line-height:1.2}
+.user-role{font-size:10px;color:var(--text3)}
+.user-logout{margin-left:auto;background:none;border:none;cursor:pointer;font-size:15px;color:var(--text3);padding:2px}
+.user-logout:hover{color:var(--red)}
+.nav-group{margin-bottom:1rem}
+.nav-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;padding:0 8px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;border:none;background:none;width:100%;text-align:left;font-family:inherit;transition:.12s}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-bg);color:var(--accent-text);font-weight:600}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;display:none}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
+.topbar-left .page-title{font-size:20px;font-weight:700}
+.topbar-left .page-sub{font-size:13px;color:var(--text2);margin-top:2px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+/* BELL */
+.bell-wrap{position:relative}
+.bell-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative}
+.bell-btn:hover{background:var(--surface2)}
+.bell-dot{position:absolute;top:4px;right:4px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--red);color:#fff;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff}
+.bell-dropdown{position:absolute;right:0;top:42px;width:330px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.14);z-index:500;display:none;max-height:420px;overflow-y:auto}
+.bell-dropdown.open{display:block}
+.bell-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface)}
+.bell-head span{font-size:13px;font-weight:700}
+.bell-clear{font-size:11px;color:var(--accent);cursor:pointer;border:none;background:none;font-family:inherit}
+.notif-item{padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:.12s}
+.notif-item:hover{background:var(--surface2)}
+.notif-item.unread{background:var(--accent-bg)}
+.notif-item:last-child{border-bottom:none}
+.ni-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.ni-sub{font-size:11px;color:var(--text2)}
+.page{display:none}.page.active{display:block}
+/* BTN */
+.btn{padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:.12s;white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{background:#2b8ae6}
+.btn.danger{background:var(--red-bg);color:var(--red-text);border-color:#fca5a5}
+.btn.success{background:var(--green-bg);color:var(--green-text);border-color:#86efac}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn.xs{padding:3px 7px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1.1rem;box-shadow:var(--shadow)}
+.stat-num{font-size:25px;font-weight:700;line-height:1;letter-spacing:-.5px}
+.stat-label{font-size:11px;color:var(--text2);margin-top:4px}
+.c-green .stat-num{color:var(--green)}.c-yellow .stat-num{color:var(--yellow)}.c-red .stat-num{color:var(--red)}.c-accent .stat-num{color:var(--accent)}.c-purple .stat-num{color:var(--purple)}
+/* TOOLBAR + TABLE */
+.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.toolbar input,.toolbar select{padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:13px;font-family:inherit}
+.toolbar input{flex:1;min-width:180px}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--accent)}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:9px 13px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 13px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.link{color:var(--accent);cursor:pointer;font-weight:600}.link:hover{text-decoration:underline}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge.contrato{background:var(--accent-bg);color:var(--accent-text)}
+.badge.aditivo{background:var(--purple-bg);color:var(--purple-text)}
+.badge.vigente{background:var(--green-bg);color:var(--green-text)}
+.badge.vencendo{background:var(--yellow-bg);color:var(--yellow-text)}
+.badge.vencido,.badge.encerrado{background:var(--red-bg);color:var(--red-text)}
+.badge.negociacao{background:var(--surface2);color:var(--text2)}
+.badge.suspenso{background:var(--orange-bg);color:var(--orange-text)}
+.badge.admin{background:#fdf4ff;color:#86198f}
+.badge.gestor{background:var(--accent-bg);color:var(--accent-text)}
+.badge.visualizador{background:var(--surface2);color:var(--text2)}
+/* FORM */
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1rem}
+.form-section{padding:1.4rem;border-bottom:1px solid var(--border)}
+.fsec-title{font-size:13px;font-weight:700;margin-bottom:.9rem;display:flex;align-items:center;gap:8px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.form-grid.g3{grid-template-columns:1fr 1fr 1fr}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg.full{grid-column:1/-1}
+.fg label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
+.fg input,.fg select,.fg textarea{padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;transition:.12s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--accent);background:var(--bg)}
+.fg textarea{resize:vertical;min-height:72px}
+.fg input[readonly]{background:var(--surface2);color:var(--text2)}
+.form-actions{padding:1.1rem 1.4rem;background:var(--surface2);border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+/* CNPJ */
+.cnpj-row{display:flex;gap:8px}.cnpj-row input{flex:1}
+.cmsg{font-size:12px;margin-top:4px;display:none}
+.cmsg.ok{color:var(--green);display:block}.cmsg.err{color:var(--red);display:block}
+/* UNITS */
+.units-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.units-table th{background:var(--surface2);padding:7px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border)}
+.units-table td{padding:5px 8px;border-bottom:1px solid var(--border)}
+.units-table tr:last-child td{border-bottom:none}
+.units-table input{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:5px;background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit}
+.units-table input:focus{outline:none;border-color:var(--accent);background:var(--bg)}
+/* PDF */
+.pdf-drop{border:2px dashed var(--border);border-radius:var(--radius);padding:1.25rem;text-align:center;cursor:pointer;transition:.2s;background:var(--surface2)}
+.pdf-drop:hover,.pdf-drop.drag{border-color:var(--accent);background:var(--accent-bg)}
+.pdf-drop p{font-size:12px;color:var(--text2);margin-top:5px}
+.pdf-chosen{font-size:12px;color:var(--green);margin-top:8px;font-weight:600;display:none;align-items:center;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:var(--orange-bg);color:var(--orange-text);cursor:pointer}
+/* CALENDAR */
+.cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.cal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.cal-title{font-size:15px;font-weight:700;min-width:160px;text-align:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-dow{padding:8px 4px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);border-bottom:1px solid var(--border);text-transform:uppercase}
+.cal-day{min-height:74px;padding:5px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);font-size:12px;vertical-align:top;overflow:hidden}
+.cal-day:nth-child(7n){border-right:none}
+.cal-day-num{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:3px}
+.cal-day.today .cal-day-num{background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+.cal-day.other-month{background:var(--surface2)}
+.cal-event{font-size:10px;padding:2px 5px;border-radius:4px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.cal-event.vencendo{background:var(--yellow-bg);color:var(--yellow-text)}
+.cal-event.vencido{background:var(--red-bg);color:var(--red-text)}
+.cal-event.vigente{background:var(--green-bg);color:var(--green-text)}
+/* CHARTS */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;box-shadow:var(--shadow)}
+.chart-card.full{grid-column:1/-1}
+.chart-title{font-size:13px;font-weight:700;margin-bottom:1rem}
+.bar-item{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px}
+.bar-label{width:140px;flex-shrink:0;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:var(--accent)}
+.bar-val{width:100px;text-align:right;font-weight:600;font-size:11px}
+.month-chart{display:flex;align-items:flex-end;gap:6px;height:180px;padding-top:10px}
+.month-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+.month-bar{width:100%;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;transition:.3s;position:relative;cursor:pointer}
+.month-bar:hover{background:var(--accent-text)}
+.month-bar.has-venc{background:var(--yellow)}
+.month-lbl{font-size:10px;color:var(--text3);white-space:nowrap}
+.month-val{font-size:9px;color:var(--text2);font-weight:600}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:1000;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:12px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);border:1px solid var(--border)}
+.modal.sm{max-width:440px}
+.modal.lg{max-width:920px;height:90vh;display:flex;flex-direction:column}
+.mhead{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
+.mtitle{font-size:15px;font-weight:700}
+.mclose{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);line-height:1;padding:2px 5px;border-radius:4px}
+.mclose:hover{background:var(--surface2)}
+.mbody{padding:1.4rem}
+/* DETAIL */
+.dsec{margin-bottom:1.3rem}.dsec:last-child{margin-bottom:0}
+.dsec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.di label{font-size:10px;color:var(--text3);display:block;margin-bottom:2px}
+.di p{font-size:13px;word-break:break-word}
+.di.full{grid-column:1/-1}
+.hist-list,.aditivos-list{display:flex;flex-direction:column;gap:6px}
+.hist-item{background:var(--surface2);border-radius:6px;padding:8px 12px;border-left:3px solid var(--accent)}
+.hist-item .ht{font-size:12px;font-weight:600}
+.hist-item .hd{font-size:11px;color:var(--text3);margin-top:1px}
+.aditivo-item{background:var(--purple-bg);border:1px solid #ddd6fe;border-radius:6px;padding:9px 13px;font-size:13px;cursor:pointer}
+.aditivo-item:hover{background:#ede9fe}
+.aditivo-item .at{font-weight:700;color:var(--purple-text)}
+/* ALERTS */
+.alert-card{border-radius:var(--radius);padding:12px 15px;margin-bottom:9px;border:1px solid;cursor:pointer;transition:.12s}
+.alert-card:hover{filter:brightness(.97)}
+.alert-card.yellow{background:var(--yellow-bg);border-color:#fde68a;color:var(--yellow-text)}
+.alert-card.red{background:var(--red-bg);border-color:#fca5a5;color:var(--red-text)}
+.alert-title{font-weight:700;font-size:13px;margin-bottom:2px}
+.alert-sub{font-size:12px;opacity:.85}
+/* UNIT CARDS */
+.unit-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.unit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;box-shadow:var(--shadow);cursor:pointer;transition:.12s}
+.unit-card:hover{border-color:var(--accent);box-shadow:0 4px 12px rgba(29,106,173,.1)}
+.unit-card-name{font-size:14px;font-weight:700;margin-bottom:8px}
+.unit-card-val{font-size:18px;font-weight:700;color:var(--accent);margin-bottom:4px}
+.unit-card-sub{font-size:12px;color:var(--text2)}
+/* USERS */
+.user-row{display:grid;grid-template-columns:auto 1fr 1fr auto auto;gap:12px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px}
+.user-row:last-child{border-bottom:none}
+.user-row .uav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+/* ADV SEARCH */
+.adv-filters{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.adv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+/* SETUP */
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;max-width:760px}
+.step{display:flex;gap:14px;margin-bottom:1.4rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.step-n{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.step-desc{font-size:13px;color:var(--text2);line-height:1.6}
+.code-block{background:#1e1e2e;border-radius:6px;padding:12px;font-family:monospace;font-size:11px;color:#cdd6f4;margin-top:8px;position:relative;max-height:280px;overflow-y:auto;line-height:1.55}
+.copy-btn{position:sticky;float:right;top:0;padding:3px 10px;font-size:11px;border-radius:4px;border:1px solid #45475a;background:#313244;color:#cdd6f4;cursor:pointer;font-family:inherit;margin-bottom:4px}
+.copy-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* MISC */
+.notif-toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:11px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:9999;display:none;max-width:340px}
+.notif-toast.ok{background:var(--green);color:#fff}
+.notif-toast.err{background:var(--red);color:#fff}
+.notif-toast.info{background:var(--accent);color:#fff}
+.loading-overlay{position:fixed;inset:0;background:rgba(13,17,23,.8);display:none;align-items:center;justify-content:center;z-index:2000;font-size:14px;font-weight:600;color:var(--accent);gap:12px}
+.loading-overlay.open{display:flex}
+.spinner{width:20px;height:20px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:3000;padding:1rem}
+.dialog-overlay.open{display:flex}
+.dialog{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.dialog h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.dialog p{font-size:13px;color:var(--text2);margin-bottom:1.4rem;line-height:1.6}
+.dialog-btns{display:flex;flex-direction:column;gap:8px}
+.empty-state{text-align:center;padding:3.5rem 2rem;color:var(--text2)}
+.empty-icon{font-size:44px;display:block;margin-bottom:10px;opacity:.35}
+@media print{
+  .sidebar,.topbar,.btn,.modal-overlay,.notif-toast,.loading-overlay,.dialog-overlay,.no-print{display:none!important}
+  .main{margin-left:0!important;padding:0!important}
+  .page:not(.active){display:none!important}
+}
+@media(max-width:768px){
+  .sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid var(--border)}
+  .main{margin-left:0;padding:1rem}
+  .app{flex-direction:column}
+  .dgrid,.form-grid,.form-grid.g3,.chart-row{grid-template-columns:1fr}
+  .fg.full{grid-column:1}
+}
+</style>
+</head>
+<body>
+<!-- ════════ LOGIN ════════ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="icon">📋</div>
+      <h1>Contratos FHSL</h1>
+      <p>Fundação Hospital Santa Lydia</p>
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <div class="login-field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="login-field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="login-btn" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- ════════ APP ════════ -->
+<div class="app" id="app" style="display:none">
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">📋</div>
+    <div><div class="logo-text">Contratos FHSL</div><div class="logo-sub">Sistema de Gestão</div></div>
+  </div>
+  <div class="user-card">
+    <div class="user-avatar" id="side-avatar">?</div>
+    <div style="min-width:0"><div class="user-name" id="side-name">—</div><div class="user-role" id="side-role">—</div></div>
+    <button class="user-logout" onclick="doLogout()" title="Sair">⏻</button>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Principal</div>
+    <button class="nav-item active" data-page="dashboard" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+    <button class="nav-item" data-page="lista" onclick="showPage('lista',this)">📄 Contratos</button>
+    <button class="nav-item perm-edit" data-page="novo" onclick="newContract(this)">➕ Novo contrato</button>
+    <button class="nav-item" data-page="calendario" onclick="showPage('calendario',this)">📅 Calendário</button>
+    <button class="nav-item" data-page="alertas" onclick="showPage('alertas',this)">🔔 Alertas <span class="nav-badge" id="nav-alert-badge">0</span></button>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Análise</div>
+    <button class="nav-item" data-page="unidades" onclick="showPage('unidades',this)">🏥 Por unidade</button>
+    <button class="nav-item" data-page="busca" onclick="showPage('busca',this)">🔍 Busca avançada</button>
+    <button class="nav-item" data-page="relatorio" onclick="showPage('relatorio',this)">🖨️ Relatório PDF</button>
+    <button class="nav-item" onclick="exportCSV()">📥 Exportar CSV</button>
+  </div>
+  <div class="nav-group perm-admin">
+    <div class="nav-label">Administração</div>
+    <button class="nav-item" data-page="usuarios" onclick="showPage('usuarios',this)">👥 Usuários</button>
+    <button class="nav-item" data-page="auditoria" onclick="showPage('auditoria',this)">🛡️ Auditoria</button>
+    <button class="nav-item" data-page="setup" onclick="showPage('setup',this)">⚙️ Configurar Sheets</button>
+  </div>
+  <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">
+    <div class="conf-status" id="conn-status" style="font-size:11px;color:var(--text3)">● Verificando conexão...</div>
+  </div>
+</aside>
+
+<main class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left"><div class="page-title" id="pg-title">Dashboard</div><div class="page-sub" id="pg-sub">Visão geral dos contratos</div></div>
+    <div class="topbar-right">
+      <div class="bell-wrap">
+        <button class="bell-btn" onclick="toggleBell(event)">🔔<span class="bell-dot" id="bell-dot">0</span></button>
+        <div class="bell-dropdown" id="bell-dropdown">
+          <div class="bell-head"><span>Notificações</span><button class="bell-clear" onclick="markAllRead()">Marcar todas lidas</button></div>
+          <div id="bell-list"></div>
+        </div>
+      </div>
+      <button class="btn primary perm-edit" onclick="newContract()">➕ Novo</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="chart-card full" style="margin-bottom:1.5rem">
+      <div class="chart-title">💰 Comprometimento mensal (próximos 12 meses)</div>
+      <div class="month-chart" id="month-chart"></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card"><div class="chart-title">Top empresas por valor</div><div id="chart-empresas"></div></div>
+      <div class="chart-card"><div class="chart-title">Distribuição por status</div><div id="chart-status"></div></div>
+    </div>
+  </div>
+
+  <!-- LISTA -->
+  <div class="page" id="page-lista">
+    <div class="toolbar">
+      <input type="text" id="search" placeholder="🔍  Buscar empresa, nº, objeto, CNPJ..." oninput="renderLista()">
+      <select id="f-tipo" onchange="renderLista()"><option value="">Todos os tipos</option><option value="Contrato">Contrato</option><option value="Termo Aditivo">Termo Aditivo</option></select>
+      <select id="f-status" onchange="renderLista()"><option value="">Todos os status</option><option value="vigente">Vigente</option><option value="vencendo">Vencendo 60d</option><option value="vencido">Vencido</option><option value="negociacao">Em negociação</option><option value="encerrado">Encerrado</option><option value="suspenso">Suspenso</option></select>
+      <button class="btn" onclick="loadContracts()">🔄 Atualizar</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Nº / Tipo</th><th>Empresa</th><th>Objeto</th><th>Vigência</th><th>Valor Total</th><th>Status</th><th>PDF</th><th></th></tr></thead><tbody id="lista-body"></tbody></table>
+      <div class="empty-state" id="lista-empty" style="display:none"><span class="empty-icon">📭</span>Nenhum contrato encontrado</div>
+    </div>
+  </div>
+
+  <!-- NOVO/EDITAR -->
+  <div class="page" id="page-novo">
+    <div class="form-card">
+      <div class="form-section">
+        <div class="fsec-title">📎 PDF do contrato <span style="font-size:11px;font-weight:400;color:var(--text3)">(opcional)</span></div>
+        <div class="pdf-drop" id="pdf-drop" onclick="document.getElementById('pdf-input').click()" ondragover="pdfDragOver(event)" ondragleave="pdfDragLeave(event)" ondrop="pdfDrop(event)">
+          <div style="font-size:28px">📄</div><p>Clique ou arraste o PDF aqui</p>
+        </div>
+        <input type="file" id="pdf-input" accept=".pdf,image/*" style="display:none" onchange="onPdfChosen(this)">
+        <div class="pdf-chosen" id="pdf-chosen"></div>
+      </div>
+    </div>
+    <form class="form-card" onsubmit="submitForm(event)">
+      <input type="hidden" id="f-id"><input type="hidden" id="f-pdf-b64"><input type="hidden" id="f-pdf-name"><input type="hidden" id="f-pdf-url"><input type="hidden" id="f-historico">
+      <div class="form-section">
+        <div class="fsec-title">🔖 Identificação</div>
+        <div class="form-grid">
+          <div class="fg"><label>Nº do Contrato / TA *</label><input type="text" id="f-numero" required placeholder="Ex: 565/2025"></div>
+          <div class="fg"><label>Tipo *</label><select id="f-tipo-form" required onchange="onTipoChange()"><option value="">Selecione...</option><option value="Contrato">Contrato</option><option value="Termo Aditivo">Termo Aditivo</option></select></div>
+          <div class="fg" id="pai-group" style="display:none"><label>Contrato original (pai)</label><select id="f-pai"><option value="">Selecione...</option></select></div>
+          <div class="fg"><label>Status *</label><select id="f-status-form" required><option value="">Selecione...</option><option value="Em negociação">Em negociação</option><option value="Vigente">Vigente</option><option value="Encerrado">Encerrado</option><option value="Suspenso">Suspenso</option></select></div>
+          <div class="fg"><label>Processo</label><input type="text" id="f-processo" placeholder="Ex: 182/2025"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="fsec-title">🏢 Partes</div>
+        <div class="form-grid">
+          <div class="fg"><label>Contratante</label><input type="text" id="f-contratante" value="Fundação Hospital Santa Lydia"></div>
+          <div class="fg"><label>CNPJ Contratante</label><input type="text" id="f-cnpj-cont" value="13.370.183/0001-89"></div>
+          <div class="fg full"><label>CNPJ da Contratada *</label><div class="cnpj-row"><input type="text" id="f-cnpj" required placeholder="00.000.000/0000-00" oninput="cnpjClear()"><button type="button" class="btn sm primary" id="btn-cnpj" onclick="lookupCNPJ()">🔍 Buscar</button></div><div class="cmsg" id="cnpj-msg"></div></div>
+          <div class="fg full"><label>Empresa contratada *</label><input type="text" id="f-empresa" required placeholder="Preenchido ao buscar CNPJ"></div>
+          <div class="fg"><label>Situação cadastral</label><input type="text" id="f-situacao" readonly></div>
+          <div class="fg"><label>Município/UF</label><input type="text" id="f-municipio" readonly></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="fsec-title">📝 Objeto</div>
+        <div class="form-grid"><div class="fg full"><label>Objeto completo *</label><textarea id="f-objeto" required></textarea></div></div>
+      </div>
+      <div class="form-section">
+        <div class="fsec-title">🏥 Unidades e Valores Mensais <button type="button" class="btn xs" style="margin-left:auto" onclick="openNewUnit()">+ Nova unidade</button> <button type="button" class="btn xs" onclick="addUnidade()">+ Linha</button></div>
+        <table class="units-table"><thead><tr><th>Unidade de Saúde</th><th style="width:170px">Valor Mensal (R$)</th><th style="width:34px"></th></tr></thead><tbody id="units-body"></tbody></table>
+        <p style="font-size:12px;color:var(--text3);margin-top:8px">O valor total é calculado pela vigência × soma das unidades.</p>
+      </div>
+      <div class="form-section">
+        <div class="fsec-title">📅 Vigência e Valores</div>
+        <div class="form-grid g3">
+          <div class="fg"><label>Início *</label><input type="date" id="f-inicio" required oninput="calcValorTotal()"></div>
+          <div class="fg"><label>Fim *</label><input type="date" id="f-fim" required oninput="calcValorTotal()"></div>
+          <div class="fg"><label>Prorrogação</label><input type="text" id="f-prorrogacao" placeholder="Ex: 12 meses"></div>
+          <div class="fg"><label>Valor total (R$)</label><input type="number" id="f-valor" step="0.01" min="0" placeholder="Calculado automaticamente"></div>
+          <div class="fg"><label>Valor mensal total (R$)</label><input type="number" id="f-valor-mensal" step="0.01" min="0" readonly></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="fsec-title">💰 Pagamento e Reajuste</div>
+        <div class="form-grid">
+          <div class="fg full"><label>Forma de pagamento</label><input type="text" id="f-pagamento"></div>
+          <div class="fg"><label>Prazo de pagamento (dias)</label><input type="number" id="f-prazo-pgto" min="0"></div>
+          <div class="fg"><label>Índice de reajuste</label><input type="text" id="f-indice" placeholder="Ex: IPCA/IBGE"></div>
+          <div class="fg"><label>Periodicidade</label><select id="f-periodicidade"><option value="">Selecione...</option><option value="Anual">Anual</option><option value="Semestral">Semestral</option><option value="Não previsto">Não previsto</option></select></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="fsec-title">👤 Fiscal e Gestor</div>
+        <div class="form-grid">
+          <div class="fg"><label>Nome do fiscal</label><input type="text" id="f-fiscal-nome"></div>
+          <div class="fg"><label>E-mail do fiscal</label><input type="email" id="f-fiscal-email"></div>
+          <div class="fg"><label>Cargo do fiscal</label><input type="text" id="f-fiscal-cargo"></div>
+          <div class="fg"><label>Nome do gestor</label><input type="text" id="f-gestor-nome"></div>
+          <div class="fg"><label>E-mail do gestor</label><input type="email" id="f-gestor-email"></div>
+          <div class="fg"><label>Cargo do gestor</label><input type="text" id="f-gestor-cargo"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="fsec-title">📌 Observações</div>
+        <div class="form-grid">
+          <div class="fg full"><label>Observações gerais</label><textarea id="f-obs"></textarea></div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn" onclick="clearForm();showPage('lista',document.querySelector('[data-page=lista]'))">Cancelar</button>
+        <button type="submit" class="btn primary" id="btn-submit">💾 Salvar contrato</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- CALENDÁRIO -->
+  <div class="page" id="page-calendario">
+    <div class="cal-wrap">
+      <div class="cal-header">
+        <button class="btn sm" onclick="calMove(-1)">◀ Anterior</button>
+        <div class="cal-title" id="cal-title">—</div>
+        <button class="btn sm" onclick="calMove(1)">Próximo ▶</button>
+        <button class="btn sm" onclick="calToday()" style="margin-left:auto">Hoje</button>
+      </div>
+      <div class="cal-grid" id="cal-dow"></div>
+      <div class="cal-grid" id="cal-days"></div>
+    </div>
+  </div>
+
+  <!-- ALERTAS -->
+  <div class="page" id="page-alertas"><div id="alertas-body"></div></div>
+
+  <!-- UNIDADES -->
+  <div class="page" id="page-unidades">
+    <div class="toolbar"><input type="text" id="unit-search" placeholder="🔍 Filtrar unidade..." oninput="renderUnidades()"><button class="btn perm-admin" onclick="openManageUnits()">⚙️ Gerenciar lista de unidades</button></div>
+    <div class="unit-cards" id="unit-cards"></div>
+  </div>
+
+  <!-- BUSCA AVANÇADA -->
+  <div class="page" id="page-busca">
+    <div class="adv-filters">
+      <div class="adv-grid">
+        <div class="fg"><label>Empresa</label><input type="text" id="adv-empresa" oninput="renderBusca()"></div>
+        <div class="fg"><label>CNPJ</label><input type="text" id="adv-cnpj" oninput="renderBusca()"></div>
+        <div class="fg"><label>Tipo</label><select id="adv-tipo" onchange="renderBusca()"><option value="">Todos</option><option value="Contrato">Contrato</option><option value="Termo Aditivo">Termo Aditivo</option></select></div>
+        <div class="fg"><label>Status</label><select id="adv-status" onchange="renderBusca()"><option value="">Todos</option><option value="vigente">Vigente</option><option value="vencendo">Vencendo</option><option value="vencido">Vencido</option><option value="negociacao">Em negociação</option><option value="encerrado">Encerrado</option><option value="suspenso">Suspenso</option></select></div>
+        <div class="fg"><label>Unidade</label><input type="text" id="adv-unidade" oninput="renderBusca()"></div>
+        <div class="fg"><label>Vence de</label><input type="date" id="adv-de" onchange="renderBusca()"></div>
+        <div class="fg"><label>Vence até</label><input type="date" id="adv-ate" onchange="renderBusca()"></div>
+        <div class="fg"><label>Valor mínimo</label><input type="number" id="adv-vmin" min="0" oninput="renderBusca()"></div>
+        <div class="fg"><label>Valor máximo</label><input type="number" id="adv-vmax" min="0" oninput="renderBusca()"></div>
+        <div class="fg"><label>Palavra no objeto</label><input type="text" id="adv-obj" oninput="renderBusca()"></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center"><button class="btn sm" onclick="clearBusca()">Limpar filtros</button><span id="busca-count" style="font-size:13px;color:var(--text2)"></span></div>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Nº / Tipo</th><th>Empresa</th><th>Objeto</th><th>Vigência</th><th>Valor</th><th>Status</th></tr></thead><tbody id="busca-body"></tbody></table>
+      <div class="empty-state" id="busca-empty" style="display:none"><span class="empty-icon">🔍</span>Nenhum resultado</div>
+    </div>
+  </div>
+
+  <!-- RELATÓRIO -->
+  <div class="page" id="page-relatorio">
+    <div class="toolbar no-print">
+      <select id="rep-filter" onchange="renderRelatorio()" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-family:inherit"><option value="todos">Todos os contratos</option><option value="vigente">Somente vigentes</option><option value="vencendo">Vencendo em 60 dias</option><option value="encerrado">Encerrados</option></select>
+      <button class="btn primary" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+    </div>
+    <div id="relatorio-body"></div>
+  </div>
+
+  <!-- USUÁRIOS -->
+  <div class="page" id="page-usuarios">
+    <div class="toolbar"><div style="flex:1"></div><button class="btn primary" onclick="openUserModal()">➕ Novo usuário</button></div>
+    <div class="table-wrap" style="padding:4px 0" id="users-list"></div>
+  </div>
+
+  <!-- AUDITORIA -->
+  <div class="page" id="page-auditoria">
+    <div class="toolbar">
+      <input type="text" id="audit-search" placeholder="🔍 Filtrar por usuário, ação ou detalhe..." oninput="renderAuditoria()">
+      <button class="btn" onclick="loadLog()">🔄 Atualizar</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Data/Hora</th><th>Usuário</th><th>Ação</th><th>Detalhe</th></tr></thead><tbody id="audit-body"></tbody></table>
+      <div class="empty-state" id="audit-empty" style="display:none"><span class="empty-icon">🛡️</span>Nenhum registro de auditoria ainda</div>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div class="page" id="page-setup">
+    <div class="setup-card">
+      <div class="step"><div class="step-n">1</div><div><div class="step-title">Crie a planilha</div><div class="step-desc">Acesse <a href="https://sheets.google.com" target="_blank">sheets.google.com</a>, crie uma planilha com o nome <strong>Contratos FHSL</strong>.</div></div></div>
+      <div class="step"><div class="step-n">2</div><div><div class="step-title">Cole o código do Apps Script</div><div class="step-desc"><strong>Extensões → Apps Script</strong>. Apague tudo, cole o código abaixo e altere no topo: <code style="background:var(--surface2);padding:1px 5px;border-radius:3px">EMAIL_ADMIN</code> (seu e-mail) e <code style="background:var(--surface2);padding:1px 5px;border-radius:3px">API_KEY</code> (chave Anthropic, só para leitura de PDF).</div>
+        <div class="code-block"><button class="copy-btn" onclick="copyScript()">📋 Copiar</button><pre id="script-pre" style="white-space:pre-wrap;margin-top:6px"></pre></div></div></div>
+      <div class="step"><div class="step-n">3</div><div><div class="step-title">Ative o e-mail diário</div><div class="step-desc">Ícone de relógio ⏰ (Gatilhos) → <strong>Adicionar gatilho</strong> → Função <strong>verificarVencimentos</strong> · Temporizador por dia · 8h–9h.</div></div></div>
+      <div class="step"><div class="step-n">4</div><div><div class="step-title">Publique como app web</div><div class="step-desc"><strong>Implantar → Nova implantação → Aplicativo da Web</strong>. Executar como: você. Acesso: Qualquer pessoa. <strong>A URL já está travada no sistema</strong> — se você republicar com a mesma URL, nada muda. Se gerar uma URL nova, me avise para atualizar.</div></div></div>
+      <div class="step"><div class="step-n">5</div><div><div class="step-title">Pasta de PDFs (automática)</div><div class="step-desc">Na primeira vez que você anexar um PDF, o script cria sozinho a pasta <strong>"Contratos FHSL - PDFs"</strong> no seu Google Drive e guarda os arquivos lá. O botão "Ver PDF" abre o original.</div></div></div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- MODAL DETALHE -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalBg(event)">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle" id="modal-title">Detalhes</div><button class="mclose" onclick="closeModal()">✕</button></div>
+    <div class="mbody" id="modal-body"></div>
+    <div style="padding:1rem 1.4rem;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- MODAL PDF VIEWER -->
+<div class="modal-overlay" id="modal-pdf" onclick="if(event.target.id==='modal-pdf')closePdfModal()">
+  <div class="modal lg">
+    <div class="mhead"><div class="mtitle" id="pdf-viewer-title">Visualizar PDF</div><div style="display:flex;gap:8px"><a class="btn sm" id="pdf-open-tab" target="_blank">↗ Abrir em nova aba</a><button class="mclose" onclick="closePdfModal()">✕</button></div></div>
+    <iframe id="pdf-iframe" style="flex:1;border:none;width:100%"></iframe>
+  </div>
+</div>
+
+<!-- MODAL USUÁRIO -->
+<div class="modal-overlay" id="modal-user" onclick="if(event.target.id==='modal-user')closeUserModal()">
+  <div class="modal sm">
+    <div class="mhead"><div class="mtitle" id="user-modal-title">Novo Usuário</div><button class="mclose" onclick="closeUserModal()">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="um-id">
+      <div class="fg" style="margin-bottom:12px"><label>Nome completo *</label><input type="text" id="um-nome"></div>
+      <div class="fg" style="margin-bottom:12px"><label>E-mail *</label><input type="email" id="um-email"></div>
+      <div class="fg" style="margin-bottom:12px"><label>Senha *</label><input type="password" id="um-senha" placeholder="Mínimo 6 caracteres"></div>
+      <div class="fg" style="margin-bottom:12px"><label>Perfil *</label><select id="um-role"><option value="visualizador">Visualizador (só leitura)</option><option value="gestor">Gestor (edita, não exclui)</option><option value="admin">Administrador (acesso total)</option></select></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:1rem"><button class="btn" onclick="closeUserModal()">Cancelar</button><button class="btn primary" onclick="saveUser()">Salvar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- DIALOG PDF -->
+<div class="dialog-overlay" id="dialog-unit">
+  <div class="dialog">
+    <h3>🏥 Cadastrar nova unidade</h3>
+    <p>O nome ficará disponível na lista para todos os contratos e usuários.</p>
+    <div class="fg" style="margin-bottom:1rem"><label>Nome da unidade</label><input type="text" id="new-unit-name" placeholder="Ex: UPA Oeste" onkeydown="if(event.key==='Enter')saveNewUnit()"></div>
+    <div class="dialog-btns">
+      <button class="btn primary" onclick="saveNewUnit()">Cadastrar</button>
+      <button class="btn" style="color:var(--text3)" onclick="closeDialog('dialog-unit')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="dialog-overlay" id="dialog-pdf">
+  <div class="dialog">
+    <h3>📄 PDF detectado</h3>
+    <p>O que deseja fazer com <strong id="dialog-pdf-name"></strong>?</p>
+    <div class="dialog-btns">
+      <button class="btn primary" onclick="pdfUseAI()">🤖 Preencher campos automaticamente com IA</button>
+      <button class="btn" onclick="pdfJustSave()">📎 Apenas anexar (preencho manualmente)</button>
+      <button class="btn" style="color:var(--text3)" onclick="closeDialog('dialog-pdf')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif-toast" id="notif"></div>
+<div class="loading-overlay" id="loading"><div class="spinner"></div><span id="loading-text">Aguarde...</span></div>
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// CONFIGURAÇÃO FIXA
+// ═══════════════════════════════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzaqf4kCKuw9rpnwNsqSuQ7glllp93iJQnBFJ3x1F2yuHvFNYVlb67ufFuWDMlLBNVP/exec';
+
+let contracts = [];
+let users = [];
+let currentUser = null;
+let currentDetailId = null;
+let pendingPdfB64 = '';
+let pendingPdfName = '';
+let calRef = new Date();
+let notifications = [];
+let auditLog = [];
+let unitList = [];
+
+// ═══════════════════════════════════════════════════════════════════
+// CÓDIGO DO GOOGLE APPS SCRIPT (para o usuário colar na planilha)
+// ═══════════════════════════════════════════════════════════════════
+const SCRIPT_CODE = `// ============================================================
+// GESTÃO DE CONTRATOS FHSL — Google Apps Script v5
+// ============================================================
+const SHEET_NAME   = 'Contratos';
+const USERS_SHEET  = 'Usuarios';
+const PDF_FOLDER   = 'Contratos FHSL - PDFs';
+const EMAIL_ADMIN  = 'SEU_EMAIL@fhsl.com.br';            // ← ALTERE
+const API_KEY      = 'COLE_SUA_CHAVE_ANTHROPIC_AQUI';    // ← sk-ant-... (leitura de PDF)
+
+const HEADERS = [
+  'ID','Numero','Tipo','ContratoPai','StatusContrato','Processo',
+  'DataAssinatura','Lei','Foro','Contratante','CNPJContratante',
+  'Empresa','CNPJ','SituacaoCadastral','MunicipioUF',
+  'Objeto','ValoresUnidades','VigenciaInicio','VigenciaFim',
+  'ValorTotal','ValorMensal','Prorrogacao',
+  'FormaPagamento','PrazoPagamento','IndiceReajuste','Periodicidade',
+  'FiscalNome','FiscalEmail','FiscalCargo',
+  'GestorNome','GestorEmail','GestorCargo',
+  'Subcontratacao','Garantia','MultaMin','MultaMax',
+  'Observacoes','Historico','PdfNome','PdfUrl','CriadoEm','AtualizadoEm'
+];
+const UHEADERS = ['ID','Nome','Email','Senha','Role','Ativo','CriadoEm'];
+const LOG_SHEET = 'Auditoria';
+const LHEADERS = ['DataHora','Usuario','Email','Acao','Detalhe','Alvo'];
+const UNITS_SHEET = 'Unidades';
+const UNHEADERS = ['ID','Nome','Ativo','CriadoEm'];
+const UNIDADES_PADRAO = ['Hospital Santa Lydia','UPA Norte','UPA Sul','UPA Leste','UBS Central','CAPS','SAMU','Administração / Sede'];
+
+function doGet(e)  { return handle(e); }
+function doPost(e) { return handle(e); }
+
+function handle(e) {
+  const action = ((e && e.parameter && e.parameter.action) || '').toLowerCase();
+  let result;
+  try {
+    if      (action === 'ping')       result = { ok:true, message:'Conectado!' };
+    else if (action === 'getall')     result = getAll();
+    else if (action === 'save')       result = save(JSON.parse(e.postData.contents));
+    else if (action === 'delete')     result = deleteRow(JSON.parse(e.postData.contents));
+    else if (action === 'getusers')   result = getUsers();
+    else if (action === 'saveuser')   result = saveUser(JSON.parse(e.postData.contents));
+    else if (action === 'deleteuser') result = deleteUser(JSON.parse(e.postData.contents));
+    else if (action === 'authuser')   result = authUser(JSON.parse(e.postData.contents));
+    else if (action === 'uploadpdf')  result = uploadPdf(JSON.parse(e.postData.contents));
+    else if (action === 'extractpdf') result = extrairPdfComIA(JSON.parse(e.postData.contents));
+    else if (action === 'getlog')     result = getLog();
+    else if (action === 'logevent')   result = logEvent(JSON.parse(e.postData.contents));
+    else if (action === 'getunits')   result = getUnits();
+    else if (action === 'saveunit')   result = saveUnit(JSON.parse(e.postData.contents));
+    else if (action === 'deleteunit') result = deleteUnit(JSON.parse(e.postData.contents));
+    else result = { ok:false, message:'Ação desconhecida: '+action };
+  } catch(err) { result = { ok:false, message:String(err) }; }
+  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function sheetOf(name, headers) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+    sh.appendRow(headers);
+    sh.getRange(1,1,1,headers.length).setFontWeight('bold').setBackground('#1d6aad').setFontColor('#fff');
+    sh.setFrozenRows(1);
+    return sh;
+  }
+  // Auto-reparo: garante que todas as colunas esperadas existam, na ordem certa.
+  const lastCol = Math.max(sh.getLastColumn(), 1);
+  const existing = sh.getRange(1,1,1,lastCol).getValues()[0].map(function(x){ return String(x).trim(); });
+  const faltando = headers.filter(function(h){ return existing.indexOf(h) < 0; });
+  if (faltando.length) {
+    // acrescenta as colunas que faltam ao final do cabeçalho
+    sh.getRange(1, lastCol+1, 1, faltando.length).setValues([faltando]);
+    sh.getRange(1,1,1,lastCol+faltando.length).setFontWeight('bold').setBackground('#1d6aad').setFontColor('#fff');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+// Lê os cabeçalhos reais da planilha (podem estar em ordem diferente da constante)
+function realHeaders(sh) {
+  const lastCol = Math.max(sh.getLastColumn(), 1);
+  return sh.getRange(1,1,1,lastCol).getValues()[0].map(function(x){ return String(x).trim(); });
+}
+
+// ── HASH DE SENHA (SHA-256) ──────────────────────────────
+function hashPassword(senha) {
+  if (!senha) return '';
+  const raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(senha), Utilities.Charset.UTF_8);
+  return 'sha256$' + raw.map(function(b){ var v=(b<0?b+256:b).toString(16); return v.length===1?'0'+v:v; }).join('');
+}
+function checkPassword(senha, armazenada) {
+  armazenada = String(armazenada||'');
+  if (armazenada.indexOf('sha256$') === 0) return hashPassword(senha) === armazenada;
+  return String(senha) === armazenada; // compatibilidade com senhas antigas em texto puro
+}
+
+// ── AUDITORIA ────────────────────────────────────────────
+function audit(actor, acao, detalhe, alvo) {
+  try {
+    const sh = sheetOf(LOG_SHEET, LHEADERS);
+    const now = Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm:ss');
+    sh.appendRow([now, (actor&&actor.nome)||'—', (actor&&actor.email)||'—', acao||'', detalhe||'', alvo||'']);
+  } catch(err) {}
+}
+function logEvent(p) { audit(p.actor, p.acao, p.detalhe, p.alvo); return { ok:true }; }
+function getLog() {
+  const sh = sheetOf(LOG_SHEET, LHEADERS);
+  const data = sh.getDataRange().getValues();
+  if (data.length <= 1) return { ok:true, data:[] };
+  const h = data[0];
+  return { ok:true, data: data.slice(1).map(function(r){ var o={}; h.forEach(function(k,i){o[k]=r[i];}); return o; }).reverse().slice(0,500) };
+}
+
+// ── UNIDADES DE SAÚDE (lista padronizada) ────────────────
+function ensureUnits(sh) {
+  const data = sh.getDataRange().getValues();
+  if (data.length <= 1) {
+    const now = Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm');
+    UNIDADES_PADRAO.forEach(function(nome,idx){ sh.appendRow([String(Date.now()+idx), nome, true, now]); });
+  }
+}
+function getUnits() {
+  const sh = sheetOf(UNITS_SHEET, UNHEADERS);
+  ensureUnits(sh);
+  const data = sh.getDataRange().getValues();
+  const h = data[0];
+  return { ok:true, data: data.slice(1).map(function(r){ var o={}; h.forEach(function(k,i){o[k]=r[i];}); return o; }) };
+}
+function saveUnit(p) {
+  const actor = p.__actor; if (p.__actor) delete p.__actor;
+  const sh = sheetOf(UNITS_SHEET, UNHEADERS);
+  ensureUnits(sh);
+  const data = sh.getDataRange().getValues();
+  const h = data[0];
+  const nome = String(p.Nome||'').trim();
+  if (!nome) return { ok:false, message:'Nome vazio' };
+  // evita duplicar (case-insensitive)
+  for (var i=1;i<data.length;i++) {
+    if (String(data[i][1]).toLowerCase().trim() === nome.toLowerCase() && String(data[i][0])!==String(p.ID))
+      return { ok:false, message:'Já existe uma unidade com esse nome' };
+  }
+  const now = Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm');
+  if (p.ID) {
+    for (var i=1;i<data.length;i++) {
+      if (String(data[i][0]) === String(p.ID)) {
+        sh.getRange(i+1,2).setValue(nome);
+        if (p.Ativo!==undefined) sh.getRange(i+1,3).setValue(p.Ativo);
+        audit(actor, 'Editou unidade', nome, p.ID);
+        return { ok:true, id:p.ID };
+      }
+    }
+  }
+  const id = String(Date.now());
+  sh.appendRow([id, nome, true, now]);
+  audit(actor, 'Criou unidade', nome, id);
+  return { ok:true, id:id };
+}
+function deleteUnit(p) {
+  const id = (typeof p === 'object' && p !== null) ? p.id : p;
+  const actor = (typeof p === 'object' && p !== null) ? p.__actor : null;
+  const sh = sheetOf(UNITS_SHEET, UNHEADERS);
+  const data = sh.getDataRange().getValues();
+  for (var i=1;i<data.length;i++) {
+    if (String(data[i][0]) === String(id)) {
+      const nome = data[i][1];
+      sh.deleteRow(i+1);
+      audit(actor, 'Removeu unidade', nome, id);
+      return { ok:true };
+    }
+  }
+  return { ok:false, message:'Não encontrada' };
+}
+
+function getAll() {
+  const sh = sheetOf(SHEET_NAME, HEADERS);
+  const data = sh.getDataRange().getValues();
+  if (data.length <= 1) return { ok:true, data:[] };
+  const h = data[0];
+  return { ok:true, data: data.slice(1).map(function(r){ var o={}; h.forEach(function(k,i){o[k]=r[i];}); return o; }) };
+}
+
+function toBRserver(v){
+  if(v===undefined||v===null||v==='') return '';
+  if(Object.prototype.toString.call(v)==='[object Date]'){
+    var dd=('0'+v.getDate()).slice(-2), mm=('0'+(v.getMonth()+1)).slice(-2);
+    return dd+'/'+mm+'/'+v.getFullYear();
+  }
+  var s=String(v).trim();
+  if(s.length===10 && s.charAt(2)==='/' && s.charAt(5)==='/') return s;   // DD/MM/AAAA
+  if(s.length>=10 && s.charAt(4)==='-' && s.charAt(7)==='-'){             // AAAA-MM-DD[...]
+    return s.substring(8,10)+'/'+s.substring(5,7)+'/'+s.substring(0,4);
+  }
+  return s;
+}
+function setDateColumnsText(sh){
+  // força as colunas de data a serem texto puro, para o Sheets não reinterpretar
+  ['DataAssinatura','VigenciaInicio','VigenciaFim'].forEach(function(col){
+    var idx = HEADERS.indexOf(col);
+    if(idx>=0) sh.getRange(2, idx+1, Math.max(sh.getMaxRows()-1,1), 1).setNumberFormat('@');
+  });
+}
+function save(p) {
+  const actor = p.__actor; if (p.__actor) delete p.__actor;
+  // normaliza datas para DD/MM/AAAA em texto
+  p.DataAssinatura = toBRserver(p.DataAssinatura);
+  p.VigenciaInicio = toBRserver(p.VigenciaInicio);
+  p.VigenciaFim    = toBRserver(p.VigenciaFim);
+  const sh = sheetOf(SHEET_NAME, HEADERS);   // auto-repara colunas faltantes
+  setDateColumnsText(sh);
+  const h = realHeaders(sh);                 // cabeçalhos REAIS, já reparados
+  const data = sh.getDataRange().getValues();
+  const now = Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm');
+  const buildRow = function(){ return h.map(function(k){ return p[k]!==undefined && p[k]!==null ? p[k] : ''; }); };
+  if (p.ID) {
+    for (var i=1;i<data.length;i++) {
+      if (String(data[i][0]) === String(p.ID)) {
+        p.AtualizadoEm = now;
+        if (!p.CriadoEm) { var ci=h.indexOf('CriadoEm'); p.CriadoEm = ci>=0 ? data[i][ci] : now; }
+        sh.getRange(i+1,1,1,h.length).setValues([buildRow()]);
+        audit(actor, 'Editou contrato', (p.Numero||'')+' — '+(p.Empresa||''), p.ID);
+        return { ok:true, message:'Atualizado', id:p.ID };
+      }
+    }
+  }
+  p.ID = String(Date.now());
+  p.CriadoEm = now; p.AtualizadoEm = now;
+  sh.appendRow(buildRow());
+  audit(actor, 'Criou contrato', (p.Numero||'')+' — '+(p.Empresa||''), p.ID);
+  return { ok:true, message:'Inserido', id:p.ID };
+}
+
+function deleteRow(p) {
+  const id = (typeof p === 'object' && p !== null) ? p.id : p;
+  const actor = (typeof p === 'object' && p !== null) ? p.__actor : null;
+  const sh = sheetOf(SHEET_NAME, HEADERS);
+  const h = realHeaders(sh);
+  const cNum = h.indexOf('Numero'), cEmp = h.indexOf('Empresa');
+  const data = sh.getDataRange().getValues();
+  for (var i=1;i<data.length;i++) {
+    if (String(data[i][0]) === String(id)) {
+      const num = cNum>=0?data[i][cNum]:'', emp = cEmp>=0?data[i][cEmp]:'';
+      sh.deleteRow(i+1);
+      audit(actor, 'Excluiu contrato', (num||'')+' — '+(emp||''), id);
+      return { ok:true, message:'Excluído' };
+    }
+  }
+  return { ok:false, message:'Registro não encontrado' };
+}
+
+// ── USUÁRIOS ─────────────────────────────────────────────
+function ensureAdmin(sh) {
+  const data = sh.getDataRange().getValues();
+  if (data.length <= 1) {
+    const now = Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm');
+    sh.appendRow([String(Date.now()),'Administrador','admin@fhsl.com.br',hashPassword('admin123'),'admin',true,now]);
+  }
+}
+function getUsers() {
+  const sh = sheetOf(USERS_SHEET, UHEADERS);
+  ensureAdmin(sh);
+  const data = sh.getDataRange().getValues();
+  const h = data[0];
+  return { ok:true, data: data.slice(1).map(function(r){ var o={}; h.forEach(function(k,i){o[k]=r[i];}); return o; }) };
+}
+function saveUser(p) {
+  const actor = p.__actor; if (p.__actor) delete p.__actor;
+  const sh = sheetOf(USERS_SHEET, UHEADERS);
+  ensureAdmin(sh);
+  const data = sh.getDataRange().getValues();
+  const h = data[0];
+  const now = Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm');
+  if (p.ID) {
+    for (var i=1;i<data.length;i++) {
+      if (String(data[i][0]) === String(p.ID)) {
+        if (!p.Senha) p.Senha = data[i][3];            // mantém senha se vier vazia
+        else p.Senha = hashPassword(p.Senha);          // nova senha → hash
+        sh.getRange(i+1,1,1,h.length).setValues([h.map(function(k){return p[k]!==undefined?p[k]:'';})]);
+        audit(actor, 'Editou usuário', (p.Nome||'')+' ('+(p.Email||'')+') · perfil '+(p.Role||''), p.ID);
+        return { ok:true, id:p.ID };
+      }
+    }
+  }
+  p.ID = String(Date.now()); p.CriadoEm = now; if (p.Ativo===undefined) p.Ativo = true;
+  p.Senha = hashPassword(p.Senha);
+  sh.appendRow(h.map(function(k){return p[k]!==undefined?p[k]:'';}));
+  audit(actor, 'Criou usuário', (p.Nome||'')+' ('+(p.Email||'')+') · perfil '+(p.Role||''), p.ID);
+  return { ok:true, id:p.ID };
+}
+function deleteUser(p) {
+  const id = (typeof p === 'object' && p !== null) ? p.id : p;
+  const actor = (typeof p === 'object' && p !== null) ? p.__actor : null;
+  const sh = sheetOf(USERS_SHEET, UHEADERS);
+  const data = sh.getDataRange().getValues();
+  for (var i=1;i<data.length;i++) {
+    if (String(data[i][0]) === String(id)) {
+      const nome = data[i][1], email = data[i][2];
+      sh.deleteRow(i+1);
+      audit(actor, 'Excluiu usuário', (nome||'')+' ('+(email||'')+')', id);
+      return { ok:true };
+    }
+  }
+  return { ok:false, message:'Não encontrado' };
+}
+function authUser(p) {
+  const res = getUsers();
+  if (!res.ok) return { ok:false, message:'Erro ao ler usuários' };
+  const email = String(p.email||'').toLowerCase().trim();
+  const u = res.data.find(function(x){
+    return String(x.Email).toLowerCase().trim() === email
+      && checkPassword(p.senha, x.Senha)
+      && String(x.Ativo) !== 'false' && String(x.Ativo) !== 'FALSE';
+  });
+  if (!u) { audit({nome:'—',email:email}, 'Tentativa de login falha', 'E-mail ou senha incorretos', ''); return { ok:false, message:'E-mail ou senha incorretos' }; }
+  // Migração suave: se a senha ainda estava em texto puro, regrava como hash
+  if (String(u.Senha).indexOf('sha256$') !== 0) {
+    const sh = sheetOf(USERS_SHEET, UHEADERS);
+    const data = sh.getDataRange().getValues();
+    for (var i=1;i<data.length;i++) { if (String(data[i][0])===String(u.ID)) { sh.getRange(i+1,4).setValue(hashPassword(p.senha)); break; } }
+  }
+  audit({nome:u.Nome,email:u.Email}, 'Login', 'Acesso ao sistema', u.ID);
+  return { ok:true, user:{ id:u.ID, nome:u.Nome, email:u.Email, role:u.Role } };
+}
+
+// ── UPLOAD DE PDF NO DRIVE ───────────────────────────────
+function getPdfFolder() {
+  const it = DriveApp.getFoldersByName(PDF_FOLDER);
+  return it.hasNext() ? it.next() : DriveApp.createFolder(PDF_FOLDER);
+}
+function uploadPdf(p) {
+  if (!p || !p.base64) return { ok:false, message:'PDF não recebido' };
+  try {
+    const bytes = Utilities.base64Decode(p.base64);
+    const blob = Utilities.newBlob(bytes, 'application/pdf', p.nome || ('contrato_'+Date.now()+'.pdf'));
+    const file = getPdfFolder().createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    const id = file.getId();
+    return { ok:true, url:'https://drive.google.com/file/d/'+id+'/preview', fileId:id };
+  } catch(err) {
+    return { ok:false, message:'Falha ao salvar PDF no Drive: '+String(err) };
+  }
+}
+
+// ── E-MAIL DE VENCIMENTO ─────────────────────────────────
+function verificarVencimentos() {
+  const res = getAll();
+  if (!res.ok || !res.data.length) return;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  res.data.forEach(function(c) {
+    if (!c.VigenciaFim) return;
+    if (['Encerrado','Suspenso'].indexOf(c.StatusContrato) >= 0) return;
+    const pt = String(c.VigenciaFim).split('/');
+    if (pt.length < 3) return;
+    const fim = new Date(+pt[2], +pt[1]-1, +pt[0]); fim.setHours(0,0,0,0);
+    const diff = Math.round((fim - hoje) / 86400000);
+    if (diff !== 60 && diff !== 30 && diff !== 15) return;
+    const dests = [EMAIL_ADMIN, c.FiscalEmail, c.GestorEmail].filter(function(x){return x;});
+    const uniq = dests.filter(function(v,i){return dests.indexOf(v)===i;});
+    const assunto = '⚠ Contrato vence em ' + diff + ' dias — ' + c.Numero + ' | ' + c.Empresa;
+    const linhas = [['Nº',c.Numero],['Tipo',c.Tipo],['Empresa',c.Empresa],['CNPJ',c.CNPJ],['Objeto',c.Objeto],['Vigência',c.VigenciaInicio+' a '+c.VigenciaFim],['Valor Total',formatBRL(c.ValorTotal)],['Fiscal',c.FiscalNome||'—'],['Gestor',c.GestorNome||'—']];
+    var rows = '';
+    for (var i=0;i<linhas.length;i++){ rows += '<tr style="background:'+(i%2?'#f5f5f3':'#fff')+'"><td style="padding:9px 14px;font-weight:700;width:38%;border-bottom:1px solid #e2e2de">'+linhas[i][0]+'</td><td style="padding:9px 14px;border-bottom:1px solid #e2e2de">'+(linhas[i][1]||'—')+'</td></tr>'; }
+    const html = '<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto"><div style="background:#1d6aad;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="margin:0;font-size:18px">⚠ Alerta de Vencimento de Contrato</h2><p style="margin:6px 0 0;opacity:.85;font-size:13px">Fundação Hospital Santa Lydia</p></div><div style="background:#fff;padding:24px;border:1px solid #e2e2de;border-top:none;border-radius:0 0 8px 8px"><p style="font-size:15px;margin:0 0 16px">O contrato abaixo vence em <strong style="color:#b91c1c">'+diff+' dias</strong> ('+c.VigenciaFim+').</p><table style="width:100%;border-collapse:collapse;font-size:13px">'+rows+'</table><div style="margin-top:18px;padding:13px;background:#fefce8;border:1px solid #fde68a;border-radius:6px;font-size:13px;color:#a16207"><strong>Ação necessária:</strong> Verificar prorrogação, termo aditivo ou encerramento.</div></div></div>';
+    uniq.forEach(function(em){ MailApp.sendEmail({ to:em, subject:assunto, htmlBody:html }); });
+  });
+}
+
+// ── EXTRAÇÃO DE PDF COM IA (servidor, sem CORS) ──────────
+function extrairPdfComIA(payload) {
+  if (!API_KEY || API_KEY === 'COLE_SUA_CHAVE_ANTHROPIC_AQUI')
+    return { ok:false, message:'Chave da API não configurada no Apps Script (API_KEY).' };
+  if (!payload || !payload.pdfBase64) return { ok:false, message:'PDF não recebido.' };
+  const prompt = 'Analise este contrato administrativo brasileiro e extraia as informações no formato JSON abaixo. '
+    + 'Responda APENAS com JSON válido, sem texto adicional nem markdown.\\n'
+    + '{"numero":"","tipo":"Contrato ou Termo Aditivo","statusContrato":"Vigente","processo":"",'
+    + '"dataAssinatura":"DD/MM/AAAA","lei":"","foro":"","contratante":"","cnpjContratante":"",'
+    + '"empresa":"","cnpj":"","objeto":"","unidades":[{"nome":"","valorMensal":0}],'
+    + '"vigenciaInicio":"DD/MM/AAAA","vigenciaFim":"DD/MM/AAAA","prorrogacao":"","valorTotal":0,"valorMensal":0,'
+    + '"formaPagamento":"","prazoPagamento":"","indiceReajuste":"","periodicidade":"",'
+    + '"fiscalNome":"","fiscalEmail":"","fiscalCargo":"","gestorNome":"","gestorEmail":"","gestorCargo":"",'
+    + '"subcontratacao":"","garantia":"","multaMin":"","multaMax":"","observacoes":""}\\n'
+    + 'Se um campo não existir, use null ou array vazio.';
+  const body = { model:'claude-sonnet-4-6', max_tokens:2000, messages:[{ role:'user', content:[
+    { type:'document', source:{ type:'base64', media_type:'application/pdf', data:payload.pdfBase64 } },
+    { type:'text', text:prompt } ] }] };
+  var resp;
+  try {
+    resp = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+      method:'post', contentType:'application/json',
+      headers:{ 'x-api-key':API_KEY, 'anthropic-version':'2023-06-01' },
+      payload:JSON.stringify(body), muteHttpExceptions:true });
+  } catch(err) { return { ok:false, message:'Falha ao chamar a IA: '+String(err) }; }
+  if (resp.getResponseCode() !== 200)
+    return { ok:false, message:'Erro da API ('+resp.getResponseCode()+'): '+resp.getContentText().slice(0,300) };
+  var text = '';
+  try { var j = JSON.parse(resp.getContentText()); text = (j.content||[]).map(function(x){return x.text||'';}).join(''); }
+  catch(err){ return { ok:false, message:'Resposta inválida da IA.' }; }
+  var dados;
+  try { var clean = text.replace(/\\\`\\\`\\\`json|\\\`\\\`\\\`/g,'').trim(); dados = JSON.parse(clean.slice(clean.indexOf('{'), clean.lastIndexOf('}')+1)); }
+  catch(err){ return { ok:false, message:'Não foi possível interpretar os dados extraídos.' }; }
+  return { ok:true, data:dados };
+}
+
+function formatBRL(val){ var n=parseFloat(val)||0; return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }`;
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('script-pre').textContent = SCRIPT_CODE;
+  addUnidade();
+  const sess = sessionStorage.getItem('fhsl_session');
+  if (sess) { try { currentUser = JSON.parse(sess); startApp(); } catch(e){} }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// API (sempre via SCRIPT_URL fixa; POST com body para evitar bug do &id=)
+// ═══════════════════════════════════════════════════════════════════
+async function apiFetch(action, payload) {
+  const opts = { method:'POST', body: JSON.stringify(payload || {}) };
+  const r = await fetch(SCRIPT_URL + '?action=' + action, opts);
+  const t = await r.text();
+  try { return JSON.parse(t); } catch(e) { return { ok:false, message:t }; }
+}
+
+async function checkConnection() {
+  const el = document.getElementById('conn-status');
+  try { const r = await apiFetch('ping'); if (r.ok){ el.textContent='● Conectado ao Sheets'; el.style.color='var(--green)'; return true; } }
+  catch(e){}
+  el.textContent='● Offline (cache local)'; el.style.color='var(--red)'; return false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LOGIN / SESSÃO
+// ═══════════════════════════════════════════════════════════════════
+function localUsers(){ try { return JSON.parse(localStorage.getItem('fhsl_users')) || []; } catch(e){ return []; } }
+function saveLocalUsers(u){ localStorage.setItem('fhsl_users', JSON.stringify(u)); }
+
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const senha = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-err');
+  err.style.display = 'none';
+  if (!email || !senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
+  let user = null;
+  try {
+    const r = await apiFetch('authuser', { email, senha });
+    if (r.ok) user = r.user;
+    else { err.textContent = r.message || 'E-mail ou senha incorretos.'; err.style.display='block'; return; }
+  } catch(e) {
+    err.textContent = 'Sem conexão com o servidor. Tente novamente em instantes.'; err.style.display='block'; return;
+  }
+  currentUser = user;
+  sessionStorage.setItem('fhsl_session', JSON.stringify(user));
+  startApp();
+}
+
+function doLogout(){
+  if (currentUser){ try { apiFetch('logevent', { actor:{ nome:currentUser.nome, email:currentUser.email }, acao:'Logout', detalhe:'Saída do sistema', alvo:currentUser.id }); } catch(e){} }
+  sessionStorage.removeItem('fhsl_session');
+  currentUser = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-pass').value = '';
+}
+
+function startApp(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  const initials = (currentUser.nome||'?').split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+  const colors = { admin:'#86198f', gestor:'#1d6aad', visualizador:'#5c5c58' };
+  document.getElementById('side-avatar').textContent = initials;
+  document.getElementById('side-avatar').style.background = colors[currentUser.role] || '#1d6aad';
+  document.getElementById('side-name').textContent = currentUser.nome;
+  document.getElementById('side-role').textContent = ({admin:'Administrador',gestor:'Gestor',visualizador:'Visualizador'})[currentUser.role] || currentUser.role;
+  applyPermissions();
+  checkConnection();
+  loadAll();
+}
+
+function applyPermissions(){
+  const role = currentUser.role;
+  // perm-admin: só admin vê
+  document.querySelectorAll('.perm-admin').forEach(function(el){ el.style.display = role==='admin' ? '' : 'none'; });
+  // perm-edit: admin e gestor veem (visualizador não)
+  document.querySelectorAll('.perm-edit').forEach(function(el){ el.style.display = role==='visualizador' ? 'none' : ''; });
+}
+
+async function loadAll(){ await loadUnits(); await loadContracts(); await loadUsers(); }
+
+async function loadUnits(){
+  const FALLBACK = ['Hospital Santa Lydia','UPA Norte','UPA Sul','UPA Leste','UBS Central','CAPS','SAMU','Administração / Sede'];
+  try {
+    const r = await apiFetch('getunits');
+    if (r.ok && r.data){ unitList = r.data.map(function(u){ return { id:String(u.ID||u.id), nome:u.Nome||u.nome, ativo:String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE' }; }).filter(function(u){ return u.nome; }); }
+  } catch(e){}
+  if (!unitList.length) unitList = FALLBACK.map(function(n,i){ return { id:'f'+i, nome:n, ativo:true }; });
+  localStorage.setItem('fhsl_units', JSON.stringify(unitList));
+}
+function unitNames(){ return unitList.filter(function(u){ return u.ativo; }).map(function(u){ return u.nome; }); }
+
+// ═══════════════════════════════════════════════════════════════════
+// NAVEGAÇÃO
+// ═══════════════════════════════════════════════════════════════════
+const PAGE_META = {
+  dashboard:['Dashboard','Visão geral dos contratos'],
+  lista:['Contratos','Todos os contratos cadastrados'],
+  novo:['Novo Contrato','Preencha os dados ou envie o PDF'],
+  calendario:['Calendário','Vencimentos por data'],
+  alertas:['Alertas','Contratos que precisam de atenção'],
+  unidades:['Por Unidade','Contratos agrupados por unidade de saúde'],
+  busca:['Busca Avançada','Combine múltiplos filtros'],
+  relatorio:['Relatório PDF','Imprima ou salve em PDF'],
+  usuarios:['Usuários','Controle de acesso ao sistema'],
+  auditoria:['Auditoria','Registro de todas as ações no sistema'],
+  setup:['Configurar Sheets','Conexão com o Google Sheets']
+};
+function showPage(id, btn){
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  const pg = document.getElementById('page-'+id);
+  if (pg) pg.classList.add('active');
+  if (btn) btn.classList.add('active');
+  else { const nb = document.querySelector('[data-page="'+id+'"]'); if (nb) nb.classList.add('active'); }
+  const meta = PAGE_META[id] || ['',''];
+  document.getElementById('pg-title').textContent = meta[0];
+  document.getElementById('pg-sub').textContent = meta[1];
+  if (id==='dashboard') renderDashboard();
+  if (id==='lista') renderLista();
+  if (id==='calendario') renderCalendario();
+  if (id==='alertas') renderAlertas();
+  if (id==='unidades') renderUnidades();
+  if (id==='busca') renderBusca();
+  if (id==='relatorio') renderRelatorio();
+  if (id==='usuarios') renderUsers();
+  if (id==='auditoria') loadLog();
+  if (id==='novo') populatePaiSelect();
+}
+function newContract(btn){ clearForm(); showPage('novo', btn || document.querySelector('[data-page="novo"]')); }
+
+// ═══════════════════════════════════════════════════════════════════
+// CARREGAR CONTRATOS
+// ═══════════════════════════════════════════════════════════════════
+async function loadContracts(){
+  showLoading('Carregando contratos...');
+  try {
+    const r = await apiFetch('getall');
+    if (r.ok){ contracts = r.data.map(normalize); localStorage.setItem('fhsl_local', JSON.stringify(contracts)); }
+    else showNotif('Erro: '+r.message,'err');
+  } catch(e){
+    contracts = JSON.parse(localStorage.getItem('fhsl_local')||'[]').map(normalize);
+    showNotif('Modo offline — usando cache local','info');
+  }
+  refreshAll();
+  hideLoading();
+}
+
+// ── NORMALIZAÇÃO (corrige Ver/Editar após refresh) ──
+function normalize(c){
+  let unidades = [];
+  try { unidades = typeof c.ValoresUnidades==='string' ? (c.ValoresUnidades?JSON.parse(c.ValoresUnidades):[]) : (c.ValoresUnidades||c.unidades||[]); } catch(e){ unidades=[]; }
+  if (!Array.isArray(unidades)) unidades = [];
+  let historico = [];
+  try { historico = typeof c.Historico==='string' ? (c.Historico?JSON.parse(c.Historico):[]) : (c.Historico||c.historico||[]); } catch(e){ historico=[]; }
+  if (!Array.isArray(historico)) historico = [];
+  return {
+    id:String(c.ID||c.id||''), numero:c.Numero||c.numero||'', tipo:c.Tipo||c.tipo||'',
+    contratoPai:String(c.ContratoPai||c.contratoPai||''), statusContrato:c.StatusContrato||c.statusContrato||'',
+    processo:c.Processo||c.processo||'', dataAssinatura:toBR(c.DataAssinatura||c.dataAssinatura||''),
+    lei:c.Lei||c.lei||'', foro:c.Foro||c.foro||'',
+    contratante:c.Contratante||c.contratante||'', cnpjContratante:c.CNPJContratante||c.cnpjContratante||'',
+    empresa:c.Empresa||c.empresa||'', cnpj:c.CNPJ||c.cnpj||'',
+    situacaoCadastral:c.SituacaoCadastral||c.situacaoCadastral||'', municipioUF:c.MunicipioUF||c.municipioUF||'',
+    objeto:c.Objeto||c.objeto||'', unidades:unidades,
+    vigenciaInicio:toBR(c.VigenciaInicio||c.vigenciaInicio||''), vigenciaFim:toBR(c.VigenciaFim||c.vigenciaFim||''),
+    valorTotal:parseFloat(c.ValorTotal||c.valorTotal)||0, valorMensal:parseFloat(c.ValorMensal||c.valorMensal)||0,
+    prorrogacao:c.Prorrogacao||c.prorrogacao||'',
+    formaPagamento:c.FormaPagamento||c.formaPagamento||'', prazoPagamento:c.PrazoPagamento||c.prazoPagamento||'',
+    indiceReajuste:c.IndiceReajuste||c.indiceReajuste||'', periodicidade:c.Periodicidade||c.periodicidade||'',
+    fiscalNome:c.FiscalNome||c.fiscalNome||'', fiscalEmail:c.FiscalEmail||c.fiscalEmail||'', fiscalCargo:c.FiscalCargo||c.fiscalCargo||'',
+    gestorNome:c.GestorNome||c.gestorNome||'', gestorEmail:c.GestorEmail||c.gestorEmail||'', gestorCargo:c.GestorCargo||c.gestorCargo||'',
+    subcontratacao:c.Subcontratacao||c.subcontratacao||'', garantia:c.Garantia||c.garantia||'',
+    multaMin:c.MultaMin||c.multaMin||'', multaMax:c.MultaMax||c.multaMax||'',
+    observacoes:c.Observacoes||c.observacoes||'', historico:historico,
+    pdfNome:c.PdfNome||c.pdfNome||'', pdfUrl:c.PdfUrl||c.pdfUrl||'',
+    criadoEm:c.CriadoEm||c.criadoEm||''
+  };
+}
+
+function toPayload(c){
+  return {
+    ID:c.id, Numero:c.numero, Tipo:c.tipo, ContratoPai:c.contratoPai, StatusContrato:c.statusContrato,
+    Processo:c.processo, DataAssinatura:c.dataAssinatura, Lei:c.lei, Foro:c.foro,
+    Contratante:c.contratante, CNPJContratante:c.cnpjContratante, Empresa:c.empresa, CNPJ:c.cnpj,
+    SituacaoCadastral:c.situacaoCadastral, MunicipioUF:c.municipioUF, Objeto:c.objeto,
+    ValoresUnidades:JSON.stringify(c.unidades||[]), VigenciaInicio:c.vigenciaInicio, VigenciaFim:c.vigenciaFim,
+    ValorTotal:c.valorTotal, ValorMensal:c.valorMensal, Prorrogacao:c.prorrogacao,
+    FormaPagamento:c.formaPagamento, PrazoPagamento:c.prazoPagamento, IndiceReajuste:c.indiceReajuste, Periodicidade:c.periodicidade,
+    FiscalNome:c.fiscalNome, FiscalEmail:c.fiscalEmail, FiscalCargo:c.fiscalCargo,
+    GestorNome:c.gestorNome, GestorEmail:c.gestorEmail, GestorCargo:c.gestorCargo,
+    Subcontratacao:c.subcontratacao, Garantia:c.garantia, MultaMin:c.multaMin, MultaMax:c.multaMax,
+    Observacoes:c.observacoes, Historico:JSON.stringify((c.historico||[]).slice(-50)),
+    PdfNome:c.pdfNome||'', PdfUrl:c.pdfUrl||''
+  };
+}
+// ═══════════════════════════════════════════════════════════════════
+// FORMULÁRIO — SALVAR (com upload de PDF ao Drive)
+// ═══════════════════════════════════════════════════════════════════
+async function submitForm(e){
+  e.preventDefault();
+  if (currentUser.role === 'visualizador'){ showNotif('Você não tem permissão para salvar.','err'); return; }
+  const vigI = document.getElementById('f-inicio').value;
+  const vigF = document.getElementById('f-fim').value;
+  const unidades = getUnidades();
+  const valorMensal = unidades.reduce(function(s,u){ return s + (u.valorMensal||0); }, 0);
+  let valorTotal = parseFloat(document.getElementById('f-valor').value) || 0;
+  if (!valorTotal && vigI && vigF && valorMensal){
+    const meses = Math.max(1, Math.round((new Date(vigF) - new Date(vigI)) / (1000*60*60*24*30)));
+    valorTotal = valorMensal * meses;
+  }
+  const isEdit = !!document.getElementById('f-id').value;
+  const existing = isEdit ? contracts.find(function(x){ return x.id === document.getElementById('f-id').value; }) : null;
+
+  showLoading('Salvando...');
+  document.getElementById('btn-submit').disabled = true;
+
+  // 1) Upload do PDF ao Drive (se houver novo PDF anexado)
+  let pdfUrl = document.getElementById('f-pdf-url').value || (existing ? existing.pdfUrl : '');
+  let pdfNome = document.getElementById('f-pdf-name').value || (existing ? existing.pdfNome : '');
+  const newPdfB64 = document.getElementById('f-pdf-b64').value;
+  if (newPdfB64){
+    showLoading('Enviando PDF ao Google Drive...');
+    try {
+      const up = await apiFetch('uploadpdf', { base64:newPdfB64, nome:pdfNome });
+      if (up.ok && up.url){ pdfUrl = up.url; }
+      else { showNotif('⚠ PDF não foi salvo no Drive: '+(up.message||'sem URL de retorno'),'err'); }
+    } catch(err){ showNotif('⚠ Sem conexão para enviar o PDF ao Drive','err'); }
+  }
+
+  const contract = {
+    id: document.getElementById('f-id').value || '',
+    numero:val('f-numero'), tipo:val('f-tipo-form'), contratoPai:val('f-pai'),
+    statusContrato:val('f-status-form'), processo:val('f-processo'),
+    dataAssinatura:'', lei:'', foro:'',
+    contratante:val('f-contratante'), cnpjContratante:val('f-cnpj-cont'),
+    empresa:val('f-empresa'), cnpj:val('f-cnpj'),
+    situacaoCadastral:val('f-situacao'), municipioUF:val('f-municipio'),
+    objeto:val('f-objeto'), unidades:unidades,
+    vigenciaInicio: vigI?fmtDate(vigI):'', vigenciaFim: vigF?fmtDate(vigF):'',
+    valorTotal:valorTotal, valorMensal:valorMensal, prorrogacao:val('f-prorrogacao'),
+    formaPagamento:val('f-pagamento'), prazoPagamento:val('f-prazo-pgto'),
+    indiceReajuste:val('f-indice'), periodicidade:val('f-periodicidade'),
+    fiscalNome:val('f-fiscal-nome'), fiscalEmail:val('f-fiscal-email'), fiscalCargo:val('f-fiscal-cargo'),
+    gestorNome:val('f-gestor-nome'), gestorEmail:val('f-gestor-email'), gestorCargo:val('f-gestor-cargo'),
+    subcontratacao:'', garantia:'',
+    multaMin:'', multaMax:'', observacoes:val('f-obs'),
+    pdfNome:pdfNome, pdfUrl:pdfUrl,
+    historico: existing ? (existing.historico||[]).slice() : []
+  };
+  contract.historico.push({
+    acao: isEdit ? 'Edição' : 'Criação',
+    usuario: currentUser.nome,
+    data: new Date().toLocaleString('pt-BR'),
+    valorTotal: valorTotal
+  });
+
+  try {
+    const payloadC = toPayload(contract); payloadC.__actor = { nome:currentUser.nome, email:currentUser.email };
+    const r = await apiFetch('save', payloadC);
+    if (r.ok){
+      if (!contract.id) contract.id = String(r.id);
+      upsertLocal(contract);
+      showNotif('✓ Contrato salvo no Google Sheets!','ok');
+      clearForm();
+      showPage('lista', document.querySelector('[data-page="lista"]'));
+    } else showNotif('Erro ao salvar: '+r.message,'err');
+  } catch(err){
+    if (!contract.id) contract.id = String(Date.now());
+    upsertLocal(contract);
+    showNotif('Salvo localmente (sem conexão)','info');
+    clearForm();
+    showPage('lista', document.querySelector('[data-page="lista"]'));
+  }
+  hideLoading();
+  document.getElementById('btn-submit').disabled = false;
+}
+
+function upsertLocal(c){
+  const i = contracts.findIndex(function(x){ return x.id === c.id; });
+  if (i >= 0) contracts[i] = c; else contracts.push(c);
+  localStorage.setItem('fhsl_local', JSON.stringify(contracts));
+  refreshAll();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PDF — anexar, escolher IA ou só guardar
+// ═══════════════════════════════════════════════════════════════════
+function pdfDragOver(e){ e.preventDefault(); document.getElementById('pdf-drop').classList.add('drag'); }
+function pdfDragLeave(e){ document.getElementById('pdf-drop').classList.remove('drag'); }
+function pdfDrop(e){ e.preventDefault(); pdfDragLeave(e); if (e.dataTransfer.files[0]) handlePdfFile(e.dataTransfer.files[0]); }
+function onPdfChosen(input){ if (input.files[0]) handlePdfFile(input.files[0]); }
+
+async function handlePdfFile(file){
+  pendingPdfB64 = await toBase64(file);
+  pendingPdfName = file.name;
+  document.getElementById('dialog-pdf-name').textContent = file.name;
+  document.getElementById('dialog-pdf').classList.add('open');
+}
+
+function pdfJustSave(){
+  document.getElementById('f-pdf-b64').value = pendingPdfB64;
+  document.getElementById('f-pdf-name').value = pendingPdfName;
+  document.getElementById('f-pdf-url').value = '';
+  showPdfChosen(pendingPdfName, null);
+  closeDialog('dialog-pdf');
+  showNotif('PDF anexado. Será enviado ao Drive ao salvar o contrato.','info');
+}
+
+async function pdfUseAI(){
+  closeDialog('dialog-pdf');
+  document.getElementById('f-pdf-b64').value = pendingPdfB64;
+  document.getElementById('f-pdf-name').value = pendingPdfName;
+  showPdfChosen(pendingPdfName, null);
+  showLoading('Extraindo dados do contrato com IA...');
+  try {
+    const r = await apiFetch('extractpdf', { pdfBase64: pendingPdfB64 });
+    if (r.ok && r.data){ fillFormFromAI(r.data); showNotif('✓ Campos preenchidos automaticamente!','ok'); }
+    else showNotif('Não foi possível extrair: '+(r.message||'erro'),'err');
+  } catch(e){ showNotif('Erro na IA: '+e.message,'err'); }
+  hideLoading();
+}
+
+function showPdfChosen(nome, url){
+  const ch = document.getElementById('pdf-chosen');
+  ch.style.display = 'flex';
+  ch.innerHTML = '📎 '+nome + (url ? ' <span class="pill" onclick="window.open(\''+url+'\',\'_blank\')">📄 Ver original</span>' : '');
+}
+
+function fillFormFromAI(d){
+  const set = function(id,v){ const el=document.getElementById(id); if(el && v!=null && v!=='') el.value=v; };
+  set('f-numero',d.numero); set('f-tipo-form',d.tipo); set('f-status-form',d.statusContrato||'Vigente');
+  set('f-processo',d.processo);
+  set('f-contratante',d.contratante); set('f-cnpj-cont',d.cnpjContratante);
+  set('f-cnpj',d.cnpj); set('f-empresa',d.empresa); set('f-objeto',d.objeto);
+  set('f-inicio',isoDate(d.vigenciaInicio)); set('f-fim',isoDate(d.vigenciaFim));
+  set('f-prorrogacao',d.prorrogacao); set('f-valor',d.valorTotal);
+  set('f-pagamento',d.formaPagamento); set('f-prazo-pgto',d.prazoPagamento);
+  set('f-indice',d.indiceReajuste); set('f-periodicidade',d.periodicidade);
+  set('f-fiscal-nome',d.fiscalNome); set('f-fiscal-email',d.fiscalEmail); set('f-fiscal-cargo',d.fiscalCargo);
+  set('f-gestor-nome',d.gestorNome); set('f-gestor-email',d.gestorEmail); set('f-gestor-cargo',d.gestorCargo);
+  set('f-obs',d.observacoes);
+  if (d.tipo === 'Termo Aditivo'){ document.getElementById('pai-group').style.display='flex'; populatePaiSelect(); }
+  if (d.unidades && d.unidades.length){
+    document.getElementById('units-body').innerHTML='';
+    d.unidades.forEach(function(u){ addUnidade(u.nome, u.valorMensal); });
+  }
+  calcValorTotal();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CNPJ (Brasil API — permite chamada do navegador)
+// ═══════════════════════════════════════════════════════════════════
+function cnpjClear(){ const m=document.getElementById('cnpj-msg'); m.className='cmsg'; m.style.display='none'; }
+async function lookupCNPJ(){
+  const cnpj = document.getElementById('f-cnpj').value.replace(/\D/g,'');
+  if (cnpj.length !== 14){ cnpjMsg('CNPJ inválido — deve ter 14 dígitos','err'); return; }
+  const btn = document.getElementById('btn-cnpj'); btn.disabled=true; btn.textContent='⏳';
+  try {
+    const r = await fetch('https://brasilapi.com.br/api/cnpj/v1/'+cnpj);
+    if (!r.ok) throw new Error('CNPJ não encontrado');
+    const d = await r.json();
+    document.getElementById('f-cnpj').value = cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,'$1.$2.$3/$4-$5');
+    document.getElementById('f-empresa').value = d.razao_social || '';
+    document.getElementById('f-situacao').value = d.descricao_situacao_cadastral || '';
+    document.getElementById('f-municipio').value = d.municipio ? (d.municipio+'/'+d.uf) : '';
+    cnpjMsg('✓ '+d.razao_social,'ok');
+  } catch(e){ cnpjMsg('✗ '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='🔍 Buscar';
+}
+function cnpjMsg(msg,cls){ const m=document.getElementById('cnpj-msg'); m.textContent=msg; m.className='cmsg '+cls; m.style.display='block'; }
+
+// ═══════════════════════════════════════════════════════════════════
+// UNIDADES
+// ═══════════════════════════════════════════════════════════════════
+function unitOptions(selected){
+  const names = unitNames();
+  if (selected && names.indexOf(selected)<0) names.push(selected); // preserva nome antigo fora da lista
+  let html = '<option value="">Selecione a unidade...</option>';
+  names.forEach(function(n){ html += '<option value="'+String(n).replace(/"/g,'&quot;')+'"'+(n===selected?' selected':'')+'>'+n+'</option>'; });
+  return html;
+}
+function addUnidade(nome, valor){
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td><select class="unit-select">'+unitOptions(nome||'')+'</select></td>'
+    + '<td><input type="number" placeholder="0,00" step="0.01" min="0" value="'+(valor||'')+'" oninput="calcValorTotal()"></td>'
+    + '<td><button type="button" class="btn xs danger" onclick="this.closest(\'tr\').remove();calcValorTotal()">✕</button></td>';
+  document.getElementById('units-body').appendChild(tr);
+}
+function getUnidades(){
+  const rows = [];
+  document.querySelectorAll('#units-body tr').forEach(function(tr){
+    const sel = tr.querySelector('select');
+    const num = tr.querySelector('input[type=number]');
+    const nome = sel ? sel.value.trim() : '';
+    const valor = parseFloat(num.value) || 0;
+    if (nome || valor) rows.push({ nome:nome, valorMensal:valor });
+  });
+  return rows;
+}
+function refreshUnitSelects(){
+  document.querySelectorAll('#units-body select.unit-select').forEach(function(sel){
+    const cur = sel.value;
+    sel.innerHTML = unitOptions(cur);
+    sel.value = cur;
+  });
+}
+function openNewUnit(){ document.getElementById('new-unit-name').value=''; document.getElementById('dialog-unit').classList.add('open'); setTimeout(function(){ document.getElementById('new-unit-name').focus(); },100); }
+async function saveNewUnit(){
+  const nome = document.getElementById('new-unit-name').value.trim();
+  if (!nome){ showNotif('Digite o nome da unidade','err'); return; }
+  if (unitNames().some(function(n){ return n.toLowerCase()===nome.toLowerCase(); })){ showNotif('Essa unidade já existe','info'); closeDialog('dialog-unit'); return; }
+  showLoading('Cadastrando unidade...');
+  try {
+    const r = await apiFetch('saveunit', { Nome:nome, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+    if (!r.ok){ showNotif('Erro: '+r.message,'err'); hideLoading(); return; }
+  } catch(e){ showNotif('Sem conexão para cadastrar unidade','err'); hideLoading(); return; }
+  await loadUnits();
+  refreshUnitSelects();
+  // seleciona a nova unidade na primeira linha vazia, ou cria uma linha
+  let target = null;
+  document.querySelectorAll('#units-body select.unit-select').forEach(function(sel){ if (!target && !sel.value) target = sel; });
+  if (!target){ addUnidade(nome); } else { target.value = nome; }
+  closeDialog('dialog-unit');
+  showNotif('✓ Unidade "'+nome+'" cadastrada','ok');
+  hideLoading();
+}
+function openManageUnits(){
+  document.getElementById('modal-title').innerHTML = '⚙️ Gerenciar lista de unidades';
+  renderManageUnits();
+  document.getElementById('modal-footer').innerHTML = '<button class="btn primary" onclick="openNewUnit()">➕ Nova unidade</button>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function renderManageUnits(){
+  const usedCount = function(nome){ return contracts.filter(function(c){ return (c.unidades||[]).some(function(u){ return u.nome===nome; }); }).length; };
+  const body = unitList.length ? '<div style="display:flex;flex-direction:column;gap:6px">'
+    + unitList.map(function(u){
+        const n = usedCount(u.nome);
+        return '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border-radius:6px"><span style="flex:1;font-weight:600">'+u.nome+'</span><span style="font-size:11px;color:var(--text3)">'+n+' contrato(s)</span><button class="btn xs" onclick="renameUnit(\''+u.id+'\')">✏️</button><button class="btn xs danger" onclick="removeUnit(\''+u.id+'\',\''+String(u.nome).replace(/'/g,"\\\\'")+'\','+n+')">✕</button></div>';
+      }).join('') + '</div>'
+    : '<p style="color:var(--text3)">Nenhuma unidade cadastrada ainda.</p>';
+  document.getElementById('modal-body').innerHTML = '<p style="font-size:13px;color:var(--text2);margin-bottom:1rem">Estas são as unidades padronizadas disponíveis no cadastro de contratos.</p>'+body;
+}
+async function renameUnit(id){
+  const u = unitList.find(function(x){ return x.id===id; }); if (!u) return;
+  const novo = prompt('Novo nome para "'+u.nome+'":', u.nome);
+  if (novo===null) return;
+  const nome = novo.trim(); if (!nome){ showNotif('Nome vazio','err'); return; }
+  showLoading('Renomeando...');
+  try { const r = await apiFetch('saveunit', { ID:id, Nome:nome, __actor:{ nome:currentUser.nome, email:currentUser.email } }); if(!r.ok){ showNotif('Erro: '+r.message,'err'); hideLoading(); return; } }
+  catch(e){ showNotif('Sem conexão','err'); hideLoading(); return; }
+  await loadUnits(); renderManageUnits(); refreshUnitSelects(); showNotif('✓ Unidade renomeada','ok'); hideLoading();
+}
+async function removeUnit(id, nome, n){
+  if (n>0){ if (!confirm('A unidade "'+nome+'" está em '+n+' contrato(s). Remover da lista padrão não altera esses contratos, apenas tira o nome das próximas seleções. Continuar?')) return; }
+  else if (!confirm('Remover "'+nome+'" da lista?')) return;
+  showLoading('Removendo...');
+  try { await apiFetch('deleteunit', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } }); } catch(e){}
+  await loadUnits(); renderManageUnits(); refreshUnitSelects(); showNotif('✓ Unidade removida da lista','ok'); hideLoading();
+}
+function calcValorTotal(){
+  let total = 0;
+  document.querySelectorAll('#units-body tr').forEach(function(tr){ const n=tr.querySelector('input[type=number]'); total += n ? (parseFloat(n.value)||0) : 0; });
+  document.getElementById('f-valor-mensal').value = total ? total.toFixed(2) : '';
+  const ini = document.getElementById('f-inicio').value, fim = document.getElementById('f-fim').value;
+  const fv = document.getElementById('f-valor');
+  if (!fv.value && ini && fim && total){
+    const meses = Math.max(1, Math.round((new Date(fim)-new Date(ini))/(1000*60*60*24*30)));
+    fv.value = (total*meses).toFixed(2);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FORM helpers
+// ═══════════════════════════════════════════════════════════════════
+function onTipoChange(){ document.getElementById('pai-group').style.display = document.getElementById('f-tipo-form').value==='Termo Aditivo' ? 'flex':'none'; }
+function populatePaiSelect(){
+  const sel = document.getElementById('f-pai');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Selecione...</option>';
+  contracts.filter(function(c){ return c.tipo==='Contrato'; }).forEach(function(c){
+    sel.innerHTML += '<option value="'+c.id+'">'+c.numero+' — '+c.empresa+'</option>';
+  });
+  sel.value = cur;
+}
+function val(id){ const el=document.getElementById(id); return el ? el.value.trim() : ''; }
+function fmtDate(iso){ if(!iso) return ''; const p=iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+function toBR(v){
+  if(!v) return '';
+  v = String(v).trim();
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(v)) return v;              // já é DD/MM/AAAA
+  // ISO com ou sem hora: 2026-04-16 ou 2026-04-16T03:00:00.000Z
+  let m = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return m[3]+'/'+m[2]+'/'+m[1];
+  // tenta como objeto Date (último recurso) usando UTC para não voltar um dia
+  const d = new Date(v);
+  if(!isNaN(d)){ const dd=String(d.getUTCDate()).padStart(2,'0'), mm=String(d.getUTCMonth()+1).padStart(2,'0'); return dd+'/'+mm+'/'+d.getUTCFullYear(); }
+  return v;
+}
+function isoDate(br){
+  if(!br) return '';
+  br = String(br).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(br)) return br;               // já é ISO
+  let m = br.match(/^(\d{4})-(\d{2})-(\d{2})/);                // ISO com hora
+  if(m) return m[1]+'-'+m[2]+'-'+m[3];
+  if(br.indexOf('/')<0) return br;
+  const p=br.split('/'); return p[2]+'-'+p[1]+'-'+p[0];        // DD/MM/AAAA → ISO
+}
+function fmtBRL(n){ if(!n) return 'R$ 0,00'; return 'R$ '+Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function toBase64(file){ return new Promise(function(res,rej){ const r=new FileReader(); r.onload=function(){res(r.result.split(',')[1]);}; r.onerror=rej; r.readAsDataURL(file); }); }
+
+function clearForm(){
+  document.querySelectorAll('#page-novo input,#page-novo select,#page-novo textarea').forEach(function(el){ el.value=''; });
+  document.getElementById('f-id').value='';
+  document.getElementById('f-pdf-b64').value='';
+  document.getElementById('f-pdf-name').value='';
+  document.getElementById('f-pdf-url').value='';
+  document.getElementById('f-contratante').value='Fundação Hospital Santa Lydia';
+  document.getElementById('f-cnpj-cont').value='13.370.183/0001-89';
+  document.getElementById('pdf-chosen').style.display='none';
+  document.getElementById('cnpj-msg').style.display='none';
+  document.getElementById('pai-group').style.display='none';
+  document.getElementById('units-body').innerHTML='';
+  addUnidade();
+  pendingPdfB64=''; pendingPdfName='';
+  const pi=document.getElementById('pdf-input'); if(pi) pi.value='';
+}
+
+function fillForm(c){
+  clearForm();
+  const set = function(id,v){ const el=document.getElementById(id); if(el) el.value = (v!=null?v:''); };
+  set('f-id',c.id); set('f-numero',c.numero); set('f-tipo-form',c.tipo);
+  set('f-status-form',c.statusContrato); set('f-processo',c.processo);
+  set('f-contratante',c.contratante); set('f-cnpj-cont',c.cnpjContratante);
+  set('f-cnpj',c.cnpj); set('f-empresa',c.empresa); set('f-situacao',c.situacaoCadastral); set('f-municipio',c.municipioUF);
+  set('f-objeto',c.objeto); set('f-inicio',isoDate(c.vigenciaInicio)); set('f-fim',isoDate(c.vigenciaFim));
+  set('f-prorrogacao',c.prorrogacao); set('f-valor',c.valorTotal||'');
+  set('f-pagamento',c.formaPagamento); set('f-prazo-pgto',c.prazoPagamento);
+  set('f-indice',c.indiceReajuste); set('f-periodicidade',c.periodicidade);
+  set('f-fiscal-nome',c.fiscalNome); set('f-fiscal-email',c.fiscalEmail); set('f-fiscal-cargo',c.fiscalCargo);
+  set('f-gestor-nome',c.gestorNome); set('f-gestor-email',c.gestorEmail); set('f-gestor-cargo',c.gestorCargo);
+  set('f-obs',c.observacoes);
+  set('f-pdf-name',c.pdfNome); set('f-pdf-url',c.pdfUrl);
+  if (c.pdfNome) showPdfChosen(c.pdfNome, c.pdfUrl);
+  document.getElementById('units-body').innerHTML='';
+  if (c.unidades && c.unidades.length) c.unidades.forEach(function(u){ addUnidade(u.nome,u.valorMensal); });
+  else addUnidade();
+  calcValorTotal();
+  if (c.tipo==='Termo Aditivo'){ document.getElementById('pai-group').style.display='flex'; populatePaiSelect(); set('f-pai',c.contratoPai); }
+}
+// ═══════════════════════════════════════════════════════════════════
+// STATUS
+// ═══════════════════════════════════════════════════════════════════
+function getVigStatus(c){
+  if (!c.vigenciaFim) return 'indefinido';
+  const p = c.vigenciaFim.split('/');
+  if (p.length < 3) return 'indefinido';
+  const fim = new Date(+p[2], +p[1]-1, +p[0]);
+  const diff = (fim - new Date())/86400000;
+  if (diff < 0) return 'vencido';
+  if (diff <= 60) return 'vencendo';
+  return 'ativo';
+}
+function getStatusLabel(c){
+  const s = (c.statusContrato||'').toLowerCase();
+  if (s.indexOf('negoci')>=0) return { cls:'negociacao', txt:'Em negociação' };
+  if (s.indexOf('encerr')>=0) return { cls:'encerrado', txt:'Encerrado' };
+  if (s.indexOf('suspen')>=0) return { cls:'suspenso', txt:'Suspenso' };
+  const v = getVigStatus(c);
+  if (v==='vencendo') return { cls:'vencendo', txt:'Vencendo' };
+  if (v==='vencido') return { cls:'vencido', txt:'Vencido' };
+  return { cls:'vigente', txt:'Vigente' };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LISTA
+// ═══════════════════════════════════════════════════════════════════
+function renderLista(){
+  const q = document.getElementById('search').value.toLowerCase();
+  const fT = document.getElementById('f-tipo').value;
+  const fS = document.getElementById('f-status').value;
+  const list = contracts.filter(function(c){
+    if (fT && c.tipo!==fT) return false;
+    if (fS && getStatusLabel(c).cls!==fS) return false;
+    if (q && JSON.stringify(c).toLowerCase().indexOf(q)<0) return false;
+    return true;
+  });
+  const body = document.getElementById('lista-body'), empty = document.getElementById('lista-empty');
+  if (!list.length){ body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  body.innerHTML = list.map(function(c){
+    const st = getStatusLabel(c);
+    const tc = c.tipo==='Contrato'?'contrato':'aditivo';
+    const obj = c.objeto ? (c.objeto.length>52?c.objeto.slice(0,52)+'…':c.objeto) : '—';
+    const atas = contracts.filter(function(x){ return x.contratoPai===c.id; }).length;
+    const pdfBtn = c.pdfUrl ? '<button class="btn xs" onclick="viewPdf(\''+c.id+'\')">📄</button>' : '—';
+    return '<tr>'
+      + '<td><span class="link" onclick="showDetail(\''+c.id+'\')">'+(c.numero||'—')+'</span><br><span class="badge '+tc+'" style="margin-top:3px">'+(c.tipo||'—')+'</span>'+(atas?' <span style="font-size:10px;color:var(--purple-text)">'+atas+' TA</span>':'')+'</td>'
+      + '<td><div style="font-weight:600">'+(c.empresa||'—')+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+(c.cnpj||'')+'</div></td>'
+      + '<td style="max-width:180px;color:var(--text2)">'+obj+'</td>'
+      + '<td style="font-size:12px;white-space:nowrap"><div>'+(c.vigenciaInicio||'?')+'</div><div style="color:var(--text3)">até '+(c.vigenciaFim||'?')+'</div></td>'
+      + '<td style="font-weight:700;white-space:nowrap">'+fmtBRL(c.valorTotal)+'</td>'
+      + '<td><span class="badge '+st.cls+'">'+st.txt+'</span></td>'
+      + '<td>'+pdfBtn+'</td>'
+      + '<td><button class="btn sm" onclick="showDetail(\''+c.id+'\')">Ver</button></td>'
+      + '</tr>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DETALHE (Ver / Editar / Excluir corrigidos)
+// ═══════════════════════════════════════════════════════════════════
+function showDetail(id){
+  const c = contracts.find(function(x){ return x.id === String(id); });
+  if (!c){ showNotif('Contrato não encontrado','err'); return; }
+  currentDetailId = c.id;
+  const st = getStatusLabel(c);
+  const f = function(l,v,full){ return v ? '<div class="di'+(full?' full':'')+'"><label>'+l+'</label><p>'+v+'</p></div>' : ''; };
+
+  const aditivos = contracts.filter(function(x){ return x.contratoPai===c.id; });
+  const aditivosHtml = aditivos.length ? '<div class="dsec"><div class="dsec-title">Termos Aditivos vinculados ('+aditivos.length+')</div><div class="aditivos-list">'
+    + aditivos.map(function(a){ return '<div class="aditivo-item" onclick="showDetail(\''+a.id+'\')"><span class="at">'+(a.numero||'—')+'</span> — '+(a.empresa||'')+' · '+fmtBRL(a.valorTotal)+' · Venc. '+(a.vigenciaFim||'?')+'</div>'; }).join('')
+    + '</div></div>' : '';
+
+  let unidadesHtml;
+  if (c.unidades && c.unidades.length){
+    unidadesHtml = '<div class="dsec"><div class="dsec-title">Valores por Unidade</div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:7px 10px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;color:var(--text2)">Unidade</th><th style="text-align:right;padding:7px 10px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;color:var(--text2)">Valor Mensal</th></tr></thead><tbody>'
+      + c.unidades.map(function(u,i){ return '<tr style="background:'+(i%2?'var(--surface)':'var(--surface2)')+'"><td style="padding:8px 10px;border-bottom:1px solid var(--border)">'+(u.nome||'—')+'</td><td style="padding:8px 10px;text-align:right;font-weight:600;border-bottom:1px solid var(--border)">'+fmtBRL(u.valorMensal)+'</td></tr>'; }).join('')
+      + '<tr><td style="padding:8px 10px;font-weight:700">Total mensal</td><td style="padding:8px 10px;text-align:right;font-weight:700;color:var(--accent)">'+fmtBRL(c.valorMensal)+'</td></tr></tbody></table></div>';
+  } else {
+    unidadesHtml = '<div class="dsec"><div class="dsec-title">Valores</div><div class="dgrid">'+f('Valor total','<strong style="font-size:16px">'+fmtBRL(c.valorTotal)+'</strong>')+f('Valor mensal',fmtBRL(c.valorMensal))+'</div></div>';
+  }
+
+  // Histórico de valores dos aditivos: valor do contrato pai + cada aditivo
+  let valoresHtml = '';
+  if (c.tipo==='Contrato' && aditivos.length){
+    const linhas = [['Contrato original', c.valorTotal, c.vigenciaInicio]];
+    aditivos.forEach(function(a){ linhas.push(['TA '+(a.numero||''), a.valorTotal, a.dataAssinatura||a.vigenciaInicio]); });
+    valoresHtml = '<div class="dsec"><div class="dsec-title">Histórico de valores (contrato + aditivos)</div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:7px 10px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;color:var(--text2)">Documento</th><th style="text-align:left;padding:7px 10px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;color:var(--text2)">Data</th><th style="text-align:right;padding:7px 10px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;color:var(--text2)">Valor</th></tr></thead><tbody>'
+      + linhas.map(function(l){ return '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--border)">'+l[0]+'</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2)">'+(l[2]||'—')+'</td><td style="padding:8px 10px;text-align:right;font-weight:600;border-bottom:1px solid var(--border)">'+fmtBRL(l[1])+'</td></tr>'; }).join('')
+      + '</tbody></table></div>';
+  }
+
+  const histHtml = c.historico && c.historico.length ? '<div class="dsec"><div class="dsec-title">Histórico de alterações</div><div class="hist-list">'
+    + c.historico.slice().reverse().map(function(h){ return '<div class="hist-item"><div class="ht">🕐 '+h.acao+' — '+h.usuario+'</div><div class="hd">'+h.data+(h.valorTotal!=null?' · '+fmtBRL(h.valorTotal):'')+'</div></div>'; }).join('')
+    + '</div></div>' : '';
+
+  const paiHtml = c.contratoPai ? f('Contrato original', (contracts.find(function(x){return x.id===c.contratoPai;})||{}).numero || c.contratoPai) : '';
+
+  document.getElementById('modal-title').innerHTML = (c.tipo||'Contrato')+' Nº '+(c.numero||'—')+' <span class="badge '+st.cls+'" style="margin-left:8px">'+st.txt+'</span>'
+    + (c.pdfUrl ? ' <span class="pill" onclick="viewPdf(\''+c.id+'\')" style="margin-left:6px">📄 Ver PDF</span>' : '');
+  document.getElementById('modal-body').innerHTML =
+    '<div class="dsec"><div class="dsec-title">Identificação</div><div class="dgrid">'+f('Número',c.numero)+f('Tipo',c.tipo)+paiHtml+f('Status',c.statusContrato)+f('Processo',c.processo)+'</div></div>'
+    + '<div class="dsec"><div class="dsec-title">Partes</div><div class="dgrid">'+f('Contratante',c.contratante)+f('CNPJ Contratante',c.cnpjContratante)+f('Empresa contratada',c.empresa)+f('CNPJ',c.cnpj)+f('Situação cadastral',c.situacaoCadastral)+f('Município/UF',c.municipioUF)+'</div></div>'
+    + '<div class="dsec"><div class="dsec-title">Objeto</div><div class="dgrid">'+f('',c.objeto,true)+'</div></div>'
+    + unidadesHtml + valoresHtml
+    + '<div class="dsec"><div class="dsec-title">Vigência</div><div class="dgrid">'+f('Início',c.vigenciaInicio)+f('Fim',c.vigenciaFim)+f('Valor total','<strong style="font-size:15px">'+fmtBRL(c.valorTotal)+'</strong>')+f('Prorrogação',c.prorrogacao)+'</div></div>'
+    + '<div class="dsec"><div class="dsec-title">Pagamento e Reajuste</div><div class="dgrid">'+f('Forma de pagamento',c.formaPagamento,true)+f('Prazo',c.prazoPagamento?c.prazoPagamento+' dias':'')+f('Índice',c.indiceReajuste)+f('Periodicidade',c.periodicidade)+'</div></div>'
+    + '<div class="dsec"><div class="dsec-title">Fiscal e Gestor</div><div class="dgrid">'+f('Fiscal',c.fiscalNome)+f('E-mail fiscal',c.fiscalEmail)+f('Cargo fiscal',c.fiscalCargo)+f('Gestor',c.gestorNome)+f('E-mail gestor',c.gestorEmail)+f('Cargo gestor',c.gestorCargo)+'</div></div>'
+    + (c.observacoes ? '<div class="dsec"><div class="dsec-title">Observações</div><div class="dgrid">'+f('',c.observacoes,true)+'</div></div>' : '')
+    + aditivosHtml + histHtml
+    + '<div style="font-size:11px;color:var(--text3);margin-top:6px">Cadastrado em: '+(c.criadoEm||'—')+'</div>';
+
+  // Footer com permissões
+  let footer = '';
+  if (currentUser.role !== 'visualizador') footer += '<button class="btn sm" onclick="editFromModal()">✏️ Editar</button>';
+  if (currentUser.role === 'admin') footer += '<button class="btn danger sm" onclick="deleteFromModal()">🗑 Excluir</button>';
+  document.getElementById('modal-footer').innerHTML = footer;
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function editFromModal(){
+  const c = contracts.find(function(x){ return x.id===currentDetailId; });
+  if (!c) return;
+  closeModal();
+  fillForm(c);
+  showPage('novo', document.querySelector('[data-page="novo"]'));
+  document.getElementById('pg-title').textContent = 'Editar Contrato';
+}
+
+async function deleteFromModal(){
+  if (currentUser.role !== 'admin'){ showNotif('Apenas administradores podem excluir.','err'); return; }
+  if (!confirm('Confirma a exclusão definitiva deste contrato?')) return;
+  const id = currentDetailId;
+  showLoading('Excluindo da planilha...');
+  closeModal();
+  try {
+    const r = await apiFetch('delete', { id: id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+    if (!r.ok){ showNotif('Erro ao excluir: '+r.message,'err'); hideLoading(); return; }
+  } catch(e){ showNotif('Sem conexão — não foi possível excluir na planilha','err'); hideLoading(); return; }
+  contracts = contracts.filter(function(c){ return c.id !== id; });
+  localStorage.setItem('fhsl_local', JSON.stringify(contracts));
+  refreshAll();
+  showNotif('✓ Contrato excluído','ok');
+  hideLoading();
+}
+
+// ── PDF VIEWER (abre o original do Drive) ──
+function viewPdf(id){
+  const c = contracts.find(function(x){ return x.id===String(id); });
+  if (!c || !c.pdfUrl){ showNotif('Este contrato não tem PDF salvo no Drive.','info'); return; }
+  document.getElementById('pdf-viewer-title').textContent = c.pdfNome || 'PDF do contrato';
+  document.getElementById('pdf-iframe').src = c.pdfUrl;
+  const openUrl = c.pdfUrl.replace('/preview','/view');
+  document.getElementById('pdf-open-tab').href = openUrl;
+  document.getElementById('modal-pdf').classList.add('open');
+}
+function closePdfModal(){ document.getElementById('modal-pdf').classList.remove('open'); document.getElementById('pdf-iframe').src=''; }
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalBg(e){ if (e.target.id==='modal-overlay') closeModal(); }
+function closeDialog(id){ document.getElementById(id).classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════════
+function renderDashboard(){
+  const total = contracts.length;
+  const vigentes = contracts.filter(function(c){ return getStatusLabel(c).cls==='vigente'; }).length;
+  const vencendo = contracts.filter(function(c){ return getStatusLabel(c).cls==='vencendo'; }).length;
+  const vencidos = contracts.filter(function(c){ return ['vencido','encerrado'].indexOf(getStatusLabel(c).cls)>=0; }).length;
+  const negoc = contracts.filter(function(c){ return getStatusLabel(c).cls==='negociacao'; }).length;
+  const valTotal = contracts.filter(function(c){ return getStatusLabel(c).cls!=='encerrado'; }).reduce(function(s,c){ return s+(c.valorTotal||0); },0);
+  const valMensal = contracts.filter(function(c){ return getStatusLabel(c).cls==='vigente'; }).reduce(function(s,c){ return s+(c.valorMensal||0); },0);
+
+  document.getElementById('stats-grid').innerHTML =
+    '<div class="stat-card"><div class="stat-num">'+total+'</div><div class="stat-label">Total de contratos</div></div>'
+    + '<div class="stat-card c-green"><div class="stat-num">'+vigentes+'</div><div class="stat-label">Vigentes</div></div>'
+    + '<div class="stat-card c-yellow"><div class="stat-num">'+vencendo+'</div><div class="stat-label">Vencem em 60 dias</div></div>'
+    + '<div class="stat-card c-red"><div class="stat-num">'+vencidos+'</div><div class="stat-label">Vencidos/Encerrados</div></div>'
+    + '<div class="stat-card c-purple"><div class="stat-num">'+negoc+'</div><div class="stat-label">Em negociação</div></div>'
+    + '<div class="stat-card c-accent"><div class="stat-num" style="font-size:16px">'+fmtBRL(valTotal)+'</div><div class="stat-label">Valor total ativo</div></div>'
+    + '<div class="stat-card"><div class="stat-num" style="font-size:16px">'+fmtBRL(valMensal)+'</div><div class="stat-label">Comprometimento mensal</div></div>';
+
+  // Gráfico mensal (12 meses)
+  const now = new Date();
+  const months = [];
+  for (let i=0;i<12;i++){ months.push(new Date(now.getFullYear(), now.getMonth()+i, 1)); }
+  const monthVals = months.map(function(m){
+    return contracts.filter(function(c){
+      if (!c.vigenciaInicio || !c.vigenciaFim) return false;
+      const pi=c.vigenciaInicio.split('/'), pf=c.vigenciaFim.split('/');
+      if (pi.length<3||pf.length<3) return false;
+      const ini=new Date(+pi[2],+pi[1]-1,1), fim=new Date(+pf[2],+pf[1]-1,1);
+      return m>=ini && m<=fim && getStatusLabel(c).cls!=='encerrado';
+    }).reduce(function(s,c){ return s+(c.valorMensal||0); },0);
+  });
+  const maxV = Math.max.apply(null, monthVals.concat([1]));
+  document.getElementById('month-chart').innerHTML = months.map(function(m,i){
+    const h = Math.round(monthVals[i]/maxV*140);
+    const lbl = m.toLocaleDateString('pt-BR',{month:'short'})+'/'+String(m.getFullYear()).slice(2);
+    return '<div class="month-col"><div class="month-val">'+(monthVals[i]?fmtBRL(monthVals[i]).replace('R$ ','').replace(',00',''):'')+'</div><div class="month-bar" style="height:'+Math.max(2,h)+'px" title="'+lbl+': '+fmtBRL(monthVals[i])+'"></div><div class="month-lbl">'+lbl+'</div></div>';
+  }).join('');
+
+  // Top empresas
+  const emp = {};
+  contracts.filter(function(c){ return c.statusContrato!=='Encerrado'; }).forEach(function(c){ const k=c.empresa||'N/I'; emp[k]=(emp[k]||0)+(c.valorTotal||0); });
+  const top = Object.keys(emp).map(function(k){ return [k,emp[k]]; }).sort(function(a,b){ return b[1]-a[1]; }).slice(0,6);
+  const maxE = top.length?top[0][1]:1;
+  document.getElementById('chart-empresas').innerHTML = top.length ? top.map(function(e){
+    return '<div class="bar-item"><div class="bar-label" title="'+e[0]+'">'+e[0]+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(e[1]/maxE*100)+'%"></div></div><div class="bar-val">'+fmtBRL(e[1])+'</div></div>';
+  }).join('') : '<p style="color:var(--text3);font-size:13px">Nenhum dado</p>';
+
+  // Status
+  const stMap = {};
+  contracts.forEach(function(c){ const k=getStatusLabel(c).txt; stMap[k]=(stMap[k]||0)+1; });
+  document.getElementById('chart-status').innerHTML = total ? Object.keys(stMap).map(function(k){
+    return '<div class="bar-item"><div class="bar-label">'+k+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(stMap[k]/total*100)+'%"></div></div><div class="bar-val">'+stMap[k]+' ('+Math.round(stMap[k]/total*100)+'%)</div></div>';
+  }).join('') : '<p style="color:var(--text3);font-size:13px">Nenhum dado</p>';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CALENDÁRIO
+// ═══════════════════════════════════════════════════════════════════
+function calMove(d){ calRef = new Date(calRef.getFullYear(), calRef.getMonth()+d, 1); renderCalendario(); }
+function calToday(){ calRef = new Date(); renderCalendario(); }
+function renderCalendario(){
+  const y=calRef.getFullYear(), m=calRef.getMonth();
+  document.getElementById('cal-title').textContent = calRef.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  document.getElementById('cal-dow').innerHTML = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(function(d){ return '<div class="cal-dow">'+d+'</div>'; }).join('');
+  const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+  const venc={};
+  contracts.forEach(function(c){
+    if (!c.vigenciaFim) return;
+    const p=c.vigenciaFim.split('/'); if (p.length<3) return;
+    if (p[2]==String(y) && +p[1]-1==m){ const day=+p[0]; (venc[day]=venc[day]||[]).push(c); }
+  });
+  let html='';
+  for (let i=0;i<first;i++) html+='<div class="cal-day other-month"></div>';
+  for (let d=1;d<=days;d++){
+    const isToday=(today.getFullYear()==y && today.getMonth()==m && today.getDate()==d);
+    const evs=(venc[d]||[]).slice(0,3).map(function(c){ const cls=getVigStatus(c); return '<div class="cal-event '+(cls==='ativo'?'vigente':cls)+'" onclick="showDetail(\''+c.id+'\')" title="'+(c.empresa||'')+'">'+(c.numero||c.empresa||'?')+'</div>'; }).join('');
+    const more=(venc[d]||[]).length>3?'<div style="font-size:10px;color:var(--text3)">+'+((venc[d].length)-3)+' mais</div>':'';
+    html+='<div class="cal-day'+(isToday?' today':'')+'"><div class="cal-day-num">'+d+'</div>'+evs+more+'</div>';
+  }
+  document.getElementById('cal-days').innerHTML = html;
+}
+// ═══════════════════════════════════════════════════════════════════
+// ALERTAS
+// ═══════════════════════════════════════════════════════════════════
+function renderAlertas(){
+  const vencendo = contracts.filter(function(c){ return getVigStatus(c)==='vencendo' && ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0; });
+  const vencidos = contracts.filter(function(c){ return getVigStatus(c)==='vencido' && ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0; });
+  const tot = vencendo.length + vencidos.length;
+  const badge = document.getElementById('nav-alert-badge');
+  badge.textContent = tot; badge.style.display = tot ? 'inline' : 'none';
+  const body = document.getElementById('alertas-body');
+  if (!tot){ body.innerHTML = '<div class="empty-state"><span class="empty-icon">✅</span>Nenhum alerta no momento</div>'; return; }
+  let html = '';
+  if (vencendo.length){
+    html += '<h3 style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--yellow)">⚠ Vencem nos próximos 60 dias ('+vencendo.length+')</h3>';
+    html += vencendo.map(function(c){ return '<div class="alert-card yellow" onclick="showDetail(\''+c.id+'\')"><div class="alert-title">'+(c.numero||'—')+' — '+(c.empresa||'—')+'</div><div class="alert-sub">'+(c.objeto||'')+' · Vence: <strong>'+(c.vigenciaFim||'?')+'</strong> · '+fmtBRL(c.valorTotal)+(c.fiscalNome?' · Fiscal: '+c.fiscalNome:'')+'</div></div>'; }).join('');
+  }
+  if (vencidos.length){
+    html += '<h3 style="font-size:14px;font-weight:700;margin:1.25rem 0 10px;color:var(--red)">✗ Vencidos ('+vencidos.length+')</h3>';
+    html += vencidos.map(function(c){ return '<div class="alert-card red" onclick="showDetail(\''+c.id+'\')"><div class="alert-title">'+(c.numero||'—')+' — '+(c.empresa||'—')+'</div><div class="alert-sub">'+(c.objeto||'')+' · Venceu: <strong>'+(c.vigenciaFim||'?')+'</strong> · '+fmtBRL(c.valorTotal)+'</div></div>'; }).join('');
+  }
+  body.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PAINEL POR UNIDADE
+// ═══════════════════════════════════════════════════════════════════
+function renderUnidades(){
+  const q = (document.getElementById('unit-search').value||'').toLowerCase();
+  const map = {};
+  contracts.forEach(function(c){
+    if (c.unidades && c.unidades.length){
+      c.unidades.forEach(function(u){
+        const nome = u.nome || 'Não especificado';
+        if (!map[nome]) map[nome] = { nome:nome, contratos:[], mensal:0 };
+        map[nome].contratos.push(c); map[nome].mensal += (u.valorMensal||0);
+      });
+    } else {
+      const nome='Sem unidade definida';
+      if (!map[nome]) map[nome] = { nome:nome, contratos:[], mensal:0 };
+      map[nome].contratos.push(c);
+    }
+  });
+  let list = Object.keys(map).map(function(k){ return map[k]; });
+  if (q) list = list.filter(function(u){ return u.nome.toLowerCase().indexOf(q)>=0; });
+  list.sort(function(a,b){ return b.mensal-a.mensal; });
+  const wrap = document.getElementById('unit-cards');
+  if (!list.length){ wrap.innerHTML = '<div class="empty-state"><span class="empty-icon">🏥</span>Nenhuma unidade encontrada</div>'; return; }
+  wrap.innerHTML = list.map(function(u){
+    const ativos = u.contratos.filter(function(c){ return ['vigente','vencendo'].indexOf(getStatusLabel(c).cls)>=0; }).length;
+    return '<div class="unit-card" onclick="openUnitDetail(\''+encodeURIComponent(u.nome)+'\')"><div class="unit-card-name">🏥 '+u.nome+'</div><div class="unit-card-val">'+fmtBRL(u.mensal)+'<span style="font-size:12px;font-weight:400;color:var(--text3)">/mês</span></div><div class="unit-card-sub">'+u.contratos.length+' contrato(s) · '+ativos+' ativo(s)</div></div>';
+  }).join('');
+}
+function openUnitDetail(enc){
+  const nome = decodeURIComponent(enc);
+  const list = contracts.filter(function(c){ return (c.unidades||[]).some(function(u){ return u.nome===nome; }) || ((!c.unidades||!c.unidades.length) && nome==='Sem unidade definida'); });
+  document.getElementById('modal-title').innerHTML = '🏥 '+nome;
+  document.getElementById('modal-body').innerHTML = '<p style="font-size:13px;color:var(--text2);margin-bottom:1rem">'+list.length+' contrato(s) vinculados</p>'
+    + list.map(function(c){
+        const st=getStatusLabel(c);
+        const vm=(c.unidades||[]).find(function(u){ return u.nome===nome; });
+        return '<div class="aditivo-item" style="background:var(--surface2);border-color:var(--border);margin-bottom:6px" onclick="showDetail(\''+c.id+'\')"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="at" style="color:var(--accent-text)">'+(c.numero||'—')+'</span><span class="badge '+st.cls+'">'+st.txt+'</span>'+(vm?'<span style="font-size:12px;color:var(--text2)">· '+fmtBRL(vm.valorMensal)+'/mês</span>':'')+'</div><div style="font-size:12px;color:var(--text2);margin-top:4px">'+(c.empresa||'—')+' · '+(c.objeto?c.objeto.slice(0,60)+'…':'—')+'</div></div>';
+      }).join('');
+  document.getElementById('modal-footer').innerHTML = '';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BUSCA AVANÇADA
+// ═══════════════════════════════════════════════════════════════════
+function renderBusca(){
+  const g=function(id){ return (document.getElementById(id).value||'').toLowerCase(); };
+  const empresa=g('adv-empresa'), cnpj=g('adv-cnpj'), tipo=document.getElementById('adv-tipo').value, status=document.getElementById('adv-status').value;
+  const unidade=g('adv-unidade'), de=document.getElementById('adv-de').value, ate=document.getElementById('adv-ate').value;
+  const vmin=parseFloat(document.getElementById('adv-vmin').value)||0, vmax=parseFloat(document.getElementById('adv-vmax').value)||Infinity, obj=g('adv-obj');
+  const list = contracts.filter(function(c){
+    if (empresa && (c.empresa||'').toLowerCase().indexOf(empresa)<0) return false;
+    if (cnpj && (c.cnpj||'').toLowerCase().indexOf(cnpj)<0) return false;
+    if (tipo && c.tipo!==tipo) return false;
+    if (status && getStatusLabel(c).cls!==status) return false;
+    if (unidade && !(c.unidades||[]).some(function(u){ return (u.nome||'').toLowerCase().indexOf(unidade)>=0; })) return false;
+    if (de && c.vigenciaFim){ const p=c.vigenciaFim.split('/'); if (p.length>=3 && (p[2]+'-'+p[1]+'-'+p[0])<de) return false; }
+    if (ate && c.vigenciaFim){ const p=c.vigenciaFim.split('/'); if (p.length>=3 && (p[2]+'-'+p[1]+'-'+p[0])>ate) return false; }
+    if (c.valorTotal<vmin || c.valorTotal>vmax) return false;
+    if (obj && (c.objeto||'').toLowerCase().indexOf(obj)<0) return false;
+    return true;
+  });
+  document.getElementById('busca-count').textContent = list.length+' resultado(s)';
+  const body=document.getElementById('busca-body'), empty=document.getElementById('busca-empty');
+  if (!list.length){ body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  body.innerHTML = list.map(function(c){
+    const st=getStatusLabel(c);
+    return '<tr><td><span class="link" onclick="showDetail(\''+c.id+'\')">'+(c.numero||'—')+'</span><br><span class="badge '+(c.tipo==='Contrato'?'contrato':'aditivo')+'" style="margin-top:3px">'+(c.tipo||'—')+'</span></td><td><div style="font-weight:600">'+(c.empresa||'—')+'</div><div style="font-size:11px;color:var(--text3)">'+(c.cnpj||'')+'</div></td><td style="max-width:180px;color:var(--text2)">'+(c.objeto?(c.objeto.length>55?c.objeto.slice(0,55)+'…':c.objeto):'—')+'</td><td style="font-size:12px;white-space:nowrap">'+(c.vigenciaInicio||'?')+'<br><span style="color:var(--text3)">até '+(c.vigenciaFim||'?')+'</span></td><td style="font-weight:700;white-space:nowrap">'+fmtBRL(c.valorTotal)+'</td><td><span class="badge '+st.cls+'">'+st.txt+'</span></td></tr>';
+  }).join('');
+}
+function clearBusca(){ document.querySelectorAll('#page-busca input,#page-busca select').forEach(function(el){ el.value=''; }); renderBusca(); }
+
+// ═══════════════════════════════════════════════════════════════════
+// RELATÓRIO PDF
+// ═══════════════════════════════════════════════════════════════════
+function renderRelatorio(){
+  const filter = document.getElementById('rep-filter').value;
+  let list = contracts;
+  if (filter==='vigente') list = contracts.filter(function(c){ return getStatusLabel(c).cls==='vigente'; });
+  else if (filter==='vencendo') list = contracts.filter(function(c){ return getStatusLabel(c).cls==='vencendo'; });
+  else if (filter==='encerrado') list = contracts.filter(function(c){ return getStatusLabel(c).cls==='encerrado'; });
+  const valTotal = list.reduce(function(s,c){ return s+(c.valorTotal||0); },0);
+  document.getElementById('relatorio-body').innerHTML =
+    '<div style="text-align:center;padding:1.25rem 0;border-bottom:2px solid var(--border);margin-bottom:1.25rem"><div style="font-size:22px;font-weight:700">Relatório de Contratos — FHSL</div><div style="font-size:13px;color:var(--text2);margin-top:4px">Gerado em '+new Date().toLocaleString('pt-BR')+' · '+list.length+' contrato(s) · Total: '+fmtBRL(valTotal)+'</div></div>'
+    + list.map(function(c){
+        const st=getStatusLabel(c);
+        const bg = st.cls==='vigente'?'#f0fdf4':st.cls==='vencendo'?'#fefce8':'#fef2f2';
+        const col = st.cls==='vigente'?'#15803d':st.cls==='vencendo'?'#a16207':'#b91c1c';
+        return '<div style="margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border);page-break-inside:avoid"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><strong style="font-size:15px">'+(c.numero||'—')+' — '+(c.tipo||'')+'</strong> <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+bg+';color:'+col+'">'+st.txt+'</span></div><strong style="font-size:15px">'+fmtBRL(c.valorTotal)+'</strong></div><table style="width:100%;border-collapse:collapse;font-size:12px"><tr><td style="padding:4px 8px;width:18%;color:#5c5c58;font-weight:600">Empresa</td><td style="padding:4px 8px">'+(c.empresa||'—')+'</td><td style="padding:4px 8px;width:14%;color:#5c5c58;font-weight:600">CNPJ</td><td style="padding:4px 8px">'+(c.cnpj||'—')+'</td></tr><tr><td style="padding:4px 8px;color:#5c5c58;font-weight:600">Objeto</td><td style="padding:4px 8px" colspan="3">'+(c.objeto||'—')+'</td></tr><tr><td style="padding:4px 8px;color:#5c5c58;font-weight:600">Vigência</td><td style="padding:4px 8px">'+(c.vigenciaInicio||'?')+' a '+(c.vigenciaFim||'?')+'</td><td style="padding:4px 8px;color:#5c5c58;font-weight:600">Mensal</td><td style="padding:4px 8px">'+fmtBRL(c.valorMensal)+'</td></tr><tr><td style="padding:4px 8px;color:#5c5c58;font-weight:600">Fiscal</td><td style="padding:4px 8px">'+(c.fiscalNome||'—')+'</td><td style="padding:4px 8px;color:#5c5c58;font-weight:600">Gestor</td><td style="padding:4px 8px">'+(c.gestorNome||'—')+'</td></tr></table></div>';
+      }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// USUÁRIOS (admin)
+// ═══════════════════════════════════════════════════════════════════
+async function loadUsers(){
+  try { const r = await apiFetch('getusers'); if (r.ok){ users = r.data.map(function(u){ return { id:String(u.ID||u.id), nome:u.Nome||u.nome, email:u.Email||u.email, role:u.Role||u.role, ativo:String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE' }; }); saveLocalUsers(users.map(function(u){ return { id:u.id,nome:u.nome,email:u.email,senha:'',role:u.role,ativo:u.ativo }; })); } }
+  catch(e){ users = localUsers().map(function(u){ return { id:u.id,nome:u.nome,email:u.email,role:u.role,ativo:u.ativo!==false }; }); }
+}
+function renderUsers(){
+  const colors=['#1d6aad','#15803d','#86198f','#b91c1c','#a16207','#c2410c'];
+  const wrap = document.getElementById('users-list');
+  wrap.innerHTML = '<div class="user-row" style="background:var(--surface2);font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em"><span></span><span>Nome</span><span>E-mail</span><span>Perfil</span><span></span></div>'
+    + users.map(function(u,i){
+        const initials=(u.nome||'?').split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+        return '<div class="user-row"><div class="uav" style="background:'+colors[i%colors.length]+'">'+initials+'</div><div style="font-weight:600">'+(u.nome||'—')+(u.id===currentUser.id?' <span style="font-size:10px;color:var(--text3)">(você)</span>':'')+'</div><div style="color:var(--text2)">'+(u.email||'—')+'</div><div><span class="badge '+(u.role||'')+'">'+(({admin:'Administrador',gestor:'Gestor',visualizador:'Visualizador'})[u.role]||u.role)+'</span></div><div style="display:flex;gap:6px;justify-content:flex-end"><button class="btn xs" onclick="openUserModal(\''+u.id+'\')">✏️</button>'+(u.id!==currentUser.id?'<button class="btn xs danger" onclick="deleteUserRow(\''+u.id+'\')">✕</button>':'')+'</div></div>';
+      }).join('');
+}
+let editUserId = null;
+function openUserModal(id){
+  editUserId = id || null;
+  document.getElementById('user-modal-title').textContent = id ? 'Editar Usuário' : 'Novo Usuário';
+  document.getElementById('um-id').value = id || '';
+  document.getElementById('um-nome').value=''; document.getElementById('um-email').value=''; document.getElementById('um-senha').value=''; document.getElementById('um-role').value='visualizador';
+  if (id){ const u=users.find(function(x){ return x.id===id; }); if (u){ document.getElementById('um-nome').value=u.nome||''; document.getElementById('um-email').value=u.email||''; document.getElementById('um-role').value=u.role||'visualizador'; document.getElementById('um-senha').placeholder='(deixe em branco para manter)'; } }
+  else document.getElementById('um-senha').placeholder='Mínimo 6 caracteres';
+  document.getElementById('modal-user').classList.add('open');
+}
+function closeUserModal(){ document.getElementById('modal-user').classList.remove('open'); }
+async function saveUser(){
+  const nome=document.getElementById('um-nome').value.trim();
+  const email=document.getElementById('um-email').value.trim().toLowerCase();
+  const senha=document.getElementById('um-senha').value;
+  const role=document.getElementById('um-role').value;
+  if (!nome||!email){ showNotif('Nome e e-mail são obrigatórios','err'); return; }
+  if (!editUserId && !senha){ showNotif('Senha obrigatória para novo usuário','err'); return; }
+  if (senha && senha.length<6){ showNotif('Senha deve ter ao menos 6 caracteres','err'); return; }
+  showLoading('Salvando usuário...');
+  const payload = { ID:editUserId||'', Nome:nome, Email:email, Senha:senha, Role:role, Ativo:true, __actor:{ nome:currentUser.nome, email:currentUser.email } };
+  try { const r=await apiFetch('saveuser', payload); if(!r.ok){ showNotif('Erro: '+r.message,'err'); hideLoading(); return; } }
+  catch(e){ showNotif('Sem conexão para salvar usuário','err'); hideLoading(); return; }
+  await loadUsers(); renderUsers(); closeUserModal(); showNotif('✓ Usuário salvo','ok'); hideLoading();
+}
+async function deleteUserRow(id){
+  if (id===currentUser.id){ showNotif('Você não pode excluir seu próprio usuário','err'); return; }
+  if (!confirm('Excluir este usuário?')) return;
+  showLoading('Excluindo...');
+  try { await apiFetch('deleteuser', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } }); } catch(e){}
+  await loadUsers(); renderUsers(); showNotif('✓ Usuário excluído','ok'); hideLoading();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AUDITORIA
+// ═══════════════════════════════════════════════════════════════════
+async function loadLog(){
+  showLoading('Carregando auditoria...');
+  try { const r = await apiFetch('getlog'); if (r.ok) auditLog = r.data || []; }
+  catch(e){ auditLog = []; showNotif('Sem conexão para carregar auditoria','info'); }
+  renderAuditoria();
+  hideLoading();
+}
+function renderAuditoria(){
+  const q = (document.getElementById('audit-search').value||'').toLowerCase();
+  const list = auditLog.filter(function(l){ return !q || JSON.stringify(l).toLowerCase().indexOf(q)>=0; });
+  const body = document.getElementById('audit-body'), empty = document.getElementById('audit-empty');
+  if (!list.length){ body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  const icon = function(acao){
+    acao = String(acao||'');
+    if (acao.indexOf('Login')>=0 && acao.indexOf('falha')<0) return '🔓';
+    if (acao.indexOf('falha')>=0) return '⛔';
+    if (acao.indexOf('Criou')>=0) return '➕';
+    if (acao.indexOf('Editou')>=0) return '✏️';
+    if (acao.indexOf('Excluiu')>=0) return '🗑️';
+    return '•';
+  };
+  body.innerHTML = list.map(function(l){
+    return '<tr><td style="white-space:nowrap;font-size:12px;color:var(--text2)">'+(l.DataHora||'—')+'</td>'
+      + '<td><div style="font-weight:600">'+(l.Usuario||'—')+'</div><div style="font-size:11px;color:var(--text3)">'+(l.Email||'')+'</div></td>'
+      + '<td style="white-space:nowrap">'+icon(l.Acao)+' '+(l.Acao||'—')+'</td>'
+      + '<td style="color:var(--text2)">'+(l.Detalhe||'—')+'</td></tr>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// NOTIFICAÇÕES (sino)
+// ═══════════════════════════════════════════════════════════════════
+function buildNotifications(){
+  const read = JSON.parse(localStorage.getItem('fhsl_notif_read')||'[]');
+  notifications = [];
+  contracts.filter(function(c){ return getVigStatus(c)==='vencendo' && ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0; }).forEach(function(c){
+    notifications.push({ id:'v_'+c.id, title:'⚠ Vence em breve', sub:(c.numero||'')+' — '+(c.empresa||'')+' · '+(c.vigenciaFim||''), read:read.indexOf('v_'+c.id)>=0, cid:c.id });
+  });
+  contracts.filter(function(c){ return getVigStatus(c)==='vencido' && ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0; }).forEach(function(c){
+    notifications.push({ id:'x_'+c.id, title:'✗ Contrato vencido', sub:(c.numero||'')+' — '+(c.empresa||'')+' · venceu '+(c.vigenciaFim||''), read:read.indexOf('x_'+c.id)>=0, cid:c.id });
+  });
+  renderBell();
+}
+function renderBell(){
+  const unread = notifications.filter(function(n){ return !n.read; }).length;
+  const dot = document.getElementById('bell-dot');
+  dot.textContent = unread; dot.style.display = unread ? 'flex' : 'none';
+  const list = document.getElementById('bell-list');
+  list.innerHTML = notifications.length ? notifications.map(function(n){
+    return '<div class="notif-item'+(n.read?'':' unread')+'" onclick="clickNotif(\''+n.id+'\',\''+n.cid+'\')"><div class="ni-title">'+n.title+'</div><div class="ni-sub">'+n.sub+'</div></div>';
+  }).join('') : '<div style="padding:1.5rem;text-align:center;color:var(--text3);font-size:13px">Nenhuma notificação</div>';
+}
+function toggleBell(e){ e.stopPropagation(); document.getElementById('bell-dropdown').classList.toggle('open'); }
+function clickNotif(id,cid){ markRead(id); document.getElementById('bell-dropdown').classList.remove('open'); showDetail(cid); }
+function markRead(id){ const n=notifications.find(function(x){ return x.id===id; }); if(n)n.read=true; localStorage.setItem('fhsl_notif_read', JSON.stringify(notifications.filter(function(x){return x.read;}).map(function(x){return x.id;}))); renderBell(); }
+function markAllRead(){ notifications.forEach(function(n){ n.read=true; }); localStorage.setItem('fhsl_notif_read', JSON.stringify(notifications.map(function(x){return x.id;}))); renderBell(); }
+document.addEventListener('click', function(e){ if (!e.target.closest('.bell-wrap')) document.getElementById('bell-dropdown').classList.remove('open'); });
+
+// ═══════════════════════════════════════════════════════════════════
+// EXPORT CSV
+// ═══════════════════════════════════════════════════════════════════
+function exportCSV(){
+  const cols=['numero','tipo','statusContrato','contratoPai','processo','dataAssinatura','lei','foro','contratante','cnpjContratante','empresa','cnpj','situacaoCadastral','municipioUF','objeto','vigenciaInicio','vigenciaFim','valorTotal','valorMensal','prorrogacao','formaPagamento','prazoPagamento','indiceReajuste','periodicidade','fiscalNome','fiscalEmail','fiscalCargo','gestorNome','gestorEmail','gestorCargo','subcontratacao','garantia','multaMin','multaMax','observacoes','pdfUrl','criadoEm'];
+  const rows = contracts.map(function(c){ return cols.map(function(k){ return '"'+String(c[k]||'').replace(/"/g,'""')+'"'; }).join(';'); });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+cols.join(';')+'\n'+rows.join('\n')],{type:'text/csv'}));
+  a.download='contratos_fhsl_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  if (currentUser){ try { apiFetch('logevent', { actor:{ nome:currentUser.nome, email:currentUser.email }, acao:'Exportou CSV', detalhe:contracts.length+' contratos', alvo:'' }); } catch(e){} }
+  showNotif('✓ CSV exportado','ok');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HELPERS GERAIS
+// ═══════════════════════════════════════════════════════════════════
+function refreshAll(){
+  renderDashboard(); buildNotifications();
+  const active = document.querySelector('.page.active');
+  if (active){
+    const id = active.id.replace('page-','');
+    if (id==='lista') renderLista();
+    if (id==='calendario') renderCalendario();
+    if (id==='alertas') renderAlertas();
+    if (id==='unidades') renderUnidades();
+    if (id==='busca') renderBusca();
+    if (id==='relatorio') renderRelatorio();
+  }
+  const v = contracts.filter(function(c){ return getVigStatus(c)==='vencendo' && ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0; }).length
+          + contracts.filter(function(c){ return getVigStatus(c)==='vencido' && ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0; }).length;
+  const badge=document.getElementById('nav-alert-badge'); badge.textContent=v; badge.style.display=v?'inline':'none';
+}
+function showLoading(msg){ document.getElementById('loading-text').textContent=msg||'Aguarde...'; document.getElementById('loading').classList.add('open'); }
+function hideLoading(){ document.getElementById('loading').classList.remove('open'); }
+function showNotif(msg,type){ const el=document.getElementById('notif'); el.textContent=msg; el.className='notif-toast '+(type||'ok'); el.style.display='block'; setTimeout(function(){ el.style.display='none'; },3500); }
+function copyScript(){ navigator.clipboard.writeText(SCRIPT_CODE).then(function(){ showNotif('✓ Código copiado!','ok'); }); }
+</script>
+</body>
+</html>

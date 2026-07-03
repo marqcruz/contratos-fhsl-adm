@@ -6,6 +6,17 @@
 <title>Contratos FHSL</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+body[data-theme="light"]{
+  --bg:#f4f4f2;--surface:#fff;--surface2:#f0f0ed;--border:#e2e2de;
+  --text:#1a1a18;--text2:#5c5c58;--text3:#9a9a96;
+  --accent:#1d6aad;--accent-bg:#eff6ff;--accent-text:#1558a0;
+  --green:#15803d;--green-bg:#f0fdf4;--green-text:#14693a;
+  --yellow:#a16207;--yellow-bg:#fefce8;--yellow-text:#926008;
+  --red:#b91c1c;--red-bg:#fef2f2;--red-text:#a81818;
+  --purple:#6d28d9;--purple-bg:#f5f3ff;--purple-text:#5b21b6;
+  --orange:#c2410c;--orange-bg:#fff7ed;--orange-text:#9a3412;
+  --shadow:0 1px 3px rgba(0,0,0,.07);
+}
 :root{
   --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#2a3140;
   --text:#e6edf3;--text2:#9aa7b8;--text3:#6b7888;
@@ -302,6 +313,7 @@ tr:hover td{background:var(--surface2)}
     <button class="nav-item perm-edit" data-page="novo" onclick="newContract(this)">➕ Novo contrato</button>
     <button class="nav-item" data-page="calendario" onclick="showPage('calendario',this)">📅 Calendário</button>
     <button class="nav-item" data-page="alertas" onclick="showPage('alertas',this)">🔔 Alertas <span class="nav-badge" id="nav-alert-badge">0</span></button>
+    <button class="nav-item" data-page="pendencias" onclick="showPage('pendencias',this)">📋 Pendências</button>
   </div>
   <div class="nav-group">
     <div class="nav-label">Análise</div>
@@ -326,6 +338,7 @@ tr:hover td{background:var(--surface2)}
   <div class="topbar">
     <div class="topbar-left"><div class="page-title" id="pg-title">Dashboard</div><div class="page-sub" id="pg-sub">Visão geral dos contratos</div></div>
     <div class="topbar-right">
+      <button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Alternar tema claro/escuro" style="margin-right:2px">🌙</button>
       <div class="bell-wrap">
         <button class="bell-btn" onclick="toggleBell(event)">🔔<span class="bell-dot" id="bell-dot">0</span></button>
         <div class="bell-dropdown" id="bell-dropdown">
@@ -353,14 +366,15 @@ tr:hover td{background:var(--surface2)}
   <!-- LISTA -->
   <div class="page" id="page-lista">
     <div class="toolbar">
-      <input type="text" id="search" placeholder="🔍  Buscar empresa, nº, objeto, CNPJ..." oninput="renderLista()">
-      <select id="f-tipo" onchange="renderLista()"><option value="">Todos os tipos</option><option value="Contrato">Contrato</option><option value="Termo Aditivo">Termo Aditivo</option></select>
-      <select id="f-status" onchange="renderLista()"><option value="">Todos os status</option><option value="vigente">Vigente</option><option value="vencendo">Vencendo 60d</option><option value="vencido">Vencido</option><option value="negociacao">Em negociação</option><option value="encerrado">Encerrado</option><option value="suspenso">Suspenso</option></select>
+      <input type="text" id="search" placeholder="🔍  Buscar empresa, nº, objeto, CNPJ..." oninput="window.listaPage=1;renderLista()">
+      <select id="f-tipo" onchange="window.listaPage=1;renderLista()"><option value="">Todos os tipos</option><option value="Contrato">Contrato</option><option value="Termo Aditivo">Termo Aditivo</option></select>
+      <select id="f-status" onchange="window.listaPage=1;renderLista()"><option value="">Todos os status</option><option value="vigente">Vigente</option><option value="vencendo">Vencendo 60d</option><option value="vencido">Vencido</option><option value="negociacao">Em negociação</option><option value="encerrado">Encerrado</option><option value="suspenso">Suspenso</option></select>
       <button class="btn" onclick="loadContracts()">🔄 Atualizar</button>
     </div>
     <div class="table-wrap">
       <table><thead><tr><th>Nº / Tipo</th><th>Empresa</th><th>Objeto</th><th>Vigência</th><th>Valor Total</th><th>Status</th><th>PDF</th><th></th></tr></thead><tbody id="lista-body"></tbody></table>
       <div class="empty-state" id="lista-empty" style="display:none"><span class="empty-icon">📭</span>Nenhum contrato encontrado</div>
+      <div id="lista-pager" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);gap:10px"></div>
     </div>
   </div>
 
@@ -416,6 +430,7 @@ tr:hover td{background:var(--surface2)}
           <div class="fg"><label>Prorrogação</label><input type="text" id="f-prorrogacao" placeholder="Ex: 12 meses"></div>
           <div class="fg"><label>Valor total (R$)</label><input type="number" id="f-valor" step="0.01" min="0" placeholder="Calculado automaticamente"></div>
           <div class="fg"><label>Valor mensal total (R$)</label><input type="number" id="f-valor-mensal" step="0.01" min="0" readonly></div>
+          <div class="fg full"><label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;cursor:pointer"><input type="checkbox" id="f-renovacao" style="width:16px;height:16px;cursor:pointer"> Processo de renovação já iniciado</label></div>
         </div>
       </div>
       <div class="form-section">
@@ -467,6 +482,9 @@ tr:hover td{background:var(--surface2)}
 
   <!-- ALERTAS -->
   <div class="page" id="page-alertas"><div id="alertas-body"></div></div>
+
+  <!-- PENDÊNCIAS -->
+  <div class="page" id="page-pendencias"><div id="pendencias-body"></div></div>
 
   <!-- UNIDADES -->
   <div class="page" id="page-unidades">
@@ -630,7 +648,7 @@ const HEADERS = [
   'DataAssinatura','Lei','Foro','Contratante','CNPJContratante',
   'Empresa','CNPJ','SituacaoCadastral','MunicipioUF',
   'Objeto','ValoresUnidades','VigenciaInicio','VigenciaFim',
-  'ValorTotal','ValorMensal','Prorrogacao',
+  'ValorTotal','ValorMensal','Prorrogacao','RenovacaoIniciada',
   'FormaPagamento','PrazoPagamento','IndiceReajuste','Periodicidade',
   'FiscalNome','FiscalEmail','FiscalCargo',
   'GestorNome','GestorEmail','GestorCargo',
@@ -1024,6 +1042,9 @@ function formatBRL(val){ var n=parseFloat(val)||0; return 'R$ '+n.toLocaleString
 window.addEventListener('DOMContentLoaded', function(){
   document.getElementById('script-pre').textContent = SCRIPT_CODE;
   addUnidade();
+  window.formDirty = false;
+  const pg = document.getElementById('page-novo');
+  if (pg) pg.addEventListener('input', function(){ window.formDirty = true; });
   const sess = sessionStorage.getItem('fhsl_session');
   if (sess) { try { currentUser = JSON.parse(sess); startApp(); } catch(e){} }
 });
@@ -1082,6 +1103,7 @@ function doLogout(){
 function startApp(){
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
+  loadUserTheme();
   const initials = (currentUser.nome||'?').split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
   const colors = { admin:'#86198f', gestor:'#1d6aad', visualizador:'#5c5c58' };
   document.getElementById('side-avatar').textContent = initials;
@@ -1089,6 +1111,7 @@ function startApp(){
   document.getElementById('side-name').textContent = currentUser.nome;
   document.getElementById('side-role').textContent = ({admin:'Administrador',gestor:'Gestor',visualizador:'Visualizador'})[currentUser.role] || currentUser.role;
   applyPermissions();
+  startSessionTimer();
   checkConnection();
   loadAll();
 }
@@ -1123,6 +1146,7 @@ const PAGE_META = {
   novo:['Novo Contrato','Preencha os dados ou envie o PDF'],
   calendario:['Calendário','Vencimentos por data'],
   alertas:['Alertas','Contratos que precisam de atenção'],
+  pendencias:['Pendências','Tarefas e dados faltantes'],
   unidades:['Por Unidade','Contratos agrupados por unidade de saúde'],
   busca:['Busca Avançada','Combine múltiplos filtros'],
   relatorio:['Relatório PDF','Imprima ou salve em PDF'],
@@ -1131,6 +1155,12 @@ const PAGE_META = {
   setup:['Configurar Sheets','Conexão com o Google Sheets']
 };
 function showPage(id, btn){
+  // Guarda alterações não salvas ao sair do formulário
+  const cur = document.querySelector('.page.active');
+  if (cur && cur.id==='page-novo' && id!=='novo' && window.formDirty){
+    if (!confirm('Há alterações não salvas no formulário. Deseja sair mesmo assim?')) return;
+  }
+  window.formDirty = false;
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
   const pg = document.getElementById('page-'+id);
@@ -1144,6 +1174,7 @@ function showPage(id, btn){
   if (id==='lista') renderLista();
   if (id==='calendario') renderCalendario();
   if (id==='alertas') renderAlertas();
+  if (id==='pendencias') renderPendencias();
   if (id==='unidades') renderUnidades();
   if (id==='busca') renderBusca();
   if (id==='relatorio') renderRelatorio();
@@ -1190,6 +1221,7 @@ function normalize(c){
     vigenciaInicio:toBR(c.VigenciaInicio||c.vigenciaInicio||''), vigenciaFim:toBR(c.VigenciaFim||c.vigenciaFim||''),
     valorTotal:parseFloat(c.ValorTotal||c.valorTotal)||0, valorMensal:parseFloat(c.ValorMensal||c.valorMensal)||0,
     prorrogacao:c.Prorrogacao||c.prorrogacao||'',
+    renovacaoIniciada:c.RenovacaoIniciada||c.renovacaoIniciada||'',
     formaPagamento:c.FormaPagamento||c.formaPagamento||'', prazoPagamento:c.PrazoPagamento||c.prazoPagamento||'',
     indiceReajuste:c.IndiceReajuste||c.indiceReajuste||'', periodicidade:c.Periodicidade||c.periodicidade||'',
     fiscalNome:c.FiscalNome||c.fiscalNome||'', fiscalEmail:c.FiscalEmail||c.fiscalEmail||'', fiscalCargo:c.FiscalCargo||c.fiscalCargo||'',
@@ -1210,6 +1242,7 @@ function toPayload(c){
     SituacaoCadastral:c.situacaoCadastral, MunicipioUF:c.municipioUF, Objeto:c.objeto,
     ValoresUnidades:JSON.stringify(c.unidades||[]), VigenciaInicio:c.vigenciaInicio, VigenciaFim:c.vigenciaFim,
     ValorTotal:c.valorTotal, ValorMensal:c.valorMensal, Prorrogacao:c.prorrogacao,
+    RenovacaoIniciada:c.renovacaoIniciada||'',
     FormaPagamento:c.formaPagamento, PrazoPagamento:c.prazoPagamento, IndiceReajuste:c.indiceReajuste, Periodicidade:c.periodicidade,
     FiscalNome:c.fiscalNome, FiscalEmail:c.fiscalEmail, FiscalCargo:c.fiscalCargo,
     GestorNome:c.gestorNome, GestorEmail:c.gestorEmail, GestorCargo:c.gestorCargo,
@@ -1233,6 +1266,28 @@ async function submitForm(e){
     const meses = Math.max(1, Math.round((new Date(vigF) - new Date(vigI)) / (1000*60*60*24*30)));
     valorTotal = valorMensal * meses;
   }
+
+  // ── VALIDAÇÃO DE ENTRADA ──
+  const erros = [];
+  if (vigI && vigF && new Date(vigF) < new Date(vigI))
+    erros.push('A data de fim da vigência é anterior à data de início.');
+  const cnpjDig = document.getElementById('f-cnpj').value.replace(/\D/g,'');
+  if (cnpjDig && !cnpjValido(cnpjDig))
+    erros.push('O CNPJ da contratada é inválido (dígito verificador não confere).');
+  const valorInput = parseFloat(document.getElementById('f-valor').value);
+  if (!isNaN(valorInput) && valorInput < 0)
+    erros.push('O valor total não pode ser negativo.');
+  if (unidades.some(function(u){ return u.valorMensal < 0; }))
+    erros.push('Há valor mensal negativo em alguma unidade.');
+  const tipo = document.getElementById('f-tipo-form').value;
+  if (tipo === 'Termo Aditivo' && !document.getElementById('f-pai').value)
+    erros.push('Termo Aditivo precisa ter o contrato original (pai) selecionado.');
+  if (erros.length){
+    showNotif('⚠ '+erros[0], 'err');
+    if (erros.length>1) setTimeout(function(){ showNotif('⚠ '+erros[1],'err'); }, 1200);
+    return;
+  }
+
   const isEdit = !!document.getElementById('f-id').value;
   const existing = isEdit ? contracts.find(function(x){ return x.id === document.getElementById('f-id').value; }) : null;
 
@@ -1263,6 +1318,7 @@ async function submitForm(e){
     objeto:val('f-objeto'), unidades:unidades,
     vigenciaInicio: vigI?fmtDate(vigI):'', vigenciaFim: vigF?fmtDate(vigF):'',
     valorTotal:valorTotal, valorMensal:valorMensal, prorrogacao:val('f-prorrogacao'),
+    renovacaoIniciada: document.getElementById('f-renovacao').checked ? 'Sim' : '',
     formaPagamento:val('f-pagamento'), prazoPagamento:val('f-prazo-pgto'),
     indiceReajuste:val('f-indice'), periodicidade:val('f-periodicidade'),
     fiscalNome:val('f-fiscal-nome'), fiscalEmail:val('f-fiscal-email'), fiscalCargo:val('f-fiscal-cargo'),
@@ -1376,6 +1432,21 @@ function fillFormFromAI(d){
 // CNPJ (Brasil API — permite chamada do navegador)
 // ═══════════════════════════════════════════════════════════════════
 function cnpjClear(){ const m=document.getElementById('cnpj-msg'); m.className='cmsg'; m.style.display='none'; }
+function cnpjValido(cnpj){
+  cnpj = String(cnpj).replace(/\D/g,'');
+  if (cnpj.length !== 14) return false;
+  if (/^(\d)\1{13}$/.test(cnpj)) return false; // todos iguais
+  const calc = function(base){
+    let soma=0, pos=base.length-7;
+    for (let i=base.length; i>=1; i--){ soma += parseInt(base.charAt(base.length-i))*pos--; if(pos<2) pos=9; }
+    const r = soma % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  const d1 = calc(cnpj.substring(0,12));
+  if (d1 !== parseInt(cnpj.charAt(12))) return false;
+  const d2 = calc(cnpj.substring(0,13));
+  return d2 === parseInt(cnpj.charAt(13));
+}
 async function lookupCNPJ(){
   const cnpj = document.getElementById('f-cnpj').value.replace(/\D/g,'');
   if (cnpj.length !== 14){ cnpjMsg('CNPJ inválido — deve ter 14 dígitos','err'); return; }
@@ -1536,6 +1607,7 @@ function toBase64(file){ return new Promise(function(res,rej){ const r=new FileR
 function clearForm(){
   document.querySelectorAll('#page-novo input,#page-novo select,#page-novo textarea').forEach(function(el){ el.value=''; });
   document.getElementById('f-id').value='';
+  document.getElementById('f-renovacao').checked=false;
   document.getElementById('f-pdf-b64').value='';
   document.getElementById('f-pdf-name').value='';
   document.getElementById('f-pdf-url').value='';
@@ -1547,6 +1619,7 @@ function clearForm(){
   document.getElementById('units-body').innerHTML='';
   addUnidade();
   pendingPdfB64=''; pendingPdfName='';
+  window.formDirty = false;
   const pi=document.getElementById('pdf-input'); if(pi) pi.value='';
 }
 
@@ -1559,6 +1632,7 @@ function fillForm(c){
   set('f-cnpj',c.cnpj); set('f-empresa',c.empresa); set('f-situacao',c.situacaoCadastral); set('f-municipio',c.municipioUF);
   set('f-objeto',c.objeto); set('f-inicio',isoDate(c.vigenciaInicio)); set('f-fim',isoDate(c.vigenciaFim));
   set('f-prorrogacao',c.prorrogacao); set('f-valor',c.valorTotal||'');
+  document.getElementById('f-renovacao').checked = (c.renovacaoIniciada==='Sim');
   set('f-pagamento',c.formaPagamento); set('f-prazo-pgto',c.prazoPagamento);
   set('f-indice',c.indiceReajuste); set('f-periodicidade',c.periodicidade);
   set('f-fiscal-nome',c.fiscalNome); set('f-fiscal-email',c.fiscalEmail); set('f-fiscal-cargo',c.fiscalCargo);
@@ -1610,16 +1684,31 @@ function renderLista(){
     return true;
   });
   const body = document.getElementById('lista-body'), empty = document.getElementById('lista-empty');
-  if (!list.length){ body.innerHTML=''; empty.style.display='block'; return; }
+  const pager = document.getElementById('lista-pager');
+  if (!list.length){ body.innerHTML=''; empty.style.display='block'; pager.innerHTML=''; return; }
   empty.style.display='none';
-  body.innerHTML = list.map(function(c){
+  // paginação
+  const PER = 25;
+  const totalPages = Math.ceil(list.length/PER);
+  if (window.listaPage===undefined) window.listaPage = 1;
+  if (window.listaPage > totalPages) window.listaPage = totalPages;
+  if (window.listaPage < 1) window.listaPage = 1;
+  const start = (window.listaPage-1)*PER;
+  const pageItems = list.slice(start, start+PER);
+  body.innerHTML = pageItems.map(function(c){
     const st = getStatusLabel(c);
     const tc = c.tipo==='Contrato'?'contrato':'aditivo';
     const obj = c.objeto ? (c.objeto.length>52?c.objeto.slice(0,52)+'…':c.objeto) : '—';
     const atas = contracts.filter(function(x){ return x.contratoPai===c.id; }).length;
     const pdfBtn = c.pdfUrl ? '<button class="btn xs" onclick="viewPdf(\''+c.id+'\')">📄</button>' : '—';
+    let paiTxt = '';
+    if (c.tipo==='Termo Aditivo' && c.contratoPai){
+      const pai = contracts.find(function(x){ return x.id===c.contratoPai; });
+      if (pai) paiTxt = ' <span class="link" style="font-size:11px;font-weight:400" onclick="event.stopPropagation();showDetail(\''+pai.id+'\')">(contrato '+pai.numero+')</span>';
+      else paiTxt = ' <span style="font-size:11px;color:var(--text3)">(contrato '+c.contratoPai+')</span>';
+    }
     return '<tr>'
-      + '<td><span class="link" onclick="showDetail(\''+c.id+'\')">'+(c.numero||'—')+'</span><br><span class="badge '+tc+'" style="margin-top:3px">'+(c.tipo||'—')+'</span>'+(atas?' <span style="font-size:10px;color:var(--purple-text)">'+atas+' TA</span>':'')+'</td>'
+      + '<td><span class="link" onclick="showDetail(\''+c.id+'\')">'+(c.numero||'—')+'</span>'+paiTxt+'<br><span class="badge '+tc+'" style="margin-top:3px">'+(c.tipo||'—')+'</span>'+(atas?' <span style="font-size:10px;color:var(--purple-text)">'+atas+' TA</span>':'')+'</td>'
       + '<td><div style="font-weight:600">'+(c.empresa||'—')+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+(c.cnpj||'')+'</div></td>'
       + '<td style="max-width:180px;color:var(--text2)">'+obj+'</td>'
       + '<td style="font-size:12px;white-space:nowrap"><div>'+(c.vigenciaInicio||'?')+'</div><div style="color:var(--text3)">até '+(c.vigenciaFim||'?')+'</div></td>'
@@ -1629,7 +1718,17 @@ function renderLista(){
       + '<td><button class="btn sm" onclick="showDetail(\''+c.id+'\')">Ver</button></td>'
       + '</tr>';
   }).join('');
+  if (totalPages<=1){ pager.innerHTML = '<span style="font-size:12px;color:var(--text3)">'+list.length+' contrato(s)</span>'; }
+  else {
+    pager.innerHTML = '<span style="font-size:12px;color:var(--text3)">Mostrando '+(start+1)+'–'+Math.min(start+PER,list.length)+' de '+list.length+'</span>'
+      + '<span style="display:flex;gap:6px;align-items:center">'
+      + '<button class="btn sm" '+(window.listaPage<=1?'disabled':'')+' onclick="listaGoto('+(window.listaPage-1)+')">◀ Anterior</button>'
+      + '<span style="font-size:12px;color:var(--text2)">Página '+window.listaPage+' de '+totalPages+'</span>'
+      + '<button class="btn sm" '+(window.listaPage>=totalPages?'disabled':'')+' onclick="listaGoto('+(window.listaPage+1)+')">Próxima ▶</button>'
+      + '</span>';
+  }
 }
+function listaGoto(p){ window.listaPage = p; renderLista(); document.querySelector('.main').scrollTo({top:0,behavior:'smooth'}); }
 
 // ═══════════════════════════════════════════════════════════════════
 // DETALHE (Ver / Editar / Excluir corrigidos)
@@ -1686,7 +1785,7 @@ function showDetail(id){
     + '<div style="font-size:11px;color:var(--text3);margin-top:6px">Cadastrado em: '+(c.criadoEm||'—')+'</div>';
 
   // Footer com permissões
-  let footer = '';
+  let footer = '<button class="btn sm" onclick="printFicha(\''+c.id+'\')">🖨️ Imprimir ficha</button>';
   if (currentUser.role !== 'visualizador') footer += '<button class="btn sm" onclick="editFromModal()">✏️ Editar</button>';
   if (currentUser.role === 'admin') footer += '<button class="btn danger sm" onclick="deleteFromModal()">🗑 Excluir</button>';
   document.getElementById('modal-footer').innerHTML = footer;
@@ -1732,6 +1831,30 @@ function viewPdf(id){
 }
 function closePdfModal(){ document.getElementById('modal-pdf').classList.remove('open'); document.getElementById('pdf-iframe').src=''; }
 function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); }
+function printFicha(id){
+  const c = contracts.find(function(x){ return x.id===String(id); });
+  if (!c) return;
+  const st = getStatusLabel(c);
+  const row = function(l,v){ return v ? '<tr><td style="padding:6px 10px;font-weight:700;width:26%;background:#f0f0ed;border:1px solid #ccc">'+l+'</td><td style="padding:6px 10px;border:1px solid #ccc">'+v+'</td></tr>' : ''; };
+  const unidades = (c.unidades&&c.unidades.length) ? '<h3 style="font-size:13px;margin:14px 0 6px">Unidades e Valores Mensais</h3><table style="width:100%;border-collapse:collapse;font-size:12px">'+c.unidades.map(function(u){ return '<tr><td style="padding:5px 10px;border:1px solid #ccc">'+(u.nome||'—')+'</td><td style="padding:5px 10px;border:1px solid #ccc;text-align:right">'+fmtBRL(u.valorMensal)+'</td></tr>'; }).join('')+'</table>' : '';
+  const pai = c.contratoPai ? (contracts.find(function(x){return x.id===c.contratoPai;})||{}).numero||c.contratoPai : '';
+  const html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Ficha '+(c.numero||'')+'</title></head>'
+    + '<body style="font-family:Arial,sans-serif;max-width:800px;margin:20px auto;color:#1a1a18;padding:0 16px">'
+    + '<div style="text-align:center;border-bottom:3px solid #1d6aad;padding-bottom:12px;margin-bottom:16px"><div style="font-size:20px;font-weight:700">Fundação Hospital Santa Lydia</div><div style="font-size:14px;color:#555">Ficha de Contrato</div></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:17px;font-weight:700">'+(c.tipo||'Contrato')+' Nº '+(c.numero||'—')+(pai?' <span style="font-size:12px;font-weight:400;color:#666">(contrato '+pai+')</span>':'')+'</div><div style="font-size:12px;font-weight:700;padding:3px 12px;border-radius:12px;background:#eef;color:#1558a0">'+st.txt+'</div></div>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:12px">'
+    + row('Processo',c.processo)+row('Empresa contratada',c.empresa)+row('CNPJ',c.cnpj)+row('Situação cadastral',c.situacaoCadastral)+row('Município/UF',c.municipioUF)
+    + row('Objeto',c.objeto)+row('Vigência',(c.vigenciaInicio||'?')+' a '+(c.vigenciaFim||'?'))+row('Valor total',fmtBRL(c.valorTotal))+row('Valor mensal',fmtBRL(c.valorMensal))+row('Prorrogação',c.prorrogacao)
+    + row('Forma de pagamento',c.formaPagamento)+row('Índice de reajuste',c.indiceReajuste)+row('Periodicidade',c.periodicidade)
+    + row('Fiscal',c.fiscalNome?(c.fiscalNome+(c.fiscalCargo?' — '+c.fiscalCargo:'')):'')+row('E-mail do fiscal',c.fiscalEmail)
+    + row('Gestor',c.gestorNome?(c.gestorNome+(c.gestorCargo?' — '+c.gestorCargo:'')):'')+row('E-mail do gestor',c.gestorEmail)
+    + row('Observações',c.observacoes)+row('Renovação iniciada',c.renovacaoIniciada||'Não')
+    + '</table>'+unidades
+    + '<div style="margin-top:24px;font-size:11px;color:#888;border-top:1px solid #ccc;padding-top:10px">Emitido em '+new Date().toLocaleString('pt-BR')+' por '+(currentUser.nome||'')+' · Sistema de Gestão de Contratos FHSL</div>'
+    + '<script>window.onload=function(){window.print();}<\/script></body></html>';
+  const w = window.open('','_blank');
+  w.document.write(html); w.document.close();
+}
 function closeModalBg(e){ if (e.target.id==='modal-overlay') closeModal(); }
 function closeDialog(id){ document.getElementById(id).classList.remove('open'); }
 
@@ -1754,7 +1877,8 @@ function renderDashboard(){
     + '<div class="stat-card c-red"><div class="stat-num">'+vencidos+'</div><div class="stat-label">Vencidos/Encerrados</div></div>'
     + '<div class="stat-card c-purple"><div class="stat-num">'+negoc+'</div><div class="stat-label">Em negociação</div></div>'
     + '<div class="stat-card c-accent"><div class="stat-num" style="font-size:16px">'+fmtBRL(valTotal)+'</div><div class="stat-label">Valor total ativo</div></div>'
-    + '<div class="stat-card"><div class="stat-num" style="font-size:16px">'+fmtBRL(valMensal)+'</div><div class="stat-label">Comprometimento mensal</div></div>';
+    + '<div class="stat-card"><div class="stat-num" style="font-size:16px">'+fmtBRL(valMensal)+'</div><div class="stat-label">Comprometimento mensal</div></div>'
+    + '<div class="stat-card c-green"><div class="stat-num">'+(users.filter(function(u){return u.ativo;}).length||1)+'</div><div class="stat-label">Usuários ativos</div></div>';
 
   // Gráfico mensal (12 meses)
   const now = new Date();
@@ -1805,18 +1929,26 @@ function renderCalendario(){
   const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
   const today=new Date(); today.setHours(0,0,0,0);
   const venc={};
+  const renov={};
   contracts.forEach(function(c){
     if (!c.vigenciaFim) return;
     const p=c.vigenciaFim.split('/'); if (p.length<3) return;
     if (p[2]==String(y) && +p[1]-1==m){ const day=+p[0]; (venc[day]=venc[day]||[]).push(c); }
+    // marco D-90: 90 dias antes do fim, se renovação não iniciada e contrato ativo
+    if (c.renovacaoIniciada!=='Sim' && ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0){
+      const fim=new Date(+p[2],+p[1]-1,+p[0]);
+      const d90=new Date(fim.getTime()-90*86400000);
+      if (d90.getFullYear()==y && d90.getMonth()==m){ const day=d90.getDate(); (renov[day]=renov[day]||[]).push(c); }
+    }
   });
   let html='';
   for (let i=0;i<first;i++) html+='<div class="cal-day other-month"></div>';
   for (let d=1;d<=days;d++){
     const isToday=(today.getFullYear()==y && today.getMonth()==m && today.getDate()==d);
-    const evs=(venc[d]||[]).slice(0,3).map(function(c){ const cls=getVigStatus(c); return '<div class="cal-event '+(cls==='ativo'?'vigente':cls)+'" onclick="showDetail(\''+c.id+'\')" title="'+(c.empresa||'')+'">'+(c.numero||c.empresa||'?')+'</div>'; }).join('');
+    const evs=(venc[d]||[]).slice(0,3).map(function(c){ const cls=getVigStatus(c); return '<div class="cal-event '+(cls==='ativo'?'vigente':cls)+'" onclick="showDetail(\''+c.id+'\')" title="Vence: '+(c.empresa||'')+'">'+(c.numero||c.empresa||'?')+'</div>'; }).join('');
+    const rvs=(renov[d]||[]).slice(0,2).map(function(c){ return '<div class="cal-event" style="background:var(--purple-bg);color:var(--purple-text)" onclick="showDetail(\''+c.id+'\')" title="Iniciar renovação: '+(c.empresa||'')+'">🔄 '+(c.numero||'?')+'</div>'; }).join('');
     const more=(venc[d]||[]).length>3?'<div style="font-size:10px;color:var(--text3)">+'+((venc[d].length)-3)+' mais</div>':'';
-    html+='<div class="cal-day'+(isToday?' today':'')+'"><div class="cal-day-num">'+d+'</div>'+evs+more+'</div>';
+    html+='<div class="cal-day'+(isToday?' today':'')+'"><div class="cal-day-num">'+d+'</div>'+rvs+evs+more+'</div>';
   }
   document.getElementById('cal-days').innerHTML = html;
 }
@@ -1840,7 +1972,56 @@ function renderAlertas(){
     html += '<h3 style="font-size:14px;font-weight:700;margin:1.25rem 0 10px;color:var(--red)">✗ Vencidos ('+vencidos.length+')</h3>';
     html += vencidos.map(function(c){ return '<div class="alert-card red" onclick="showDetail(\''+c.id+'\')"><div class="alert-title">'+(c.numero||'—')+' — '+(c.empresa||'—')+'</div><div class="alert-sub">'+(c.objeto||'')+' · Venceu: <strong>'+(c.vigenciaFim||'?')+'</strong> · '+fmtBRL(c.valorTotal)+'</div></div>'; }).join('');
   }
+
+  // Renovação recomendada (dentro de 90 dias do fim e não iniciada)
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const renovar = contracts.filter(function(c){
+    if (c.renovacaoIniciada==='Sim') return false;
+    if (['Encerrado','Suspenso'].indexOf(c.statusContrato)>=0) return false;
+    if (!c.vigenciaFim) return false;
+    const p=c.vigenciaFim.split('/'); if (p.length<3) return false;
+    const fim=new Date(+p[2],+p[1]-1,+p[0]);
+    const dias=Math.round((fim-hoje)/86400000);
+    return dias>0 && dias<=90;
+  });
+  if (renovar.length){
+    html += '<h3 style="font-size:14px;font-weight:700;margin:1.25rem 0 10px;color:var(--purple-text)">🔄 Iniciar renovação ('+renovar.length+') — dentro de 90 dias do fim</h3>';
+    html += renovar.map(function(c){ return '<div class="alert-card" style="background:var(--purple-bg);border-color:#ddd6fe;color:var(--purple-text)" onclick="showDetail(\''+c.id+'\')"><div class="alert-title">'+(c.numero||'—')+' — '+(c.empresa||'—')+'</div><div class="alert-sub">Vence '+(c.vigenciaFim||'?')+' · Renovação ainda não iniciada · '+fmtBRL(c.valorTotal)+'</div></div>'; }).join('');
+  }
   body.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PAINEL DE PENDÊNCIAS
+// ═══════════════════════════════════════════════════════════════════
+function renderPendencias(){
+  const ativos = contracts.filter(function(c){ return ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0; });
+  const semFiscal = ativos.filter(function(c){ return !c.fiscalNome; });
+  const semPdf    = ativos.filter(function(c){ return !c.pdfUrl; });
+  const semValor  = ativos.filter(function(c){ return !c.valorTotal; });
+  const semGestor = ativos.filter(function(c){ return !c.gestorNome; });
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const renovar = ativos.filter(function(c){
+    if (c.renovacaoIniciada==='Sim' || !c.vigenciaFim) return false;
+    const p=c.vigenciaFim.split('/'); if (p.length<3) return false;
+    const dias=Math.round((new Date(+p[2],+p[1]-1,+p[0])-hoje)/86400000);
+    return dias>0 && dias<=90;
+  });
+  const card = function(titulo, lista, cor, icon){
+    const itens = lista.length ? lista.slice(0,50).map(function(c){ return '<div class="alert-card" style="padding:8px 12px;margin-bottom:6px;cursor:pointer;background:var(--surface2);border-color:var(--border);color:var(--text)" onclick="showDetail(\''+c.id+'\')"><div style="font-size:13px;font-weight:600">'+(c.numero||'—')+' — '+(c.empresa||'—')+'</div></div>'; }).join('') : '<div style="font-size:12px;color:var(--green);padding:6px 0">✓ Nenhuma pendência</div>';
+    return '<div class="chart-card"><div class="chart-title" style="color:'+cor+'">'+icon+' '+titulo+' <span style="float:right;background:'+cor+';color:#fff;border-radius:10px;padding:1px 9px;font-size:11px">'+lista.length+'</span></div>'+itens+'</div>';
+  };
+  document.getElementById('pendencias-body').innerHTML =
+    '<div class="chart-row">'
+    + card('Sem fiscal designado', semFiscal, 'var(--red)', '👤')
+    + card('Sem PDF anexado', semPdf, 'var(--yellow)', '📄')
+    + '</div><div class="chart-row">'
+    + card('Sem valor preenchido', semValor, 'var(--orange)', '💰')
+    + card('Sem gestor designado', semGestor, 'var(--accent)', '🧑‍💼')
+    + '</div><div class="chart-row">'
+    + card('Vencendo sem renovação iniciada', renovar, 'var(--purple)', '🔄')
+    + '<div class="chart-card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center"><div style="font-size:30px;font-weight:700;color:var(--accent)">'+(semFiscal.length+semPdf.length+semValor.length+semGestor.length+renovar.length)+'</div><div style="font-size:12px;color:var(--text2);margin-top:4px">Total de pendências</div></div>'
+    + '</div>';
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1912,7 +2093,13 @@ function renderBusca(){
   empty.style.display='none';
   body.innerHTML = list.map(function(c){
     const st=getStatusLabel(c);
-    return '<tr><td><span class="link" onclick="showDetail(\''+c.id+'\')">'+(c.numero||'—')+'</span><br><span class="badge '+(c.tipo==='Contrato'?'contrato':'aditivo')+'" style="margin-top:3px">'+(c.tipo||'—')+'</span></td><td><div style="font-weight:600">'+(c.empresa||'—')+'</div><div style="font-size:11px;color:var(--text3)">'+(c.cnpj||'')+'</div></td><td style="max-width:180px;color:var(--text2)">'+(c.objeto?(c.objeto.length>55?c.objeto.slice(0,55)+'…':c.objeto):'—')+'</td><td style="font-size:12px;white-space:nowrap">'+(c.vigenciaInicio||'?')+'<br><span style="color:var(--text3)">até '+(c.vigenciaFim||'?')+'</span></td><td style="font-weight:700;white-space:nowrap">'+fmtBRL(c.valorTotal)+'</td><td><span class="badge '+st.cls+'">'+st.txt+'</span></td></tr>';
+    let paiTxt='';
+    if (c.tipo==='Termo Aditivo' && c.contratoPai){
+      const pai = contracts.find(function(x){ return x.id===c.contratoPai; });
+      if (pai) paiTxt = ' <span class="link" style="font-size:11px;font-weight:400" onclick="event.stopPropagation();showDetail(\''+pai.id+'\')">(contrato '+pai.numero+')</span>';
+      else paiTxt = ' <span style="font-size:11px;color:var(--text3)">(contrato '+c.contratoPai+')</span>';
+    }
+    return '<tr><td><span class="link" onclick="showDetail(\''+c.id+'\')">'+(c.numero||'—')+'</span>'+paiTxt+'<br><span class="badge '+(c.tipo==='Contrato'?'contrato':'aditivo')+'" style="margin-top:3px">'+(c.tipo||'—')+'</span></td><td><div style="font-weight:600">'+(c.empresa||'—')+'</div><div style="font-size:11px;color:var(--text3)">'+(c.cnpj||'')+'</div></td><td style="max-width:180px;color:var(--text2)">'+(c.objeto?(c.objeto.length>55?c.objeto.slice(0,55)+'…':c.objeto):'—')+'</td><td style="font-size:12px;white-space:nowrap">'+(c.vigenciaInicio||'?')+'<br><span style="color:var(--text3)">até '+(c.vigenciaFim||'?')+'</span></td><td style="font-weight:700;white-space:nowrap">'+fmtBRL(c.valorTotal)+'</td><td><span class="badge '+st.cls+'">'+st.txt+'</span></td></tr>';
   }).join('');
 }
 function clearBusca(){ document.querySelectorAll('#page-busca input,#page-busca select').forEach(function(el){ el.value=''; }); renderBusca(); }
@@ -2084,6 +2271,38 @@ function showLoading(msg){ document.getElementById('loading-text').textContent=m
 function hideLoading(){ document.getElementById('loading').classList.remove('open'); }
 function showNotif(msg,type){ const el=document.getElementById('notif'); el.textContent=msg; el.className='notif-toast '+(type||'ok'); el.style.display='block'; setTimeout(function(){ el.style.display='none'; },3500); }
 function copyScript(){ navigator.clipboard.writeText(SCRIPT_CODE).then(function(){ showNotif('✓ Código copiado!','ok'); }); }
+function themeKey(){ return 'fhsl_theme_'+((currentUser&&currentUser.email)||'default'); }
+function applyTheme(t){
+  document.body.setAttribute('data-theme', t==='light'?'light':'dark');
+  const btn=document.getElementById('theme-btn'); if(btn) btn.textContent = t==='light'?'☀️':'🌙';
+}
+function toggleTheme(){
+  const cur = document.body.getAttribute('data-theme')==='light'?'light':'dark';
+  const novo = cur==='light'?'dark':'light';
+  applyTheme(novo);
+  try{ localStorage.setItem(themeKey(), novo); }catch(e){}
+}
+function loadUserTheme(){
+  let t='dark'; try{ t=localStorage.getItem(themeKey())||'dark'; }catch(e){}
+  applyTheme(t);
+}
+// ── Sessão: logout automático por inatividade (30 min) ──
+let sessionTimer=null;
+const SESSION_MINUTES=30;
+function startSessionTimer(){
+  resetSessionTimer();
+  ['click','keydown','mousemove','scroll','touchstart'].forEach(function(ev){
+    document.addEventListener(ev, resetSessionTimer, {passive:true});
+  });
+}
+function resetSessionTimer(){
+  if (sessionTimer) clearTimeout(sessionTimer);
+  if (!currentUser) return;
+  sessionTimer = setTimeout(function(){
+    showNotif('Sessão expirada por inatividade. Faça login novamente.','info');
+    doLogout();
+  }, SESSION_MINUTES*60*1000);
+}
 </script>
 </body>
 </html>

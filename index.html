@@ -311,6 +311,7 @@ tr:hover td{background:var(--surface2)}
     <button class="nav-item active" data-page="dashboard" onclick="showPage('dashboard',this)">📊 Dashboard</button>
     <button class="nav-item" data-page="lista" onclick="showPage('lista',this)">📄 Contratos</button>
     <button class="nav-item perm-edit" data-page="novo" onclick="newContract(this)">➕ Novo contrato</button>
+    <button class="nav-item perm-edit" data-page="importar" onclick="showPage('importar',this)">📥 Importar em lote</button>
     <button class="nav-item" data-page="calendario" onclick="showPage('calendario',this)">📅 Calendário</button>
     <button class="nav-item" data-page="alertas" onclick="showPage('alertas',this)">🔔 Alertas <span class="nav-badge" id="nav-alert-badge">0</span></button>
     <button class="nav-item" data-page="pendencias" onclick="showPage('pendencias',this)">📋 Pendências</button>
@@ -464,6 +465,44 @@ tr:hover td{background:var(--surface2)}
         <button type="submit" class="btn primary" id="btn-submit">💾 Salvar contrato</button>
       </div>
     </form>
+  </div>
+
+  <!-- IMPORTAR EM LOTE -->
+  <div class="page" id="page-importar">
+    <div class="form-card">
+      <div class="form-section">
+        <div class="fsec-title">📥 Importar vários contratos de uma vez</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Envie até 30 PDFs. A IA lê cada um e monta os contratos. Você revisa tudo antes de salvar.</p>
+        <div class="pdf-drop" id="batch-drop" onclick="document.getElementById('batch-input').click()" ondragover="batchDragOver(event)" ondragleave="batchDragLeave(event)" ondrop="batchDrop(event)">
+          <div style="font-size:28px">📄📄📄</div><p>Clique para selecionar ou arraste vários PDFs aqui</p>
+        </div>
+        <input type="file" id="batch-input" accept=".pdf" multiple style="display:none" onchange="batchChosen(this)">
+        <div id="batch-filelist" style="margin-top:12px"></div>
+        <div id="batch-actions" style="margin-top:12px;display:none">
+          <button class="btn primary" id="batch-start" onclick="batchProcess()">🤖 Ler todos com IA</button>
+          <button class="btn" onclick="batchReset()">Limpar</button>
+        </div>
+      </div>
+      <div class="form-section" id="batch-progress-sec" style="display:none">
+        <div class="fsec-title">⏳ Processando</div>
+        <div style="background:var(--surface2);border-radius:8px;height:10px;overflow:hidden;margin-bottom:8px"><div id="batch-bar" style="height:100%;background:var(--accent);width:0%;transition:.3s"></div></div>
+        <div id="batch-progress-txt" style="font-size:13px;color:var(--text2)"></div>
+      </div>
+    </div>
+
+    <div id="batch-review" style="display:none">
+      <div class="toolbar" style="justify-content:space-between">
+        <div style="font-size:14px;font-weight:700" id="batch-review-title">Revisão dos contratos extraídos</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="batchReset()">Cancelar</button>
+          <button class="btn primary" id="batch-save-all" onclick="batchSaveAll()">💾 Salvar selecionados</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th style="width:34px"><input type="checkbox" id="batch-check-all" checked onchange="batchToggleAll(this)"></th><th>Arquivo</th><th>Nº</th><th>Tipo</th><th>Empresa</th><th>CNPJ</th><th>Vigência</th><th>Valor</th><th></th></tr></thead><tbody id="batch-review-body"></tbody></table>
+      </div>
+      <p style="font-size:12px;color:var(--text3);margin-top:8px">Clique em "Editar" para ajustar um contrato antes de salvar. Desmarque os que não quiser importar.</p>
+    </div>
   </div>
 
   <!-- CALENDÁRIO -->
@@ -684,6 +723,8 @@ function handle(e) {
     else if (action === 'getunits')   result = getUnits();
     else if (action === 'saveunit')   result = saveUnit(JSON.parse(e.postData.contents));
     else if (action === 'deleteunit') result = deleteUnit(JSON.parse(e.postData.contents));
+    else if (action === 'diag')       result = diag();
+    else if (action === 'repair')     result = repair();
     else result = { ok:false, message:'Ação desconhecida: '+action };
   } catch(err) { result = { ok:false, message:String(err) }; }
   return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
@@ -746,7 +787,28 @@ function getLog() {
   return { ok:true, data: data.slice(1).map(function(r){ var o={}; h.forEach(function(k,i){o[k]=r[i];}); return o; }).reverse().slice(0,500) };
 }
 
-// ── UNIDADES DE SAÚDE (lista padronizada) ────────────────
+// ── DIAGNÓSTICO E REPARO MANUAL ──────────────────────────
+function diag() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName(SHEET_NAME);
+  const out = { ok:true, versao:'v9-autorepair', abaContratosExiste:!!sh };
+  if (sh) {
+    const lastCol = Math.max(sh.getLastColumn(),1);
+    out.cabecalhosReais = sh.getRange(1,1,1,lastCol).getValues()[0];
+    out.temPdfUrl = out.cabecalhosReais.indexOf('PdfUrl') >= 0;
+    out.temPdfNome = out.cabecalhosReais.indexOf('PdfNome') >= 0;
+    out.totalColunas = lastCol;
+  }
+  out.colunasEsperadas = HEADERS.length;
+  return out;
+}
+function repair() {
+  const sh = sheetOf(SHEET_NAME, HEADERS);   // dispara o auto-reparo
+  const lastCol = Math.max(sh.getLastColumn(),1);
+  const reais = sh.getRange(1,1,1,lastCol).getValues()[0];
+  return { ok:true, message:'Reparo executado', cabecalhosAgora:reais, temPdfUrl:reais.indexOf('PdfUrl')>=0 };
+}
+
 function ensureUnits(sh) {
   const data = sh.getDataRange().getValues();
   if (data.length <= 1) {
@@ -1144,6 +1206,7 @@ const PAGE_META = {
   dashboard:['Dashboard','Visão geral dos contratos'],
   lista:['Contratos','Todos os contratos cadastrados'],
   novo:['Novo Contrato','Preencha os dados ou envie o PDF'],
+  importar:['Importar em Lote','Envie vários PDFs para a IA processar'],
   calendario:['Calendário','Vencimentos por data'],
   alertas:['Alertas','Contratos que precisam de atenção'],
   pendencias:['Pendências','Tarefas e dados faltantes'],
@@ -1181,6 +1244,7 @@ function showPage(id, btn){
   if (id==='usuarios') renderUsers();
   if (id==='auditoria') loadLog();
   if (id==='novo') populatePaiSelect();
+  if (id==='importar') batchInit();
 }
 function newContract(btn){ clearForm(); showPage('novo', btn || document.querySelector('[data-page="novo"]')); }
 
@@ -1429,7 +1493,164 @@ function fillFormFromAI(d){
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// CNPJ (Brasil API — permite chamada do navegador)
+// IMPORTAÇÃO EM LOTE
+// ═══════════════════════════════════════════════════════════════════
+let batchFiles = [];      // {name, b64}
+let batchResults = [];    // {name, b64, dados, incluir, erro}
+const BATCH_MAX = 30;
+
+function batchInit(){ /* estado é mantido; nada a recarregar */ }
+function batchDragOver(e){ e.preventDefault(); document.getElementById('batch-drop').classList.add('drag'); }
+function batchDragLeave(e){ document.getElementById('batch-drop').classList.remove('drag'); }
+function batchDrop(e){ e.preventDefault(); batchDragLeave(e); batchAddFiles(e.dataTransfer.files); }
+function batchChosen(input){ batchAddFiles(input.files); }
+
+async function batchAddFiles(fileList){
+  const arr = Array.prototype.slice.call(fileList).filter(function(f){ return /pdf$/i.test(f.name); });
+  for (let i=0;i<arr.length;i++){
+    if (batchFiles.length >= BATCH_MAX){ showNotif('Limite de '+BATCH_MAX+' PDFs por lote.','info'); break; }
+    const b64 = await toBase64(arr[i]);
+    batchFiles.push({ name:arr[i].name, b64:b64 });
+  }
+  renderBatchList();
+}
+function renderBatchList(){
+  const wrap = document.getElementById('batch-filelist');
+  if (!batchFiles.length){ wrap.innerHTML=''; document.getElementById('batch-actions').style.display='none'; return; }
+  wrap.innerHTML = '<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">'+batchFiles.length+' arquivo(s) selecionado(s):</div>'
+    + batchFiles.map(function(f,i){ return '<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--surface2);border-radius:6px;margin-bottom:4px;font-size:12px"><span style="flex:1">📄 '+f.name+'</span><button class="btn xs danger" onclick="batchRemove('+i+')">✕</button></div>'; }).join('');
+  document.getElementById('batch-actions').style.display='block';
+}
+function batchRemove(i){ batchFiles.splice(i,1); renderBatchList(); }
+function batchReset(){
+  batchFiles = []; batchResults = [];
+  document.getElementById('batch-input').value='';
+  document.getElementById('batch-filelist').innerHTML='';
+  document.getElementById('batch-actions').style.display='none';
+  document.getElementById('batch-progress-sec').style.display='none';
+  document.getElementById('batch-review').style.display='none';
+  document.getElementById('batch-bar').style.width='0%';
+}
+
+async function batchProcess(){
+  if (!batchFiles.length) return;
+  document.getElementById('batch-start').disabled = true;
+  document.getElementById('batch-progress-sec').style.display='block';
+  document.getElementById('batch-review').style.display='none';
+  batchResults = [];
+  for (let i=0;i<batchFiles.length;i++){
+    const f = batchFiles[i];
+    const pct = Math.round((i)/batchFiles.length*100);
+    document.getElementById('batch-bar').style.width = pct+'%';
+    document.getElementById('batch-progress-txt').textContent = 'Lendo '+(i+1)+' de '+batchFiles.length+': '+f.name;
+    try {
+      const r = await apiFetch('extractpdf', { pdfBase64: f.b64 });
+      if (r.ok && r.data) batchResults.push({ name:f.name, b64:f.b64, dados:r.data, incluir:true, erro:null });
+      else batchResults.push({ name:f.name, b64:f.b64, dados:null, incluir:false, erro:(r.message||'falha na leitura') });
+    } catch(e){ batchResults.push({ name:f.name, b64:f.b64, dados:null, incluir:false, erro:e.message }); }
+  }
+  document.getElementById('batch-bar').style.width = '100%';
+  document.getElementById('batch-progress-txt').textContent = 'Concluído! '+batchResults.filter(function(x){return x.dados;}).length+' de '+batchFiles.length+' lidos com sucesso.';
+  document.getElementById('batch-start').disabled = false;
+  renderBatchReview();
+}
+
+function renderBatchReview(){
+  const ok = batchResults.filter(function(x){ return x.dados; }).length;
+  document.getElementById('batch-review-title').textContent = 'Revisão — '+ok+' contrato(s) lido(s)';
+  const body = document.getElementById('batch-review-body');
+  body.innerHTML = batchResults.map(function(r,i){
+    if (r.erro){
+      return '<tr style="opacity:.6"><td></td><td>📄 '+r.name+'</td><td colspan="6" style="color:var(--red)">⚠ '+r.erro+'</td><td></td></tr>';
+    }
+    const d = r.dados;
+    return '<tr>'
+      + '<td><input type="checkbox" '+(r.incluir?'checked':'')+' onchange="batchResults['+i+'].incluir=this.checked;batchUpdateCount()"></td>'
+      + '<td style="font-size:11px;color:var(--text3)">'+r.name+'</td>'
+      + '<td>'+(d.numero||'—')+'</td>'
+      + '<td><span class="badge '+(d.tipo==='Termo Aditivo'?'aditivo':'contrato')+'">'+(d.tipo||'Contrato')+'</span></td>'
+      + '<td>'+(d.empresa||'—')+'</td>'
+      + '<td style="font-size:11px">'+(d.cnpj||'—')+'</td>'
+      + '<td style="font-size:11px">'+(d.vigenciaInicio||'?')+' a '+(d.vigenciaFim||'?')+'</td>'
+      + '<td style="font-weight:700;white-space:nowrap">'+fmtBRL(d.valorTotal||0)+'</td>'
+      + '<td><button class="btn xs" onclick="batchEdit('+i+')">✏️ Editar</button></td>'
+      + '</tr>';
+  }).join('');
+  document.getElementById('batch-review').style.display='block';
+  batchUpdateCount();
+}
+function batchUpdateCount(){
+  const n = batchResults.filter(function(x){ return x.dados && x.incluir; }).length;
+  document.getElementById('batch-save-all').textContent = '💾 Salvar '+n+' contrato(s)';
+}
+function batchToggleAll(cb){
+  batchResults.forEach(function(r){ if (r.dados) r.incluir = cb.checked; });
+  renderBatchReview();
+}
+function batchEdit(i){
+  const r = batchResults[i];
+  if (!r || !r.dados) return;
+  // carrega no formulário normal para ajuste manual; ao salvar, remove do lote
+  clearForm();
+  fillFormFromAI(r.dados);
+  document.getElementById('f-pdf-b64').value = r.b64;
+  document.getElementById('f-pdf-name').value = r.name;
+  showPdfChosen(r.name, null);
+  batchResults.splice(i,1); // sai do lote; será salvo manualmente pelo formulário
+  showNotif('Contrato aberto no formulário para ajuste. Os demais continuam no lote.','info');
+  showPage('novo', document.querySelector('[data-page="novo"]'));
+}
+
+async function batchSaveAll(){
+  const paraSalvar = batchResults.filter(function(x){ return x.dados && x.incluir; });
+  if (!paraSalvar.length){ showNotif('Nenhum contrato selecionado.','info'); return; }
+  if (!confirm('Salvar '+paraSalvar.length+' contrato(s)? Os PDFs serão enviados ao Drive.')) return;
+  document.getElementById('batch-save-all').disabled = true;
+  let salvos = 0;
+  for (let i=0;i<paraSalvar.length;i++){
+    const r = paraSalvar[i];
+    showLoading('Salvando '+(i+1)+' de '+paraSalvar.length+': '+(r.dados.numero||r.name));
+    // upload do PDF ao Drive
+    let pdfUrl = '';
+    try { const up = await apiFetch('uploadpdf', { base64:r.b64, nome:r.name }); if (up.ok && up.url) pdfUrl = up.url; } catch(e){}
+    const c = batchToContract(r.dados, r.name, pdfUrl);
+    try { const res = await apiFetch('save', c); if (res.ok){ if(!c.ID) c.ID=String(res.id); salvos++; } } catch(e){}
+  }
+  hideLoading();
+  document.getElementById('batch-save-all').disabled = false;
+  showNotif('✓ '+salvos+' contrato(s) importado(s)!','ok');
+  batchReset();
+  await loadContracts();
+  showPage('lista', document.querySelector('[data-page="lista"]'));
+}
+
+function batchToContract(d, nomeArq, pdfUrl){
+  const unidades = (d.unidades||[]).map(function(u){ return { nome:u.nome||'', valorMensal:parseFloat(u.valorMensal)||0 }; });
+  const valorMensal = unidades.reduce(function(s,u){ return s+(u.valorMensal||0); },0);
+  let valorTotal = parseFloat(d.valorTotal)||0;
+  const c = {
+    id:'', numero:d.numero||'', tipo:d.tipo||'Contrato', contratoPai:'',
+    statusContrato:d.statusContrato||'Vigente', processo:d.processo||'',
+    dataAssinatura:'', lei:'', foro:'',
+    contratante:d.contratante||'Fundação Hospital Santa Lydia', cnpjContratante:d.cnpjContratante||'13.370.183/0001-89',
+    empresa:d.empresa||'', cnpj:d.cnpj||'', situacaoCadastral:'', municipioUF:'',
+    objeto:d.objeto||'', unidades:unidades,
+    vigenciaInicio:d.vigenciaInicio||'', vigenciaFim:d.vigenciaFim||'',
+    valorTotal:valorTotal, valorMensal:valorMensal, prorrogacao:d.prorrogacao||'', renovacaoIniciada:'',
+    formaPagamento:d.formaPagamento||'', prazoPagamento:d.prazoPagamento||'',
+    indiceReajuste:d.indiceReajuste||'', periodicidade:d.periodicidade||'',
+    fiscalNome:d.fiscalNome||'', fiscalEmail:d.fiscalEmail||'', fiscalCargo:d.fiscalCargo||'',
+    gestorNome:d.gestorNome||'', gestorEmail:d.gestorEmail||'', gestorCargo:d.gestorCargo||'',
+    subcontratacao:'', garantia:'', multaMin:'', multaMax:'', observacoes:d.observacoes||'',
+    pdfNome:nomeArq||'', pdfUrl:pdfUrl||'',
+    historico:[{ acao:'Importação em lote', usuario:currentUser.nome, data:new Date().toLocaleString('pt-BR'), valorTotal:valorTotal }]
+  };
+  const payload = toPayload(c);
+  payload.__actor = { nome:currentUser.nome, email:currentUser.email };
+  return payload;
+}
+
+
 // ═══════════════════════════════════════════════════════════════════
 function cnpjClear(){ const m=document.getElementById('cnpj-msg'); m.className='cmsg'; m.style.display='none'; }
 function cnpjValido(cnpj){

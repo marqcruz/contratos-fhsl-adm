@@ -121,6 +121,7 @@ tr:hover td{background:var(--surface2)}
 .badge.contrato{background:var(--accent-bg);color:var(--accent-text)}
 .badge.aditivo{background:var(--purple-bg);color:var(--purple-text)}
 .badge.vigente{background:var(--green-bg);color:var(--green-text)}
+.badge.aditivo-vig{background:var(--purple-bg);color:var(--purple-text)}
 .badge.vencendo{background:var(--yellow-bg);color:var(--yellow-text)}
 .badge.vencido,.badge.encerrado{background:var(--red-bg);color:var(--red-text)}
 .badge.negociacao{background:var(--surface2);color:var(--text2)}
@@ -369,7 +370,7 @@ tr:hover td{background:var(--surface2)}
     <div class="toolbar">
       <input type="text" id="search" placeholder="🔍  Buscar empresa, nº, objeto, CNPJ..." oninput="window.listaPage=1;renderLista()">
       <select id="f-tipo" onchange="window.listaPage=1;renderLista()"><option value="">Todos os tipos</option><option value="Contrato">Contrato</option><option value="Termo Aditivo">Termo Aditivo</option></select>
-      <select id="f-status" onchange="window.listaPage=1;renderLista()"><option value="">Todos os status</option><option value="vigente">Vigente</option><option value="vencendo">Vencendo 60d</option><option value="vencido">Vencido</option><option value="negociacao">Em negociação</option><option value="encerrado">Encerrado</option><option value="suspenso">Suspenso</option></select>
+      <select id="f-status" onchange="window.listaPage=1;renderLista()"><option value="">Todos os status</option><option value="vigente">Vigente</option><option value="aditivo-vig">Vigente c/ aditivo</option><option value="vencendo">Vencendo 60d</option><option value="vencido">Vencido</option><option value="negociacao">Em negociação</option><option value="encerrado">Encerrado</option><option value="suspenso">Suspenso</option></select>
       <button class="btn" onclick="loadContracts()">🔄 Atualizar</button>
     </div>
     <div class="table-wrap">
@@ -1897,6 +1898,14 @@ function vigenciaEfetivaStr(c){
   const dd=('0'+ve.fim.getDate()).slice(-2), mm=('0'+(ve.fim.getMonth()+1)).slice(-2);
   return dd+'/'+mm+'/'+ve.fim.getFullYear();
 }
+// Verdadeiro se este aditivo é o que define a vigência efetiva do seu contrato pai
+function isAditivoVigente(a){
+  if (a.tipo!=='Termo Aditivo' || !a.contratoPai) return false;
+  const pai = contracts.find(function(x){ return x.id===a.contratoPai; });
+  if (!pai) return false;
+  const ve = vigenciaEfetiva(pai);
+  return ve.fonte && ve.fonte.id === a.id;
+}
 // Célula de vigência para a lista: mostra a data efetiva e marca se veio de aditivo
 function vigCell(c){
   const ve = vigenciaEfetiva(c);
@@ -1920,6 +1929,13 @@ function getStatusLabel(c){
   if (s.indexOf('encerr')>=0) return { cls:'encerrado', txt:'Encerrado' };
   if (s.indexOf('suspen')>=0) return { cls:'suspenso', txt:'Suspenso' };
   const v = getVigStatus(c);
+  // Contrato cuja vigência efetiva vem de um aditivo ativo
+  if (c.tipo==='Contrato'){
+    const ve = vigenciaEfetiva(c);
+    if (ve.fonte && ve.fonte.id !== c.id && (v==='ativo' || v==='vencendo')){
+      return { cls:'aditivo-vig', txt: v==='vencendo' ? 'Vencendo (aditivo)' : 'Vigente c/ aditivo' };
+    }
+  }
   if (v==='vencendo') return { cls:'vencendo', txt:'Vencendo' };
   if (v==='vencido') return { cls:'vencido', txt:'Vencido' };
   return { cls:'vigente', txt:'Vigente' };
@@ -1963,7 +1979,7 @@ function renderLista(){
       else paiTxt = ' <span style="font-size:11px;color:var(--text3)">(contrato '+c.contratoPai+')</span>';
     }
     return '<tr>'
-      + '<td><span class="link" onclick="showDetail(\''+c.id+'\')">'+(c.numero||'—')+'</span>'+paiTxt+'<br><span class="badge '+tc+'" style="margin-top:3px">'+(c.tipo||'—')+'</span>'+(atas?' <span style="font-size:10px;color:var(--purple-text)">'+atas+' TA</span>':'')+'</td>'
+      + '<td><span class="link" onclick="showDetail(\''+c.id+'\')">'+(c.numero||'—')+'</span>'+paiTxt+'<br><span class="badge '+tc+'" style="margin-top:3px">'+(c.tipo||'—')+'</span>'+(atas?' <span style="font-size:10px;color:var(--purple-text)">'+atas+' TA</span>':'')+(isAditivoVigente(c)?' <span class="badge aditivo-vig" style="font-size:9px">🔑 vigente</span>':'')+'</td>'
       + '<td><div style="font-weight:600">'+(c.empresa||'—')+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+(c.cnpj||'')+'</div></td>'
       + '<td style="max-width:180px;color:var(--text2)">'+obj+'</td>'
       + '<td style="font-size:12px;white-space:nowrap"><div>'+(c.vigenciaInicio||'?')+'</div><div style="color:var(--text3)">até '+vigCell(c)+'</div></td>'

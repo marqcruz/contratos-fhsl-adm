@@ -1870,12 +1870,46 @@ function fillForm(c){
 // ═══════════════════════════════════════════════════════════════════
 // STATUS
 // ═══════════════════════════════════════════════════════════════════
+// Converte 'DD/MM/AAAA' em Date (ou null)
+function parseBR(d){
+  if(!d) return null;
+  const p=String(d).split('/'); if(p.length<3) return null;
+  const dt=new Date(+p[2],+p[1]-1,+p[0]); return isNaN(dt)?null:dt;
+}
+// Vigência efetiva: para um Contrato com aditivos, é a MAIOR data de fim
+// entre ele próprio e seus aditivos ativos (o último aditivo "manda").
+function vigenciaEfetiva(c){
+  let maior = parseBR(c.vigenciaFim);
+  let fonte = c; // de quem veio a data efetiva
+  if (c.tipo === 'Contrato'){
+    contracts.forEach(function(a){
+      if (a.contratoPai !== c.id) return;
+      if (['Encerrado','Suspenso'].indexOf(a.statusContrato)>=0) return;
+      const fa = parseBR(a.vigenciaFim);
+      if (fa && (!maior || fa > maior)){ maior = fa; fonte = a; }
+    });
+  }
+  return { fim: maior, fonte: fonte };
+}
+function vigenciaEfetivaStr(c){
+  const ve = vigenciaEfetiva(c);
+  if (!ve.fim) return c.vigenciaFim||'';
+  const dd=('0'+ve.fim.getDate()).slice(-2), mm=('0'+(ve.fim.getMonth()+1)).slice(-2);
+  return dd+'/'+mm+'/'+ve.fim.getFullYear();
+}
+// Célula de vigência para a lista: mostra a data efetiva e marca se veio de aditivo
+function vigCell(c){
+  const ve = vigenciaEfetiva(c);
+  const efet = vigenciaEfetivaStr(c) || '?';
+  if (c.tipo==='Contrato' && ve.fonte && ve.fonte.id !== c.id){
+    return efet + ' <span style="color:var(--purple-text)" title="Vigência definida pelo aditivo '+(ve.fonte.numero||'')+'">🔗</span>';
+  }
+  return efet;
+}
 function getVigStatus(c){
-  if (!c.vigenciaFim) return 'indefinido';
-  const p = c.vigenciaFim.split('/');
-  if (p.length < 3) return 'indefinido';
-  const fim = new Date(+p[2], +p[1]-1, +p[0]);
-  const diff = (fim - new Date())/86400000;
+  const ve = vigenciaEfetiva(c);
+  if (!ve.fim) return 'indefinido';
+  const diff = (ve.fim - new Date())/86400000;
   if (diff < 0) return 'vencido';
   if (diff <= 60) return 'vencendo';
   return 'ativo';
@@ -1932,7 +1966,7 @@ function renderLista(){
       + '<td><span class="link" onclick="showDetail(\''+c.id+'\')">'+(c.numero||'—')+'</span>'+paiTxt+'<br><span class="badge '+tc+'" style="margin-top:3px">'+(c.tipo||'—')+'</span>'+(atas?' <span style="font-size:10px;color:var(--purple-text)">'+atas+' TA</span>':'')+'</td>'
       + '<td><div style="font-weight:600">'+(c.empresa||'—')+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+(c.cnpj||'')+'</div></td>'
       + '<td style="max-width:180px;color:var(--text2)">'+obj+'</td>'
-      + '<td style="font-size:12px;white-space:nowrap"><div>'+(c.vigenciaInicio||'?')+'</div><div style="color:var(--text3)">até '+(c.vigenciaFim||'?')+'</div></td>'
+      + '<td style="font-size:12px;white-space:nowrap"><div>'+(c.vigenciaInicio||'?')+'</div><div style="color:var(--text3)">até '+vigCell(c)+'</div></td>'
       + '<td style="font-weight:700;white-space:nowrap">'+fmtBRL(c.valorTotal)+'</td>'
       + '<td><span class="badge '+st.cls+'">'+st.txt+'</span></td>'
       + '<td>'+pdfBtn+'</td>'
@@ -1998,7 +2032,7 @@ function showDetail(id){
     + '<div class="dsec"><div class="dsec-title">Partes</div><div class="dgrid">'+f('Contratante',c.contratante)+f('CNPJ Contratante',c.cnpjContratante)+f('Empresa contratada',c.empresa)+f('CNPJ',c.cnpj)+f('Situação cadastral',c.situacaoCadastral)+f('Município/UF',c.municipioUF)+'</div></div>'
     + '<div class="dsec"><div class="dsec-title">Objeto</div><div class="dgrid">'+f('',c.objeto,true)+'</div></div>'
     + unidadesHtml + valoresHtml
-    + '<div class="dsec"><div class="dsec-title">Vigência</div><div class="dgrid">'+f('Início',c.vigenciaInicio)+f('Fim',c.vigenciaFim)+f('Valor total','<strong style="font-size:15px">'+fmtBRL(c.valorTotal)+'</strong>')+f('Prorrogação',c.prorrogacao)+'</div></div>'
+    + '<div class="dsec"><div class="dsec-title">Vigência</div><div class="dgrid">'+f('Início',c.vigenciaInicio)+f('Fim (original)',c.vigenciaFim)+((c.tipo==='Contrato'&&vigenciaEfetiva(c).fonte&&vigenciaEfetiva(c).fonte.id!==c.id)?f('Fim (efetivo, por aditivo)','<strong style="color:var(--purple-text)">'+vigenciaEfetivaStr(c)+'</strong>'):'')+f('Valor total','<strong style="font-size:15px">'+fmtBRL(c.valorTotal)+'</strong>')+f('Prorrogação',c.prorrogacao)+'</div></div>'
     + '<div class="dsec"><div class="dsec-title">Pagamento e Reajuste</div><div class="dgrid">'+f('Forma de pagamento',c.formaPagamento,true)+f('Prazo',c.prazoPagamento?c.prazoPagamento+' dias':'')+f('Índice',c.indiceReajuste)+f('Periodicidade',c.periodicidade)+'</div></div>'
     + '<div class="dsec"><div class="dsec-title">Fiscal e Gestor</div><div class="dgrid">'+f('Fiscal',c.fiscalNome)+f('E-mail fiscal',c.fiscalEmail)+f('Cargo fiscal',c.fiscalCargo)+f('Gestor',c.gestorNome)+f('E-mail gestor',c.gestorEmail)+f('Cargo gestor',c.gestorCargo)+'</div></div>'
     + (c.observacoes ? '<div class="dsec"><div class="dsec-title">Observações</div><div class="dgrid">'+f('',c.observacoes,true)+'</div></div>' : '')

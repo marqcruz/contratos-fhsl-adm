@@ -122,6 +122,7 @@ tr:hover td{background:var(--surface2)}
 .badge.aditivo{background:var(--purple-bg);color:var(--purple-text)}
 .badge.vigente{background:var(--green-bg);color:var(--green-text)}
 .badge.aditivo-vig{background:var(--purple-bg);color:var(--purple-text)}
+.badge.substituido{background:var(--surface2);color:var(--text3);text-decoration:line-through}
 .badge.vencendo{background:var(--yellow-bg);color:var(--yellow-text)}
 .badge.vencido,.badge.encerrado{background:var(--red-bg);color:var(--red-text)}
 .badge.negociacao{background:var(--surface2);color:var(--text2)}
@@ -370,7 +371,7 @@ tr:hover td{background:var(--surface2)}
     <div class="toolbar">
       <input type="text" id="search" placeholder="🔍  Buscar empresa, nº, objeto, CNPJ..." oninput="window.listaPage=1;renderLista()">
       <select id="f-tipo" onchange="window.listaPage=1;renderLista()"><option value="">Todos os tipos</option><option value="Contrato">Contrato</option><option value="Termo Aditivo">Termo Aditivo</option></select>
-      <select id="f-status" onchange="window.listaPage=1;renderLista()"><option value="">Todos os status</option><option value="vigente">Vigente</option><option value="aditivo-vig">Vigente c/ aditivo</option><option value="vencendo">Vencendo 60d</option><option value="vencido">Vencido</option><option value="negociacao">Em negociação</option><option value="encerrado">Encerrado</option><option value="suspenso">Suspenso</option></select>
+      <select id="f-status" onchange="window.listaPage=1;renderLista()"><option value="">Todos os status</option><option value="vigente">Vigente</option><option value="aditivo-vig">Vigente c/ aditivo</option><option value="substituido">Substituído</option><option value="vencendo">Vencendo 60d</option><option value="vencido">Vencido</option><option value="negociacao">Em negociação</option><option value="encerrado">Encerrado</option><option value="suspenso">Suspenso</option></select>
       <button class="btn" onclick="loadContracts()">🔄 Atualizar</button>
     </div>
     <div class="table-wrap">
@@ -1879,18 +1880,40 @@ function parseBR(d){
 }
 // Vigência efetiva: para um Contrato com aditivos, é a MAIOR data de fim
 // entre ele próprio e seus aditivos ativos (o último aditivo "manda").
+// Extrai {ano, seq} de um número como '103/2026' ou '006/2026' para comparar numericamente
+function numContrato(num){
+  const s = String(num||'');
+  const m = s.match(/(\d+)\s*\/\s*(\d{2,4})/);
+  if (m) return { seq: parseInt(m[1],10)||0, ano: parseInt(m[2],10)||0 };
+  const only = s.match(/\d+/);
+  return { seq: only?parseInt(only[0],10):0, ano: 0 };
+}
+// Compara dois números de contrato: retorna >0 se a é mais recente que b (ano, depois seq)
+function cmpNum(a, b){
+  const na=numContrato(a), nb=numContrato(b);
+  if (na.ano !== nb.ano) return na.ano - nb.ano;
+  return na.seq - nb.seq;
+}
+// Retorna o aditivo ATIVO de maior número (o "mais recente") de um contrato pai
+function aditivoMaisRecente(pai){
+  let melhor = null;
+  contracts.forEach(function(a){
+    if (a.contratoPai !== pai.id) return;
+    if (a.tipo !== 'Termo Aditivo') return;
+    if (['Encerrado','Suspenso'].indexOf(a.statusContrato)>=0) return;
+    if (!melhor || cmpNum(a.numero, melhor.numero) > 0) melhor = a;
+  });
+  return melhor;
+}
 function vigenciaEfetiva(c){
-  let maior = parseBR(c.vigenciaFim);
-  let fonte = c; // de quem veio a data efetiva
   if (c.tipo === 'Contrato'){
-    contracts.forEach(function(a){
-      if (a.contratoPai !== c.id) return;
-      if (['Encerrado','Suspenso'].indexOf(a.statusContrato)>=0) return;
-      const fa = parseBR(a.vigenciaFim);
-      if (fa && (!maior || fa > maior)){ maior = fa; fonte = a; }
-    });
+    const adit = aditivoMaisRecente(c);
+    if (adit){
+      const fa = parseBR(adit.vigenciaFim);
+      return { fim: fa || parseBR(c.vigenciaFim), fonte: adit };
+    }
   }
-  return { fim: maior, fonte: fonte };
+  return { fim: parseBR(c.vigenciaFim), fonte: c };
 }
 function vigenciaEfetivaStr(c){
   const ve = vigenciaEfetiva(c);
@@ -1898,13 +1921,22 @@ function vigenciaEfetivaStr(c){
   const dd=('0'+ve.fim.getDate()).slice(-2), mm=('0'+(ve.fim.getMonth()+1)).slice(-2);
   return dd+'/'+mm+'/'+ve.fim.getFullYear();
 }
-// Verdadeiro se este aditivo é o que define a vigência efetiva do seu contrato pai
+// Verdadeiro se este aditivo é o mais recente (o que vale) do seu contrato pai
 function isAditivoVigente(a){
   if (a.tipo!=='Termo Aditivo' || !a.contratoPai) return false;
   const pai = contracts.find(function(x){ return x.id===a.contratoPai; });
   if (!pai) return false;
-  const ve = vigenciaEfetiva(pai);
-  return ve.fonte && ve.fonte.id === a.id;
+  const adit = aditivoMaisRecente(pai);
+  return adit && adit.id === a.id;
+}
+// Verdadeiro se este aditivo foi superado por outro mais recente (mesmo contrato)
+function isAditivoSubstituido(a){
+  if (a.tipo!=='Termo Aditivo' || !a.contratoPai) return false;
+  if (['Encerrado','Suspenso'].indexOf(a.statusContrato)>=0) return false;
+  const pai = contracts.find(function(x){ return x.id===a.contratoPai; });
+  if (!pai) return false;
+  const adit = aditivoMaisRecente(pai);
+  return adit && adit.id !== a.id; // existe um mais recente que não é este
 }
 // Célula de vigência para a lista: mostra a data efetiva e marca se veio de aditivo
 function vigCell(c){
@@ -1928,6 +1960,8 @@ function getStatusLabel(c){
   if (s.indexOf('negoci')>=0) return { cls:'negociacao', txt:'Em negociação' };
   if (s.indexOf('encerr')>=0) return { cls:'encerrado', txt:'Encerrado' };
   if (s.indexOf('suspen')>=0) return { cls:'suspenso', txt:'Suspenso' };
+  // Aditivo superado por outro mais recente do mesmo contrato
+  if (isAditivoSubstituido(c)) return { cls:'substituido', txt:'Substituído' };
   const v = getVigStatus(c);
   // Contrato cuja vigência efetiva vem de um aditivo ativo
   if (c.tipo==='Contrato'){

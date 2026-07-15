@@ -401,6 +401,7 @@ tr:hover td{background:var(--surface2)}
           <div class="fg"><label>Nº do Contrato / TA *</label><input type="text" id="f-numero" required placeholder="Ex: 565/2025"></div>
           <div class="fg"><label>Tipo *</label><select id="f-tipo-form" required onchange="onTipoChange()"><option value="">Selecione...</option><option value="Contrato">Contrato</option><option value="Termo Aditivo">Termo Aditivo</option></select></div>
           <div class="fg" id="pai-group" style="display:none"><label>Contrato original (pai)</label><select id="f-pai"><option value="">Selecione...</option></select></div>
+          <div class="fg" id="tipovalor-group" style="display:none"><label>Efeito no valor</label><select id="f-tipovalor"><option value="acrescimo">Acréscimo (soma ao valor atual)</option><option value="supressao">Supressão (subtrai do valor atual)</option><option value="novototal">Novo valor total (substitui)</option></select></div>
           <div class="fg"><label>Status *</label><select id="f-status-form" required><option value="">Selecione...</option><option value="Em negociação">Em negociação</option><option value="Vigente">Vigente</option><option value="Encerrado">Encerrado</option><option value="Suspenso">Suspenso</option></select></div>
           <div class="fg"><label>Processo</label><input type="text" id="f-processo" placeholder="Ex: 182/2025"></div>
         </div>
@@ -689,7 +690,7 @@ const HEADERS = [
   'DataAssinatura','Lei','Foro','Contratante','CNPJContratante',
   'Empresa','CNPJ','SituacaoCadastral','MunicipioUF',
   'Objeto','ValoresUnidades','VigenciaInicio','VigenciaFim',
-  'ValorTotal','ValorMensal','Prorrogacao','RenovacaoIniciada',
+  'ValorTotal','ValorMensal','Prorrogacao','RenovacaoIniciada','TipoValor',
   'FormaPagamento','PrazoPagamento','IndiceReajuste','Periodicidade',
   'FiscalNome','FiscalEmail','FiscalCargo',
   'GestorNome','GestorEmail','GestorCargo',
@@ -1288,6 +1289,7 @@ function normalize(c){
     valorTotal:parseFloat(c.ValorTotal||c.valorTotal)||0, valorMensal:parseFloat(c.ValorMensal||c.valorMensal)||0,
     prorrogacao:c.Prorrogacao||c.prorrogacao||'',
     renovacaoIniciada:c.RenovacaoIniciada||c.renovacaoIniciada||'',
+    tipoValor:c.TipoValor||c.tipoValor||'acrescimo',
     formaPagamento:c.FormaPagamento||c.formaPagamento||'', prazoPagamento:c.PrazoPagamento||c.prazoPagamento||'',
     indiceReajuste:c.IndiceReajuste||c.indiceReajuste||'', periodicidade:c.Periodicidade||c.periodicidade||'',
     fiscalNome:c.FiscalNome||c.fiscalNome||'', fiscalEmail:c.FiscalEmail||c.fiscalEmail||'', fiscalCargo:c.FiscalCargo||c.fiscalCargo||'',
@@ -1309,6 +1311,7 @@ function toPayload(c){
     ValoresUnidades:JSON.stringify(c.unidades||[]), VigenciaInicio:c.vigenciaInicio, VigenciaFim:c.vigenciaFim,
     ValorTotal:c.valorTotal, ValorMensal:c.valorMensal, Prorrogacao:c.prorrogacao,
     RenovacaoIniciada:c.renovacaoIniciada||'',
+    TipoValor:c.tipoValor||'acrescimo',
     FormaPagamento:c.formaPagamento, PrazoPagamento:c.prazoPagamento, IndiceReajuste:c.indiceReajuste, Periodicidade:c.periodicidade,
     FiscalNome:c.fiscalNome, FiscalEmail:c.fiscalEmail, FiscalCargo:c.fiscalCargo,
     GestorNome:c.gestorNome, GestorEmail:c.gestorEmail, GestorCargo:c.gestorCargo,
@@ -1385,6 +1388,7 @@ async function submitForm(e){
     vigenciaInicio: vigI?fmtDate(vigI):'', vigenciaFim: vigF?fmtDate(vigF):'',
     valorTotal:valorTotal, valorMensal:valorMensal, prorrogacao:val('f-prorrogacao'),
     renovacaoIniciada: document.getElementById('f-renovacao').checked ? 'Sim' : '',
+    tipoValor: document.getElementById('f-tipovalor').value || 'acrescimo',
     formaPagamento:val('f-pagamento'), prazoPagamento:val('f-prazo-pgto'),
     indiceReajuste:val('f-indice'), periodicidade:val('f-periodicidade'),
     fiscalNome:val('f-fiscal-nome'), fiscalEmail:val('f-fiscal-email'), fiscalCargo:val('f-fiscal-cargo'),
@@ -1791,7 +1795,7 @@ function calcValorTotal(){
 // ═══════════════════════════════════════════════════════════════════
 // FORM helpers
 // ═══════════════════════════════════════════════════════════════════
-function onTipoChange(){ document.getElementById('pai-group').style.display = document.getElementById('f-tipo-form').value==='Termo Aditivo' ? 'flex':'none'; }
+function onTipoChange(){ const isTA = document.getElementById('f-tipo-form').value==='Termo Aditivo'; document.getElementById('pai-group').style.display = isTA?'flex':'none'; document.getElementById('tipovalor-group').style.display = isTA?'flex':'none'; }
 function populatePaiSelect(){
   const sel = document.getElementById('f-pai');
   const cur = sel.value;
@@ -1856,6 +1860,7 @@ function fillForm(c){
   set('f-objeto',c.objeto); set('f-inicio',isoDate(c.vigenciaInicio)); set('f-fim',isoDate(c.vigenciaFim));
   set('f-prorrogacao',c.prorrogacao); set('f-valor',c.valorTotal||'');
   document.getElementById('f-renovacao').checked = (c.renovacaoIniciada==='Sim');
+  document.getElementById('f-tipovalor').value = c.tipoValor || 'acrescimo';
   set('f-pagamento',c.formaPagamento); set('f-prazo-pgto',c.prazoPagamento);
   set('f-indice',c.indiceReajuste); set('f-periodicidade',c.periodicidade);
   set('f-fiscal-nome',c.fiscalNome); set('f-fiscal-email',c.fiscalEmail); set('f-fiscal-cargo',c.fiscalCargo);
@@ -1904,6 +1909,45 @@ function aditivoMaisRecente(pai){
     if (!melhor || cmpNum(a.numero, melhor.numero) > 0) melhor = a;
   });
   return melhor;
+}
+// Aditivos ativos de um contrato pai, ordenados por número (cronológico)
+function aditivosOrdenados(pai){
+  return contracts.filter(function(a){
+    return a.contratoPai===pai.id && a.tipo==='Termo Aditivo' && ['Encerrado','Suspenso'].indexOf(a.statusContrato)<0;
+  }).sort(function(a,b){ return cmpNum(a.numero, b.numero); });
+}
+// Valor MENSAL vigente hoje: percorre contrato + aditivos aplicando o efeito de cada um
+function valorMensalVigente(pai){
+  let mensal = pai.valorMensal || 0;
+  aditivosOrdenados(pai).forEach(function(a){
+    const efeito = a.tipoValor || 'acrescimo';
+    const vm = a.valorMensal || 0;
+    if (efeito==='novototal') mensal = vm;
+    else if (efeito==='supressao') mensal = mensal - vm;
+    else mensal = mensal + vm; // acrescimo
+  });
+  return mensal;
+}
+// Consolida as unidades vigentes: parte do contrato, aplica aditivos (adiciona/atualiza/remove)
+function unidadesVigentes(pai){
+  const mapa = {};
+  (pai.unidades||[]).forEach(function(u){ if(u.nome) mapa[u.nome] = u.valorMensal||0; });
+  aditivosOrdenados(pai).forEach(function(a){
+    const efeito = a.tipoValor || 'acrescimo';
+    (a.unidades||[]).forEach(function(u){
+      if(!u.nome) return;
+      if (efeito==='supressao'){ delete mapa[u.nome]; }
+      else if (efeito==='novototal'){ /* será tratado abaixo */ mapa[u.nome] = u.valorMensal||0; }
+      else { // acrescimo: soma na unidade existente ou cria
+        mapa[u.nome] = (mapa[u.nome]||0) + (u.valorMensal||0);
+      }
+    });
+    // se for novototal e o aditivo trouxe unidades, elas substituem tudo
+    if (efeito==='novototal' && (a.unidades||[]).length){
+      Object.keys(mapa).forEach(function(k){ if(!(a.unidades||[]).some(function(u){return u.nome===k;})) delete mapa[k]; });
+    }
+  });
+  return Object.keys(mapa).map(function(k){ return { nome:k, valorMensal:mapa[k] }; });
 }
 function vigenciaEfetiva(c){
   if (c.tipo === 'Contrato'){
@@ -2038,6 +2082,39 @@ function listaGoto(p){ window.listaPage = p; renderLista(); document.querySelect
 // ═══════════════════════════════════════════════════════════════════
 // DETALHE (Ver / Editar / Excluir corrigidos)
 // ═══════════════════════════════════════════════════════════════════
+function valorVigenteHtml(c){
+  // determina o contrato-base: se for aditivo, usa o pai
+  let pai = c;
+  if (c.tipo==='Termo Aditivo' && c.contratoPai){
+    const p = contracts.find(function(x){ return x.id===c.contratoPai; });
+    if (p) pai = p;
+  }
+  const adits = aditivosOrdenados(pai);
+  if (!adits.length) return ''; // sem aditivos, não há o que consolidar
+  const mensal = valorMensalVigente(pai);
+  // monta a linha do tempo do cálculo
+  const rotulo = { acrescimo:'+ Acréscimo', supressao:'− Supressão', novototal:'= Novo total' };
+  let linhas = '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>Contrato '+(pai.numero||'')+' (base)</span><strong>'+fmtBRL(pai.valorMensal||0)+'/mês</strong></div>';
+  adits.forEach(function(a){
+    const ef = a.tipoValor||'acrescimo';
+    const cor = ef==='supressao'?'var(--red-text)':ef==='novototal'?'var(--purple-text)':'var(--green-text)';
+    linhas += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:'+cor+'">'+(rotulo[ef]||'+ ')+' — TA '+(a.numero||'')+'</span><span style="color:'+cor+'">'+fmtBRL(a.valorMensal||0)+'/mês</span></div>';
+  });
+  const uni = unidadesVigentes(pai);
+  let uniHtml = '';
+  if (uni.length){
+    uniHtml = '<div style="margin-top:10px;font-size:12px"><div style="font-weight:700;color:var(--text2);margin-bottom:5px">Unidades consolidadas (vigentes hoje):</div>'
+      + uni.map(function(u){ return '<div style="display:flex;justify-content:space-between;padding:3px 0"><span>'+u.nome+'</span><span>'+fmtBRL(u.valorMensal)+'/mês</span></div>'; }).join('')
+      + '</div>';
+  }
+  return '<div class="dsec"><div class="dsec-title">💰 Valor vigente hoje (consolidado)</div>'
+    + '<div style="background:var(--surface2);border-radius:8px;padding:12px;font-size:13px">'
+    + linhas
+    + '<div style="display:flex;justify-content:space-between;padding:9px 0 2px;margin-top:4px"><strong style="font-size:15px">Valor mensal vigente</strong><strong style="font-size:16px;color:var(--accent)">'+fmtBRL(mensal)+'/mês</strong></div>'
+    + '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2)"><span>Estimativa anual (×12)</span><span>'+fmtBRL(mensal*12)+'/ano</span></div>'
+    + uniHtml
+    + '</div><p style="font-size:11px;color:var(--text3);margin-top:6px">Calculado a partir do contrato e dos aditivos ativos, na ordem, conforme o efeito de cada um.</p></div>';
+}
 function showDetail(id){
   const c = contracts.find(function(x){ return x.id === String(id); });
   if (!c){ showNotif('Contrato não encontrado','err'); return; }
@@ -2083,6 +2160,7 @@ function showDetail(id){
     + '<div class="dsec"><div class="dsec-title">Objeto</div><div class="dgrid">'+f('',c.objeto,true)+'</div></div>'
     + unidadesHtml + valoresHtml
     + '<div class="dsec"><div class="dsec-title">Vigência</div><div class="dgrid">'+f('Início',c.vigenciaInicio)+f('Fim (original)',c.vigenciaFim)+((c.tipo==='Contrato'&&vigenciaEfetiva(c).fonte&&vigenciaEfetiva(c).fonte.id!==c.id)?f('Fim (efetivo, por aditivo)','<strong style="color:var(--purple-text)">'+vigenciaEfetivaStr(c)+'</strong>'):'')+f('Valor total','<strong style="font-size:15px">'+fmtBRL(c.valorTotal)+'</strong>')+f('Prorrogação',c.prorrogacao)+'</div></div>'
+    + valorVigenteHtml(c)
     + '<div class="dsec"><div class="dsec-title">Pagamento e Reajuste</div><div class="dgrid">'+f('Forma de pagamento',c.formaPagamento,true)+f('Prazo',c.prazoPagamento?c.prazoPagamento+' dias':'')+f('Índice',c.indiceReajuste)+f('Periodicidade',c.periodicidade)+'</div></div>'
     + '<div class="dsec"><div class="dsec-title">Fiscal e Gestor</div><div class="dgrid">'+f('Fiscal',c.fiscalNome)+f('E-mail fiscal',c.fiscalEmail)+f('Cargo fiscal',c.fiscalCargo)+f('Gestor',c.gestorNome)+f('E-mail gestor',c.gestorEmail)+f('Cargo gestor',c.gestorCargo)+'</div></div>'
     + (c.observacoes ? '<div class="dsec"><div class="dsec-title">Observações</div><div class="dgrid">'+f('',c.observacoes,true)+'</div></div>' : '')

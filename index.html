@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contratos FHSL</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body[data-theme="light"]{
@@ -328,10 +330,12 @@ tr:hover td{background:var(--surface2)}
   <div class="nav-group perm-admin">
     <div class="nav-label">Administração</div>
     <button class="nav-item" data-page="usuarios" onclick="showPage('usuarios',this)">👥 Usuários</button>
+    <button class="nav-item" data-page="cadunidades" onclick="showPage('cadunidades',this)">🏥 Cadastro de Unidades</button>
     <button class="nav-item" data-page="auditoria" onclick="showPage('auditoria',this)">🛡️ Auditoria</button>
     <button class="nav-item" data-page="setup" onclick="showPage('setup',this)">⚙️ Configurar Sheets</button>
   </div>
   <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">
+    <a href="hub.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);text-decoration:none;padding:6px 8px;border-radius:6px;margin-bottom:8px">← Voltar aos módulos</a>
     <div class="conf-status" id="conn-status" style="font-size:11px;color:var(--text3)">● Verificando conexão...</div>
   </div>
 </aside>
@@ -571,6 +575,23 @@ tr:hover td{background:var(--surface2)}
     <div class="table-wrap" style="padding:4px 0" id="users-list"></div>
   </div>
 
+  <!-- CADASTRO DE UNIDADES -->
+  <div class="page" id="page-cadunidades">
+    <div class="toolbar">
+      <input type="text" id="cadun-search" placeholder="🔍 Buscar unidade, bairro, cidade..." oninput="renderCadUnidades()">
+      <button class="btn" onclick="geocodeAll()" title="Buscar coordenadas dos endereços no mapa">📍 Localizar no mapa</button>
+      <button class="btn primary" onclick="openUnitForm()">➕ Nova unidade</button>
+    </div>
+    <div class="chart-card" style="margin-bottom:1rem;padding:0;overflow:hidden">
+      <div id="unit-map" style="width:100%;height:380px;background:var(--surface2)"></div>
+      <div style="padding:8px 12px;font-size:12px;color:var(--text3)" id="map-hint">Clique em "Localizar no mapa" para posicionar as unidades que ainda não têm coordenadas.</div>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Unidade</th><th>Tipo</th><th>Endereço</th><th>Cidade/UF</th><th>Telefone</th><th>Responsável</th><th>Contratos</th><th></th></tr></thead><tbody id="cadun-body"></tbody></table>
+      <div class="empty-state" id="cadun-empty" style="display:none"><span class="empty-icon">🏥</span>Nenhuma unidade cadastrada</div>
+    </div>
+  </div>
+
   <!-- AUDITORIA -->
   <div class="page" id="page-auditoria">
     <div class="toolbar">
@@ -615,6 +636,29 @@ tr:hover td{background:var(--surface2)}
 </div>
 
 <!-- MODAL USUÁRIO -->
+<div class="modal-overlay" id="modal-unit-form" onclick="if(event.target.id==='modal-unit-form')closeUnitForm()">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle" id="unit-form-title">Nova Unidade</div><button class="mclose" onclick="closeUnitForm()">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="uf-id">
+      <div class="form-grid">
+        <div class="fg full"><label>Nome da unidade *</label><input type="text" id="uf-nome" placeholder="Ex: UPA Norte"></div>
+        <div class="fg"><label>Tipo</label><select id="uf-tipo"><option value="">Selecione...</option><option value="Hospital">Hospital</option><option value="UPA">UPA</option><option value="UBS">UBS</option><option value="CAPS">CAPS</option><option value="SAMU">SAMU</option><option value="Administrativo">Administrativo</option><option value="Outro">Outro</option></select></div>
+        <div class="fg"><label>CEP</label><div class="cnpj-row"><input type="text" id="uf-cep" placeholder="00000-000"><button type="button" class="btn sm primary" onclick="lookupCEP()">🔍</button></div><div class="cmsg" id="cep-msg"></div></div>
+        <div class="fg full"><label>Logradouro</label><input type="text" id="uf-logradouro" placeholder="Rua / Avenida"></div>
+        <div class="fg"><label>Número</label><input type="text" id="uf-numero"></div>
+        <div class="fg"><label>Bairro</label><input type="text" id="uf-bairro"></div>
+        <div class="fg"><label>Cidade</label><input type="text" id="uf-cidade" value="Ribeirão Preto"></div>
+        <div class="fg"><label>UF</label><input type="text" id="uf-uf" value="SP" maxlength="2"></div>
+        <div class="fg"><label>Telefone</label><input type="text" id="uf-telefone" placeholder="(16) 0000-0000"></div>
+        <div class="fg"><label>Responsável</label><input type="text" id="uf-responsavel"></div>
+        <div class="fg full"><label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;cursor:pointer"><input type="checkbox" id="uf-ativo" checked style="width:16px;height:16px;cursor:pointer"> Unidade ativa (aparece na lista de seleção)</label></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:1.2rem"><button class="btn" onclick="closeUnitForm()">Cancelar</button><button class="btn primary" onclick="saveUnitForm()">💾 Salvar</button></div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-user" onclick="if(event.target.id==='modal-user')closeUserModal()">
   <div class="modal sm">
     <div class="mhead"><div class="mtitle" id="user-modal-title">Novo Usuário</div><button class="mclose" onclick="closeUserModal()">✕</button></div>
@@ -701,7 +745,7 @@ const UHEADERS = ['ID','Nome','Email','Senha','Role','Ativo','CriadoEm'];
 const LOG_SHEET = 'Auditoria';
 const LHEADERS = ['DataHora','Usuario','Email','Acao','Detalhe','Alvo'];
 const UNITS_SHEET = 'Unidades';
-const UNHEADERS = ['ID','Nome','Ativo','CriadoEm'];
+const UNHEADERS = ['ID','Nome','Tipo','CEP','Logradouro','Numero','Bairro','Cidade','UF','Lat','Lng','Telefone','Responsavel','Ativo','CriadoEm'];
 const UNIDADES_PADRAO = ['Hospital Santa Lydia','UPA Norte','UPA Sul','UPA Leste','UBS Central','CAPS','SAMU','Administração / Sede'];
 
 function doGet(e)  { return handle(e); }
@@ -815,8 +859,12 @@ function repair() {
 function ensureUnits(sh) {
   const data = sh.getDataRange().getValues();
   if (data.length <= 1) {
+    const h = realHeaders(sh);
     const now = Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm');
-    UNIDADES_PADRAO.forEach(function(nome,idx){ sh.appendRow([String(Date.now()+idx), nome, true, now]); });
+    UNIDADES_PADRAO.forEach(function(nome,idx){
+      const o = { ID:String(Date.now()+idx), Nome:nome, Ativo:true, CriadoEm:now };
+      sh.appendRow(h.map(function(k){ return o[k]!==undefined ? o[k] : ''; }));
+    });
   }
 }
 function getUnits() {
@@ -830,28 +878,34 @@ function saveUnit(p) {
   const actor = p.__actor; if (p.__actor) delete p.__actor;
   const sh = sheetOf(UNITS_SHEET, UNHEADERS);
   ensureUnits(sh);
+  const h = realHeaders(sh);
   const data = sh.getDataRange().getValues();
-  const h = data[0];
+  const cNome = h.indexOf('Nome');
   const nome = String(p.Nome||'').trim();
   if (!nome) return { ok:false, message:'Nome vazio' };
   // evita duplicar (case-insensitive)
   for (var i=1;i<data.length;i++) {
-    if (String(data[i][1]).toLowerCase().trim() === nome.toLowerCase() && String(data[i][0])!==String(p.ID))
+    if (String(data[i][cNome]).toLowerCase().trim() === nome.toLowerCase() && String(data[i][0])!==String(p.ID))
       return { ok:false, message:'Já existe uma unidade com esse nome' };
   }
   const now = Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm');
   if (p.ID) {
     for (var i=1;i<data.length;i++) {
       if (String(data[i][0]) === String(p.ID)) {
-        sh.getRange(i+1,2).setValue(nome);
-        if (p.Ativo!==undefined) sh.getRange(i+1,3).setValue(p.Ativo);
+        // mantém valores existentes para campos não enviados
+        const atual = {}; h.forEach(function(k,j){ atual[k] = data[i][j]; });
+        const novo = {}; h.forEach(function(k){ novo[k] = (p[k]!==undefined && p[k]!==null) ? p[k] : (atual[k]!==undefined?atual[k]:''); });
+        novo.ID = p.ID; novo.Nome = nome;
+        sh.getRange(i+1,1,1,h.length).setValues([h.map(function(k){ return novo[k]; })]);
         audit(actor, 'Editou unidade', nome, p.ID);
         return { ok:true, id:p.ID };
       }
     }
   }
   const id = String(Date.now());
-  sh.appendRow([id, nome, true, now]);
+  p.ID = id; p.Nome = nome; p.CriadoEm = now;
+  if (p.Ativo === undefined) p.Ativo = true;
+  sh.appendRow(h.map(function(k){ return p[k]!==undefined && p[k]!==null ? p[k] : ''; }));
   audit(actor, 'Criou unidade', nome, id);
   return { ok:true, id:id };
 }
@@ -1195,7 +1249,14 @@ async function loadUnits(){
   const FALLBACK = ['Hospital Santa Lydia','UPA Norte','UPA Sul','UPA Leste','UBS Central','CAPS','SAMU','Administração / Sede'];
   try {
     const r = await apiFetch('getunits');
-    if (r.ok && r.data){ unitList = r.data.map(function(u){ return { id:String(u.ID||u.id), nome:u.Nome||u.nome, ativo:String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE' }; }).filter(function(u){ return u.nome; }); }
+    if (r.ok && r.data){ unitList = r.data.map(function(u){ return {
+      id:String(u.ID||u.id), nome:u.Nome||u.nome,
+      tipo:u.Tipo||'', cep:u.CEP||'', logradouro:u.Logradouro||'', numero:u.Numero||'',
+      bairro:u.Bairro||'', cidade:u.Cidade||'', uf:u.UF||'',
+      lat:parseFloat(u.Lat)||null, lng:parseFloat(u.Lng)||null,
+      telefone:u.Telefone||'', responsavel:u.Responsavel||'',
+      ativo:String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'
+    }; }).filter(function(u){ return u.nome; }); }
   } catch(e){}
   if (!unitList.length) unitList = FALLBACK.map(function(n,i){ return { id:'f'+i, nome:n, ativo:true }; });
   localStorage.setItem('fhsl_units', JSON.stringify(unitList));
@@ -1217,6 +1278,7 @@ const PAGE_META = {
   busca:['Busca Avançada','Combine múltiplos filtros'],
   relatorio:['Relatório PDF','Imprima ou salve em PDF'],
   usuarios:['Usuários','Controle de acesso ao sistema'],
+  cadunidades:['Cadastro de Unidades','Unidades da Fundação, endereços e mapa'],
   auditoria:['Auditoria','Registro de todas as ações no sistema'],
   setup:['Configurar Sheets','Conexão com o Google Sheets']
 };
@@ -1245,6 +1307,7 @@ function showPage(id, btn){
   if (id==='busca') renderBusca();
   if (id==='relatorio') renderRelatorio();
   if (id==='usuarios') renderUsers();
+  if (id==='cadunidades') renderCadUnidades();
   if (id==='auditoria') loadLog();
   if (id==='novo') populatePaiSelect();
   if (id==='importar') batchInit();
@@ -1780,6 +1843,202 @@ async function removeUnit(id, nome, n){
   try { await apiFetch('deleteunit', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } }); } catch(e){}
   await loadUnits(); renderManageUnits(); refreshUnitSelects(); showNotif('✓ Unidade removida da lista','ok'); hideLoading();
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// CADASTRO DE UNIDADES (endereço + mapa)
+// ═══════════════════════════════════════════════════════════════════
+let unitMap = null, unitMarkers = [];
+
+function enderecoCompleto(u){
+  const p = [];
+  if (u.logradouro) p.push(u.logradouro + (u.numero ? ', '+u.numero : ''));
+  if (u.bairro) p.push(u.bairro);
+  return p.join(' — ') || '—';
+}
+function enderecoParaBusca(u){
+  const p = [];
+  if (u.logradouro) p.push(u.logradouro + (u.numero ? ', '+u.numero : ''));
+  if (u.bairro) p.push(u.bairro);
+  if (u.cidade) p.push(u.cidade);
+  if (u.uf) p.push(u.uf);
+  p.push('Brasil');
+  return p.join(', ');
+}
+function contratosDaUnidade(nome){
+  return contracts.filter(function(c){ return (c.unidades||[]).some(function(x){ return x.nome===nome; }); }).length;
+}
+
+function renderCadUnidades(){
+  const q = (document.getElementById('cadun-search').value||'').toLowerCase();
+  let list = unitList.slice();
+  if (q) list = list.filter(function(u){ return JSON.stringify(u).toLowerCase().indexOf(q)>=0; });
+  const body = document.getElementById('cadun-body'), empty = document.getElementById('cadun-empty');
+  if (!list.length){ body.innerHTML=''; empty.style.display='block'; }
+  else {
+    empty.style.display='none';
+    body.innerHTML = list.map(function(u){
+      const n = contratosDaUnidade(u.nome);
+      const semCoord = (!u.lat || !u.lng) ? ' <span title="Sem coordenadas — clique em Localizar no mapa" style="color:var(--yellow)">⚠</span>' : '';
+      return '<tr>'
+        + '<td><div style="font-weight:600">'+u.nome+semCoord+'</div>'+(!u.ativo?'<span class="badge substituido" style="font-size:9px">inativa</span>':'')+'</td>'
+        + '<td style="font-size:12px;color:var(--text2)">'+(u.tipo||'—')+'</td>'
+        + '<td style="font-size:12px;color:var(--text2);max-width:230px">'+enderecoCompleto(u)+(u.cep?'<div style="font-size:11px;color:var(--text3)">CEP '+u.cep+'</div>':'')+'</td>'
+        + '<td style="font-size:12px">'+((u.cidade||'—')+(u.uf?'/'+u.uf:''))+'</td>'
+        + '<td style="font-size:12px">'+(u.telefone||'—')+'</td>'
+        + '<td style="font-size:12px">'+(u.responsavel||'—')+'</td>'
+        + '<td><span class="badge '+(n?'contrato':'negociacao')+'">'+n+'</span></td>'
+        + '<td style="white-space:nowrap"><button class="btn xs" onclick="openUnitForm(\''+u.id+'\')">✏️</button> <button class="btn xs danger" onclick="removeUnitCad(\''+u.id+'\',\''+String(u.nome).replace(/'/g,"\\\\'")+'\','+n+')">✕</button></td>'
+        + '</tr>';
+    }).join('');
+  }
+  setTimeout(renderUnitMap, 60);
+}
+
+function renderUnitMap(){
+  if (typeof L === 'undefined') { document.getElementById('map-hint').textContent = 'Mapa indisponível (sem conexão com a biblioteca de mapas).'; return; }
+  const el = document.getElementById('unit-map');
+  if (!el) return;
+  const comCoord = unitList.filter(function(u){ return u.lat && u.lng; });
+  if (!unitMap){
+    unitMap = L.map('unit-map').setView([-21.1775, -47.8103], 12); // Ribeirão Preto
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '© OpenStreetMap'
+    }).addTo(unitMap);
+  }
+  unitMarkers.forEach(function(m){ unitMap.removeLayer(m); });
+  unitMarkers = [];
+  comCoord.forEach(function(u){
+    const n = contratosDaUnidade(u.nome);
+    const m = L.marker([u.lat, u.lng]).addTo(unitMap);
+    m.bindPopup('<strong>'+u.nome+'</strong>'
+      + (u.tipo?'<br><span style="color:#666">'+u.tipo+'</span>':'')
+      + '<br>'+enderecoCompleto(u)
+      + (u.telefone?'<br>📞 '+u.telefone:'')
+      + '<br>📄 '+n+' contrato(s)');
+    unitMarkers.push(m);
+  });
+  if (comCoord.length){
+    const grupo = L.featureGroup(unitMarkers);
+    unitMap.fitBounds(grupo.getBounds().pad(0.2));
+    document.getElementById('map-hint').textContent = comCoord.length+' de '+unitList.length+' unidade(s) posicionada(s) no mapa.';
+  } else {
+    document.getElementById('map-hint').textContent = 'Nenhuma unidade posicionada ainda. Cadastre o endereço e clique em "Localizar no mapa".';
+  }
+  setTimeout(function(){ if(unitMap) unitMap.invalidateSize(); }, 120);
+}
+
+// ── Formulário da unidade ──
+function openUnitForm(id){
+  document.getElementById('unit-form-title').textContent = id ? 'Editar Unidade' : 'Nova Unidade';
+  const set=function(k,v){ document.getElementById(k).value = v||''; };
+  document.getElementById('uf-id').value = id||'';
+  document.getElementById('cep-msg').style.display='none';
+  if (id){
+    const u = unitList.find(function(x){ return x.id===id; });
+    if (u){
+      set('uf-nome',u.nome); set('uf-tipo',u.tipo); set('uf-cep',u.cep);
+      set('uf-logradouro',u.logradouro); set('uf-numero',u.numero); set('uf-bairro',u.bairro);
+      set('uf-cidade',u.cidade||'Ribeirão Preto'); set('uf-uf',u.uf||'SP');
+      set('uf-telefone',u.telefone); set('uf-responsavel',u.responsavel);
+      document.getElementById('uf-ativo').checked = u.ativo !== false;
+    }
+  } else {
+    ['uf-nome','uf-tipo','uf-cep','uf-logradouro','uf-numero','uf-bairro','uf-telefone','uf-responsavel'].forEach(function(k){ set(k,''); });
+    set('uf-cidade','Ribeirão Preto'); set('uf-uf','SP');
+    document.getElementById('uf-ativo').checked = true;
+  }
+  document.getElementById('modal-unit-form').classList.add('open');
+}
+function closeUnitForm(){ document.getElementById('modal-unit-form').classList.remove('open'); }
+
+async function lookupCEP(){
+  const cep = document.getElementById('uf-cep').value.replace(/\D/g,'');
+  const msg = document.getElementById('cep-msg');
+  if (cep.length !== 8){ msg.textContent='CEP deve ter 8 dígitos'; msg.className='cmsg err'; msg.style.display='block'; return; }
+  msg.textContent='Buscando...'; msg.className='cmsg'; msg.style.display='block';
+  try {
+    const r = await fetch('https://brasilapi.com.br/api/cep/v2/'+cep);
+    if (!r.ok) throw new Error('CEP não encontrado');
+    const d = await r.json();
+    document.getElementById('uf-logradouro').value = d.street || '';
+    document.getElementById('uf-bairro').value = d.neighborhood || '';
+    document.getElementById('uf-cidade').value = d.city || '';
+    document.getElementById('uf-uf').value = d.state || '';
+    document.getElementById('uf-cep').value = cep.replace(/(\d{5})(\d{3})/,'$1-$2');
+    msg.textContent='✓ Endereço preenchido'; msg.className='cmsg ok';
+  } catch(e){ msg.textContent='✗ '+e.message; msg.className='cmsg err'; }
+}
+
+async function saveUnitForm(){
+  const nome = document.getElementById('uf-nome').value.trim();
+  if (!nome){ showNotif('Informe o nome da unidade','err'); return; }
+  const id = document.getElementById('uf-id').value;
+  const payload = {
+    ID: id||'', Nome: nome,
+    Tipo: document.getElementById('uf-tipo').value,
+    CEP: document.getElementById('uf-cep').value.trim(),
+    Logradouro: document.getElementById('uf-logradouro').value.trim(),
+    Numero: document.getElementById('uf-numero').value.trim(),
+    Bairro: document.getElementById('uf-bairro').value.trim(),
+    Cidade: document.getElementById('uf-cidade').value.trim(),
+    UF: document.getElementById('uf-uf').value.trim().toUpperCase(),
+    Telefone: document.getElementById('uf-telefone').value.trim(),
+    Responsavel: document.getElementById('uf-responsavel').value.trim(),
+    Ativo: document.getElementById('uf-ativo').checked,
+    __actor: { nome:currentUser.nome, email:currentUser.email }
+  };
+  // se o endereço mudou, limpa coordenadas para regeocodificar
+  const antiga = id ? unitList.find(function(x){ return x.id===id; }) : null;
+  if (antiga && (antiga.logradouro!==payload.Logradouro || antiga.numero!==payload.Numero || antiga.cidade!==payload.Cidade)){
+    payload.Lat=''; payload.Lng='';
+  }
+  showLoading('Salvando unidade...');
+  try {
+    const r = await apiFetch('saveunit', payload);
+    if (!r.ok){ showNotif('Erro: '+r.message,'err'); hideLoading(); return; }
+  } catch(e){ showNotif('Sem conexão para salvar','err'); hideLoading(); return; }
+  await loadUnits();
+  renderCadUnidades(); refreshUnitSelects();
+  closeUnitForm();
+  showNotif('✓ Unidade salva','ok');
+  hideLoading();
+}
+
+async function removeUnitCad(id, nome, n){
+  if (n>0){ if (!confirm('A unidade "'+nome+'" está em '+n+' contrato(s). Remover não altera esses contratos, apenas tira o nome das próximas seleções. Continuar?')) return; }
+  else if (!confirm('Remover a unidade "'+nome+'"?')) return;
+  showLoading('Removendo...');
+  try { await apiFetch('deleteunit', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } }); } catch(e){}
+  await loadUnits(); renderCadUnidades(); refreshUnitSelects();
+  showNotif('✓ Unidade removida','ok'); hideLoading();
+}
+
+// ── Geocodificação (Nominatim/OpenStreetMap, gratuito) ──
+async function geocodeAll(){
+  const pendentes = unitList.filter(function(u){ return (!u.lat||!u.lng) && (u.logradouro||u.cidade); });
+  if (!pendentes.length){ showNotif('Todas as unidades com endereço já estão no mapa.','info'); renderUnitMap(); return; }
+  let ok=0;
+  for (let i=0;i<pendentes.length;i++){
+    const u = pendentes[i];
+    showLoading('Localizando '+(i+1)+' de '+pendentes.length+': '+u.nome);
+    try {
+      const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(enderecoParaBusca(u));
+      const r = await fetch(url, { headers:{ 'Accept':'application/json' } });
+      const arr = await r.json();
+      if (arr && arr.length){
+        const lat = parseFloat(arr[0].lat), lng = parseFloat(arr[0].lon);
+        await apiFetch('saveunit', { ID:u.id, Nome:u.nome, Lat:lat, Lng:lng, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+        ok++;
+      }
+    } catch(e){}
+    await new Promise(function(res){ setTimeout(res, 1100); }); // respeita limite do Nominatim
+  }
+  await loadUnits();
+  renderCadUnidades();
+  hideLoading();
+  showNotif(ok ? ('✓ '+ok+' unidade(s) posicionada(s) no mapa') : 'Não foi possível localizar os endereços','ok');
+}
+
 function calcValorTotal(){
   let total = 0;
   document.querySelectorAll('#units-body tr').forEach(function(tr){ const n=tr.querySelector('input[type=number]'); total += n ? (parseFloat(n.value)||0) : 0; });

@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversor Hygia — Classificação de Risco</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --azul:#2f6fb0; --verde:#3f9d6a; --amarelo:#e0a021; --laranja:#dd7a2e; --vermelho:#c8452f;
+    --ink:#161a1d; --ink-soft:#4a5158; --paper:#eceae3; --panel:#fdfcf9;
+    --line:#ddd9cd; --line-strong:#c7c2b3; --accent:#164a3a; --accent-2:#1f6b4f;
+    --focus:#2f6fb0;
+    --shadow-sm:0 1px 2px rgba(22,26,29,.05);
+    --shadow:0 2px 4px rgba(22,26,29,.05),0 16px 40px rgba(22,26,29,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"IBM Plex Sans",system-ui,Arial,sans-serif;background:var(--paper);
+    color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--amarelo);color:var(--ink)}
+
+  .triage-bar{display:flex;height:6px}
+  .triage-bar i{flex:1}
+  .triage-bar i:nth-child(1){background:var(--azul)}
+  .triage-bar i:nth-child(2){background:var(--verde)}
+  .triage-bar i:nth-child(3){background:var(--amarelo)}
+  .triage-bar i:nth-child(4){background:var(--laranja)}
+  .triage-bar i:nth-child(5){background:var(--vermelho)}
+
+  .wrap{max-width:940px;margin:0 auto;padding:0 22px}
+
+  header.hero{padding:52px 0 30px}
+  .kicker{display:inline-flex;align-items:center;gap:9px;font-size:11.5px;font-weight:700;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--accent-2)}
+  .kicker .pulse{width:8px;height:8px;border-radius:50%;background:var(--vermelho);
+    box-shadow:0 0 0 0 rgba(200,69,47,.5);animation:pulse 2.2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(200,69,47,.5)}70%{box-shadow:0 0 0 9px rgba(200,69,47,0)}100%{box-shadow:0 0 0 0 rgba(200,69,47,0)}}
+  h1{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:clamp(34px,6vw,58px);
+    line-height:.98;letter-spacing:-.02em;margin:16px 0 0;max-width:16ch}
+  h1 em{font-style:italic;color:var(--accent-2)}
+  .lede{font-size:17px;color:var(--ink-soft);max-width:56ch;margin-top:20px}
+  .lede code{font-family:"IBM Plex Mono",monospace;font-size:14px;background:#e6e3d8;
+    border:1px solid var(--line-strong);border-radius:5px;padding:1px 6px}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);overflow:hidden;margin-bottom:22px}
+  .card-pad{padding:28px}
+  .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    padding:20px 28px;border-bottom:1px solid var(--line);background:#faf8f2}
+  .card-head h2{font-family:"Fraunces",serif;font-weight:700;font-size:20px;letter-spacing:-.01em}
+  .card-head .tag{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:.1em}
+
+  .drop{position:relative;border:2px dashed var(--line-strong);border-radius:13px;
+    padding:48px 26px;text-align:center;cursor:pointer;transition:.2s;background:#faf8f2;display:block}
+  .drop:hover,.drop.hover{border-color:var(--accent-2);background:#eef4ee}
+  .drop.has{border-style:solid;border-color:var(--accent-2);background:#eef4ee}
+  .drop .ico{width:52px;height:52px;margin:0 auto 14px;border-radius:13px;background:var(--accent);
+    display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .drop .ico svg{width:26px;height:26px}
+  .drop h3{font-family:"Fraunces",serif;font-size:19px;font-weight:700;margin-bottom:5px}
+  .drop p{color:var(--ink-soft);font-size:14.5px}
+  .drop .chip{display:inline-flex;align-items:center;gap:7px;margin-top:16px;font-size:12.5px;
+    font-family:"IBM Plex Mono",monospace;color:var(--ink-soft);background:#e6e3d8;
+    border:1px solid var(--line-strong);border-radius:999px;padding:5px 14px}
+  .drop.has .chip{background:#dcebe0;border-color:var(--accent-2);color:var(--accent)}
+  input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+
+  .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:22px}
+  .btn{display:inline-flex;align-items:center;gap:9px;border:none;border-radius:11px;
+    padding:14px 26px;font-size:15.5px;font-weight:600;cursor:pointer;font-family:inherit;
+    transition:.16s;background:var(--accent);color:#fff;box-shadow:var(--shadow-sm)}
+  .btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:var(--shadow)}
+  .btn:active:not(:disabled){transform:translateY(0)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn svg{width:18px;height:18px}
+  .btn.ghost{background:transparent;color:var(--accent-2);border:1.5px solid var(--line-strong);box-shadow:none}
+  .btn.ghost:hover:not(:disabled){border-color:var(--accent-2);background:#eef4ee}
+  .btn.sm{padding:10px 18px;font-size:14px}
+  :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+  .bar{height:5px;background:#e6e3d8;border-radius:999px;overflow:hidden;margin-top:20px;display:none}
+  .bar b{display:block;height:100%;width:0;border-radius:999px;
+    background:linear-gradient(90deg,var(--verde),var(--accent-2));transition:width .25s}
+  .status{font-size:14.5px;color:var(--ink-soft);margin-top:15px;min-height:21px;display:flex;align-items:center;gap:8px}
+  .status.err{color:var(--vermelho);font-weight:600}
+  .status.ok{color:var(--accent-2);font-weight:600}
+  .status .dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+
+  #result,#panel{display:none}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+    background:var(--line);border-radius:13px;overflow:hidden;border:1px solid var(--line)}
+  .metric{background:var(--panel);padding:20px 18px}
+  .metric .n{font-family:"Fraunces",serif;font-size:32px;font-weight:900;line-height:1;letter-spacing:-.02em}
+  .metric .l{font-size:11.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em;margin-top:7px}
+
+  .prio-wrap{margin-top:26px}
+  .prio-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
+    color:var(--ink-soft);margin-bottom:14px}
+  .prio{display:flex;align-items:center;gap:14px;margin-bottom:11px}
+  .prio .swatch{width:14px;height:14px;border-radius:4px;flex:none}
+  .prio .name{width:120px;font-size:13.5px;font-weight:600;flex:none}
+  .prio .track{flex:1;height:22px;background:#efece3;border-radius:6px;overflow:hidden}
+  .prio .fill{height:100%;border-radius:6px;width:0;transition:width .9s cubic-bezier(.22,1,.36,1)}
+  .prio .val{width:118px;text-align:right;font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--ink-soft);flex:none}
+  .prio .val b{color:var(--ink)}
+
+  /* controles do painel indicador */
+  .ctrls{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:24px}
+  @media(min-width:640px){.ctrls{grid-template-columns:2fr 1fr}}
+  #scopeCtrls{background:#f3f0e7;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:20px}
+  #scopeCtrls .field select{background:var(--panel)}
+  #perFileUnits{background:#f3f0e7;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:20px}
+  .pfrow{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:10px}
+  @media(min-width:640px){.pfrow{grid-template-columns:1fr 1.3fr;align-items:center}}
+  .pfrow:last-child{margin-bottom:0}
+  .pfrow .fname{font-size:13px;font-weight:600;color:var(--ink);word-break:break-word;
+    display:flex;align-items:center;gap:8px}
+  .pfrow .fname .num{flex:none;width:22px;height:22px;border-radius:6px;background:var(--accent-soft);
+    color:var(--accent);font-size:12px;font-weight:700;display:grid;place-items:center}
+  .pfrow select{width:100%;font-family:inherit;font-size:14px;color:var(--ink);background:var(--panel);
+    border:1.5px solid var(--line-strong);border-radius:9px;padding:9px 11px}
+  .pfrow select:focus{border-color:var(--accent-2);outline:none;box-shadow:0 0 0 3px rgba(31,107,79,.14)}
+  .field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.09em;color:var(--ink-soft);margin-bottom:7px}
+  .field input,.field select{width:100%;font-family:inherit;font-size:15px;color:var(--ink);
+    background:var(--panel);border:1.5px solid var(--line-strong);border-radius:10px;padding:11px 13px;transition:.15s}
+  .field input:focus,.field select:focus{border-color:var(--accent-2);outline:none;box-shadow:0 0 0 3px rgba(31,107,79,.14)}
+  .seg-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-soft);margin-bottom:8px}
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .seg button{flex:1;min-width:120px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;
+    border:1.5px solid var(--line-strong);background:var(--panel);color:var(--ink-soft);
+    border-radius:10px;padding:11px 10px;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .seg button .dot{width:11px;height:11px;border-radius:3px}
+  .seg button[data-k="1"] .dot{background:var(--azul)}
+  .seg button[data-k="2"] .dot{background:var(--verde)}
+  .seg button[data-k="3"] .dot{background:var(--amarelo)}
+  .seg button.on{color:var(--ink);border-color:var(--accent-2);background:#eef4ee;box-shadow:var(--shadow-sm)}
+  .seg button:hover{border-color:var(--accent-2)}
+
+  /* tabela indicador — replica do modelo oficial */
+  .ind-scroll{overflow-x:auto;border-radius:12px;border:1px solid var(--line-strong)}
+  table.ind{border-collapse:collapse;width:100%;min-width:660px;font-size:13.5px;background:#fff}
+  /* navegacao de paginas */
+  .pagenav{display:flex;gap:8px;margin:0 0 22px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:6px;box-shadow:var(--shadow-sm)}
+  .pgbtn{flex:1;font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;border:none;
+    background:transparent;color:var(--ink-soft);border-radius:9px;padding:12px 14px;transition:.15s}
+  .pgbtn:hover{color:var(--ink);background:#f3f0e7}
+  .pgbtn.on{background:var(--accent);color:#fff;box-shadow:var(--shadow-sm)}
+  /* tabela de listas (pacientes) */
+  table.ind.lst{min-width:820px;font-size:12.5px}
+  table.ind.lst th{position:sticky;top:0;z-index:1}
+  table.ind.lst td{text-align:center;padding:7px 9px;font-weight:400}
+  table.ind.lst td:first-child{text-align:left;font-weight:400}
+  table.ind.lst tr.over td{background:#fdf4e3}
+  table.ind.lst tr:nth-child(even) td{background:#faf9f5}
+  table.ind.lst tr.over:nth-child(even) td{background:#fbeecf}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;color:#fff}
+  table.ind caption{caption-side:top;font-family:"Fraunces",serif;font-weight:700;font-size:19px;
+    color:var(--ink);padding:16px 10px 18px;letter-spacing:.01em}
+  table.ind th{background:#1a1a1a;color:#fff;font-weight:700;font-size:12px;text-transform:uppercase;
+    letter-spacing:.04em;padding:11px 12px;text-align:center;white-space:nowrap}
+  table.ind th:first-child{text-align:left}
+  table.ind td{padding:10px 12px;text-align:center;border-bottom:1px solid #ececec;color:#222}
+  table.ind td:first-child{text-align:left;font-weight:600}
+  table.ind tr.hl-1{background:var(--azul);color:#fff}
+  table.ind tr.hl-2{background:var(--verde);color:#fff}
+  table.ind tr.hl-3{background:var(--amarelo);color:#1a1a1a}
+  table.ind tr.hl-1 td,table.ind tr.hl-2 td,table.ind tr.hl-3 td{color:inherit;font-weight:600;border-bottom-color:rgba(255,255,255,.25)}
+  table.ind tr.sum td{background:#1a1a1a;color:#fff;font-weight:700}
+  table.ind tr.lanc td{background:#8a8a8a;color:#fff;font-weight:700;text-align:left}
+  table.ind tr.lanc td:nth-child(2){text-align:center}
+  .ind-meta{margin-top:18px;font-size:14px;line-height:1.7}
+  .ind-meta b{color:var(--ink)}
+  .ind-note{font-size:12.5px;color:var(--ink-soft);margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+
+  .steps{list-style:none;counter-reset:s}
+  .steps li{counter-increment:s;position:relative;padding:15px 0 15px 52px;border-bottom:1px solid var(--line);font-size:14.5px}
+  .steps li:last-child{border-bottom:none;padding-bottom:2px}
+  .steps li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:14px;
+    font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;color:var(--accent-2);
+    width:36px;height:28px;border-right:2px solid var(--line-strong);display:grid;place-items:center;padding-right:4px}
+  .steps li b{font-weight:600}
+  .steps li code{font-family:"IBM Plex Mono",monospace;font-size:13px;background:#e6e3d8;padding:1px 6px;border-radius:5px}
+
+  details{border-top:1px solid var(--line);margin-top:6px;padding-top:14px}
+  summary{cursor:pointer;color:var(--accent-2);font-weight:600;font-size:14px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"\25B8  ";color:var(--accent-2)}
+  details[open] summary::before{content:"\25BE  "}
+  details p{font-size:13.5px;color:var(--ink-soft);margin-top:10px}
+  details code{font-family:"IBM Plex Mono",monospace;font-size:12.5px;background:#e6e3d8;padding:1px 5px;border-radius:4px}
+
+  footer{text-align:center;padding:14px 0 44px;font-size:12.5px;color:var(--ink-soft)}
+  footer .lock{display:inline-flex;align-items:center;gap:6px}
+
+  @media(max-width:560px){
+    .card-pad{padding:20px}.card-head{padding:16px 20px}
+    .prio .name{width:96px;font-size:12.5px}.prio .val{width:96px;font-size:11.5px}
+    header.hero{padding:38px 0 22px}
+  }
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* ===== IMPRESSAO / PDF (somente #printArea) ===== */
+  #printArea{display:none}
+  @media print{
+    @page{ size:A4 portrait; margin:14mm 12mm; }
+    body{ background:#fff !important; }
+    body > .triage-bar, body > .wrap{ display:none !important; }
+    #printArea{ display:block !important; }
+    #printArea *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .pdf-page{ page-break-after:always; }
+    .pdf-page:last-child{ page-break-after:auto; }
+    .pdf-block{ page-break-inside:avoid; }
+    .pdf-h1{ font-family:"Fraunces",Georgia,serif; font-size:22px; font-weight:900; margin:0 0 2px; }
+    .pdf-sub{ font-size:12px; color:#444; margin:0 0 4px; }
+    .pdf-meta{ font-size:11px; color:#333; margin:0 0 14px; border-bottom:2px solid #161a1d; padding-bottom:10px; }
+    .pdf-meta b{ color:#000; }
+    .pdf-h2{ font-family:"Fraunces",Georgia,serif; font-size:15px; font-weight:700; margin:16px 0 7px; }
+    .pdf-note{ font-size:10px; color:#555; margin:5px 0 0; }
+    table.pdf-t{ border-collapse:collapse; width:100%; font-size:10.5px; margin-bottom:4px; }
+    table.pdf-t caption{ caption-side:top; font-family:"Fraunces",serif; font-weight:700; font-size:14px; padding:0 0 8px; text-align:left; }
+    table.pdf-t th{ background:#1a1a1a; color:#fff; font-size:9px; font-weight:700; text-transform:uppercase;
+      padding:6px 6px; text-align:center; }
+    table.pdf-t th:first-child{ text-align:left; }
+    table.pdf-t td{ padding:5px 6px; text-align:center; border-bottom:1px solid #e2e2e2; }
+    table.pdf-t td:first-child{ text-align:left; }
+    table.pdf-t tr.hl-1 td{ background:#2f6fb0; color:#fff; }
+    table.pdf-t tr.hl-2 td{ background:#3f9d6a; color:#fff; }
+    table.pdf-t tr.hl-3 td{ background:#e0a021; color:#000; }
+    table.pdf-t tr.sum td{ background:#1a1a1a; color:#fff; font-weight:700; }
+    table.pdf-t tr.lanc td{ background:#8a8a8a; color:#fff; font-weight:700; text-align:left; }
+    .pdf-cards{ display:flex; gap:10px; margin:6px 0 4px; }
+    .pdf-card{ flex:1; border:1px solid #ccc; border-radius:8px; padding:12px 14px; }
+    .pdf-card .n{ font-family:"Fraunces",serif; font-size:24px; font-weight:900; }
+    .pdf-card .l{ font-size:10px; color:#555; text-transform:uppercase; letter-spacing:.05em; margin-top:3px; }
+    .pdf-pill{ display:inline-block; padding:1px 8px; border-radius:999px; font-size:9.5px; font-weight:700; color:#fff; }
+    .pdf-foot{ margin-top:18px; font-size:9px; color:#888; border-top:1px solid #ddd; padding-top:8px; }
+  }
+</style>
+</head>
+<body>
+<!-- ===== FHSL GATE (login + permissão) ===== -->
+<div id="fhsl-gate" style="position:fixed;inset:0;z-index:99999;background:#0f1115;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+  <div id="fhsl-gate-box" style="background:#1a1d23;border:1px solid #2a2e37;border-radius:16px;padding:2rem;width:340px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="text-align:center;margin-bottom:1.2rem">
+      <div style="width:52px;height:52px;background:#1d6aad;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 10px">🎯</div>
+      <div style="font-size:16px;font-weight:700;color:#fff">Sistema de Análise de Classificação de Risco</div>
+      <div style="font-size:12px;color:#9aa0aa;margin-top:3px">Fundação Hospital Santa Lydia</div>
+    </div>
+    <div id="fhsl-gate-err" style="display:none;background:#3b1519;color:#f5a3a3;font-size:12px;padding:8px 10px;border-radius:7px;margin-bottom:10px"></div>
+    <div id="fhsl-gate-login">
+      <input id="fhsl-email" type="email" placeholder="E-mail" style="width:100%;padding:10px;margin-bottom:8px;background:#0f1115;border:1px solid #2a2e37;border-radius:8px;color:#fff;font-size:14px">
+      <input id="fhsl-pass" type="password" placeholder="Senha" style="width:100%;padding:10px;margin-bottom:12px;background:#0f1115;border:1px solid #2a2e37;border-radius:8px;color:#fff;font-size:14px">
+      <button onclick="fhslDoLogin()" style="width:100%;padding:11px;background:#1d6aad;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Entrar</button>
+    </div>
+    <div id="fhsl-gate-deny" style="display:none;text-align:center">
+      <p style="color:#f5a3a3;font-size:13px;margin-bottom:12px">Você não tem permissão para acessar este módulo.</p>
+      <a href="index.html" style="display:inline-block;padding:9px 16px;background:#2a2e37;color:#fff;border-radius:8px;font-size:13px;text-decoration:none">← Voltar aos módulos</a>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var SCRIPT_URL='https://script.google.com/macros/s/AKfycbzaqf4kCKuw9rpnwNsqSuQ7glllp93iJQnBFJ3x1F2yuHvFNYVlb67ufFuWDMlLBNVP/exec';
+  var MODULO='risco';
+  function libera(){ var g=document.getElementById('fhsl-gate'); if(g) g.remove(); document.body.style.overflow=''; }
+  function temPermissao(u){
+    if(!u) return false;
+    if(u.role==='admin') return true;                 // admin vê tudo
+    if(!u.modulos) return true;                        // sem config = vê tudo (retrocompatível)
+    var m = (''+u.modulos).split(',').map(function(x){return x.trim();});
+    return m.indexOf(MODULO)>=0;
+  }
+  function aplica(u){
+    if(temPermissao(u)){ libera(); }
+    else { document.getElementById('fhsl-gate-login').style.display='none';
+           document.getElementById('fhsl-gate-deny').style.display='block'; }
+  }
+  window.fhslDoLogin=function(){
+    var email=(document.getElementById('fhsl-email').value||'').trim().toLowerCase();
+    var senha=document.getElementById('fhsl-pass').value;
+    var err=document.getElementById('fhsl-gate-err'); err.style.display='none';
+    if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
+    fetch(SCRIPT_URL+'?action=authuser',{method:'POST',body:JSON.stringify({email:email,senha:senha})})
+      .then(function(r){return r.text();}).then(function(t){
+        var d; try{d=JSON.parse(t);}catch(e){d={ok:false,message:'Erro de conexão'};}
+        if(!d.ok){ err.textContent=d.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
+        sessionStorage.setItem('fhsl_session', JSON.stringify(d.user));
+        aplica(d.user);
+      }).catch(function(){ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; });
+  };
+  document.body.style.overflow='hidden';
+  var s=sessionStorage.getItem('fhsl_session');
+  if(s){ try{ aplica(JSON.parse(s)); }catch(e){} }
+  document.addEventListener('keydown',function(e){ if(e.key==='Enter' && document.getElementById('fhsl-gate')){ fhslDoLogin(); }});
+})();
+</script>
+<!-- ===== /FHSL GATE ===== -->
+
+
+<div class="triage-bar"><i></i><i></i><i></i><i></i><i></i></div>
+
+<div class="wrap">
+  <header class="hero">
+    <span class="kicker"><span class="pulse"></span>Hygia &middot; Tempos da Classifica&ccedil;&atilde;o de Risco</span>
+    <h1>Do relat&oacute;rio bruto ao <em>indicador</em>, num arraste.</h1>
+    <p class="lede">Carregue o arquivo <code>.xls</code> exportado do sistema. A ferramenta trata os dados, gera a planilha limpa e monta a <b>tabela de indicador de desempenho</b> pronta para copiar.</p>
+  </header>
+
+  <section class="card">
+    <div class="card-pad">
+      <label class="drop" id="drop" for="file">
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>
+          </svg>
+        </span>
+        <input type="file" id="file" accept=".xls,.xlsx" multiple>
+        <h3>Solte os relat&oacute;rios aqui</h3>
+        <p>um ou v&aacute;rios arquivos &mdash; aceita como saem do Hygia</p>
+        <span class="chip" id="chip">nenhum arquivo selecionado</span>
+      </label>
+
+      <div class="bar" id="bar"><b></b></div>
+      <div class="status" id="status"><span class="dot"></span>Aguardando arquivo</div>
+
+      <div class="actions">
+        <button class="btn" id="go" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+          Tratar relat&oacute;rio(s)
+        </button>
+        <button class="btn ghost" id="reset" style="display:none">Limpar</button>
+      </div>
+    </div>
+  </section>
+
+  <nav class="pagenav" id="pageNav" style="display:none">
+    <button class="pgbtn on" data-pg="1">P&aacute;gina 1 &middot; Indicador</button>
+    <button class="pgbtn" data-pg="2">P&aacute;gina 2 &middot; An&aacute;lise para gest&atilde;o</button>
+  </nav>
+
+  <div id="page1">
+  <section class="card" id="result">
+    <div class="card-head">
+      <h2>Resultado do tratamento</h2>
+      <span class="tag" id="fileTag"></span>
+    </div>
+    <div class="card-pad">
+      <div class="summary-grid" id="metrics"></div>
+      <div class="prio-wrap">
+        <div class="prio-title">Atendimentos por prioridade</div>
+        <div id="prios"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="panel">
+    <div class="card-head"><h2>Indicador de desempenho</h2><span class="tag">gerado dos dados</span></div>
+    <div class="card-pad">
+      <div class="ctrls" id="scopeCtrls">
+        <div class="field" id="fileScopeWrap" style="display:none">
+          <label for="fileScope">Relat&oacute;rio</label>
+          <select id="fileScope"></select>
+        </div>
+        <div class="field">
+          <label for="monthScope">Per&iacute;odo (m&ecirc;s)</label>
+          <select id="monthScope"></select>
+        </div>
+      </div>
+      <div id="perFileUnits" style="display:none">
+        <div class="seg-title">Unidade de cada relat&oacute;rio</div>
+        <div id="perFileList"></div>
+        <div style="height:20px"></div>
+      </div>
+      <div class="ctrls" id="globalUnitCtrls">
+        <div class="field">
+          <label for="unit">Unidade de sa&uacute;de</label>
+          <select id="unit">
+            <option value="" data-title="">Selecione a unidade&hellip;</option>
+            <option data-title="UPA NORTE"
+              value='UPA Norte "Dr. Nelson Mandela" &mdash; Av. Euclydes Figueiredo, 295 &mdash; Adelino Simioni &mdash; 14071-140'>UPA Norte &mdash; Dr. Nelson Mandela</option>
+            <option data-title="UPA LESTE"
+              value='UPA Leste "Dr. Luis At&iacute;lio Losi Viana" &mdash; Av. Treze de Maio, 353 &mdash; Jd. Paulistano &mdash; 14090-270'>UPA Leste &mdash; Dr. Luis At&iacute;lio Losi Viana</option>
+            <option data-title="UPA OESTE"
+              value='UPA Oeste "Prof. Dr. Jo&atilde;o Jos&eacute; Carneiro" &mdash; R. Teresina, 678 &mdash; Vila Maria Lu&iacute;za &mdash; 14055-380'>UPA Oeste &mdash; Prof. Dr. Jo&atilde;o Jos&eacute; Carneiro</option>
+            <option data-title="UPA RIBEIR&Atilde;O VERDE"
+              value='UPA Ribeir&atilde;o Verde "Luciana Ap. C&acirc;ndido dos Santos" &mdash; Estr. Ant&ocirc;nia Mugnatto Marincek, 555 &mdash; Cond. Copacabana &mdash; 14078-405'>UPA Ribeir&atilde;o Verde &mdash; Luciana Ap. C&acirc;ndido dos Santos</option>
+            <option data-title="UBDS VILA VIRG&Iacute;NIA"
+              value='UBDS Vila Virg&iacute;nia "Dr. Marco Ant&ocirc;nio Sah&atilde;o" &mdash; R. Franco da Rocha, 1270 &mdash; Vila Virg&iacute;nia &mdash; 14030-470'>UBDS Vila Virg&iacute;nia &mdash; Dr. Marco Ant&ocirc;nio Sah&atilde;o</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="refdate">Data do relat&oacute;rio</label>
+          <input type="text" id="refdate" placeholder="dd/mm/aaaa">
+        </div>
+      </div>
+
+      <div class="seg-title">Indicador a analisar (define a linha em destaque)</div>
+      <div class="seg" id="seg">
+        <button data-k="1"><span class="dot"></span>1 &middot; N&atilde;o urgente</button>
+        <button data-k="2" class="on"><span class="dot"></span>2 &middot; Pouco urgente</button>
+        <button data-k="3"><span class="dot"></span>3 &middot; Urgente</button>
+      </div>
+
+      <div style="height:22px"></div>
+      <div class="ind-scroll">
+        <table class="ind" id="indTable"></table>
+      </div>
+      <div class="ind-meta" id="indMeta"></div>
+
+      <div class="actions">
+        <button class="btn sm" id="dlPng">Baixar tabela (imagem PNG)</button>
+        <button class="btn sm ghost" id="copyImg">Copiar imagem</button>
+        <button class="btn sm ghost" id="dlXlsx">Baixar planilha + indicador (.xlsx)</button>
+        <button class="btn sm ghost" id="dlTrat">Baixar s&oacute; planilhas tratadas</button>
+      </div>
+      <div class="ind-note" id="indNote"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Como o indicador &eacute; calculado</h2><span class="tag">defini&ccedil;&otilde;es</span></div>
+    <div class="card-pad">
+      <ol class="steps">
+        <li><b>Quantidade.</b> Total de atendimentos de cada prioridade no per&iacute;odo.</li>
+        <li><b>Lan&ccedil;ados pelo m&eacute;dico.</b> Atendimentos com o campo M&eacute;dico preenchido.</li>
+        <li><b>Limite (minutos).</b> Tempo-alvo: N&atilde;o urgente 240, Pouco urgente 120, Urgente 30.</li>
+        <li><b>Atinge o indicador.</b> Lan&ccedil;ados cujo tempo (Chamada m&eacute;dica &minus; Chegada) ficou dentro do limite.</li>
+        <li><b>% indicador.</b> Atinge &divide; Lan&ccedil;ados. Meta institucional: &ge; 80%.</li>
+      </ol>
+      <details>
+        <summary>Nota sobre pequenas diferen&ccedil;as no &ldquo;Atinge&rdquo;</summary>
+        <p>O c&aacute;lculo usa o tempo em minutos com as fra&ccedil;&otilde;es de segundo do relat&oacute;rio. Dependendo de como o Excel arredonda esses segundos, o valor de &ldquo;atinge&rdquo; pode variar em 1 ou 2 casos numa faixa de milhares &mdash; sem efeito pr&aacute;tico no percentual. Quantidade e Lan&ccedil;ados batem exatamente.</p>
+      </details>
+    </div>
+  </section>
+  </div><!-- /page1 -->
+
+  <div id="page2" style="display:none">
+  <section class="card">
+    <div class="card-head"><h2>An&aacute;lise para a gest&atilde;o</h2><span class="tag" id="p2scope"></span></div>
+    <div class="card-pad">
+      <p class="lede" style="font-size:15px;margin:0 0 20px">Do escopo selecionado na P&aacute;gina 1 (arquivo/m&ecirc;s/unidade). O <b>PDF</b> traz os resumos gerenciais (leve, ~4 p&aacute;ginas) para os coordenadores avaliarem; o <b>Excel</b> traz as listas nominais completas para auditoria.</p>
+      <div class="actions" style="margin-top:0">
+        <button class="btn sm" id="dlPdf">Gerar PDF (resumos gerenciais)</button>
+        <button class="btn sm ghost" id="dlAnalise">Exportar listas (.xlsx &mdash; uma aba por filtro)</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Resumo por situa&ccedil;&atilde;o</h2><span class="tag">classifica&ccedil;&otilde;es</span></div>
+    <div class="card-pad">
+      <div class="ind-scroll"><table class="ind" id="tblSituacao"></table></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Resumo por categoria de senha</h2><span class="tag">tipo de atendimento</span></div>
+    <div class="card-pad">
+      <p class="ind-note" style="border:none;margin:0 0 14px;padding:0">Categoria inferida pelo prefixo da senha (A, P, OD, PRA, PRP, PROD, PRPRA, PRPRP, SV); demais viram &ldquo;Especial&rdquo;.</p>
+      <div class="ind-scroll"><table class="ind" id="tblCategoria"></table></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Tempos na classifica&ccedil;&atilde;o de risco</h2><span class="tag">m&eacute;dias do escopo</span></div>
+    <div class="card-pad">
+      <div class="summary-grid" id="temposBox"></div>
+      <p class="ind-note" style="margin-top:16px">Sala de classifica&ccedil;&atilde;o = Fim C.R. &minus; In&iacute;cio C.R. (usa a Dura&ccedil;&atilde;o C.R. quando faltam os hor&aacute;rios). Espera = Chamada C.R. &minus; Chegada. Ambos tratam a virada da meia-noite e ignoram registros incompletos.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Produtividade por enfermeiro</h2><span class="tag" id="tagEnf"></span></div>
+    <div class="card-pad">
+      <div class="seg-title">Turno (pela chegada do paciente)</div>
+      <div class="seg" id="segTurno">
+        <button data-t="all" class="on">Todos</button>
+        <button data-t="manha">Manh&atilde; &middot; 07&ndash;13h</button>
+        <button data-t="tarde">Tarde &middot; 13&ndash;19h</button>
+        <button data-t="vespertino">Vespertino &middot; 19&ndash;01h</button>
+        <button data-t="madrugada">Madrugada &middot; 01&ndash;07h</button>
+      </div>
+      <div style="height:18px"></div>
+      <p class="ind-note" style="border:none;margin:0 0 14px;padding:0">C&oacute;digo do classificador, n&uacute;mero de classifica&ccedil;&otilde;es, tempo m&eacute;dio na sala, espera m&eacute;dia (chegada &rarr; chamada) e o detalhe por situa&ccedil;&atilde;o. Um tra&ccedil;o (&ldquo;&mdash;&rdquo;) no tempo m&eacute;dio significa que aquele classificador n&atilde;o tem registros com In&iacute;cio/Fim C.R. (t&iacute;pico de casos emergentes, que v&atilde;o direto ao atendimento) &mdash; ent&atilde;o n&atilde;o h&aacute; dura&ccedil;&atilde;o de sala a calcular.</p>
+      <div class="ind-scroll"><table class="ind" id="tblEnf"></table></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Pacientes para revis&atilde;o</h2><span class="tag">listas filtradas</span></div>
+    <div class="card-pad">
+      <div class="seg-title">Filtro</div>
+      <div class="seg" id="segFiltro">
+        <button data-f="tempo" class="on">Tempo acima do limite</button>
+        <button data-f="branco">Branco</button>
+        <button data-f="nrc">N&atilde;o respondeu chamada</button>
+        <button data-f="semmed">Sem chamada m&eacute;dica</button>
+      </div>
+      <div style="height:14px"></div>
+      <div class="seg-title">Situa&ccedil;&atilde;o</div>
+      <div class="seg" id="segSituacao">
+        <button data-s="all" class="on">Todas</button>
+        <button data-s="EMERGENTE">Emerg.</button>
+        <button data-s="MUITO URGENTE">Muito urg.</button>
+        <button data-s="URGENTE">Urgente</button>
+        <button data-s="POUCO URGENTE">Pouco urg.</button>
+        <button data-s="N&Atilde;O URGENTE">N&atilde;o urg.</button>
+        <button data-s="BRANCO">Branco</button>
+      </div>
+      <div id="filtroInfo" class="ind-note" style="border:none;padding:0;margin:14px 0 8px"></div>
+      <div class="ind-scroll" style="max-height:520px;overflow:auto">
+        <table class="ind lst" id="tblLista"></table>
+      </div>
+    </div>
+  </section>
+  </div><!-- /page2 -->
+
+  <footer>
+    <span class="lock">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Processamento 100% local &mdash; nenhum dado sai do seu computador.
+    </span>
+  </footer>
+</div>
+
+<!-- area exclusiva de impressao/PDF (resumos gerenciais) -->
+<div id="printArea" aria-hidden="true"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const drop=$('#drop'),fileIn=$('#file'),go=$('#go'),reset=$('#reset'),
+      status=$('#status'),chip=$('#chip'),bar=$('#bar'),barFill=bar.querySelector('b'),
+      result=$('#result'),metrics=$('#metrics'),prios=$('#prios'),fileTag=$('#fileTag'),
+      panel=$('#panel'),unitIn=$('#unit'),refdateIn=$('#refdate'),seg=$('#seg'),
+      indTable=$('#indTable'),indMeta=$('#indMeta'),indNote=$('#indNote'),
+      fileScopeWrap=$('#fileScopeWrap'),fileScope=$('#fileScope'),monthScope=$('#monthScope'),
+      perFileUnits=$('#perFileUnits'),perFileList=$('#perFileList'),globalUnitCtrls=$('#globalUnitCtrls');
+let pickedFiles=[], processed=[], hlKey="2";
+
+// fonte unica das unidades (title curto p/ coluna e cabecalho; full p/ rodape)
+const UNITS=[
+  {title:"UPA NORTE", label:"UPA Norte \u2014 Dr. Nelson Mandela",
+   full:'UPA Norte "Dr. Nelson Mandela" \u2014 Av. Euclydes Figueiredo, 295 \u2014 Adelino Simioni \u2014 14071-140'},
+  {title:"UPA LESTE", label:"UPA Leste \u2014 Dr. Luis At\u00edlio Losi Viana",
+   full:'UPA Leste "Dr. Luis At\u00edlio Losi Viana" \u2014 Av. Treze de Maio, 353 \u2014 Jd. Paulistano \u2014 14090-270'},
+  {title:"UPA OESTE", label:"UPA Oeste \u2014 Prof. Dr. Jo\u00e3o Jos\u00e9 Carneiro",
+   full:'UPA Oeste "Prof. Dr. Jo\u00e3o Jos\u00e9 Carneiro" \u2014 R. Teresina, 678 \u2014 Vila Maria Lu\u00edza \u2014 14055-380'},
+  {title:"UPA RIBEIR\u00c3O VERDE", label:"UPA Ribeir\u00e3o Verde \u2014 Luciana Ap. C\u00e2ndido dos Santos",
+   full:'UPA Ribeir\u00e3o Verde "Luciana Ap. C\u00e2ndido dos Santos" \u2014 Estr. Ant\u00f4nia Mugnatto Marincek, 555 \u2014 Cond. Copacabana \u2014 14078-405'},
+  {title:"UBDS VILA VIRG\u00cdNIA", label:"UBDS Vila Virg\u00ednia \u2014 Dr. Marco Ant\u00f4nio Sah\u00e3o",
+   full:'UBDS Vila Virg\u00ednia "Dr. Marco Ant\u00f4nio Sah\u00e3o" \u2014 R. Franco da Rocha, 1270 \u2014 Vila Virg\u00ednia \u2014 14030-470'}
+];
+const unitByTitle=t=>UNITS.find(u=>u.title===t)||null;
+function unitOptionsHTML(sel){
+  return '<option value="">Selecione a unidade\u2026</option>'+
+    UNITS.map(u=>'<option value="'+u.title+'"'+(u.title===sel?' selected':'')+'>'+u.label+'</option>').join("");
+}
+
+const SRC={senha:0,pac:1,cheg:8,chamcr:9,inicr:11,fimcr:12,dur:16,enf:17,prio:19,chammed:23,med:25,nrc:30};
+const OUT_HEADER=["UNIDADE","DATA","SENHA","PACIENTE","CHEGADA","CHAMADA C.R.","IN\u00cdCIO C.R.","FIM C.R.",
+  "DURA\u00c7\u00c3O C.R.","ENFERMEIRO","PRIORIDADE","CHAMADA M\u00c9DICA","M\u00c9DICO","NRC","TEMPO ATENDIMENTO","MINUTOS"];
+const DATE_RE=/^\d{2}\/\d{2}\/\d{4}$/;
+const MESES=["janeiro","fevereiro","mar\u00e7o","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const ROWS=[
+  {key:"BRANCO",       label:"BRANCO",        limite:null},
+  {key:"N\u00c3O URGENTE",  label:"N\u00c3O URGENTE",  limite:240, ind:"1"},
+  {key:"POUCO URGENTE",label:"POUCO URGENTE", limite:120, ind:"2"},
+  {key:"URGENTE",      label:"URGENTE",       limite:30,  ind:"3"},
+  {key:"MUITO URGENTE",label:"MUITO URGENTE", limite:null},
+  {key:"EMERGENTE",    label:"EMERGENTE",     limite:null}
+];
+const clean=v=>{ if(v==null) return ""; const s=String(v).trim();
+  return (s==="\u00b7"||s.toLowerCase()==="nan")?"":s; };
+const hasval=v=>{ const s=clean(v); return s!=="" && s!=="-"; };
+const toMinHM=t=>{ if(!t) return null; const m=String(t).trim().match(/^(\d{1,2}):(\d{2})/);
+  return m?(+m[1])*60+(+m[2]):null; };
+const fmtHMS=min=>{ const h=Math.floor(min/60),mm=min%60,p=n=>String(n).padStart(2,"0");
+  return p(h)+":"+p(mm)+":00"; };
+const br=n=>n.toLocaleString('pt-BR');
+const pctBR=x=>x.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+"%";
+const monthKey=d=>d.slice(3);              // "mm/yyyy" a partir de "dd/mm/yyyy"
+const monthLabel=mk=>{ const[m,y]=mk.split('/'); return MESES[(+m)-1].replace(/^./,c=>c.toUpperCase())+" de "+y; };
+// modo por-arquivo ativo quando ha mais de um arquivo carregado
+const perFileMode=()=>processed.length>1;
+// unidade (title) do arquivo i: usa o select por-arquivo se multi, senao o global
+function unitOfFile(i){
+  if(perFileMode()) return processed[i] ? (processed[i].unit||"") : "";
+  const opt=unitIn.options[unitIn.selectedIndex];
+  return (opt&&opt.value)?opt.value:"";
+}
+// title curto da unidade global (arquivo unico) — retrocompat
+function unitShortName(){
+  const opt=unitIn.options[unitIn.selectedIndex];
+  return (opt&&opt.value)?opt.value:"";
+}
+// todas as unidades distintas presentes no escopo atual (para consolidado)
+function unitsInScope(){
+  const set=new Set();
+  processed.forEach((p,i)=>{ if(fileScope.value!=="all"&&String(i)!==fileScope.value) return;
+    const u=unitOfFile(i); if(u) set.add(u); });
+  return [...set];
+}
+// alguma unidade faltando no escopo?
+function missingUnit(){
+  let miss=false;
+  processed.forEach((p,i)=>{ if(fileScope.value!=="all"&&String(i)!==fileScope.value) return;
+    if(!unitOfFile(i)) miss=true; });
+  return miss;
+}
+// monta AOA da aba TRATADOS com a coluna UNIDADE (unidade por-registro se houver, senao a passada)
+function buildTratadoAOA(records, unitTitle){
+  return [OUT_HEADER.slice(), ...records.map(r=>[(r._unit!=null?r._unit:(unitTitle||"")),...r.row])];
+}
+const TRAT_COLS=[{wch:16},{wch:11},{wch:7},{wch:34},{wch:9},{wch:12},{wch:12},{wch:10},
+  {wch:12},{wch:11},{wch:15},{wch:14},{wch:8},{wch:5},{wch:16},{wch:10}];
+
+// categoria da senha por prefixo (testar do mais longo p/ o mais curto p/ nao confundir PRA com P)
+const SENHA_CATS=[
+  {pfx:"PRPRA", cat:"Prioridade da prioridade \u2014 Adulto"},
+  {pfx:"PRPRP", cat:"Prioridade da prioridade \u2014 Pediatria"},
+  {pfx:"PROD",  cat:"Prioridade \u2014 Odontologia"},
+  {pfx:"PRA",   cat:"Prioridade \u2014 Adulto"},
+  {pfx:"PRP",   cat:"Prioridade \u2014 Pediatria"},
+  {pfx:"OD",    cat:"Odontologia"},
+  {pfx:"SV",    cat:"Sala Vermelha"},
+  {pfx:"P",     cat:"Pediatria"},
+  {pfx:"A",     cat:"Adulto (15+)"}
+]; // ja ordenado por comprimento decrescente
+function senhaCategoria(senha){
+  const s=String(senha||"").trim().toUpperCase();
+  if(!s) return "Especial";
+  for(const c of SENHA_CATS){ if(s.startsWith(c.pfx)) return c.cat; }
+  return "Especial";
+}
+// ordem de exibicao das categorias no resumo
+const CAT_ORDER=["Adulto (15+)","Pediatria","Odontologia","Prioridade \u2014 Adulto",
+  "Prioridade \u2014 Pediatria","Prioridade \u2014 Odontologia","Prioridade da prioridade \u2014 Adulto",
+  "Prioridade da prioridade \u2014 Pediatria","Sala Vermelha","Especial"];
+
+// turno pelo horario de CHEGADA
+// Manha 07:00-12:59 | Tarde 13:00-18:59 | Vespertino 19:00-00:59 | Madrugada 01:00-06:59
+const TURNOS=[
+  {key:"manha",     label:"Manh\u00e3",      faixa:"07:00\u201312:59"},
+  {key:"tarde",     label:"Tarde",      faixa:"13:00\u201318:59"},
+  {key:"vespertino",label:"Vespertino", faixa:"19:00\u201300:59"},
+  {key:"madrugada", label:"Madrugada",  faixa:"01:00\u201306:59"}
+];
+const TURNO_LABEL=Object.fromEntries(TURNOS.map(t=>[t.key,t.label]));
+function turnoDe(hhmm){
+  const m=String(hhmm||"").trim().match(/^(\d{1,2}):(\d{2})/);
+  if(!m) return "";
+  const min=(+m[1])*60+(+m[2]);
+  if(min>=420 && min<=779)   return "manha";      // 07:00 - 12:59
+  if(min>=780 && min<=1139)  return "tarde";      // 13:00 - 18:59
+  if(min>=1140 || min<=59)   return "vespertino"; // 19:00 - 00:59
+  return "madrugada";                              // 01:00 - 06:59
+}
+
+// processa um arquivo: devolve linhas (com a data) + set de meses
+function processFile(rows){
+  const out=[]; let cur=null; const months=new Set();
+  for(const r of rows){
+    const c0=clean(r[SRC.senha]);
+    if(DATE_RE.test(c0)){ cur=c0; continue; }
+    if(!c0||c0==="Senha"||c0==="Unidade de Sa\u00fade:") continue;
+    const pac=clean(r[SRC.pac]); if(!pac||!cur) continue;
+    const g=k=>clean(r[SRC[k]]);
+    const cheg=g('cheg'), chammed=g('chammed');
+    const chamcr=g('chamcr'), inicr=g('inicr'), fimcr=g('fimcr'), durCol=g('dur');
+    const a=toMinHM(cheg),b=toMinHM(chammed);
+    let tempo="",mins="";
+    if(a!==null&&b!==null){ let d=b-a; if(d<0)d+=1440; tempo=fmtHMS(d); mins=d; }
+    // duracao na sala de classificacao: FIM CR - INICIO CR (trata virada de dia); fallback = coluna DURACAO
+    let durSala=null;
+    const ti=toMinHM(inicr), tf=toMinHM(fimcr);
+    if(ti!==null&&tf!==null){ let d=tf-ti; if(d<0)d+=1440; durSala=d; }
+    else { const dn=parseFloat(String(durCol).replace(',','.')); if(!isNaN(dn)) durSala=dn; }
+    // espera para a classificacao: CHAMADA C.R. - CHEGADA (trata virada de dia)
+    let esperaCls=null;
+    const tc=toMinHM(chamcr), tcheg=toMinHM(cheg);
+    if(tc!==null&&tcheg!==null){ let d=tc-tcheg; if(d<0)d+=1440; esperaCls=d; }
+    out.push({date:cur,mk:monthKey(cur),
+      row:[cur,c0,pac,cheg,chamcr,inicr,fimcr,durCol,
+        g('enf'),g('prio'),chammed,g('med'),g('nrc'),tempo,mins],
+      prio:(g('prio')||"\u2014").toUpperCase(), med:g('med'), mins,
+      senha:c0, pac, enf:g('enf'), nrc:(g('nrc')||"").toUpperCase(),
+      cheg, chammed, tempo, chamcr, inicr, fimcr,
+      durSala, esperaCls, cat:senhaCategoria(c0), turno:turnoDe(cheg)});
+    months.add(monthKey(cur));
+  }
+  return {out,months};
+}
+
+// agrega estatisticas de um conjunto de registros
+function aggregate(records){
+  let kept=0,noMed=0; const days=new Set(); const byPrio={};
+  const ind={}; ROWS.forEach(r=>ind[r.key]={q:0,lanc:0,atinge:0});
+  for(const rec of records){
+    kept++; days.add(rec.date);
+    if(rec.mins==="") noMed++;
+    byPrio[rec.prio]=(byPrio[rec.prio]||0)+1;
+    if(ind[rec.prio]){
+      ind[rec.prio].q++;
+      if(hasval(rec.med)){
+        ind[rec.prio].lanc++;
+        const rd=ROWS.find(x=>x.key===rec.prio);
+        if(rd&&rd.limite!==null&&rec.mins!==""&&rec.mins<=rd.limite) ind[rec.prio].atinge++;
+      }
+    }
+  }
+  return {kept,noMed,days:days.size,byPrio,ind};
+}
+
+function setStatus(msg,cls){ status.className="status "+(cls||"");
+  status.innerHTML='<span class="dot"></span>'+msg; }
+function showBar(p){ bar.style.display="block"; barFill.style.width=p+"%"; }
+
+function handleFiles(list){
+  pickedFiles=Array.from(list).filter(f=>/\.(xls|xlsx)$/i.test(f.name));
+  if(!pickedFiles.length) return;
+  chip.textContent = pickedFiles.length===1 ? pickedFiles[0].name
+    : pickedFiles.length+" arquivos selecionados";
+  drop.classList.add('has');
+  go.disabled=false; reset.style.display="inline-flex";
+  result.style.display="none"; panel.style.display="none";
+  setStatus((pickedFiles.length>1?"Arquivos prontos":"Arquivo pronto")+" \u2014 clique em tratar");
+}
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('hover')});
+drop.addEventListener('dragleave',()=>drop.classList.remove('hover'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('hover');
+  if(e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);});
+fileIn.addEventListener('change',e=>{ if(e.target.files.length) handleFiles(e.target.files); });
+reset.addEventListener('click',()=>{ pickedFiles=[];processed=[];fileIn.value="";
+  chip.textContent="nenhum arquivo selecionado";drop.classList.remove('has');
+  go.disabled=true;reset.style.display="none";result.style.display="none";
+  panel.style.display="none";bar.style.display="none";
+  var pn=$('#pageNav'); if(pn) pn.style.display="none";
+  var p2=$('#page2'); if(p2) p2.style.display="none";
+  var p1=$('#page1'); if(p1) p1.style.display="";
+  setStatus("Aguardando arquivo"); });
+
+// ---- escopo atual (arquivo + mes selecionados) ----
+function currentRecords(){
+  const fIdx=fileScope.value;             // "all" ou indice
+  const mk=monthScope.value;              // "all" ou "mm/yyyy"
+  let recs=[];
+  processed.forEach((p,i)=>{
+    if(fIdx!=="all" && String(i)!==fIdx) return;
+    const u=unitOfFile(i);
+    for(const rec of p.data.out){ if(mk==="all"||rec.mk===mk) recs.push({...rec,_unit:u}); }
+  });
+  return recs;
+}
+function currentScopeLabel(){
+  const parts=[];
+  if(fileScope.value!=="all") parts.push(processed[+fileScope.value].name);
+  if(monthScope.value!=="all") parts.push(monthLabel(monthScope.value));
+  return parts.join(" \u00b7 ")|| (processed.length>1? processed.length+" arquivos" : (processed[0]?processed[0].name:""));
+}
+
+function rebuildScopeSelectors(){
+  // arquivos
+  if(processed.length>1){
+    fileScopeWrap.style.display="";
+    fileScope.innerHTML='<option value="all">Todos os arquivos ('+processed.length+')</option>'+
+      processed.map((p,i)=>'<option value="'+i+'">'+p.name+'</option>').join("");
+  } else { fileScopeWrap.style.display="none"; fileScope.innerHTML='<option value="all">all</option>'; }
+  refreshMonthOptions();
+  // esconder toda a barra de escopo se nao ha nada a filtrar (1 arquivo, 1 mes)
+  const nMonths=monthScope.options.length - (monthScope.querySelector('option[value="all"]')?1:0);
+  const scopeBox=document.getElementById('scopeCtrls');
+  scopeBox.style.display = (processed.length>1 || nMonths>1) ? "" : "none";
+  renderPerFileUnits();
+}
+// mostra um select de unidade por arquivo quando ha varios; esconde o global nesse caso
+function renderPerFileUnits(){
+  if(perFileMode()){
+    perFileUnits.style.display="";
+    globalUnitCtrls.querySelector('.field:first-child').style.display="none"; // esconde unidade global
+    perFileList.innerHTML=processed.map((p,i)=>
+      '<div class="pfrow"><div class="fname"><span class="num">'+(i+1)+'</span>'+p.name+'</div>'+
+      '<select data-i="'+i+'">'+unitOptionsHTML(p.unit||"")+'</select></div>').join("");
+    perFileList.querySelectorAll('select').forEach(sel=>{
+      sel.addEventListener('change',e=>{ const i=+e.target.dataset.i;
+        processed[i].unit=e.target.value; renderAll(); });
+    });
+  } else {
+    perFileUnits.style.display="none";
+    globalUnitCtrls.querySelector('.field:first-child').style.display="";
+  }
+}
+function refreshMonthOptions(){
+  const fIdx=fileScope.value; const set=new Set();
+  processed.forEach((p,i)=>{ if(fIdx!=="all"&&String(i)!==fIdx) return; p.data.months.forEach(m=>set.add(m)); });
+  const months=[...set].sort((a,b)=>{ const[ma,ya]=a.split('/'),[mb,yb]=b.split('/');
+    return (ya-yb)||(ma-mb); });
+  const prev=monthScope.value;
+  let opts="";
+  if(months.length>1) opts+='<option value="all">Todos os meses ('+months.length+')</option>';
+  opts+=months.map(m=>'<option value="'+m+'">'+monthLabel(m)+'</option>').join("");
+  monthScope.innerHTML=opts;
+  // preferir manter selecao; senao, escolher o mes majoritario
+  if([...monthScope.options].some(o=>o.value===prev)) monthScope.value=prev;
+  else if(months.length>1) monthScope.value=months[months.length-1]; // mes mais recente por padrao
+}
+
+fileScope.addEventListener('change',()=>{ refreshMonthOptions(); renderAll(); });
+monthScope.addEventListener('change',renderAll);
+
+// ---- render resumo + prioridades ----
+function renderResult(agg){
+  fileTag.textContent=currentScopeLabel();
+  metrics.innerHTML=
+    '<div class="metric"><div class="n">'+br(agg.kept)+'</div><div class="l">Atendimentos</div></div>'+
+    '<div class="metric"><div class="n">'+agg.days+'</div><div class="l">Dias no per\u00edodo</div></div>'+
+    '<div class="metric"><div class="n">15</div><div class="l">Colunas finais</div></div>'+
+    '<div class="metric"><div class="n">'+br(agg.noMed)+'</div><div class="l">Sem chamada m\u00e9dica</div></div>';
+  const PC=[{k:"EMERGENTE",c:"var(--vermelho)"},{k:"MUITO URGENTE",c:"var(--laranja)"},
+    {k:"URGENTE",c:"var(--amarelo)"},{k:"POUCO URGENTE",c:"var(--verde)"},
+    {k:"N\u00c3O URGENTE",c:"var(--azul)"},{k:"BRANCO",c:"#9a958a"}];
+  const max=Math.max(1,...Object.values(agg.byPrio));
+  let html="";
+  for(const p of PC){ const q=agg.byPrio[p.k]; if(!q) continue;
+    const pct=(q/agg.kept*100), w=(q/max*100);
+    const label=p.k.charAt(0)+p.k.slice(1).toLowerCase();
+    html+='<div class="prio"><span class="swatch" style="background:'+p.c+'"></span>'+
+      '<span class="name">'+label+'</span>'+
+      '<span class="track"><span class="fill" style="background:'+p.c+'" data-w="'+w+'"></span></span>'+
+      '<span class="val"><b>'+br(q)+'</b> \u00b7 '+pct.toFixed(1)+'%</span></div>';
+  }
+  prios.innerHTML=html;
+  result.style.display="block";
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    prios.querySelectorAll('.fill').forEach(f=>f.style.width=f.dataset.w+"%"); }));
+}
+
+// ---- render tabela indicador ----
+function scopeUnitTitle(){
+  const us=unitsInScope();
+  if(us.length===1) return us[0];
+  if(us.length>1) return "CONSOLIDADO";
+  return "UNIDADE"; // nenhuma definida
+}
+function indicatorTitle(){
+  const num=String(hlKey).padStart(2,"0");
+  return scopeUnitTitle()+" \u2014 INDICADOR DE DESEMPENHO "+num;
+}
+function scopeUnitFooter(){
+  const us=unitsInScope();
+  if(us.length===0) return "&mdash;";
+  if(us.length===1){ const u=unitByTitle(us[0]); return u?u.full:us[0]; }
+  // consolidado: listar as unidades
+  return "Consolidado \u2014 "+us.map(t=>{const u=unitByTitle(t);return u?u.title:t;}).join(", ");
+}
+function renderIndicator(agg){
+  const ind=agg.ind; let totQ=0,totL=0;
+  ROWS.forEach(r=>{ totQ+=ind[r.key].q; totL+=ind[r.key].lanc; });
+  let rows="";
+  for(const r of ROWS){
+    const d=ind[r.key],hasLim=r.limite!==null;
+    const pct = hasLim && d.lanc>0 ? pctBR(d.atinge/d.lanc*100) : "-";
+    const cls = r.ind===hlKey ? ' class="hl-'+hlKey+'"' : '';
+    rows+='<tr'+cls+'><td>'+r.label+'</td><td>'+br(d.q)+'</td><td>'+br(d.lanc)+'</td>'+
+      '<td>'+(hasLim?r.limite:'-')+'</td><td>'+(hasLim?br(d.atinge):'-')+'</td>'+
+      '<td>'+pct+'</td><td>'+(hasLim?'\u2265 80':'-')+'</td></tr>';
+  }
+  const pctLanc = totQ>0 ? pctBR(totL/totQ*100) : "-";
+  indTable.innerHTML=
+    '<caption>'+indicatorTitle()+'</caption>'+
+    '<thead><tr><th>PRIORIDADE</th><th>QUANTIDADE</th><th>LAN\u00c7ADOS PELO M\u00c9DICO</th>'+
+    '<th>LIMITE (MINUTOS)</th><th>ATINGE O INDICADOR</th><th>% INDICADOR</th><th>META</th></tr></thead>'+
+    '<tbody>'+rows+
+    '<tr class="sum"><td></td><td>'+br(totQ)+'</td><td>'+br(totL)+'</td><td></td><td></td><td></td><td></td></tr>'+
+    '<tr class="lanc"><td>ATENDIMENTOS LAN\u00c7ADOS:</td><td colspan="2">'+pctLanc+'</td><td></td><td></td><td></td><td></td></tr>'+
+    '</tbody>';
+  indMeta.innerHTML=
+    '<div><b>Unidade de Sa\u00fade:</b> '+ scopeUnitFooter() +'</div>'+
+    '<div><b>Fonte:</b> Sistema Hygia</div>'+
+    '<div><b>Data:</b> '+ (refdateIn.value.trim()||'&mdash;') +'</div>';
+  const us=unitsInScope();
+  indNote.textContent = us.length>1
+    ? "Consolidado somando "+us.length+" unidades. Filtre por arquivo ou m\u00eas acima para recortar."
+    : "A linha em destaque acompanha o indicador selecionado. N\u00fameros recalculados para o escopo escolhido.";
+}
+
+// recalcula tudo para o escopo atual
+let currentAgg=null, currentRecs=[];
+function renderAll(){
+  if(!processed.length) return;
+  currentRecs=currentRecords();
+  currentAgg=aggregate(currentRecs);
+  renderResult(currentAgg);
+  renderIndicator(currentAgg);
+  renderPage2(currentRecs);
+}
+
+seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+  seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  hlKey=b.dataset.k; if(currentAgg) renderIndicator(currentAgg); });
+unitIn.addEventListener('change',()=>{ if(currentAgg){ renderIndicator(currentAgg); renderPage2(currentRecs);} });
+refdateIn.addEventListener('input',()=>{ if(currentAgg) renderIndicator(currentAgg); });
+
+// ============ PAGINA 2 — ANALISE PARA GESTAO ============
+const PRIO_COLOR={"EMERGENTE":"var(--vermelho)","MUITO URGENTE":"var(--laranja)","URGENTE":"var(--amarelo)",
+  "POUCO URGENTE":"var(--verde)","N\u00c3O URGENTE":"var(--azul)","BRANCO":"#9a958a"};
+const SIT_ORDER=["EMERGENTE","MUITO URGENTE","URGENTE","POUCO URGENTE","N\u00c3O URGENTE","BRANCO"];
+const LIMITE_DE={"N\u00c3O URGENTE":240,"POUCO URGENTE":120,"URGENTE":30};
+let filtroAtivo="tempo", situacaoAtiva="all";
+
+// registro "acima do limite": tem limite p/ a prioridade, foi lancado (tem medico) e minutos > limite
+function isAcimaLimite(r){
+  const lim=LIMITE_DE[r.prio];
+  if(lim===undefined) return false;
+  if(!hasval(r.med)) return false;          // so conta quem foi atendido
+  return r.mins!=="" && r.mins>lim;
+}
+function isBranco(r){ return r.prio==="BRANCO"; }
+function isNRC(r){ return r.nrc==="S"; }     // S = nao respondeu chamada
+function isSemMed(r){ return !hasval(r.chammed) || r.mins===""; }
+
+function filtroRecs(f){
+  let base;
+  if(f==="tempo") base=currentRecs.filter(isAcimaLimite);
+  else if(f==="branco") base=currentRecs.filter(isBranco);
+  else if(f==="nrc") base=currentRecs.filter(isNRC);
+  else if(f==="semmed") base=currentRecs.filter(isSemMed);
+  else base=[];
+  // filtro adicional por situacao (nao aplica ao filtro "branco", que ja e uma situacao)
+  if(situacaoAtiva!=="all" && f!=="branco") base=base.filter(r=>r.prio===situacaoAtiva);
+  return base;
+}
+const FILTRO_INFO={
+  tempo:{t:"Tempo acima do limite",d:"Pacientes lan\u00e7ados cujo tempo (chamada m\u00e9dica \u2212 chegada) passou do limite da prioridade (N\u00e3o urgente 240, Pouco urgente 120, Urgente 30 min)."},
+  branco:{t:"Pacientes Branco",d:"Atendimentos classificados como Branco."},
+  nrc:{t:"N\u00e3o respondeu chamada (NRC = S)",d:"Pacientes marcados como que n\u00e3o responderam \u00e0 chamada."},
+  semmed:{t:"Sem chamada m\u00e9dica",d:"Atendimentos sem hor\u00e1rio de chamada m\u00e9dica registrado (n\u00e3o lan\u00e7ados)."}
+};
+
+// resumo por situacao (prioridade)
+function situacaoResumo(){
+  const by={}; SIT_ORDER.forEach(s=>by[s]=0);
+  let tot=0;
+  for(const r of currentRecs){ if(by[r.prio]===undefined) by[r.prio]=0; by[r.prio]++; tot++; }
+  return {by,tot};
+}
+// media segura ignorando outliers absurdos (> 10h) e nulos
+function avgMin(arr){
+  const v=arr.filter(x=>x!=null && x>=0 && x<600);
+  if(!v.length) return null;
+  return v.reduce((a,b)=>a+b,0)/v.length;
+}
+const fmtMin=m=> m==null?"\u2014":m.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+" min";
+
+// produtividade por enfermeiro: total + por situacao + tempos medios
+let turnoEnf="all";
+function enfResumo(){
+  const map={};
+  for(const r of currentRecs){
+    if(turnoEnf!=="all" && r.turno!==turnoEnf) continue;
+    const e=r.enf||"(sem c\u00f3digo)";
+    if(!map[e]) map[e]={total:0,sit:{},dur:[],espera:[]};
+    map[e].total++;
+    map[e].sit[r.prio]=(map[e].sit[r.prio]||0)+1;
+    if(r.durSala!=null) map[e].dur.push(r.durSala);
+    if(r.esperaCls!=null) map[e].espera.push(r.esperaCls);
+  }
+  return Object.entries(map).map(([enf,v])=>({enf,total:v.total,sit:v.sit,
+    durMed:avgMin(v.dur), esperaMed:avgMin(v.espera)}))
+    .sort((a,b)=>b.total-a.total);
+}
+// resumo por categoria de senha
+function categoriaResumo(){
+  const by={}; let tot=0;
+  for(const r of currentRecs){ by[r.cat]=(by[r.cat]||0)+1; tot++; }
+  return {by,tot};
+}
+// medias gerais de tempo de classificacao no escopo
+function temposClassificacao(){
+  return { durMed:avgMin(currentRecs.map(r=>r.durSala)),
+           esperaMed:avgMin(currentRecs.map(r=>r.esperaCls)) };
+}
+
+function renderSituacao(){
+  const {by,tot}=situacaoResumo();
+  let rows="";
+  for(const s of SIT_ORDER){
+    const q=by[s]||0; const pct=tot?(q/tot*100):0;
+    rows+='<tr><td><span class="pill" style="background:'+(PRIO_COLOR[s]||'#999')+'">'+
+      s.charAt(0)+s.slice(1).toLowerCase()+'</span></td>'+
+      '<td>'+br(q)+'</td><td>'+pctBR(pct)+'</td></tr>';
+  }
+  // situacoes fora da lista padrao
+  for(const k in by){ if(SIT_ORDER.includes(k)) continue; const q=by[k];
+    rows+='<tr><td>'+k+'</td><td>'+br(q)+'</td><td>'+pctBR(tot?q/tot*100:0)+'</td></tr>'; }
+  $('#tblSituacao').innerHTML=
+    '<thead><tr><th>SITUA\u00c7\u00c3O</th><th>CLASSIFICA\u00c7\u00d5ES</th><th>%</th></tr></thead>'+
+    '<tbody>'+rows+'<tr class="sum"><td>TOTAL</td><td>'+br(tot)+'</td><td>100,00%</td></tr></tbody>';
+}
+function renderEnf(){
+  const list=enfResumo();
+  const turnoTxt = turnoEnf==="all" ? "todos os turnos" : TURNO_LABEL[turnoEnf].toLowerCase();
+  $('#tagEnf').textContent=list.length+" classificadores \u00b7 "+turnoTxt;
+  let rows="";
+  for(const e of list){
+    const s=e.sit;
+    rows+='<tr><td>'+e.enf+'</td><td><b>'+br(e.total)+'</b></td>'+
+      '<td>'+fmtMin(e.durMed)+'</td>'+
+      '<td>'+fmtMin(e.esperaMed)+'</td>'+
+      '<td>'+br(s["EMERGENTE"]||0)+'</td>'+
+      '<td>'+br(s["MUITO URGENTE"]||0)+'</td>'+
+      '<td>'+br(s["URGENTE"]||0)+'</td>'+
+      '<td>'+br(s["POUCO URGENTE"]||0)+'</td>'+
+      '<td>'+br(s["N\u00c3O URGENTE"]||0)+'</td>'+
+      '<td>'+br(s["BRANCO"]||0)+'</td></tr>';
+  }
+  $('#tblEnf').innerHTML=
+    '<thead><tr><th>ENFERMEIRO</th><th>TOTAL</th><th>T. m\u00e9dio sala</th><th>Espera m\u00e9dia</th>'+
+    '<th>Emerg.</th><th>Muito urg.</th>'+
+    '<th>Urgente</th><th>Pouco urg.</th><th>N\u00e3o urg.</th><th>Branco</th></tr></thead><tbody>'+rows+'</tbody>';
+}
+function renderCategoria(){
+  const {by,tot}=categoriaResumo();
+  let rows="";
+  for(const c of CAT_ORDER){ const q=by[c]; if(!q) continue;
+    rows+='<tr><td>'+c+'</td><td>'+br(q)+'</td><td>'+pctBR(tot?q/tot*100:0)+'</td></tr>'; }
+  for(const k in by){ if(CAT_ORDER.includes(k)) continue;
+    rows+='<tr><td>'+k+'</td><td>'+br(by[k])+'</td><td>'+pctBR(tot?by[k]/tot*100:0)+'</td></tr>'; }
+  $('#tblCategoria').innerHTML=
+    '<thead><tr><th>CATEGORIA DA SENHA</th><th>ATENDIMENTOS</th><th>%</th></tr></thead>'+
+    '<tbody>'+rows+'<tr class="sum"><td>TOTAL</td><td>'+br(tot)+'</td><td>100,00%</td></tr></tbody>';
+}
+function renderTempos(){
+  const t=temposClassificacao();
+  $('#temposBox').innerHTML=
+    '<div class="metric"><div class="n">'+fmtMin(t.durMed).replace(' min','')+'</div><div class="l">Min. m\u00e9dios na sala de classifica\u00e7\u00e3o</div></div>'+
+    '<div class="metric"><div class="n">'+fmtMin(t.esperaMed).replace(' min','')+'</div><div class="l">Min. m\u00e9dios de espera (chegada \u2192 chamada)</div></div>';
+}
+function renderLista(){
+  const recs=filtroRecs(filtroAtivo);
+  const info=FILTRO_INFO[filtroAtivo];
+  const sitTxt = (situacaoAtiva!=="all" && filtroAtivo!=="branco")
+    ? ' Situa\u00e7\u00e3o: <b>'+(situacaoAtiva.charAt(0)+situacaoAtiva.slice(1).toLowerCase())+'</b>.' : '';
+  $('#filtroInfo').innerHTML='<b>'+info.t+':</b> '+info.d+sitTxt+' &mdash; <b>'+br(recs.length)+'</b> paciente(s).';
+  const showLim=filtroAtivo==="tempo";
+  let head='<thead><tr><th>UNIDADE</th><th>DATA</th><th>SENHA</th><th>CATEGORIA</th><th>PACIENTE</th><th>SITUA\u00c7\u00c3O</th>'+
+    '<th>TURNO</th><th>CHEGADA</th><th>CHAMADA M\u00c9D.</th><th>TEMPO</th><th>MIN.</th>'+(showLim?'<th>LIMITE</th>':'')+
+    '<th>ENFERM.</th><th>NRC</th></tr></thead>';
+  let rows="";
+  const cap=Math.min(recs.length,500);
+  for(let i=0;i<cap;i++){
+    const r=recs[i]; const over=showLim && isAcimaLimite(r);
+    const lim=LIMITE_DE[r.prio];
+    rows+='<tr'+(over?' class="over"':'')+'><td>'+(r._unit||"")+'</td><td>'+r.date+'</td><td>'+r.senha+'</td>'+
+      '<td style="text-align:left">'+r.cat+'</td>'+
+      '<td style="text-align:left">'+r.pac+'</td>'+
+      '<td><span class="pill" style="background:'+(PRIO_COLOR[r.prio]||'#999')+'">'+
+        r.prio.charAt(0)+r.prio.slice(1).toLowerCase()+'</span></td>'+
+      '<td>'+(TURNO_LABEL[r.turno]||"")+'</td>'+
+      '<td>'+r.cheg+'</td><td>'+r.chammed+'</td><td>'+r.tempo+'</td><td>'+(r.mins!==""?r.mins:"")+'</td>'+
+      (showLim?'<td>'+(lim!==undefined?lim:"-")+'</td>':'')+
+      '<td>'+r.enf+'</td><td>'+r.nrc+'</td></tr>';
+  }
+  if(recs.length>cap) rows+='<tr><td colspan="'+(showLim?14:13)+'" style="text-align:center;color:var(--ink-soft)">\u2026 mostrando '+cap+' de '+br(recs.length)+'. O Excel exporta todos.</td></tr>';
+  $('#tblLista').innerHTML=head+'<tbody>'+rows+'</tbody>';
+}
+function renderPage2(){
+  $('#p2scope').textContent=currentScopeLabel();
+  renderSituacao(); renderCategoria(); renderTempos(); renderEnf(); renderLista();
+}
+
+$('#segFiltro').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+  $('#segFiltro').querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  filtroAtivo=b.dataset.f;
+  // o filtro "branco" ja e uma situacao; desabilita o seletor de situacao nesse caso
+  const segS=$('#segSituacao');
+  if(filtroAtivo==="branco"){ segS.style.opacity="0.4"; segS.style.pointerEvents="none"; }
+  else { segS.style.opacity=""; segS.style.pointerEvents=""; }
+  renderLista(); });
+$('#segSituacao').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+  $('#segSituacao').querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  situacaoAtiva=(b.dataset.s||"all").toUpperCase()==="ALL"?"all":b.dataset.s; renderLista(); });
+$('#segTurno').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+  $('#segTurno').querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  turnoEnf=b.dataset.t; renderEnf(); });
+
+// navegacao de paginas
+$('#pageNav').addEventListener('click',e=>{ const b=e.target.closest('.pgbtn'); if(!b) return;
+  $('#pageNav').querySelectorAll('.pgbtn').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  const pg=b.dataset.pg;
+  $('#page1').style.display = pg==="1"?"":"none";
+  $('#page2').style.display = pg==="2"?"":"none";
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+
+// ===== PDF de resumos gerenciais (via impressao do navegador) =====
+function capFirst(s){ return s.charAt(0)+s.slice(1).toLowerCase(); }
+function pdfIndicadorTabela(){
+  const ind=currentAgg.ind; let totQ=0,totL=0;
+  ROWS.forEach(r=>{ totQ+=ind[r.key].q; totL+=ind[r.key].lanc; });
+  let rows="";
+  for(const r of ROWS){
+    const d=ind[r.key],hasLim=r.limite!==null;
+    const pct=hasLim&&d.lanc>0?pctBR(d.atinge/d.lanc*100):"-";
+    const cls=r.ind===hlKey?' class="hl-'+hlKey+'"':'';
+    rows+='<tr'+cls+'><td>'+r.label+'</td><td>'+br(d.q)+'</td><td>'+br(d.lanc)+'</td>'+
+      '<td>'+(hasLim?r.limite:'-')+'</td><td>'+(hasLim?br(d.atinge):'-')+'</td>'+
+      '<td>'+pct+'</td><td>'+(hasLim?'\u2265 80':'-')+'</td></tr>';
+  }
+  const pctLanc=totQ>0?pctBR(totL/totQ*100):"-";
+  return '<table class="pdf-t"><thead><tr><th>PRIORIDADE</th><th>QUANTIDADE</th><th>LAN\u00c7ADOS PELO M\u00c9DICO</th>'+
+    '<th>LIMITE (MIN)</th><th>ATINGE</th><th>% INDICADOR</th><th>META</th></tr></thead><tbody>'+rows+
+    '<tr class="sum"><td></td><td>'+br(totQ)+'</td><td>'+br(totL)+'</td><td></td><td></td><td></td><td></td></tr>'+
+    '<tr class="lanc"><td>ATENDIMENTOS LAN\u00c7ADOS:</td><td colspan="2">'+pctLanc+'</td><td></td><td></td><td></td><td></td></tr>'+
+    '</tbody></table>';
+}
+function pdfSituacao(){
+  const {by,tot}=situacaoResumo();
+  let rows="";
+  for(const s of SIT_ORDER){ const q=by[s]||0;
+    rows+='<tr><td><span class="pdf-pill" style="background:'+pdfColor(s)+'">'+capFirst(s)+'</span></td>'+
+      '<td>'+br(q)+'</td><td>'+pctBR(tot?q/tot*100:0)+'</td></tr>'; }
+  return '<table class="pdf-t"><thead><tr><th>SITUA\u00c7\u00c3O</th><th>CLASSIFICA\u00c7\u00d5ES</th><th>%</th></tr></thead><tbody>'+
+    rows+'<tr class="sum"><td>TOTAL</td><td>'+br(tot)+'</td><td>100,00%</td></tr></tbody></table>';
+}
+function pdfCategoria(){
+  const {by,tot}=categoriaResumo();
+  let rows="";
+  for(const c of CAT_ORDER){ if(!by[c])continue;
+    rows+='<tr><td>'+c+'</td><td>'+br(by[c])+'</td><td>'+pctBR(tot?by[c]/tot*100:0)+'</td></tr>'; }
+  for(const k in by){ if(CAT_ORDER.includes(k))continue;
+    rows+='<tr><td>'+k+'</td><td>'+br(by[k])+'</td><td>'+pctBR(tot?by[k]/tot*100:0)+'</td></tr>'; }
+  return '<table class="pdf-t"><thead><tr><th>CATEGORIA DA SENHA</th><th>ATENDIMENTOS</th><th>%</th></tr></thead><tbody>'+
+    rows+'<tr class="sum"><td>TOTAL</td><td>'+br(tot)+'</td><td>100,00%</td></tr></tbody></table>';
+}
+function pdfTurno(){
+  const tc={}; TURNOS.forEach(t=>tc[t.key]={q:0,dur:[],espera:[]});
+  currentRecs.forEach(r=>{ if(tc[r.turno]){ tc[r.turno].q++;
+    if(r.durSala!=null)tc[r.turno].dur.push(r.durSala); if(r.esperaCls!=null)tc[r.turno].espera.push(r.esperaCls);} });
+  const tot=currentRecs.length; let rows="";
+  for(const t of TURNOS){ const c=tc[t.key]; const dm=avgMin(c.dur),em=avgMin(c.espera);
+    rows+='<tr><td>'+t.label+'</td><td>'+t.faixa+'</td><td>'+br(c.q)+'</td><td>'+pctBR(tot?c.q/tot*100:0)+'</td>'+
+      '<td>'+fmtMin(dm)+'</td><td>'+fmtMin(em)+'</td></tr>'; }
+  return '<table class="pdf-t"><thead><tr><th>TURNO</th><th>FAIXA</th><th>ATEND.</th><th>%</th>'+
+    '<th>T. M\u00c9DIO SALA</th><th>ESPERA M\u00c9DIA</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+function pdfEnf(){
+  const list=enfResumo(); // todos os turnos (turnoEnf pode estar filtrado; forçamos all)
+  let rows="";
+  for(const e of list){ const s=e.sit;
+    rows+='<tr><td>'+e.enf+'</td><td>'+br(e.total)+'</td><td>'+fmtMin(e.durMed)+'</td><td>'+fmtMin(e.esperaMed)+'</td>'+
+      '<td>'+br(s["EMERGENTE"]||0)+'</td><td>'+br(s["MUITO URGENTE"]||0)+'</td><td>'+br(s["URGENTE"]||0)+'</td>'+
+      '<td>'+br(s["POUCO URGENTE"]||0)+'</td><td>'+br(s["N\u00c3O URGENTE"]||0)+'</td><td>'+br(s["BRANCO"]||0)+'</td></tr>'; }
+  return '<table class="pdf-t"><thead><tr><th>ENFERMEIRO</th><th>TOTAL</th><th>T.M\u00c9D SALA</th><th>ESPERA M\u00c9D</th>'+
+    '<th>Emerg.</th><th>M.urg.</th><th>Urg.</th><th>P.urg.</th><th>N.urg.</th><th>Branco</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+function pdfColor(s){ const m={"EMERGENTE":"#c8452f","MUITO URGENTE":"#dd7a2e","URGENTE":"#e0a021",
+  "POUCO URGENTE":"#3f9d6a","N\u00c3O URGENTE":"#2f6fb0","BRANCO":"#9a958a"}; return m[s]||"#999"; }
+
+function buildPdf(){
+  if(!currentAgg){ setStatus("Processe um relat\u00f3rio antes de gerar o PDF.","err"); return; }
+  const t=temposClassificacao();
+  const totalAt=currentRecs.length;
+  const hoje=new Date().toLocaleDateString('pt-BR');
+  const num=String(hlKey).padStart(2,"0");
+  const unidade=scopeUnitFooter().replace(/&mdash;/g,"\u2014");
+  const periodo = monthScope.value!=="all" ? monthLabel(monthScope.value) : "Per\u00edodo completo";
+  const nEnf=enfResumo().length;
+
+  const html=
+  // pagina 1: capa + indicador + situacao + categoria
+  '<div class="pdf-page">'+
+    '<div class="pdf-h1">'+scopeUnitTitle()+' \u2014 An\u00e1lise de Classifica\u00e7\u00e3o de Risco</div>'+
+    '<div class="pdf-sub">Relat\u00f3rio gerencial para avalia\u00e7\u00e3o da coordena\u00e7\u00e3o &middot; Fonte: Sistema Hygia</div>'+
+    '<div class="pdf-meta"><b>Unidade:</b> '+unidade+' &nbsp;|&nbsp; <b>Per\u00edodo:</b> '+periodo+
+      ' &nbsp;|&nbsp; <b>Atendimentos:</b> '+br(totalAt)+' &nbsp;|&nbsp; <b>Emitido em:</b> '+hoje+'</div>'+
+    '<div class="pdf-block"><div class="pdf-h2">Indicador de desempenho '+num+'</div>'+pdfIndicadorTabela()+'</div>'+
+    '<div class="pdf-block"><div class="pdf-h2">Resumo por situa\u00e7\u00e3o</div>'+pdfSituacao()+'</div>'+
+    '<div class="pdf-block"><div class="pdf-h2">Resumo por categoria de senha</div>'+pdfCategoria()+'</div>'+
+  '</div>'+
+  // pagina 2: tempos + turnos + enfermeiro
+  '<div class="pdf-page">'+
+    '<div class="pdf-block"><div class="pdf-h2">Tempos na classifica\u00e7\u00e3o de risco</div>'+
+      '<div class="pdf-cards">'+
+        '<div class="pdf-card"><div class="n">'+fmtMin(t.durMed).replace(' min','')+'</div><div class="l">Min. m\u00e9dios na sala de classifica\u00e7\u00e3o</div></div>'+
+        '<div class="pdf-card"><div class="n">'+fmtMin(t.esperaMed).replace(' min','')+'</div><div class="l">Min. m\u00e9dios de espera (chegada \u2192 chamada)</div></div>'+
+      '</div>'+
+      '<div class="pdf-note">Sala = Fim C.R. \u2212 In\u00edcio C.R. (usa Dura\u00e7\u00e3o C.R. como reserva). Espera = Chamada C.R. \u2212 Chegada. Turno pela chegada do paciente.</div>'+
+      pdfTurno()+'</div>'+
+    '<div class="pdf-block"><div class="pdf-h2">Produtividade por enfermeiro ('+nEnf+' classificadores)</div>'+pdfEnf()+
+      '<div class="pdf-note">Tra\u00e7o (\u201c\u2014\u201d) no tempo m\u00e9dio = classificador sem registros de In\u00edcio/Fim C.R. (t\u00edpico de casos emergentes, que v\u00e3o direto ao atendimento).</div></div>'+
+    '<div class="pdf-foot">As listas nominais de pacientes (tempo acima do limite, branco, n\u00e3o respondeu chamada, sem chamada m\u00e9dica) est\u00e3o no arquivo Excel anexo, para auditoria. Documento gerado localmente pelo Conversor Hygia.</div>'+
+  '</div>';
+
+  const pa=document.getElementById('printArea');
+  // garantir que enfermeiro sai com todos os turnos no PDF
+  const _ts=turnoEnf; turnoEnf="all";
+  pa.innerHTML=html;
+  turnoEnf=_ts;
+  const tituloAntigo=document.title;
+  document.title="Analise_"+scopeUnitTitle().replace(/[^A-Za-z0-9]+/g,'_')+"_"+(monthScope.value!=="all"?monthScope.value.replace('/','-'):"periodo");
+  window.print();
+  setTimeout(()=>{ document.title=tituloAntigo; pa.innerHTML=""; },500);
+}
+$('#dlPdf').addEventListener('click',buildPdf);
+
+// exportar analise: um xlsx com uma aba por filtro + resumos
+$('#dlAnalise').addEventListener('click',()=>{
+  if(!currentRecs.length){ setStatus("Nada para exportar ainda.","err"); return; }
+  const wb=XLSX.utils.book_new();
+  // aba resumo situacao
+  const {by,tot}=situacaoResumo();
+  const sitAOA=[["SITUA\u00c7\u00c3O","CLASSIFICA\u00c7\u00d5ES","%"]];
+  SIT_ORDER.forEach(s=>{const q=by[s]||0;sitAOA.push([s.charAt(0)+s.slice(1).toLowerCase(),q,tot?q/tot:0]);});
+  sitAOA.push(["TOTAL",tot,1]);
+  const wsSit=XLSX.utils.aoa_to_sheet(sitAOA);
+  wsSit['!cols']=[{wch:18},{wch:16},{wch:10}];
+  for(let i=1;i<sitAOA.length;i++){const c=XLSX.utils.encode_cell({r:i,c:2});if(wsSit[c]&&typeof wsSit[c].v==='number'){wsSit[c].t='n';wsSit[c].z='0.00%';}}
+  XLSX.utils.book_append_sheet(wb,wsSit,"Por situacao");
+  // aba categoria de senha
+  const cr=categoriaResumo();
+  const catAOA=[["CATEGORIA DA SENHA","ATENDIMENTOS","%"]];
+  CAT_ORDER.forEach(c=>{ if(cr.by[c]) catAOA.push([c.replace(/\u2014/g,'-'),cr.by[c],cr.tot?cr.by[c]/cr.tot:0]); });
+  Object.keys(cr.by).forEach(k=>{ if(!CAT_ORDER.includes(k)) catAOA.push([k,cr.by[k],cr.tot?cr.by[k]/cr.tot:0]); });
+  catAOA.push(["TOTAL",cr.tot,1]);
+  const wsCat=XLSX.utils.aoa_to_sheet(catAOA);
+  wsCat['!cols']=[{wch:34},{wch:14},{wch:10}];
+  for(let i=1;i<catAOA.length;i++){const c=XLSX.utils.encode_cell({r:i,c:2});if(wsCat[c]&&typeof wsCat[c].v==='number'){wsCat[c].t='n';wsCat[c].z='0.00%';}}
+  XLSX.utils.book_append_sheet(wb,wsCat,"Por categoria");
+  // aba tempos gerais
+  const tg=temposClassificacao();
+  const tAOA=[["INDICADOR DE TEMPO","M\u00c9DIA (min)"],
+    ["Sala de classifica\u00e7\u00e3o (Fim - In\u00edcio C.R.)", tg.durMed!=null?+tg.durMed.toFixed(1):"-"],
+    ["Espera (Chamada C.R. - Chegada)", tg.esperaMed!=null?+tg.esperaMed.toFixed(1):"-"]];
+  const wsT=XLSX.utils.aoa_to_sheet(tAOA); wsT['!cols']=[{wch:38},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,wsT,"Tempos classificacao");
+  // aba resumo por turno
+  const turnoCount={}; TURNOS.forEach(t=>turnoCount[t.key]={q:0,dur:[],espera:[]});
+  currentRecs.forEach(r=>{ if(turnoCount[r.turno]){ turnoCount[r.turno].q++;
+    if(r.durSala!=null) turnoCount[r.turno].dur.push(r.durSala);
+    if(r.esperaCls!=null) turnoCount[r.turno].espera.push(r.esperaCls);} });
+  const tot2=currentRecs.length;
+  const turAOA=[["TURNO","FAIXA","ATENDIMENTOS","%","T. medio sala (min)","Espera media (min)"]];
+  TURNOS.forEach(t=>{ const c=turnoCount[t.key]; const dm=avgMin(c.dur), em=avgMin(c.espera);
+    turAOA.push([t.label,t.faixa.replace(/\u2013/g,'-'),c.q,tot2?c.q/tot2:0,
+      dm!=null?+dm.toFixed(1):"-", em!=null?+em.toFixed(1):"-"]); });
+  const wsTur=XLSX.utils.aoa_to_sheet(turAOA);
+  wsTur['!cols']=[{wch:12},{wch:12},{wch:14},{wch:8},{wch:18},{wch:18}];
+  for(let i=1;i<turAOA.length;i++){const c=XLSX.utils.encode_cell({r:i,c:3});if(wsTur[c]&&typeof wsTur[c].v==='number'){wsTur[c].t='n';wsTur[c].z='0.00%';}}
+  XLSX.utils.book_append_sheet(wb,wsTur,"Por turno");
+  // aba enfermeiros (todos os turnos, ignora o filtro de tela) com tempos medios
+  const _tsave=turnoEnf; turnoEnf="all";
+  const enfAOA=[["ENFERMEIRO","TOTAL","T. medio sala (min)","Espera media (min)","Emergente","Muito urgente","Urgente","Pouco urgente","Nao urgente","Branco"]];
+  enfResumo().forEach(e=>{const s=e.sit;enfAOA.push([e.enf,e.total,
+    e.durMed!=null?+e.durMed.toFixed(1):"-", e.esperaMed!=null?+e.esperaMed.toFixed(1):"-",
+    s["EMERGENTE"]||0,s["MUITO URGENTE"]||0,s["URGENTE"]||0,s["POUCO URGENTE"]||0,s["N\u00c3O URGENTE"]||0,s["BRANCO"]||0]);});
+  const wsEnf=XLSX.utils.aoa_to_sheet(enfAOA);
+  wsEnf['!cols']=[{wch:14},{wch:8},{wch:18},{wch:18},{wch:11},{wch:13},{wch:9},{wch:13},{wch:11},{wch:9}];
+  XLSX.utils.book_append_sheet(wb,wsEnf,"Por enfermeiro");
+  // aba enfermeiro x turno (total por turno)
+  const enfTur={};
+  currentRecs.forEach(r=>{ const e=r.enf||"(sem codigo)"; if(!enfTur[e]) enfTur[e]={manha:0,tarde:0,vespertino:0,madrugada:0,total:0};
+    if(enfTur[e][r.turno]!==undefined) enfTur[e][r.turno]++; enfTur[e].total++; });
+  const etAOA=[["ENFERMEIRO","Manha","Tarde","Vespertino","Madrugada","TOTAL"]];
+  Object.entries(enfTur).sort((a,b)=>b[1].total-a[1].total).forEach(([e,v])=>
+    etAOA.push([e,v.manha,v.tarde,v.vespertino,v.madrugada,v.total]));
+  const wsET=XLSX.utils.aoa_to_sheet(etAOA);
+  wsET['!cols']=[{wch:14},{wch:9},{wch:9},{wch:11},{wch:11},{wch:8}];
+  XLSX.utils.book_append_sheet(wb,wsET,"Enfermeiro x turno");
+  turnoEnf=_tsave;
+  // uma aba por filtro de pacientes
+  const filtros=[["tempo","Tempo acima limite"],["branco","Branco"],["nrc","Nao respondeu chamada"],["semmed","Sem chamada medica"]];
+  const H=["UNIDADE","DATA","SENHA","CATEGORIA","PACIENTE","SITUACAO","TURNO","CHEGADA","CHAMADA MEDICA","TEMPO","MINUTOS","LIMITE","ENFERMEIRO","NRC"];
+  for(const [f,nome] of filtros){
+    const recs=filtroRecs(f);
+    const aoa=[H.slice()];
+    for(const r of recs){ const lim=LIMITE_DE[r.prio];
+      aoa.push([r._unit||"",r.date,r.senha,r.cat.replace(/\u2014/g,'-'),r.pac,r.prio,(TURNO_LABEL[r.turno]||""),r.cheg,r.chammed,r.tempo,r.mins,(lim!==undefined?lim:""),r.enf,r.nrc]); }
+    const ws=XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols']=[{wch:16},{wch:11},{wch:7},{wch:24},{wch:32},{wch:14},{wch:11},{wch:9},{wch:14},{wch:10},{wch:8},{wch:8},{wch:12},{wch:6}];
+    XLSX.utils.book_append_sheet(wb,ws,nome.slice(0,31));
+  }
+  const mk=monthScope.value!=="all"?monthScope.value.replace('/','_'):"periodo";
+  XLSX.writeFile(wb,"analise_gestao_"+mk+".xlsx");
+  setStatus("An\u00e1lise exportada (uma aba por filtro).","ok");
+});
+
+// ---- exportar planilha tratada + indicador num unico xlsx ----
+function buildIndicatorAOA(agg){
+  const ind=agg.ind; let totQ=0,totL=0;
+  ROWS.forEach(r=>{ totQ+=ind[r.key].q; totL+=ind[r.key].lanc; });
+  const aoa=[[indicatorTitle()],[],
+    ["PRIORIDADE","QUANTIDADE","LAN\u00c7ADOS PELO M\u00c9DICO","LIMITE (MINUTOS)","ATINGE O INDICADOR","% INDICADOR","META"]];
+  for(const r of ROWS){ const d=ind[r.key],hl=r.limite!==null;
+    aoa.push([r.label,d.q,d.lanc,hl?r.limite:"-",hl?d.atinge:"-",
+      hl&&d.lanc>0?(d.atinge/d.lanc):"-", hl?"\u2265 80":"-"]); }
+  aoa.push(["",totQ,totL,"","","",""]);
+  aoa.push(["ATENDIMENTOS LAN\u00c7ADOS:", totQ>0?(totL/totQ):"-","","","","",""]);
+  aoa.push([]); aoa.push(["Unidade de Sa\u00fade:",scopeUnitFooter().replace(/&mdash;/g,"\u2014")]);
+  aoa.push(["Fonte:","Sistema Hygia"]); aoa.push(["Data:",refdateIn.value.trim()]);
+  return aoa;
+}
+function styleIndicatorSheet(ws,headerRowIdx){
+  ws['!cols']=[{wch:24},{wch:12},{wch:22},{wch:16},{wch:18},{wch:13},{wch:8}];
+  for(let i=0;i<ROWS.length;i++){ const rr=headerRowIdx+1+i;
+    const c=XLSX.utils.encode_cell({r:rr,c:5});
+    if(ws[c]&&typeof ws[c].v==='number'){ ws[c].t='n'; ws[c].z='0.00%'; } }
+  const lr=headerRowIdx+1+ROWS.length+1; const lc=XLSX.utils.encode_cell({r:lr,c:1});
+  if(ws[lc]&&typeof ws[lc].v==='number'){ ws[lc].t='n'; ws[lc].z='0.00%'; }
+}
+
+$('#dlXlsx').addEventListener('click',()=>{
+  if(!currentAgg) return;
+  if(missingUnit()){ setStatus("Defina a unidade de "+(perFileMode()?"cada relat\u00f3rio":"sa\u00fade")+" antes de baixar (a coluna UNIDADE ficaria vazia).","err"); return; }
+  const recs=currentRecords();
+  const trat=buildTratadoAOA(recs);
+  const wb=XLSX.utils.book_new();
+  const wsT=XLSX.utils.aoa_to_sheet(trat);
+  wsT['!cols']=TRAT_COLS;
+  XLSX.utils.book_append_sheet(wb,wsT,"TRATADOS");
+  const aoa=buildIndicatorAOA(currentAgg);
+  const wsI=XLSX.utils.aoa_to_sheet(aoa);
+  styleIndicatorSheet(wsI,2);
+  XLSX.utils.book_append_sheet(wb,wsI,"INDICADOR "+String(hlKey).padStart(2,"0"));
+  const mk=monthScope.value!=="all"?monthScope.value.replace('/','_'):"periodo";
+  XLSX.writeFile(wb,"hygia_"+mk+"_tratado_indicador.xlsx");
+});
+
+// ---- render da tabela como PNG (canvas nativo, sem libs externas) ----
+function drawIndicatorCanvas(){
+  const agg=currentAgg; const ind=agg.ind;
+  let totQ=0,totL=0; ROWS.forEach(r=>{ totQ+=ind[r.key].q; totL+=ind[r.key].lanc; });
+  const COLS=["PRIORIDADE","QUANTIDADE","LAN\u00c7ADOS PELO M\u00c9DICO","LIMITE (MINUTOS)","ATINGE O INDICADOR","% INDICADOR","META"];
+  const colW=[210,120,180,140,160,120,80];
+  const W=colW.reduce((a,b)=>a+b,0), pad=28, rowH=34, headH=40;
+  const bodyRows=ROWS.length+2; // + soma + lancados
+  const metaLines=3;
+  const contentW=W+pad*2;
+  const contentH=pad + 46 /*titulo*/ + headH + bodyRows*rowH + 22 + metaLines*24 + pad;
+
+  // saida fixa: 21cm x 10cm @300dpi = 2480 x 1181 px
+  const OUT_W=2480, OUT_H=1181;
+  // escala que encaixa o conteudo dentro da area alvo, preservando proporcao (letterbox)
+  const s=Math.min(OUT_W/contentW, OUT_H/contentH);
+  const offX=(OUT_W - contentW*s)/2, offY=(OUT_H - contentH*s)/2;
+
+  const cv=document.createElement('canvas');
+  cv.width=OUT_W; cv.height=OUT_H;
+  const ctx=cv.getContext('2d');
+  // fundo branco em toda a folha
+  ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,OUT_W,OUT_H);
+  // aplicar centralizacao + escala; a partir daqui desenha em coordenadas logicas
+  ctx.translate(offX,offY); ctx.scale(s,s);
+  ctx.textBaseline="middle";
+  let y=pad;
+  // titulo
+  ctx.fillStyle="#161a1d"; ctx.font="700 20px Georgia, 'Times New Roman', serif";
+  ctx.textAlign="center"; ctx.fillText(indicatorTitle(), contentW/2, y+22);
+  ctx.textAlign="left"; y+=46;
+  const x0=pad;
+  const colX=i=>x0+colW.slice(0,i).reduce((a,b)=>a+b,0);
+  const drawCell=(txt,i,cy,align,color)=>{ ctx.fillStyle=color||"#222";
+    const cx = align==="left" ? colX(i)+10 : colX(i)+colW[i]/2;
+    ctx.textAlign=align; ctx.fillText(String(txt),cx,cy+rowH/2); };
+  // header
+  ctx.fillStyle="#1a1a1a"; ctx.fillRect(x0,y,W,headH);
+  ctx.font="700 11px Arial"; ctx.fillStyle="#fff";
+  COLS.forEach((c,i)=>{ const align=i===0?"left":"center";
+    ctx.textAlign=align; const cx=i===0?colX(i)+10:colX(i)+colW[i]/2;
+    const words=c.split(' ');
+    if(ctx.measureText(c).width>colW[i]-12 && words.length>1){
+      const mid=Math.ceil(words.length/2);
+      ctx.fillText(words.slice(0,mid).join(' '),cx,y+headH/2-6);
+      ctx.fillText(words.slice(mid).join(' '),cx,y+headH/2+8);
+    } else ctx.fillText(c,cx,y+headH/2);
+  });
+  y+=headH;
+  const HLC={"1":{bg:"#2f6fb0",fg:"#fff"},"2":{bg:"#3f9d6a",fg:"#fff"},"3":{bg:"#e0a021",fg:"#1a1a1a"}};
+  ctx.font="12px Arial";
+  for(const r of ROWS){
+    const d=ind[r.key],hasLim=r.limite!==null;
+    const hl=r.ind===hlKey?HLC[hlKey]:null;
+    if(hl){ ctx.fillStyle=hl.bg; ctx.fillRect(x0,y,W,rowH); }
+    else { ctx.fillStyle="#ffffff"; ctx.fillRect(x0,y,W,rowH);
+      ctx.strokeStyle="#ececec"; ctx.beginPath(); ctx.moveTo(x0,y+rowH); ctx.lineTo(x0+W,y+rowH); ctx.stroke(); }
+    const fg=hl?hl.fg:"#222";
+    ctx.font=(hl?"700 ":"600 ")+"12px Arial"; drawCell(r.label,0,y,"left",fg);
+    ctx.font=(hl?"700 ":"")+"12px Arial";
+    drawCell(br(d.q),1,y,"center",fg);
+    drawCell(br(d.lanc),2,y,"center",fg);
+    drawCell(hasLim?r.limite:"-",3,y,"center",fg);
+    drawCell(hasLim?br(d.atinge):"-",4,y,"center",fg);
+    drawCell(hasLim&&d.lanc>0?pctBR(d.atinge/d.lanc*100):"-",5,y,"center",fg);
+    drawCell(hasLim?"\u2265 80":"-",6,y,"center",fg);
+    y+=rowH;
+  }
+  // linha soma
+  ctx.fillStyle="#1a1a1a"; ctx.fillRect(x0,y,W,rowH);
+  ctx.font="700 12px Arial";
+  drawCell(br(totQ),1,y,"center","#fff"); drawCell(br(totL),2,y,"center","#fff");
+  y+=rowH;
+  // linha lancados
+  ctx.fillStyle="#8a8a8a"; ctx.fillRect(x0,y,W,rowH);
+  ctx.font="700 12px Arial";
+  drawCell("ATENDIMENTOS LAN\u00c7ADOS:",0,y,"left","#fff");
+  drawCell(totQ>0?pctBR(totL/totQ*100):"-",1,y,"center","#fff");
+  y+=rowH+18;
+  // meta
+  ctx.textAlign="left"; ctx.font="13px Arial"; ctx.fillStyle="#161a1d";
+  const meta=[["Unidade de Sa\u00fade: ",scopeUnitFooter().replace(/&mdash;/g,"\u2014")],
+    ["Fonte: ","Sistema Hygia"],["Data: ",refdateIn.value.trim()||"\u2014"]];
+  meta.forEach((m,i)=>{ ctx.font="700 13px Arial"; ctx.fillText(m[0],x0,y+i*24+8);
+    const w=ctx.measureText(m[0]).width; ctx.font="13px Arial"; ctx.fillText(m[1],x0+w,y+i*24+8); });
+  return cv;
+}
+
+$('#dlPng').addEventListener('click',()=>{
+  if(!currentAgg) return;
+  const cv=drawIndicatorCanvas();
+  cv.toBlob(b=>{ const a=document.createElement('a');
+    a.href=URL.createObjectURL(b);
+    const mk=monthScope.value!=="all"?monthScope.value.replace('/','_'):"periodo";
+    a.download="indicador_"+String(hlKey).padStart(2,"0")+"_"+mk+".png"; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),3000); });
+});
+$('#copyImg').addEventListener('click',async()=>{
+  const b=$('#copyImg'); const orig=b.textContent;
+  try{
+    const cv=drawIndicatorCanvas();
+    const blob=await new Promise(res=>cv.toBlob(res));
+    if(navigator.clipboard&&window.ClipboardItem){
+      await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+      b.textContent="Copiado \u2713";
+    } else { // fallback: baixa
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download="indicador.png"; a.click(); b.textContent="Baixado \u2713";
+    }
+  }catch(e){ console.error(e); b.textContent="Falhou \u2014 use baixar"; }
+  setTimeout(()=>b.textContent=orig,1800);
+});
+
+// ---- pipeline principal (lote) ----
+go.addEventListener('click',async()=>{
+  if(!pickedFiles.length) return;
+  go.disabled=true; processed=[];
+  try{
+    for(let i=0;i<pickedFiles.length;i++){
+      const f=pickedFiles[i];
+      setStatus("Lendo "+(i+1)+"/"+pickedFiles.length+": "+f.name+"\u2026");
+      showBar(10+ (i/pickedFiles.length)*70);
+      const buf=await f.arrayBuffer();
+      const wb=XLSX.read(new Uint8Array(buf),{type:"array"});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:""});
+      const data=processFile(rows);
+      if(data.out.length) processed.push({name:f.name,data,unit:""});
+    }
+    if(!processed.length){ setStatus("Nenhum atendimento encontrado nos arquivos.","err"); go.disabled=false; return; }
+    showBar(88); setStatus("Montando resultado\u2026");
+    fileScope.value="all"; rebuildScopeSelectors();
+    renderAll();
+    showBar(100);
+    const totalKept=processed.reduce((a,p)=>a+p.data.out.length,0);
+    setStatus("Pronto \u2014 "+processed.length+" arquivo(s), "+br(totalKept)+" atendimentos. Escolha a unidade e baixe abaixo.","ok");
+    panel.style.display="block";
+    $('#pageNav').style.display="flex";
+    $('#page1').style.display=""; $('#page2').style.display="none";
+    $('#pageNav').querySelectorAll('.pgbtn').forEach((x,idx)=>x.classList.toggle('on',idx===0));
+    result.scrollIntoView({behavior:"smooth",block:"nearest"});
+    go.disabled=false;
+  }catch(err){ console.error(err); setStatus("Erro ao processar: "+err.message,"err"); go.disabled=false; }
+});
+
+// baixar planilhas tratadas (uma por arquivo), cada uma com a unidade do proprio arquivo
+$('#dlTrat').addEventListener('click',()=>{
+  if(!processed.length) return;
+  // checar se todas as unidades estao definidas
+  const semUnidade=processed.some((p,i)=>!unitOfFile(i));
+  if(semUnidade){ setStatus("Defina a unidade de "+(perFileMode()?"cada relat\u00f3rio":"sa\u00fade")+" antes de baixar.","err"); return; }
+  processed.forEach((p,i)=>{
+    const u=unitOfFile(i);
+    const nb=XLSX.utils.book_new();
+    const nsheet=XLSX.utils.aoa_to_sheet(buildTratadoAOA(p.data.out,u));
+    nsheet['!cols']=TRAT_COLS;
+    XLSX.utils.book_append_sheet(nb,nsheet,"TRATADOS");
+    XLSX.writeFile(nb,p.name.replace(/\.(xls|xlsx)$/i,"")+"_TRATADO.xlsx");
+  });
+  setStatus("Planilhas tratadas baixadas ("+processed.length+") com as unidades definidas.","ok");
+});
+</script>
+</body>
+</html>

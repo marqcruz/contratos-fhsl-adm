@@ -335,12 +335,15 @@ tr:hover td{background:var(--surface2)}
     <p>Fundação Hospital Santa Lydia — selecione um módulo</p>
   </div>
   <div class="hub-grid">
-<a class="hub-card" href="contratos.html"><span class="hub-ico">📋</span><h3>Contratos</h3><p>Gestão de contratos, aditivos, vigências e fiscais.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" href="contratos-gestao.html"><span class="hub-ico">🏛️</span><h3>Contratos de Gestão</h3><p>Metas, pontuação, rubricas e responsabilidades (OS/OSS).</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" href="malotes.html"><span class="hub-ico">📦</span><h3>Malotes</h3><p>Controle de envio e recebimento de malotes entre unidades.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" href="visitantes.html"><span class="hub-ico">🪪</span><h3>Visitantes</h3><p>Registro de visitantes da sede administrativa.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" href="chaves.html"><span class="hub-ico">🔑</span><h3>Chaves</h3><p>Controle de retirada e devolução de chaves.</p><span class="hub-tag ativo">Disponível</span></a>
-<div class="hub-card soon"><span class="hub-ico">➕</span><h3>Novos módulos</h3><p>Espaço reservado para as próximas funções do sistema.</p><span class="hub-tag">Em breve</span></div>
+<a class="hub-card" data-mod="contratos" href="contratos.html"><span class="hub-ico">📋</span><h3>Contratos</h3><p>Gestão de contratos, aditivos, vigências e fiscais.</p><span class="hub-tag ativo">Disponível</span></a>
+<a class="hub-card" data-mod="cg" href="contratos-gestao.html"><span class="hub-ico">🏛️</span><h3>Contratos de Gestão</h3><p>Metas, pontuação, rubricas e responsabilidades (OS/OSS).</p><span class="hub-tag ativo">Disponível</span></a>
+<a class="hub-card" data-mod="risco" href="risco.html"><span class="hub-ico">🎯</span><h3>Análise de Classificação de Risco</h3><p>Conversor e análise de desempenho da classificação de risco (Hygia).</p><span class="hub-tag ativo">Disponível</span></a>
+<a class="hub-card" data-mod="painel_ubs" href="painel-ubs.html"><span class="hub-ico">🏥</span><h3>Painel Comparativo UBS</h3><p>Comparecimento e faltosos por unidade — clínica e pediatria.</p><span class="hub-tag ativo">Disponível</span></a>
+<a class="hub-card" data-mod="painel_upas" href="painel-upas.html"><span class="hub-ico">📈</span><h3>Painel de Especialidades UPAs</h3><p>Atendimentos por especialidade nas UPAs.</p><span class="hub-tag ativo">Disponível</span></a>
+<a class="hub-card" data-mod="malotes" href="malotes.html"><span class="hub-ico">📦</span><h3>Malotes</h3><p>Controle de envio e recebimento de malotes entre unidades.</p><span class="hub-tag ativo">Disponível</span></a>
+<a class="hub-card" data-mod="visitantes" href="visitantes.html"><span class="hub-ico">🪪</span><h3>Visitantes</h3><p>Registro de visitantes da sede administrativa.</p><span class="hub-tag ativo">Disponível</span></a>
+<a class="hub-card" data-mod="chaves" href="chaves.html"><span class="hub-ico">🔑</span><h3>Chaves</h3><p>Controle de retirada e devolução de chaves.</p><span class="hub-tag ativo">Disponível</span></a>
+<div class="hub-card soon" id="hub-empty-hint" style="display:none"><span class="hub-ico">🔒</span><h3>Nenhum módulo liberado</h3><p>Fale com o administrador para liberar seus módulos.</p></div>
   </div>
   <div class="hub-foot">Fundação Hospital Santa Lydia · Ribeirão Preto/SP</div>
 </div>
@@ -401,6 +404,24 @@ function startApp(){
   document.getElementById('side-name').textContent = currentUser.nome;
   document.getElementById('side-role').textContent =
     ({admin:'Administrador',gestor:'Gestor',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
+  filtrarModulos();
+}
+function filtrarModulos(){
+  const admin = currentUser.role==='admin';
+  // lista de módulos permitidos; vazio/ausente = vê tudo (retrocompatível)
+  let permitidos = null;
+  if(!admin && currentUser.modulos!==undefined && currentUser.modulos!==null && (''+currentUser.modulos).trim()!==''){
+    permitidos = (''+currentUser.modulos).split(',').map(function(x){return x.trim();});
+  }
+  let visiveis = 0;
+  document.querySelectorAll('.hub-card[data-mod]').forEach(function(card){
+    const mod = card.getAttribute('data-mod');
+    const ok = admin || !permitidos || permitidos.indexOf(mod)>=0;
+    card.style.display = ok ? '' : 'none';
+    if(ok) visiveis++;
+  });
+  const hint=document.getElementById('hub-empty-hint');
+  if(hint) hint.style.display = visiveis? 'none' : 'block';
 }
 
 </script>

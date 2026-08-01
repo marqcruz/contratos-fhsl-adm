@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acompanhamento de Indicadores e Metas - Relatório</title>
+    <style>
+        :root {
+            --primary-color: #0f172a;
+            --accent-color: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #cbd5e1;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 24px;
+            margin: 0;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 28px;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f1f5f9;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .action-bar-info {
+            font-size: 0.9rem;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .btn-print {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-print:hover { background-color: #1d4ed8; }
+
+        .doc-header {
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .doc-header h1 {
+            font-size: 1.35rem;
+            color: var(--primary-color);
+            margin: 0 0 4px 0;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .doc-header p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+            padding: 7px 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            border: 1px solid #0f172a;
+            text-align: center;
+        }
+
+        td {
+            padding: 5px 6px;
+            border: 1px solid #cbd5e1;
+            vertical-align: middle;
+        }
+
+        tr:nth-child(even) { background-color: #f8fafc !important; }
+
+        .category-cell {
+            font-weight: 800;
+            color: #0f172a;
+            text-align: center;
+            background-color: #e2e8f0 !important;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            width: 110px;
+        }
+
+        .text-center { text-align: center; }
+
+        .param-cell {
+            font-size: 0.72rem;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        input[type="number"] {
+            width: 78px;
+            box-sizing: border-box;
+            padding: 4px 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .res-display {
+            font-weight: 800;
+            color: #1e40af;
+            background-color: #eff6ff !important;
+            padding: 3px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            min-width: 38px;
+            text-align: center;
+            border: 1px solid #bfdbfe;
+        }
+
+        .disabled-cell {
+            background-color: #f1f5f9 !important;
+            color: #94a3b8;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .badge-monit {
+            background-color: #e2e8f0 !important;
+            color: #475569;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .summary-wrapper {
+            margin-top: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 16px;
+        }
+
+        .summary-card {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc !important;
+            padding: 10px 16px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .summary-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .summary-value {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #1e40af;
+            background: #ffffff !important;
+            padding: 3px 14px;
+            border-radius: 6px;
+            border: 1.5px solid #1e40af;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .signatures {
+            display: none;
+            margin-top: 35px;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .sig-block {
+            width: 200px;
+            border-top: 1px solid #0f172a;
+            padding-top: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .sel-bar {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+        }
+        .sel-field { display: flex; flex-direction: column; min-width: 180px; }
+        .sel-field.sel-grow { flex: 1; min-width: 280px; }
+        .sel-field label {
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.4px; color: #64748b; margin-bottom: 5px;
+        }
+        .sel-field select, .sel-field input {
+            padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 6px;
+            font-size: 0.9rem; font-family: inherit; color: #1e293b; background: #ffffff;
+        }
+        .sel-field select:focus, .sel-field input:focus { outline: 2px solid #2f6fb0; border-color: #2f6fb0; }
+        .sel-end { font-size: 0.78rem; color: #64748b; margin-top: 6px; min-height: 1em; }
+        .sel-print { display: none; }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 8mm;
+            }
+
+            html, body {
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100%;
+                font-size: 10pt;
+                color: #000000 !important;
+            }
+
+            .container {
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                border: none !important;
+            }
+
+            .action-bar { display: none !important; }
+
+            .doc-header {
+                border-bottom: 2px solid #000000;
+                padding-bottom: 6px;
+                margin-bottom: 10px;
+            }
+
+            .doc-header h1 { font-size: 1.1rem; color: #000000; }
+            .doc-header p { font-size: 0.7rem; color: #333333; }
+
+            .sel-bar { display: none !important; }
+            .sel-print {
+                display: block !important;
+                font-size: 0.8rem;
+                color: #000000;
+                margin-bottom: 10px;
+                padding-bottom: 6px;
+                border-bottom: 1px solid #999999;
+            }
+            .sel-print strong { font-weight: 700; }
+            .sel-print .sp-end { color: #333333; font-size: 0.72rem; }
+
+            table {
+                font-size: 0.68rem;
+                border-collapse: collapse !important;
+            }
+
+            th {
+                background-color: #0f172a !important;
+                color: #ffffff !important;
+                padding: 4px 3px !important;
+                border: 1px solid #000000 !important;
+                font-size: 0.65rem;
+            }
+
+            td {
+                padding: 3px 4px !important;
+                border: 1px solid #475569 !important;
+            }
+
+            tr:nth-child(even) { background-color: #f1f5f9 !important; }
+
+            .category-cell {
+                background-color: #e2e8f0 !important;
+                color: #000000 !important;
+                font-weight: bold;
+            }
+
+            input[type="number"] {
+                border: none !important;
+                background: transparent !important;
+                font-weight: bold !important;
+                width: auto !important;
+                padding: 0 !important;
+                font-size: 0.72rem !important;
+            }
+
+            input[type=number]::-webkit-inner-spin-button, 
+            input[type=number]::-webkit-outer-spin-button { 
+                -webkit-appearance: none; 
+                margin: 0; 
+            }
+
+            .res-display {
+                background-color: #f1f5f9 !important;
+                border: 1px solid #94a3b8 !important;
+                color: #000000 !important;
+                font-size: 0.72rem !important;
+                padding: 1px 4px !important;
+            }
+
+            .badge-monit {
+                background-color: #e2e8f0 !important;
+                color: #000000 !important;
+                border: 1px solid #cbd5e1;
+            }
+
+            .summary-wrapper { margin-top: 10px; }
+
+            .summary-card {
+                border: 1.5px solid #000000 !important;
+                background-color: #f8fafc !important;
+                padding: 6px 12px !important;
+            }
+
+            .summary-title { color: #000000 !important; font-size: 0.85rem !important; }
+
+            .summary-value {
+                border: 1.5px solid #000000 !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+                font-size: 1.1rem !important;
+                padding: 2px 10px !important;
+            }
+
+            .signatures { display: flex !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="action-bar">
+        <div class="action-bar-info">
+            💡 Os valores inseridos serão formatados automaticamente para a versão impressa.
+        </div>
+        <button class="btn-print" onclick="window.print()">
+            🖨️ Imprimir / Guardar em PDF
+        </button>
+    </div>
+
+    <div class="doc-header">
+        <h1>Acompanhamento de Indicadores e Metas</h1>
+        <p>Relatório de Avaliação do Desempenho e Qualidade Operacional</p>
+    </div>
+
+    <div class="sel-bar">
+        <div class="sel-field sel-grow">
+            <label for="sel-upa">Unidade (UPA / UBDS)</label>
+            <select id="sel-upa" onchange="atualizarUnidade()">
+                <option value="">Selecione a unidade...</option>
+                <option data-end="Av. Euclydes Figueiredo, 295 — Adelino Simioni — 14071-140" value='UPA Norte "Dr. Nelson Mandela"'>UPA Norte "Dr. Nelson Mandela"</option>
+                <option data-end="Av. Treze de Maio, 353 — Jd. Paulistano — 14090-270" value='UPA Leste "Dr. Luis Atílio Losi Viana"'>UPA Leste "Dr. Luis Atílio Losi Viana"</option>
+                <option data-end="R. Teresina, 678 — Vila Maria Luíza — 14055-380" value='UPA Oeste "Prof. Dr. João José Carneiro"'>UPA Oeste "Prof. Dr. João José Carneiro"</option>
+                <option data-end="Estr. Antônia Mugnatto Marincek, 555 — Cond. Copacabana — 14078-405" value='UPA Ribeirão Verde "Luciana Ap. Cândido dos Santos"'>UPA Ribeirão Verde "Luciana Ap. Cândido dos Santos"</option>
+                <option data-end="R. Franco da Rocha, 1270 — Vila Virgínia — 14030-470" value='UBDS Vila Virgínia "Dr. Marco Antônio Sahão"'>UBDS Vila Virgínia "Dr. Marco Antônio Sahão"</option>
+            </select>
+            <div class="sel-end" id="sel-end"></div>
+        </div>
+        <div class="sel-field">
+            <label for="sel-comp">Competência</label>
+            <input type="text" id="sel-comp" placeholder="MM/AAAA (ex: 05/2026)" maxlength="7" inputmode="numeric" oninput="formatComp(this)">
+        </div>
+    </div>
+    <div class="sel-print" id="sel-print"></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 105px;">TIPO</th>
+                <th style="width: 32px;" class="text-center">Nº</th>
+                <th>INDICADOR DE DESEMPENHO</th>
+                <th style="width: 95px;">META</th>
+                <th style="width: 250px;">PARÂMETRO DE PONTUAÇÃO</th>
+                <th style="width: 105px;" class="text-center">REALIZADO</th>
+                <th style="width: 55px;" class="text-center">MÁX</th>
+                <th style="width: 65px;" class="text-center">RESULTADO</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="6" class="category-cell">MONITORAMENTO</td>
+                <td class="text-center">1</td>
+                <td>Acolhimento com classificação de risco (03.01.06.011-8)</td>
+                <td><span class="badge-monit">Monitoramento</span></td>
+                <td class="text-center">—</td>
+                <td class="text-center"><input type="number" class="mon-input" id="mon-1" placeholder="—" min="0" title="Campo de registro (não afeta o resultado)"></td>
+                <td class="text-center">—</td>
+                <td class="disabled-cell">—</td>
+            </tr>
+            <tr>
+                <td class="text-center">2</td>
+                <td>Atendimento médico (03.01.06.009-6)</td>
+                <td><span class="badge-monit">Monitoramento</span></td>
+                <td class="text-center">—</td>
+                <td class="text-center"><input type="number" class="mon-input" id="mon-2" placeholder="—" min="0" title="Campo de registro (não afeta o resultado)"></td>
+                <td class="text-center">—</td>
+                <td class="disabled-cell">—</td>
+            </tr>
+            <tr>
+                <td class="text-center">3</td>
+                <td>Observação 24h (03.01.06.002-9)</td>
+                <td><span class="badge-monit">Monitoramento</span></td>
+                <td class="text-center">—</td>
+                <td class="text-center"><input type="number" class="mon-input" id="mon-3" placeholder="—" min="0" title="Campo de registro (não afeta o resultado)"></td>
+                <td class="text-center">—</td>
+                <td class="disabled-cell">—</td>
+            </tr>
+            <tr>
+                <td class="text-center">4</td>
+                <td>Atendimentos Enfermeiro</td>
+                <td><span class="badge-monit">Monitoramento</span></td>
+                <td class="text-center">—</td>
+                <td class="text-center"><input type="number" class="mon-input" id="mon-4" placeholder="—" min="0" title="Campo de registro (não afeta o resultado)"></td>
+                <td class="text-center">—</td>
+                <td class="disabled-cell">—</td>
+            </tr>
+            <tr>
+                <td class="text-center">5</td>
+                <td>Procedimentos enfermagem (Técnico de Enfermagem)</td>
+                <td><span class="badge-monit">Monitoramento</span></td>
+                <td class="text-center">—</td>
+                <td class="text-center"><input type="number" class="mon-input" id="mon-5" placeholder="—" min="0" title="Campo de registro (não afeta o resultado)"></td>
+                <td class="text-center">—</td>
+                <td class="disabled-cell">—</td>
+            </tr>
+            <tr>
+                <td class="text-center">6</td>
+                <td>Vacinação</td>
+                <td><span class="badge-monit">Monitoramento</span></td>
+                <td class="text-center">—</td>
+                <td class="text-center"><input type="number" class="mon-input" id="mon-6" placeholder="—" min="0" title="Campo de registro (não afeta o resultado)"></td>
+                <td class="text-center">—</td>
+                <td class="disabled-cell">—</td>
+            </tr>
+
+            <tr>
+                <td rowspan="5" class="category-cell">PRODUÇÃO</td>
+                <td class="text-center">7</td>
+                <td>Atendimento médico (Clínica)</td>
+                <td>9.000/mês</td>
+                <td class="param-cell">≥75%: 15 | 60–75%: 10 | &lt;60%: 0</td>
+                <td class="text-center"><input type="number" id="input-7" value="9000" oninput="calcular()"></td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-7" class="res-display">15</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">8</td>
+                <td>Atendimento médico (Pediatria)</td>
+                <td>3.500/mês</td>
+                <td class="param-cell">≥75%: 15 | 60–75%: 10 | &lt;60%: 0</td>
+                <td class="text-center"><input type="number" id="input-8" value="3500" oninput="calcular()"></td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-8" class="res-display">15</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">9</td>
+                <td>Exames laboratoriais</td>
+                <td>9.000/mês</td>
+                <td class="param-cell">≥75%: 15 | 60–75%: 10 | &lt;60%: 0</td>
+                <td class="text-center"><input type="number" id="input-9" value="9000" oninput="calcular()"></td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-9" class="res-display">15</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">10</td>
+                <td>Exames de radiologia</td>
+                <td>1.900/mês</td>
+                <td class="param-cell">≥75%: 15 | 60–75%: 10 | &lt;60%: 0</td>
+                <td class="text-center"><input type="number" id="input-10" value="1900" oninput="calcular()"></td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-10" class="res-display">15</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">11</td>
+                <td>Dispensação de medicamentos aos pacientes</td>
+                <td>9.000/mês</td>
+                <td class="param-cell">≥75%: 15 | 60–75%: 10 | &lt;60%: 0</td>
+                <td class="text-center"><input type="number" id="input-11" value="9000" oninput="calcular()"></td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-11" class="res-display">15</span></td>
+            </tr>
+
+            <tr>
+                <td rowspan="7" class="category-cell">DESEMPENHO</td>
+                <td class="text-center">12</td>
+                <td>Risco Azul ≤240 min</td>
+                <td>100%</td>
+                <td class="param-cell">≥80%: 10 | 70–80%: 7 | 60–70%: 5 | &lt;60%: 0</td>
+                <td class="text-center"><input type="number" id="input-12" value="100" min="0" max="100" oninput="calcular()"> %</td>
+                <td class="text-center">10</td>
+                <td class="text-center"><span id="res-12" class="res-display">10</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">13</td>
+                <td>Risco Verde ≤120 min</td>
+                <td>100%</td>
+                <td class="param-cell">≥80%: 10 | 70–80%: 7 | 60–70%: 5 | &lt;60%: 0</td>
+                <td class="text-center"><input type="number" id="input-13" value="100" min="0" max="100" oninput="calcular()"> %</td>
+                <td class="text-center">10</td>
+                <td class="text-center"><span id="res-13" class="res-display">10</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">14</td>
+                <td>Risco Amarelo ≤30 min</td>
+                <td>100%</td>
+                <td class="param-cell">≥80%: 10 | 70–80%: 7 | 60–70%: 5 | &lt;60%: 0</td>
+                <td class="text-center"><input type="number" id="input-14" value="100" min="0" max="100" oninput="calcular()"> %</td>
+                <td class="text-center">10</td>
+                <td class="text-center"><span id="res-14" class="res-display">10</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">15</td>
+                <td>Transferências</td>
+                <td>&lt;20%</td>
+                <td class="param-cell">≤20%: 15 | &gt;20%: 0</td>
+                <td class="text-center"><input type="number" id="input-15" value="15" min="0" max="100" oninput="calcular()"> %</td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-15" class="res-display">15</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">16</td>
+                <td>Laboratório ≤60 min</td>
+                <td>≤60 min</td>
+                <td class="param-cell">≤60 min: 15 | &gt;60 min: 0</td>
+                <td class="text-center"><input type="number" id="input-16" value="50" oninput="calcular()"> m</td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-16" class="res-display">15</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">17</td>
+                <td>Radiologia ≤60 min</td>
+                <td>≤60 min</td>
+                <td class="param-cell">≤60 min: 15 | &gt;60 min: 0</td>
+                <td class="text-center"><input type="number" id="input-17" value="45" oninput="calcular()"> m</td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-17" class="res-display">15</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">18</td>
+                <td>Usuários insatisfeitos</td>
+                <td>≤30%</td>
+                <td class="param-cell">≤30%: 15 | 30–40%: 10 | &gt;40%: 0</td>
+                <td class="text-center"><input type="number" id="input-18" value="20" min="0" max="100" oninput="calcular()"> %</td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-18" class="res-display">15</span></td>
+            </tr>
+
+            <tr>
+                <td rowspan="4" class="category-cell">QUALIDADE</td>
+                <td class="text-center">19</td>
+                <td>Entrega documentos</td>
+                <td>100%</td>
+                <td class="param-cell">100%: 15 | 80–&lt;100%: 10 | &lt;80%: 0</td>
+                <td class="text-center"><input type="number" id="input-19" value="100" min="0" max="100" oninput="calcular()"> %</td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-19" class="res-display">15</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">20</td>
+                <td>Comitê Gestor</td>
+                <td>3 reuniões</td>
+                <td class="param-cell">3 reuniões: 15 | &lt;3: 0</td>
+                <td class="text-center"><input type="number" id="input-20" value="3" min="0" oninput="calcular()"></td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-20" class="res-display">15</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">21</td>
+                <td>Educação Permanente</td>
+                <td>≥3 ações</td>
+                <td class="param-cell">≥3 ações: 15 | &lt;3: 0</td>
+                <td class="text-center"><input type="number" id="input-21" value="3" min="0" oninput="calcular()"></td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-21" class="res-display">15</span></td>
+            </tr>
+            <tr>
+                <td class="text-center">22</td>
+                <td>Comissões atuantes</td>
+                <td>≥16 atas</td>
+                <td class="param-cell">≥16 atas: 15 | &lt;16: 0</td>
+                <td class="text-center"><input type="number" id="input-22" value="16" min="0" oninput="calcular()"></td>
+                <td class="text-center">15</td>
+                <td class="text-center"><span id="res-22" class="res-display">15</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="summary-wrapper">
+        <div class="summary-card">
+            <div class="summary-title">PONTUAÇÃO TOTAL ALCANÇADA:</div>
+            <div class="summary-value" id="totalResultado">225 / 225</div>
+        </div>
+    </div>
+
+    <div class="signatures">
+        <div class="sig-block">Responsável pelo Preenchimento</div>
+        <div class="sig-block">Coordenação / Validação</div>
+    </div>
+</div>
+
+<script>
+    function atualizarUnidade() {
+        const sel = document.getElementById('sel-upa');
+        const opt = sel.options[sel.selectedIndex];
+        const end = (opt && opt.getAttribute('data-end')) || '';
+        document.getElementById('sel-end').textContent = end;
+        atualizarCabecalhoImpressao();
+    }
+    function formatComp(el) {
+        let v = el.value.replace(/\D/g, '').slice(0, 6);
+        if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+        el.value = v;
+        atualizarCabecalhoImpressao();
+    }
+    function atualizarCabecalhoImpressao() {
+        const sel = document.getElementById('sel-upa');
+        const nome = sel.value || '';
+        const opt = sel.options[sel.selectedIndex];
+        const end = (opt && opt.getAttribute('data-end')) || '';
+        const comp = document.getElementById('sel-comp').value || '';
+        const box = document.getElementById('sel-print');
+        let html = '';
+        if (nome) html += '<strong>Unidade:</strong> ' + nome;
+        if (end) html += '<br><span class="sp-end">' + end + '</span>';
+        if (comp) html += (nome ? '<br>' : '') + '<strong>Competência:</strong> ' + comp;
+        box.innerHTML = html;
+    }
+
+    function calcProducao(val, meta) {
+        if (isNaN(val)) return 0;
+        const pct = (val / meta) * 100;
+        if (pct >= 75) return 15;
+        if (pct >= 60) return 10;
+        return 0;
+    }
+
+    function calcTempoEspera(val) {
+        if (isNaN(val)) return 0;
+        if (val >= 80) return 10;
+        if (val >= 70) return 7;
+        if (val >= 60) return 5;
+        return 0;
+    }
+
+    function calcular() {
+        let total = 0;
+        const metasProducao = {7: 9000, 8: 3500, 9: 9000, 10: 1900, 11: 9000};
+        for (let i = 7; i <= 11; i++) {
+            const val = parseFloat(document.getElementById(`input-${i}`).value);
+            const pts = calcProducao(val, metasProducao[i]);
+            document.getElementById(`res-${i}`).innerText = pts;
+            total += pts;
+        }
+
+        for (let i = 12; i <= 14; i++) {
+            const val = parseFloat(document.getElementById(`input-${i}`).value);
+            const pts = calcTempoEspera(val);
+            document.getElementById(`res-${i}`).innerText = pts;
+            total += pts;
+        }
+
+        const val15 = parseFloat(document.getElementById('input-15').value);
+        const pts15 = (!isNaN(val15) && val15 <= 20) ? 15 : 0;
+        document.getElementById('res-15').innerText = pts15;
+        total += pts15;
+
+        const val16 = parseFloat(document.getElementById('input-16').value);
+        const pts16 = (!isNaN(val16) && val16 <= 60) ? 15 : 0;
+        document.getElementById('res-16').innerText = pts16;
+        total += pts16;
+
+        const val17 = parseFloat(document.getElementById('input-17').value);
+        const pts17 = (!isNaN(val17) && val17 <= 60) ? 15 : 0;
+        document.getElementById('res-17').innerText = pts17;
+        total += pts17;
+
+        const val18 = parseFloat(document.getElementById('input-18').value);
+        let pts18 = 0;
+        if (!isNaN(val18)) {
+            if (val18 <= 30) pts18 = 15;
+            else if (val18 <= 40) pts18 = 10;
+        }
+        document.getElementById('res-18').innerText = pts18;
+        total += pts18;
+
+        const val19 = parseFloat(document.getElementById('input-19').value);
+        let pts19 = 0;
+        if (!isNaN(val19)) {
+            if (val19 >= 100) pts19 = 15;
+            else if (val19 >= 80) pts19 = 10;
+        }
+        document.getElementById('res-19').innerText = pts19;
+        total += pts19;
+
+        const val20 = parseFloat(document.getElementById('input-20').value);
+        const pts20 = (!isNaN(val20) && val20 >= 3) ? 15 : 0;
+        document.getElementById('res-20').innerText = pts20;
+        total += pts20;
+
+        const val21 = parseFloat(document.getElementById('input-21').value);
+        const pts21 = (!isNaN(val21) && val21 >= 3) ? 15 : 0;
+        document.getElementById('res-21').innerText = pts21;
+        total += pts21;
+
+        const val22 = parseFloat(document.getElementById('input-22').value);
+        const pts22 = (!isNaN(val22) && val22 >= 16) ? 15 : 0;
+        document.getElementById('res-22').innerText = pts22;
+        total += pts22;
+
+        document.getElementById('totalResultado').innerText = `${total} / 225`;
+    }
+
+    document.addEventListener('DOMContentLoaded', calcular);
+</script>
+
+</body>
+</html>

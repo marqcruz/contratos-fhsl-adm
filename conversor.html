@@ -1437,15 +1437,19 @@ $('#dlTrat').addEventListener('click',()=>{
 });
 </script>
 
-<!-- ===== FHSL BACK BUTTON ===== -->
-<a href="index.html" id="fhsl-back-hub" title="Voltar aos módulos"
-   style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;gap:7px;
-          padding:9px 14px;background:#1d6aad;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-          font-size:13px;font-weight:600;text-decoration:none;border-radius:10px;
-          box-shadow:0 4px 14px rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.15);line-height:1">
-  <span style="font-size:15px">←</span><span>Módulos</span>
-</a>
-<!-- ===== /FHSL BACK BUTTON ===== -->
+
+<!-- ===== FHSL TOPBAR ===== -->
+<div id="fhsl-topbar" style="position:fixed;top:0;left:0;right:0;height:46px;z-index:2147483000;
+     background:#12151b;border-bottom:1px solid #2a2e37;display:flex;align-items:center;padding:0 14px;
+     font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.2)">
+  <a href="index.html" title="Voltar aos módulos"
+     style="display:inline-flex;align-items:center;gap:7px;padding:7px 13px;background:#1d6aad;color:#fff;
+            font-size:13px;font-weight:600;text-decoration:none;border-radius:8px;line-height:1">
+    <span style="font-size:15px">←</span><span>Voltar aos módulos</span>
+  </a>
+</div>
+<style>body{padding-top:46px !important;}</style>
+<!-- ===== /FHSL TOPBAR ===== -->
 
 </body>
 </html>

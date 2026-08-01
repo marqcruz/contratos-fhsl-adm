@@ -343,6 +343,7 @@ tr:hover td{background:var(--surface2)}
 <a class="hub-card" data-mod="malotes" href="malotes.html"><span class="hub-ico">📦</span><h3>Malotes</h3><p>Controle de envio e recebimento de malotes entre unidades.</p><span class="hub-tag ativo">Disponível</span></a>
 <a class="hub-card" data-mod="visitantes" href="visitantes.html"><span class="hub-ico">🪪</span><h3>Visitantes</h3><p>Registro de visitantes da sede administrativa.</p><span class="hub-tag ativo">Disponível</span></a>
 <a class="hub-card" data-mod="chaves" href="chaves.html"><span class="hub-ico">🔑</span><h3>Chaves</h3><p>Controle de retirada e devolução de chaves.</p><span class="hub-tag ativo">Disponível</span></a>
+<a class="hub-card" data-mod="admin" data-role="admin,cadastros" href="admin.html"><span class="hub-ico">⚙️</span><h3>Administração</h3><p>Usuários, permissões, unidades e locais do sistema.</p><span class="hub-tag ativo">Disponível</span></a>
 <div class="hub-card soon" id="hub-empty-hint" style="display:none"><span class="hub-ico">🔒</span><h3>Nenhum módulo liberado</h3><p>Fale com o administrador para liberar seus módulos.</p></div>
   </div>
   <div class="hub-foot">Fundação Hospital Santa Lydia · Ribeirão Preto/SP</div>
@@ -416,6 +417,12 @@ function filtrarModulos(){
   let visiveis = 0;
   document.querySelectorAll('.hub-card[data-mod]').forEach(function(card){
     const mod = card.getAttribute('data-mod');
+    // cards com data-role só aparecem para os perfis listados
+    const restrito = card.getAttribute('data-role');
+    if(restrito){
+      const perfis = restrito.split(',').map(function(x){return x.trim();});
+      if(perfis.indexOf(currentUser.role)<0){ card.style.display='none'; return; }
+    }
     const ok = admin || !permitidos || permitidos.indexOf(mod)>=0;
     card.style.display = ok ? '' : 'none';
     if(ok) visiveis++;

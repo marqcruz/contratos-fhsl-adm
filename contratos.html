@@ -329,13 +329,13 @@ tr:hover td{background:var(--surface2)}
   </div>
   <div class="nav-group perm-admin">
     <div class="nav-label">Administração</div>
-    <button class="nav-item" data-page="usuarios" onclick="showPage('usuarios',this)">👥 Usuários</button>
-    <button class="nav-item" data-page="cadunidades" onclick="showPage('cadunidades',this)">🏥 Cadastro de Unidades</button>
+    <button class="nav-item" data-page="usuarios" onclick="showPage('usuarios',this)" style="display:none">👥 Usuários</button>
+    <button class="nav-item" data-page="cadunidades" onclick="showPage('cadunidades',this)" style="display:none">🏥 Cadastro de Unidades</button>
+    <a class="nav-item" href="admin.html" style="text-decoration:none;display:block">⚙️ Administração (usuários, unidades)</a>
     <button class="nav-item" data-page="auditoria" onclick="showPage('auditoria',this)">🛡️ Auditoria</button>
     <button class="nav-item" data-page="setup" onclick="showPage('setup',this)">⚙️ Configurar Sheets</button>
   </div>
   <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">
-    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);text-decoration:none;padding:6px 8px;border-radius:6px;margin-bottom:8px">← Voltar aos módulos</a>
     <div class="conf-status" id="conn-status" style="font-size:11px;color:var(--text3)">● Verificando conexão...</div>
   </div>
 </aside>

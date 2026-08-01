@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Visitantes — FHSL</title>
+<title>Administração — FHSL</title>
 
 <style>
 
@@ -304,13 +304,35 @@ tr:hover td{background:var(--surface2)}
 .wip{background:var(--yellow-bg);border:1px solid #fde68a;color:var(--yellow-text);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem}
 
 </style>
+<style>
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600}
+.c-red-b{background:var(--red-bg);color:var(--red-text)}
+.c-green-b{background:var(--green-bg);color:var(--green-text)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn.danger{background:var(--red-bg);color:var(--red-text);border-color:transparent}
+.btn.danger:hover{background:var(--red);color:#fff}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:560px;max-width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.mhead{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid var(--border)}
+.mtitle{font-size:16px;font-weight:700}
+.mclose{background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer}
+.mbody{padding:1.3rem 1.4rem}
+.mfoot{display:flex;gap:8px;justify-content:flex-end;padding:1rem 1.4rem;border-top:1px solid var(--border)}
+.notif-toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:2000;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.notif-toast.ok{background:var(--green);color:#fff}
+.notif-toast.err{background:var(--red);color:#fff}
+.notif-toast.info{background:var(--accent);color:#fff}
+</style>
+
 </head>
+
 <body>
 <div class="login-screen" id="login-screen">
   <div class="login-box">
     <div class="login-logo">
-      <div class="icon">🪪</div>
-      <h1>Visitantes</h1>
+      <div class="icon">⚙️</div>
+      <h1>Administração</h1>
       <p>Fundação Hospital Santa Lydia</p>
     </div>
     <div class="login-err" id="login-err"></div>
@@ -322,8 +344,8 @@ tr:hover td{background:var(--surface2)}
 <div class="app" id="app" style="display:none">
 <aside class="sidebar">
   <div class="logo">
-    <div class="logo-icon">🪪</div>
-    <div><div class="logo-text">Visitantes</div><div class="logo-sub">Sede Administrativa</div></div>
+    <div class="logo-icon">⚙️</div>
+    <div><div class="logo-text">Administração</div><div class="logo-sub">Cadastros e acessos</div></div>
   </div>
   <div class="user-card">
     <div class="user-avatar" id="side-avatar">?</div>
@@ -331,56 +353,148 @@ tr:hover td{background:var(--surface2)}
     <button class="user-logout" onclick="doLogout()" title="Sair">⏻</button>
   </div>
   <div class="nav-group">
-    <div class="nav-label">Visitantes</div>
-    <button class="nav-item active" data-page="lista" onclick="showPage('lista',this)">🪪 Visitantes</button>
-    <button class="nav-item" data-page="presentes" onclick="showPage('presentes',this)">🟢 No prédio</button>
-    <button class="nav-item" data-page="relatorio" onclick="showPage('relatorio',this)">🖨️ Relatório</button>
+    <div class="nav-label">Gestão</div>
+    <button class="nav-item active" data-page="usuarios" onclick="showPage('usuarios',this)">👤 Usuários e permissões</button>
+    <button class="nav-item" data-page="unidades" onclick="showPage('unidades',this)">🏥 Unidades de saúde</button>
+    <button class="nav-item" data-page="locais" onclick="showPage('locais',this)">📍 Locais de chaves</button>
+    <button class="nav-item" data-page="auditoria" onclick="showPage('auditoria',this)">🕘 Auditoria</button>
   </div>
   <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">
     
   </div>
 </aside>
-
 <main class="main">
   <div class="topbar">
     <div class="topbar-left"><div class="page-title" id="pg-title">—</div><div class="page-sub" id="pg-sub">—</div></div>
     <div class="topbar-right">
       <button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema claro/escuro">🌙</button>
-      <button class="btn primary" onclick="openForm()">➕ Novo registro</button>
+      <button class="btn primary" id="btn-topo" onclick="acaoTopo()">➕ Novo</button>
     </div>
   </div>
-  <div class="page active" id="page-lista"><div class="wip">🚧 <strong>Interface em preparação.</strong> O layout está pronto; a gravação na planilha será ativada na próxima etapa.</div><div class="stats-grid"><div class="stat-card c-green"><div class="stat-num">0</div><div class="stat-label">No prédio agora</div></div><div class="stat-card c-accent"><div class="stat-num">0</div><div class="stat-label">Visitas hoje</div></div><div class="stat-card c-yellow"><div class="stat-num">0</div><div class="stat-label">Crachás em uso</div></div><div class="stat-card "><div class="stat-num">0</div><div class="stat-label">Total no mês</div></div></div><div class="toolbar"><input type="text" placeholder="🔍 Buscar..." oninput=""><button class="btn" onclick="showNotif('Sem registros ainda.','info')">🔄 Atualizar</button></div><div class="table-wrap"><table><thead><tr><th>Data/Hora</th><th>Visitante</th><th>Documento</th><th>Empresa</th><th>Setor / Responsável</th><th>Crachá</th><th>Saída</th><th></th></tr></thead><tbody id="visitantes-body"></tbody></table><div class="empty-state"><span class="empty-icon">🪪</span>Nenhuma visita registrada ainda</div></div></div>
-  <div class="page" id="page-presentes"><div class="wip">🚧 <strong>Interface em preparação.</strong> O layout está pronto; a gravação na planilha será ativada na próxima etapa.</div><div class="toolbar"><input type="text" placeholder="🔍 Buscar..." oninput=""><button class="btn" onclick="showNotif('Sem registros ainda.','info')">🔄 Atualizar</button></div><div class="table-wrap"><table><thead><tr><th>Entrada</th><th>Visitante</th><th>Setor</th><th>Responsável</th><th>Crachá</th><th></th></tr></thead><tbody id="presentes-body"></tbody></table><div class="empty-state"><span class="empty-icon">🟢</span>Ninguém no prédio no momento</div></div></div>
-  <div class="page" id="page-relatorio"><div class="wip">🚧 <strong>Interface em preparação.</strong> O layout está pronto; a gravação na planilha será ativada na próxima etapa.</div><div class="chart-card"><div class="chart-title">Visitas por setor</div><p style="font-size:13px;color:var(--text3)">Os gráficos aparecerão quando houver registros.</p></div></div>
+
+  <!-- USUÁRIOS -->
+  <div class="page active" id="page-usuarios">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="kpi-users">0</div><div class="stat-label">Usuários cadastrados</div></div>
+      <div class="stat-card c-green"><div class="stat-num" id="kpi-users-ativos">0</div><div class="stat-label">Ativos</div></div>
+      <div class="stat-card c-red"><div class="stat-num" id="kpi-users-inativos">0</div><div class="stat-label">Desativados</div></div>
+    </div>
+    <div class="toolbar">
+      <input type="text" id="busca-user" placeholder="🔍 Buscar por nome ou e-mail..." oninput="renderUsuarios()">
+      <select id="filtro-user-status" onchange="renderUsuarios()"><option value="">Todos</option><option value="ativo">Ativos</option><option value="inativo">Desativados</option></select>
+      <button class="btn primary" onclick="openUser()">➕ Novo usuário</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Módulos</th><th>Situação</th><th></th></tr></thead>
+      <tbody id="usuarios-body"></tbody>
+    </table><div class="empty-state" id="user-empty" style="display:none"><span class="empty-icon">👤</span>Nenhum usuário encontrado</div></div>
+  </div>
+
+  <!-- UNIDADES -->
+  <div class="page" id="page-unidades">
+    <div class="toolbar">
+      <input type="text" id="busca-uni" placeholder="🔍 Buscar unidade..." oninput="renderUnidades()">
+      <select id="filtro-uni-status" onchange="renderUnidades()"><option value="">Todas</option><option value="ativo">Ativas</option><option value="inativo">Desativadas</option></select>
+      <button class="btn primary" onclick="openUni()">➕ Nova unidade</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Nome</th><th>Tipo</th><th>Cidade/UF</th><th>Responsável</th><th>Situação</th><th></th></tr></thead>
+      <tbody id="unidades-body"></tbody>
+    </table><div class="empty-state" id="uni-empty" style="display:none"><span class="empty-icon">🏥</span>Nenhuma unidade cadastrada</div></div>
+    <p style="font-size:12px;color:var(--text3);margin-top:8px">As unidades ativas aparecem automaticamente nos módulos que usam unidades (Contratos, etc.).</p>
+  </div>
+
+  <!-- LOCAIS -->
+  <div class="page" id="page-locais">
+    <div class="toolbar">
+      <input type="text" id="busca-loc" placeholder="🔍 Buscar local..." oninput="renderLocais()">
+      <select id="filtro-loc-status" onchange="renderLocais()"><option value="">Todos</option><option value="ativo">Ativos</option><option value="inativo">Desativados</option></select>
+      <button class="btn primary" onclick="openLoc()">➕ Novo local</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Local</th><th>Situação</th><th></th></tr></thead>
+      <tbody id="locais-body"></tbody>
+    </table><div class="empty-state" id="loc-empty" style="display:none"><span class="empty-icon">📍</span>Nenhum local cadastrado</div></div>
+    <p style="font-size:12px;color:var(--text3);margin-top:8px">Os locais ativos aparecem no módulo Chaves ao cadastrar ou movimentar uma chave.</p>
+  </div>
+
+  <!-- AUDITORIA -->
+  <div class="page" id="page-auditoria">
+    <div class="toolbar"><input type="text" id="busca-aud" placeholder="🔍 Buscar em ações, usuários..." oninput="renderAuditoria()"><button class="btn" onclick="carregarAuditoria()">🔄 Atualizar</button></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Data/Hora</th><th>Usuário</th><th>Ação</th><th>Detalhe</th></tr></thead>
+      <tbody id="auditoria-body"></tbody>
+    </table><div class="empty-state" id="aud-empty" style="display:none"><span class="empty-icon">🕘</span>Sem registros de auditoria</div></div>
+  </div>
 </main>
 </div>
 
-<!-- MODAL FORMULÁRIO -->
-<div class="modal-overlay" id="modal-form" onclick="if(event.target.id==='modal-form')closeForm()">
+<!-- MODAL USUÁRIO -->
+<div class="modal-overlay" id="modal-user" onclick="if(event.target.id==='modal-user')closeUser()">
   <div class="modal">
-    <div class="mhead"><div class="mtitle" id="form-title">Novo registro</div><button class="mclose" onclick="closeForm()">✕</button></div>
+    <div class="mhead"><div class="mtitle" id="user-title">Novo usuário</div><button class="mclose" onclick="closeUser()">✕</button></div>
     <div class="mbody">
-      <input type="hidden" id="f-id">
+      <input type="hidden" id="us-id">
       <div class="form-grid">
-        <div class="fg full"><label>Nome completo</label><input type="text" id="f-nome" placeholder="Nome do visitante"></div>
-        <div class="fg"><label>Documento (RG/CPF)</label><input type="text" id="f-doc" placeholder=""></div>
-        <div class="fg"><label>Telefone</label><input type="text" id="f-tel" placeholder="(16) 90000-0000"></div>
-        <div class="fg"><label>Empresa / Origem</label><input type="text" id="f-empresa" placeholder=""></div>
-        <div class="fg"><label>Setor visitado</label><select id="f-setor"><option value="">Selecione...</option><option value="Diretoria">Diretoria</option><option value="RH">RH</option><option value="Financeiro">Financeiro</option><option value="Compras">Compras</option><option value="Contratos">Contratos</option><option value="TI">TI</option><option value="Outro">Outro</option></select></div>
-        <div class="fg"><label>Responsável pelo atendimento</label><input type="text" id="f-responsavel" placeholder=""></div>
-        <div class="fg"><label>Nº do crachá</label><input type="text" id="f-cracha" placeholder=""></div>
-        <div class="fg"><label>Data/hora de entrada</label><input type="datetime-local" id="f-entrada" placeholder=""></div>
-        <div class="fg"><label>Data/hora de saída</label><input type="datetime-local" id="f-saida" placeholder=""></div>
-        <div class="fg full"><label>Motivo da visita</label><textarea id="f-motivo" placeholder=""></textarea></div>
+        <div class="fg full"><label>Nome *</label><input type="text" id="us-nome" placeholder="Nome completo"></div>
+        <div class="fg full"><label>E-mail *</label><input type="email" id="us-email" placeholder="email@fhsl.org.br"></div>
+        <div class="fg full"><label>Senha</label><input type="password" id="us-senha" placeholder="Mínimo 6 caracteres"></div>
+        <div class="fg"><label>Perfil *</label><select id="us-role" onchange="toggleModulosBox()">
+          <option value="visualizador">Visualizador (só leitura)</option>
+          <option value="gestor">Gestor (edita, não exclui)</option>
+          <option value="cadastros">Gestor de cadastros (Admin)</option>
+          <option value="admin">Administrador (acesso total)</option>
+        </select></div>
+        <div class="fg"><label>Situação</label><select id="us-ativo"><option value="true">Ativo</option><option value="false">Desativado</option></select></div>
       </div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:1.2rem">
-        <button class="btn" onclick="closeForm()">Cancelar</button>
-        <button class="btn primary" onclick="saveRegistro()">💾 Salvar</button>
+      <div class="fg" id="us-modulos-box" style="margin-top:12px">
+        <label>Módulos que este usuário pode acessar</label>
+        <div id="us-modulos" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Se nenhum for marcado, o usuário verá todos os módulos (padrão).</div>
       </div>
+      <div id="us-modulos-admin" style="display:none;font-size:12px;color:var(--text2);background:var(--surface2);padding:8px 10px;border-radius:7px;margin-top:12px">👑 Administrador tem acesso a todos os módulos automaticamente.</div>
     </div>
+    <div class="mfoot"><button class="btn" onclick="closeUser()">Cancelar</button><button class="btn primary" onclick="saveUser()">Salvar</button></div>
   </div>
 </div>
-<div class="notif-toast" id="notif"></div>
+
+<!-- MODAL UNIDADE -->
+<div class="modal-overlay" id="modal-uni" onclick="if(event.target.id==='modal-uni')closeUni()">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle" id="uni-title">Nova unidade</div><button class="mclose" onclick="closeUni()">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="un-id">
+      <div class="form-grid">
+        <div class="fg full"><label>Nome *</label><input type="text" id="un-nome" placeholder="Ex: UPA Norte"></div>
+        <div class="fg"><label>Tipo</label><select id="un-tipo"><option>UPA</option><option>Hospital</option><option>PA</option><option>UBS</option><option>Sede</option><option>Outro</option></select></div>
+        <div class="fg"><label>Situação</label><select id="un-ativo"><option value="true">Ativa</option><option value="false">Desativada</option></select></div>
+        <div class="fg"><label>Cidade</label><input type="text" id="un-cidade" placeholder="Ribeirão Preto"></div>
+        <div class="fg"><label>UF</label><input type="text" id="un-uf" placeholder="SP" maxlength="2"></div>
+        <div class="fg full"><label>Responsável</label><input type="text" id="un-resp" placeholder="Nome do responsável"></div>
+        <div class="fg full"><label>Telefone</label><input type="text" id="un-tel" placeholder="(16) 0000-0000"></div>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn" onclick="closeUni()">Cancelar</button><button class="btn primary" onclick="saveUni()">Salvar</button></div>
+  </div>
+</div>
+
+<!-- MODAL LOCAL -->
+<div class="modal-overlay" id="modal-loc" onclick="if(event.target.id==='modal-loc')closeLoc()">
+  <div class="modal" style="max-width:420px">
+    <div class="mhead"><div class="mtitle" id="loc-title">Novo local</div><button class="mclose" onclick="closeLoc()">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="lo-id">
+      <div class="form-grid">
+        <div class="fg full"><label>Nome do local *</label><input type="text" id="lo-nome" placeholder="Ex: Garagem, Recepção, 2º andar"></div>
+        <div class="fg full"><label>Situação</label><select id="lo-ativo"><option value="true">Ativo</option><option value="false">Desativado</option></select></div>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn" onclick="closeLoc()">Cancelar</button><button class="btn primary" onclick="saveLoc()">Salvar</button></div>
+  </div>
+</div>
+
+<div class="notif-toast" id="notif" style="display:none"></div>
+
 <script>
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzaqf4kCKuw9rpnwNsqSuQ7glllp93iJQnBFJ3x1F2yuHvFNYVlb67ufFuWDMlLBNVP/exec';
@@ -424,49 +538,274 @@ window.addEventListener('DOMContentLoaded', function(){
   const s=sessionStorage.getItem('fhsl_session');
   if(s){ try{ currentUser=JSON.parse(s); startApp(); }catch(e){} }
 });
-
-
 const PAGE_META = {
-  lista:['Visitantes','Registro de entrada e saída na sede'],
-  presentes:['No prédio agora','Visitantes que ainda não saíram'],
-  relatorio:['Relatório','Histórico de visitas']
+  usuarios:['Usuários e permissões','Quem acessa o sistema e o que cada um vê'],
+  unidades:['Unidades de saúde','Compartilhadas com Contratos e demais módulos'],
+  locais:['Locais de chaves','Onde as chaves ficam guardadas'],
+  auditoria:['Auditoria','Registro de ações no sistema']
 };
+const MODULOS_SISTEMA = [
+  ['contratos','📋 Contratos'],['cg','🏛️ Contratos de Gestão'],
+  ['risco','🎯 Classificação de Risco'],['painel_ubs','🏥 Painel UBS'],
+  ['painel_upas','📈 Especialidades UPAs'],['malotes','📦 Malotes'],
+  ['visitantes','🪪 Visitantes'],['chaves','🔑 Chaves'],['admin','⚙️ Administração']
+];
+const ROLE_LABEL = { admin:'Administrador', gestor:'Gestor', cadastros:'Gestor de cadastros', visualizador:'Visualizador' };
+let usuarios=[], unidades=[], locais=[], auditoria=[];
+let paginaAtual='usuarios';
+
 function startApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   loadUserTheme();
   document.getElementById('side-avatar').textContent = initials(currentUser.nome);
-  const cores={admin:'#86198f',gestor:'#1d6aad',visualizador:'#5c5c58'};
+  const cores={admin:'#86198f',cadastros:'#0f766e',gestor:'#1d6aad',visualizador:'#5c5c58'};
   document.getElementById('side-avatar').style.background = cores[currentUser.role]||'#1d6aad';
   document.getElementById('side-name').textContent = currentUser.nome;
-  document.getElementById('side-role').textContent =
-    ({admin:'Administrador',gestor:'Gestor',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
-  showPage('lista', document.querySelector('[data-page="lista"]'));
+  document.getElementById('side-role').textContent = ROLE_LABEL[currentUser.role]||currentUser.role;
+  // trava de acesso: só admin e gestor de cadastros
+  if(!podeAdmin()){
+    document.getElementById('app').innerHTML =
+      '<div style="margin:auto;text-align:center;padding:3rem"><div style="font-size:40px">🔒</div>'
+      +'<h2 style="margin:12px 0">Acesso restrito</h2>'
+      +'<p style="color:var(--text2)">Este módulo é exclusivo para administradores e gestores de cadastros.</p>'
+      +'<a class="btn primary" href="index.html" style="margin-top:16px;display:inline-block">← Voltar aos módulos</a></div>';
+    return;
+  }
+  carregarTudo();
 }
+function podeAdmin(){ return currentUser && (currentUser.role==='admin' || currentUser.role==='cadastros'); }
+function ehAdmin(){ return currentUser && currentUser.role==='admin'; }
+
 function showPage(id, btn){
-  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  paginaAtual=id;
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   const pg=document.getElementById('page-'+id); if(pg) pg.classList.add('active');
-  if(btn) btn.classList.add('active');
-  else { const nb=document.querySelector('[data-page="'+id+'"]'); if(nb) nb.classList.add('active'); }
-  const m=PAGE_META[id]||['',''];
-  document.getElementById('pg-title').textContent=m[0];
-  document.getElementById('pg-sub').textContent=m[1];
+  if(btn) btn.classList.add('active'); else { const nb=document.querySelector('[data-page="'+id+'"]'); if(nb) nb.classList.add('active'); }
+  const m=PAGE_META[id]||['','']; document.getElementById('pg-title').textContent=m[0]; document.getElementById('pg-sub').textContent=m[1];
+  const bt=document.getElementById('btn-topo');
+  if(id==='usuarios'){ bt.textContent='➕ Novo usuário'; bt.style.display=''; }
+  else if(id==='unidades'){ bt.textContent='➕ Nova unidade'; bt.style.display=''; }
+  else if(id==='locais'){ bt.textContent='➕ Novo local'; bt.style.display=''; }
+  else { bt.style.display='none'; }
+  if(id==='auditoria') carregarAuditoria();
+  render();
 }
-function openForm(id){
-  document.getElementById('form-title').textContent = id ? 'Editar registro' : 'Novo registro';
-  document.getElementById('f-id').value = id||'';
-  document.getElementById('modal-form').classList.add('open');
+function acaoTopo(){ if(paginaAtual==='usuarios')openUser(); else if(paginaAtual==='unidades')openUni(); else if(paginaAtual==='locais')openLoc(); }
+
+async function carregarTudo(){
+  try{
+    const r = await apiFetch('getadmin');
+    if(r.ok){ usuarios=r.usuarios||[]; unidades=r.unidades||[]; locais=r.locais||[]; }
+    render();
+  }catch(e){ showNotif('Erro ao carregar dados.','err'); }
 }
-function closeForm(){ document.getElementById('modal-form').classList.remove('open'); }
-function saveRegistro(){
-  showNotif('Interface pronta — a gravação será ativada na próxima etapa.','info');
-  closeForm();
+function render(){ renderUsuarios(); renderUnidades(); renderLocais(); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function ativoBool(v){ return String(v)!=='false' && String(v)!=='FALSE' && v!==false; }
+function badgeAtivo(v){ return ativoBool(v) ? '<span class="badge c-green-b">🟢 Ativo</span>' : '<span class="badge c-red-b">⚫ Desativado</span>'; }
+
+// ── Usuários ──
+function renderUsuarios(){
+  const q=(document.getElementById('busca-user')?.value||'').toLowerCase();
+  const fs=document.getElementById('filtro-user-status')?.value||'';
+  let lista=usuarios.filter(function(u){
+    const alvo=((u.Nome||u.nome||'')+' '+(u.Email||u.email||'')).toLowerCase();
+    if(q && alvo.indexOf(q)<0) return false;
+    const at=ativoBool(u.Ativo!==undefined?u.Ativo:u.ativo);
+    if(fs==='ativo' && !at) return false;
+    if(fs==='inativo' && at) return false;
+    return true;
+  });
+  const ativos=usuarios.filter(function(u){return ativoBool(u.Ativo!==undefined?u.Ativo:u.ativo);}).length;
+  document.getElementById('kpi-users').textContent=usuarios.length;
+  document.getElementById('kpi-users-ativos').textContent=ativos;
+  document.getElementById('kpi-users-inativos').textContent=usuarios.length-ativos;
+  document.getElementById('user-empty').style.display=lista.length?'none':'block';
+  document.getElementById('usuarios-body').innerHTML=lista.map(function(u){
+    const id=u.ID||u.id, nome=u.Nome||u.nome, email=u.Email||u.email, role=u.Role||u.role;
+    const mods=(u.Modulos||u.modulos||''); const at=ativoBool(u.Ativo!==undefined?u.Ativo:u.ativo);
+    const modTxt = role==='admin' ? 'Todos' : (mods? String(mods).split(',').length+' módulo(s)' : 'Todos');
+    return '<tr'+(at?'':' style="opacity:.55"')+'><td><strong>'+esc(nome)+'</strong></td><td>'+esc(email)+'</td>'
+      +'<td>'+esc(ROLE_LABEL[role]||role)+'</td><td style="font-size:12px;color:var(--text2)">'+modTxt+'</td>'
+      +'<td>'+badgeAtivo(at)+'</td>'
+      +'<td><button class="btn sm" onclick="openUser(\''+id+'\')">✏️</button> '
+      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleUser(\''+id+'\','+(!at)+')">'+(at?'⏸️':'▶️')+'</button>'
+      +(ehAdmin()?' <button class="btn sm danger" onclick="delUser(\''+id+'\')">🗑️</button>':'')+'</td></tr>';
+  }).join('');
+}
+function montarModulos(marcados){
+  const sel=(marcados||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
+  document.getElementById('us-modulos').innerHTML = MODULOS_SISTEMA.map(function(m){
+    const ck=sel.indexOf(m[0])>=0?'checked':'';
+    return '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;text-transform:none">'
+      +'<input type="checkbox" class="us-mod-ck" value="'+m[0]+'" '+ck+' style="width:15px;height:15px"> '+m[1]+'</label>';
+  }).join('');
+}
+function toggleModulosBox(){
+  const admin=document.getElementById('us-role').value==='admin';
+  document.getElementById('us-modulos-box').style.display=admin?'none':'block';
+  document.getElementById('us-modulos-admin').style.display=admin?'block':'none';
+}
+function openUser(id){
+  document.getElementById('us-id').value=id||'';
+  document.getElementById('user-title').textContent=id?'Editar usuário':'Novo usuário';
+  document.getElementById('us-nome').value=''; document.getElementById('us-email').value='';
+  document.getElementById('us-senha').value=''; document.getElementById('us-role').value='visualizador';
+  document.getElementById('us-ativo').value='true';
+  let mods='';
+  if(id){ const u=usuarios.find(function(x){return String(x.ID||x.id)===String(id);});
+    if(u){ document.getElementById('us-nome').value=u.Nome||u.nome||'';
+      document.getElementById('us-email').value=u.Email||u.email||'';
+      document.getElementById('us-role').value=u.Role||u.role||'visualizador';
+      document.getElementById('us-ativo').value=ativoBool(u.Ativo!==undefined?u.Ativo:u.ativo)?'true':'false';
+      document.getElementById('us-senha').placeholder='(deixe em branco para manter)';
+      mods=u.Modulos||u.modulos||''; }
+  } else document.getElementById('us-senha').placeholder='Mínimo 6 caracteres';
+  montarModulos(mods); toggleModulosBox();
+  document.getElementById('modal-user').classList.add('open');
+}
+function closeUser(){ document.getElementById('modal-user').classList.remove('open'); }
+async function saveUser(){
+  const nome=document.getElementById('us-nome').value.trim();
+  const email=document.getElementById('us-email').value.trim().toLowerCase();
+  const senha=document.getElementById('us-senha').value;
+  const role=document.getElementById('us-role').value;
+  const ativo=document.getElementById('us-ativo').value;
+  if(!nome||!email){ showNotif('Preencha nome e e-mail.','err'); return; }
+  const id=document.getElementById('us-id').value;
+  if(!id && senha.length<6){ showNotif('Senha de no mínimo 6 caracteres.','err'); return; }
+  let modulos='';
+  if(role!=='admin'){ const cks=document.querySelectorAll('.us-mod-ck:checked');
+    modulos=Array.prototype.map.call(cks,function(c){return c.value;}).join(','); }
+  const payload={ ID:id||'', Nome:nome, Email:email, Senha:senha, Role:role, Ativo:(ativo==='true'), Modulos:modulos,
+    __actor:{ nome:currentUser.nome, email:currentUser.email } };
+  showNotif('Salvando...','info');
+  const r=await apiFetch('saveuser', payload);
+  if(r.ok){ closeUser(); showNotif('Usuário salvo.','ok'); carregarTudo(); } else showNotif(r.message||'Erro ao salvar.','err');
+}
+async function toggleUser(id,novo){
+  const u=usuarios.find(function(x){return String(x.ID||x.id)===String(id);}); if(!u) return;
+  const r=await apiFetch('saveuser', { ID:id, Nome:u.Nome||u.nome, Email:u.Email||u.email, Role:u.Role||u.role,
+    Modulos:(u.Modulos||u.modulos||''), Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  if(r.ok){ showNotif(novo?'Usuário ativado.':'Usuário desativado.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
+}
+async function delUser(id){
+  if(!confirm('Excluir este usuário definitivamente? (desativar costuma ser melhor)')) return;
+  const r=await apiFetch('deleteuser', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  if(r.ok){ showNotif('Usuário excluído.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
 }
 
+// ── Unidades ──
+function renderUnidades(){
+  const q=(document.getElementById('busca-uni')?.value||'').toLowerCase();
+  const fs=document.getElementById('filtro-uni-status')?.value||'';
+  let lista=unidades.filter(function(u){
+    if(q && !((u.Nome||'')+' '+(u.Cidade||'')+' '+(u.Responsavel||'')).toLowerCase().includes(q)) return false;
+    const at=ativoBool(u.Ativo);
+    if(fs==='ativo'&&!at) return false; if(fs==='inativo'&&at) return false;
+    return true;
+  });
+  document.getElementById('uni-empty').style.display=lista.length?'none':'block';
+  document.getElementById('unidades-body').innerHTML=lista.map(function(u){
+    const at=ativoBool(u.Ativo);
+    return '<tr'+(at?'':' style="opacity:.55"')+'><td><strong>'+esc(u.Nome)+'</strong></td><td>'+esc(u.Tipo||'—')+'</td>'
+      +'<td>'+esc((u.Cidade||'—')+(u.UF?('/'+u.UF):''))+'</td><td>'+esc(u.Responsavel||'—')+'</td>'
+      +'<td>'+badgeAtivo(at)+'</td>'
+      +'<td><button class="btn sm" onclick="openUni(\''+u.ID+'\')">✏️</button> '
+      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleUni(\''+u.ID+'\','+(!at)+')">'+(at?'⏸️':'▶️')+'</button></td></tr>';
+  }).join('');
+}
+function openUni(id){
+  document.getElementById('un-id').value=id||'';
+  document.getElementById('uni-title').textContent=id?'Editar unidade':'Nova unidade';
+  ['un-nome','un-cidade','un-uf','un-resp','un-tel'].forEach(function(k){document.getElementById(k).value='';});
+  document.getElementById('un-tipo').value='UPA'; document.getElementById('un-ativo').value='true';
+  if(id){ const u=unidades.find(function(x){return String(x.ID)===String(id);});
+    if(u){ document.getElementById('un-nome').value=u.Nome||''; document.getElementById('un-tipo').value=u.Tipo||'UPA';
+      document.getElementById('un-cidade').value=u.Cidade||''; document.getElementById('un-uf').value=u.UF||'';
+      document.getElementById('un-resp').value=u.Responsavel||''; document.getElementById('un-tel').value=u.Telefone||'';
+      document.getElementById('un-ativo').value=ativoBool(u.Ativo)?'true':'false'; } }
+  document.getElementById('modal-uni').classList.add('open');
+}
+function closeUni(){ document.getElementById('modal-uni').classList.remove('open'); }
+async function saveUni(){
+  const nome=document.getElementById('un-nome').value.trim();
+  if(!nome){ showNotif('Informe o nome da unidade.','err'); return; }
+  const payload={ ID:document.getElementById('un-id').value||'', Nome:nome,
+    Tipo:document.getElementById('un-tipo').value, Cidade:document.getElementById('un-cidade').value.trim(),
+    UF:document.getElementById('un-uf').value.trim().toUpperCase(), Responsavel:document.getElementById('un-resp').value.trim(),
+    Telefone:document.getElementById('un-tel').value.trim(), Ativo:(document.getElementById('un-ativo').value==='true'),
+    __actor:{ nome:currentUser.nome, email:currentUser.email } };
+  showNotif('Salvando...','info');
+  const r=await apiFetch('saveunit', payload);
+  if(r.ok){ closeUni(); showNotif('Unidade salva.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
+}
+async function toggleUni(id,novo){
+  const r=await apiFetch('saveunit', { ID:id, Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  if(r.ok){ showNotif(novo?'Unidade ativada.':'Unidade desativada.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
+}
+
+// ── Locais ──
+function renderLocais(){
+  const q=(document.getElementById('busca-loc')?.value||'').toLowerCase();
+  const fs=document.getElementById('filtro-loc-status')?.value||'';
+  let lista=locais.filter(function(l){
+    if(q && !String(l.Nome).toLowerCase().includes(q)) return false;
+    const at=ativoBool(l.Ativo);
+    if(fs==='ativo'&&!at) return false; if(fs==='inativo'&&at) return false;
+    return true;
+  });
+  document.getElementById('loc-empty').style.display=lista.length?'none':'block';
+  document.getElementById('locais-body').innerHTML=lista.map(function(l){
+    const at=ativoBool(l.Ativo);
+    return '<tr'+(at?'':' style="opacity:.55"')+'><td><strong>'+esc(l.Nome)+'</strong></td><td>'+badgeAtivo(at)+'</td>'
+      +'<td><button class="btn sm" onclick="openLoc(\''+l.ID+'\')">✏️</button> '
+      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleLoc(\''+l.ID+'\','+(!at)+')">'+(at?'⏸️':'▶️')+'</button></td></tr>';
+  }).join('');
+}
+function openLoc(id){
+  document.getElementById('lo-id').value=id||'';
+  document.getElementById('loc-title').textContent=id?'Editar local':'Novo local';
+  document.getElementById('lo-nome').value=''; document.getElementById('lo-ativo').value='true';
+  if(id){ const l=locais.find(function(x){return String(x.ID)===String(id);});
+    if(l){ document.getElementById('lo-nome').value=l.Nome||''; document.getElementById('lo-ativo').value=ativoBool(l.Ativo)?'true':'false'; } }
+  document.getElementById('modal-loc').classList.add('open');
+}
+function closeLoc(){ document.getElementById('modal-loc').classList.remove('open'); }
+async function saveLoc(){
+  const nome=document.getElementById('lo-nome').value.trim();
+  if(!nome){ showNotif('Informe o nome do local.','err'); return; }
+  const payload={ ID:document.getElementById('lo-id').value||'', Nome:nome,
+    Ativo:(document.getElementById('lo-ativo').value==='true'), __actor:{ nome:currentUser.nome, email:currentUser.email } };
+  const r=await apiFetch('savelocal', payload);
+  if(r.ok){ closeLoc(); showNotif('Local salvo.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
+}
+async function toggleLoc(id,novo){
+  const l=locais.find(function(x){return String(x.ID)===String(id);}); if(!l) return;
+  const r=await apiFetch('savelocal', { ID:id, Nome:l.Nome, Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  if(r.ok){ showNotif(novo?'Local ativado.':'Local desativado.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
+}
+
+// ── Auditoria ──
+async function carregarAuditoria(){
+  try{ const r=await apiFetch('getlog'); if(r.ok){ auditoria=r.data||[]; renderAuditoria(); } }
+  catch(e){ showNotif('Erro ao carregar auditoria.','err'); }
+}
+function renderAuditoria(){
+  const q=(document.getElementById('busca-aud')?.value||'').toLowerCase();
+  let lista=auditoria.filter(function(a){
+    return !q || ((a.Usuario||'')+' '+(a.Acao||'')+' '+(a.Detalhe||'')).toLowerCase().includes(q);
+  });
+  document.getElementById('aud-empty').style.display=lista.length?'none':'block';
+  document.getElementById('auditoria-body').innerHTML=lista.slice(0,300).map(function(a){
+    return '<tr><td style="white-space:nowrap;font-size:12px">'+esc(a.DataHora||'')+'</td><td>'+esc(a.Usuario||'—')+'</td>'
+      +'<td>'+esc(a.Acao||'')+'</td><td style="font-size:12px;color:var(--text2)">'+esc(a.Detalhe||'')+'</td></tr>';
+  }).join('');
+}
 
 </script>
-
 
 <!-- ===== FHSL BACK BUTTON ===== -->
 <a href="index.html" id="fhsl-back-hub" title="Voltar aos módulos"
@@ -477,6 +816,5 @@ function saveRegistro(){
   <span style="font-size:15px">←</span><span>Módulos</span>
 </a>
 <!-- ===== /FHSL BACK BUTTON ===== -->
-
 </body>
 </html>

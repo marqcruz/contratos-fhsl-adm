@@ -315,6 +315,7 @@ tr:hover td{background:var(--surface2)}
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600}
 .c-red-b{background:var(--red-bg);color:var(--red-text)}
 .c-green-b{background:var(--green-bg);color:var(--green-text)}
+.c-yellow-b{background:var(--yellow-bg);color:var(--yellow-text)}
 .btn.sm{padding:5px 10px;font-size:12px}
 .btn.danger{background:var(--red-bg);color:var(--red-text);border-color:transparent}
 .btn.danger:hover{background:var(--red);color:#fff}
@@ -449,6 +450,11 @@ tr:hover td{background:var(--surface2)}
         <div class="fg"><label>Tipo *</label><select id="ch-tipo"></select></div>
         <div class="fg full"><label>Nome / descrição *</label><input type="text" id="ch-nome" placeholder="Ex: Fiat Strada ABC-1234"></div>
         <div class="fg full"><label>Local *</label><select id="ch-local"></select></div>
+        <div class="fg full" id="ch-status-wrap" style="display:none"><label>Situação da chave</label><select id="ch-status">
+          <option value="Disponível">🟢 Disponível</option>
+          <option value="Perdida">🔴 Perdida / extraviada</option>
+          <option value="Manutenção">🔧 Em manutenção / cópia</option>
+        </select><div style="font-size:11px;color:var(--text3);margin-top:4px">Chave "Em uso" muda sozinha ao devolver. Use aqui para marcar perda ou manutenção.</div></div>
       </div>
     </div>
     <div class="mfoot"><button class="btn" onclick="closeChave()">Cancelar</button><button class="btn primary" onclick="saveChave()">Salvar</button></div>
@@ -604,7 +610,12 @@ function fmtData(v){
 }
 function set(id,v){ const e=document.getElementById(id); if(e) e.textContent=v; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
-function badgeStatus(st){ return st==='Em uso' ? '<span class="badge c-red-b">🔴 Em uso</span>' : '<span class="badge c-green-b">🟢 Disponível</span>'; }
+function badgeStatus(st){
+  if(st==='Em uso') return '<span class="badge c-red-b">🔴 Em uso</span>';
+  if(st==='Perdida') return '<span class="badge c-red-b">⚠️ Perdida</span>';
+  if(st==='Manutenção') return '<span class="badge c-yellow-b">🔧 Manutenção</span>';
+  return '<span class="badge c-green-b">🟢 Disponível</span>';
+}
 
 function preencherSelects(){
   // tipos no modal de chave
@@ -624,6 +635,7 @@ function renderPainel(){
   const fl=document.getElementById('filtro-local')?.value||'';
   const fs=document.getElementById('filtro-status')?.value||'';
   let lista = chaves.filter(function(c){
+    if(!ativoBool(c.Ativo)) return false;              // inativas não aparecem para uso
     const alvo=(c.Codigo+' '+c.Nome+' '+c.Tipo+' '+c.Local).toLowerCase();
     if(q && alvo.indexOf(q)<0) return false;
     if(fl && c.Local!==fl) return false;
@@ -633,10 +645,12 @@ function renderPainel(){
   const body=document.getElementById('painel-body');
   document.getElementById('painel-empty').style.display = lista.length?'none':'block';
   body.innerHTML = lista.map(function(c){
-    const emUso = c.Status==='Em uso';
-    const btn = emUso
-      ? '<button class="btn sm" onclick="openMov(\''+c.ID+'\',\'Devolução\')">↩️ Devolver</button>'
-      : '<button class="btn sm primary" onclick="openMov(\''+c.ID+'\',\'Retirada\')">📤 Retirar</button>';
+    const st = c.Status||'Disponível';
+    const emUso = st==='Em uso';
+    let btn;
+    if(emUso) btn = '<button class="btn sm" onclick="openMov(\''+c.ID+'\',\'Devolução\')">↩️ Devolver</button>';
+    else if(st==='Perdida' || st==='Manutenção') btn = '<span style="font-size:12px;color:var(--text3)">indisponível</span>';
+    else btn = '<button class="btn sm primary" onclick="openMov(\''+c.ID+'\',\'Retirada\')">📤 Retirar</button>';
     return '<tr><td><strong>'+esc(c.Codigo)+'</strong></td><td>'+esc(c.Nome)+'</td><td>'+esc(c.Tipo)+'</td>'
       +'<td>'+esc(c.Local)+'</td><td>'+badgeStatus(c.Status||'Disponível')+'</td>'
       +'<td>'+(podeEditar()?btn:'—')+'</td></tr>';
@@ -686,12 +700,29 @@ function renderCadastro(){
   let lista = chaves.filter(function(c){ return !q || (c.Codigo+' '+c.Nome+' '+c.Tipo+' '+c.Local).toLowerCase().indexOf(q)>=0; });
   document.getElementById('cad-empty').style.display = lista.length?'none':'block';
   document.getElementById('cadastro-body').innerHTML = lista.map(function(c){
-    const acoes = podeEditar()
-      ? '<button class="btn sm" onclick="openChave(\''+c.ID+'\')">✏️</button> <button class="btn sm danger" onclick="delChave(\''+c.ID+'\')">🗑️</button>'
-      : '—';
-    return '<tr><td><strong>'+esc(c.Codigo)+'</strong></td><td>'+esc(c.Nome)+'</td><td>'+esc(c.Tipo)+'</td>'
-      +'<td>'+esc(c.Local)+'</td><td>'+badgeStatus(c.Status||'Disponível')+'</td><td>'+acoes+'</td></tr>';
+    const at = ativoBool(c.Ativo);
+    let acoes = '—';
+    if(podeEditar()){
+      const bEditar = '<button class="btn sm" onclick="openChave(\''+c.ID+'\')" title="Editar">✏️</button>';
+      const bAtivo = at
+        ? '<button class="btn sm" onclick="toggleChaveAtivo(\''+c.ID+'\',false)" title="Inativar">⏸️</button>'
+        : '<button class="btn sm primary" onclick="toggleChaveAtivo(\''+c.ID+'\',true)" title="Reativar">▶️</button>';
+      const bDel = '<button class="btn sm danger" onclick="delChave(\''+c.ID+'\')" title="Excluir">🗑️</button>';
+      acoes = bEditar+' '+bAtivo+' '+bDel;
+    }
+    const estilo = at ? '' : ' style="opacity:.5"';
+    const statusCel = at ? badgeStatus(c.Status||'Disponível') : '<span class="badge" style="background:var(--surface2);color:var(--text3)">⚫ Inativa</span>';
+    return '<tr'+estilo+'><td><strong>'+esc(c.Codigo)+'</strong></td><td>'+esc(c.Nome)+'</td><td>'+esc(c.Tipo)+'</td>'
+      +'<td>'+esc(c.Local)+'</td><td>'+statusCel+'</td><td style="white-space:nowrap">'+acoes+'</td></tr>';
   }).join('');
+}
+function ativoBool(v){ return String(v)!=='false' && String(v)!=='FALSE' && v!==false; }
+async function toggleChaveAtivo(id, novo){
+  const c = chaves.find(function(x){ return String(x.ID)===String(id); }); if(!c) return;
+  if(!novo && c.Status==='Em uso'){ showNotif('Esta chave está em uso. Registre a devolução antes de inativar.','err'); return; }
+  const payload={ ID:id, Nome:c.Nome, Tipo:c.Tipo, Local:c.Local, Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } };
+  const r=await apiFetch('savechave', payload);
+  if(r.ok){ showNotif(novo?'Chave reativada.':'Chave inativada.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
 }
 
 // ── Locais ──
@@ -717,10 +748,16 @@ function openChave(id){
   if(id){
     const c = chaves.find(function(x){ return String(x.ID)===String(id); });
     if(c){ document.getElementById('ch-codigo').value=c.Codigo||''; document.getElementById('ch-nome').value=c.Nome||'';
-      document.getElementById('ch-tipo').value=c.Tipo||''; document.getElementById('ch-local').value=c.Local||''; }
+      document.getElementById('ch-tipo').value=c.Tipo||''; document.getElementById('ch-local').value=c.Local||'';
+      // situação: só editável se não estiver "Em uso" (essa muda ao devolver)
+      const wrap=document.getElementById('ch-status-wrap'), sel=document.getElementById('ch-status');
+      if((c.Status||'')==='Em uso'){ wrap.style.display='none'; }
+      else { wrap.style.display='block'; sel.value=(c.Status==='Perdida'||c.Status==='Manutenção')?c.Status:'Disponível'; }
+    }
   } else {
     document.getElementById('ch-codigo').value=''; document.getElementById('ch-codigo').placeholder='(gerado ao salvar)';
     document.getElementById('ch-nome').value=''; document.getElementById('ch-local').value='';
+    document.getElementById('ch-status-wrap').style.display='none';
     if(tipos.length) document.getElementById('ch-tipo').value=tipos[0];
   }
   document.getElementById('modal-chave').classList.add('open');
@@ -734,6 +771,9 @@ async function saveChave(){
   if(!local){ showNotif('Selecione o local da chave.','err'); return; }
   const payload={ ID:document.getElementById('ch-id').value||'', Nome:nome, Tipo:tipo, Local:local,
     __actor:{ nome:currentUser.nome, email:currentUser.email } };
+  // se editando e o campo situação está visível, envia o Status escolhido
+  const wrap=document.getElementById('ch-status-wrap');
+  if(payload.ID && wrap && wrap.style.display!=='none'){ payload.Status=document.getElementById('ch-status').value; }
   showNotif('Salvando...','info');
   const r=await apiFetch('savechave', payload);
   if(r.ok){ closeChave(); showNotif('Chave salva'+(r.codigo?(' ('+r.codigo+')'):'')+'.','ok'); carregarTudo(); }

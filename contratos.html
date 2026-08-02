@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contratos FHSL</title>
+<title>Contratos — TDNGo</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -288,8 +288,9 @@ tr:hover td{background:var(--surface2)}
   <div class="login-box">
     <div class="login-logo">
       <div class="icon">📋</div>
-      <h1>Contratos FHSL</h1>
-      <p>Fundação Hospital Santa Lydia</p>
+      <h1>Contratos</h1>
+      <p>TDN Gestão Operacional</p>
+      <p style="font-size:11px;color:var(--text3);margin-top:10px">Desenvolvido por Marcos Cruz, com IA</p>
     </div>
     <div class="login-err" id="login-err"></div>
     <div class="login-field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
@@ -303,7 +304,7 @@ tr:hover td{background:var(--surface2)}
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-icon">📋</div>
-    <div><div class="logo-text">Contratos FHSL</div><div class="logo-sub">Sistema de Gestão</div></div>
+    <div><div class="logo-text">Contratos</div><div class="logo-sub">Sistema de Gestão</div></div>
   </div>
   <div class="user-card">
     <div class="user-avatar" id="side-avatar">?</div>
@@ -413,7 +414,7 @@ tr:hover td{background:var(--surface2)}
       <div class="form-section">
         <div class="fsec-title">🏢 Partes</div>
         <div class="form-grid">
-          <div class="fg"><label>Contratante</label><input type="text" id="f-contratante" value="Fundação Hospital Santa Lydia"></div>
+          <div class="fg"><label>Contratante</label><input type="text" id="f-contratante" value="TDN Gestão Operacional"></div>
           <div class="fg"><label>CNPJ Contratante</label><input type="text" id="f-cnpj-cont" value="13.370.183/0001-89"></div>
           <div class="fg full"><label>CNPJ da Contratada *</label><div class="cnpj-row"><input type="text" id="f-cnpj" required placeholder="00.000.000/0000-00" oninput="cnpjClear()"><button type="button" class="btn sm primary" id="btn-cnpj" onclick="lookupCNPJ()">🔍 Buscar</button></div><div class="cmsg" id="cnpj-msg"></div></div>
           <div class="fg full"><label>Empresa contratada *</label><input type="text" id="f-empresa" required placeholder="Preenchido ao buscar CNPJ"></div>
@@ -1119,7 +1120,7 @@ function verificarVencimentos() {
     const linhas = [['Nº',c.Numero],['Tipo',c.Tipo],['Empresa',c.Empresa],['CNPJ',c.CNPJ],['Objeto',c.Objeto],['Vigência',c.VigenciaInicio+' a '+c.VigenciaFim],['Valor Total',formatBRL(c.ValorTotal)],['Fiscal',c.FiscalNome||'—'],['Gestor',c.GestorNome||'—']];
     var rows = '';
     for (var i=0;i<linhas.length;i++){ rows += '<tr style="background:'+(i%2?'#f5f5f3':'#fff')+'"><td style="padding:9px 14px;font-weight:700;width:38%;border-bottom:1px solid #e2e2de">'+linhas[i][0]+'</td><td style="padding:9px 14px;border-bottom:1px solid #e2e2de">'+(linhas[i][1]||'—')+'</td></tr>'; }
-    const html = '<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto"><div style="background:#1d6aad;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="margin:0;font-size:18px">⚠ Alerta de Vencimento de Contrato</h2><p style="margin:6px 0 0;opacity:.85;font-size:13px">Fundação Hospital Santa Lydia</p></div><div style="background:#fff;padding:24px;border:1px solid #e2e2de;border-top:none;border-radius:0 0 8px 8px"><p style="font-size:15px;margin:0 0 16px">O contrato abaixo vence em <strong style="color:#b91c1c">'+diff+' dias</strong> ('+c.VigenciaFim+').</p><table style="width:100%;border-collapse:collapse;font-size:13px">'+rows+'</table><div style="margin-top:18px;padding:13px;background:#fefce8;border:1px solid #fde68a;border-radius:6px;font-size:13px;color:#a16207"><strong>Ação necessária:</strong> Verificar prorrogação, termo aditivo ou encerramento.</div></div></div>';
+    const html = '<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto"><div style="background:#1d6aad;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0"><h2 style="margin:0;font-size:18px">⚠ Alerta de Vencimento de Contrato</h2><p style="margin:6px 0 0;opacity:.85;font-size:13px">TDN Gestão Operacional</p></div><div style="background:#fff;padding:24px;border:1px solid #e2e2de;border-top:none;border-radius:0 0 8px 8px"><p style="font-size:15px;margin:0 0 16px">O contrato abaixo vence em <strong style="color:#b91c1c">'+diff+' dias</strong> ('+c.VigenciaFim+').</p><table style="width:100%;border-collapse:collapse;font-size:13px">'+rows+'</table><div style="margin-top:18px;padding:13px;background:#fefce8;border:1px solid #fde68a;border-radius:6px;font-size:13px;color:#a16207"><strong>Ação necessária:</strong> Verificar prorrogação, termo aditivo ou encerramento.</div></div></div>';
     uniq.forEach(function(em){ MailApp.sendEmail({ to:em, subject:assunto, htmlBody:html }); });
   });
 }
@@ -1707,7 +1708,7 @@ function batchToContract(d, nomeArq, pdfUrl){
     id:'', numero:d.numero||'', tipo:d.tipo||'Contrato', contratoPai:'',
     statusContrato:d.statusContrato||'Vigente', processo:d.processo||'',
     dataAssinatura:'', lei:'', foro:'',
-    contratante:d.contratante||'Fundação Hospital Santa Lydia', cnpjContratante:d.cnpjContratante||'13.370.183/0001-89',
+    contratante:d.contratante||'TDN Gestão Operacional', cnpjContratante:d.cnpjContratante||'13.370.183/0001-89',
     empresa:d.empresa||'', cnpj:d.cnpj||'', situacaoCadastral:'', municipioUF:'',
     objeto:d.objeto||'', unidades:unidades,
     vigenciaInicio:d.vigenciaInicio||'', vigenciaFim:d.vigenciaFim||'',
@@ -2103,7 +2104,7 @@ function clearForm(){
   document.getElementById('f-pdf-b64').value='';
   document.getElementById('f-pdf-name').value='';
   document.getElementById('f-pdf-url').value='';
-  document.getElementById('f-contratante').value='Fundação Hospital Santa Lydia';
+  document.getElementById('f-contratante').value='TDN Gestão Operacional';
   document.getElementById('f-cnpj-cont').value='13.370.183/0001-89';
   document.getElementById('pdf-chosen').style.display='none';
   document.getElementById('cnpj-msg').style.display='none';
@@ -2488,7 +2489,7 @@ function printFicha(id){
   const pai = c.contratoPai ? (contracts.find(function(x){return x.id===c.contratoPai;})||{}).numero||c.contratoPai : '';
   const html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Ficha '+(c.numero||'')+'</title></head>'
     + '<body style="font-family:Arial,sans-serif;max-width:800px;margin:20px auto;color:#1a1a18;padding:0 16px">'
-    + '<div style="text-align:center;border-bottom:3px solid #1d6aad;padding-bottom:12px;margin-bottom:16px"><div style="font-size:20px;font-weight:700">Fundação Hospital Santa Lydia</div><div style="font-size:14px;color:#555">Ficha de Contrato</div></div>'
+    + '<div style="text-align:center;border-bottom:3px solid #1d6aad;padding-bottom:12px;margin-bottom:16px"><div style="font-size:20px;font-weight:700">TDN Gestão Operacional</div><div style="font-size:14px;color:#555">Ficha de Contrato</div></div>'
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:17px;font-weight:700">'+(c.tipo||'Contrato')+' Nº '+(c.numero||'—')+(pai?' <span style="font-size:12px;font-weight:400;color:#666">(contrato '+pai+')</span>':'')+'</div><div style="font-size:12px;font-weight:700;padding:3px 12px;border-radius:12px;background:#eef;color:#1558a0">'+st.txt+'</div></div>'
     + '<table style="width:100%;border-collapse:collapse;font-size:12px">'
     + row('Processo',c.processo)+row('Empresa contratada',c.empresa)+row('CNPJ',c.cnpj)+row('Situação cadastral',c.situacaoCadastral)+row('Município/UF',c.municipioUF)
@@ -2498,7 +2499,7 @@ function printFicha(id){
     + row('Gestor',c.gestorNome?(c.gestorNome+(c.gestorCargo?' — '+c.gestorCargo:'')):'')+row('E-mail do gestor',c.gestorEmail)
     + row('Observações',c.observacoes)+row('Renovação iniciada',c.renovacaoIniciada||'Não')
     + '</table>'+unidades
-    + '<div style="margin-top:24px;font-size:11px;color:#888;border-top:1px solid #ccc;padding-top:10px">Emitido em '+new Date().toLocaleString('pt-BR')+' por '+(currentUser.nome||'')+' · Sistema de Gestão de Contratos FHSL</div>'
+    + '<div style="margin-top:24px;font-size:11px;color:#888;border-top:1px solid #ccc;padding-top:10px">Emitido em '+new Date().toLocaleString('pt-BR')+' por '+(currentUser.nome||'')+' · TDN Gestão Operacional — TDNGo</div>'
     + '<script>window.onload=function(){window.print();}<\/script></body></html>';
   const w = window.open('','_blank');
   w.document.write(html); w.document.close();
@@ -2763,7 +2764,7 @@ function renderRelatorio(){
   else if (filter==='encerrado') list = contracts.filter(function(c){ return getStatusLabel(c).cls==='encerrado'; });
   const valTotal = list.reduce(function(s,c){ return s+(c.valorTotal||0); },0);
   document.getElementById('relatorio-body').innerHTML =
-    '<div style="text-align:center;padding:1.25rem 0;border-bottom:2px solid var(--border);margin-bottom:1.25rem"><div style="font-size:22px;font-weight:700">Relatório de Contratos — FHSL</div><div style="font-size:13px;color:var(--text2);margin-top:4px">Gerado em '+new Date().toLocaleString('pt-BR')+' · '+list.length+' contrato(s) · Total: '+fmtBRL(valTotal)+'</div></div>'
+    '<div style="text-align:center;padding:1.25rem 0;border-bottom:2px solid var(--border);margin-bottom:1.25rem"><div style="font-size:22px;font-weight:700">Relatório de Contratos — TDNGo</div><div style="font-size:13px;color:var(--text2);margin-top:4px">Gerado em '+new Date().toLocaleString('pt-BR')+' · '+list.length+' contrato(s) · Total: '+fmtBRL(valTotal)+'</div></div>'
     + list.map(function(c){
         const st=getStatusLabel(c);
         const bg = st.cls==='vigente'?'#f0fdf4':st.cls==='vencendo'?'#fefce8':'#fef2f2';

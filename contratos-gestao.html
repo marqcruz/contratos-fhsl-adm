@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contratos de Gestão — FHSL</title>
+<title>Contratos de Gestão — TDNGo</title>
 
 <style>
 
@@ -340,7 +340,8 @@ tr.rub-row:hover{background:var(--surface2)}
     <div class="login-logo">
       <div class="icon">🏛️</div>
       <h1>Contratos de Gestão</h1>
-      <p>Fundação Hospital Santa Lydia</p>
+      <p>TDN Gestão Operacional</p>
+      <p style="font-size:11px;color:var(--text3);margin-top:10px">Desenvolvido por Marcos Cruz, com IA</p>
     </div>
     <div class="login-err" id="login-err"></div>
     <div class="login-field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
@@ -510,7 +511,7 @@ window.addEventListener('DOMContentLoaded', function(){
 });
 
 
-const CONTRATOS = [{"id": "cg_2026_2031", "numero": "__/2026", "processo": "PMRP 2026/036980", "contratante": "Secretaria Municipal da Saúde de Ribeirão Preto", "contratada": "Fundação Hospital Santa Lydia", "inicio": "2026-07-01", "fim": "2031-06-30", "meses": 60, "valor": 911722893.12, "unidades": ["upa_leste", "upa_oeste", "upa_norte", "pa_vv", "transporte"], "temCustos": false, "pdf": ""}, {"id": "cg_324_2023", "numero": "324/2023", "processo": "", "contratante": "Secretaria Municipal da Saúde de Ribeirão Preto", "contratada": "Fundação Hospital Santa Lydia", "inicio": "2026-01-01", "fim": "2026-12-31", "meses": 12, "valor": 37810921.86, "unidades": ["upa_leste", "upa_oeste", "upa_norte", "pa_vv"], "temCustos": true, "pdf": ""}];
+const CONTRATOS = [{"id": "cg_2026_2031", "numero": "__/2026", "processo": "PMRP 2026/036980", "contratante": "Secretaria Municipal da Saúde de Ribeirão Preto", "contratada": "TDN Gestão Operacional", "inicio": "2026-07-01", "fim": "2031-06-30", "meses": 60, "valor": 911722893.12, "unidades": ["upa_leste", "upa_oeste", "upa_norte", "pa_vv", "transporte"], "temCustos": false, "pdf": ""}, {"id": "cg_324_2023", "numero": "324/2023", "processo": "", "contratante": "Secretaria Municipal da Saúde de Ribeirão Preto", "contratada": "TDN Gestão Operacional", "inicio": "2026-01-01", "fim": "2026-12-31", "meses": 12, "valor": 37810921.86, "unidades": ["upa_leste", "upa_oeste", "upa_norte", "pa_vv"], "temCustos": true, "pdf": ""}];
 const UNIDADES = [{"id": "upa_leste", "nome": "UPA Leste (Dr. Luís Atílio Losi Viana)", "tipo": "UPA", "escala": "padrao"}, {"id": "upa_oeste", "nome": "UPA Oeste (Prof. Dr. João José Carneiro)", "tipo": "UPA", "escala": "padrao"}, {"id": "upa_norte", "nome": "UPA Norte (Nelson Mandela)", "tipo": "UPA", "escala": "padrao"}, {"id": "pa_vv", "nome": "PA UBDS Vila Virgínia", "tipo": "PA", "escala": "padrao"}, {"id": "transporte", "nome": "Serviço de Transporte Inter-Hospitalar", "tipo": "Transporte", "escala": "transporte"}];
 const IND_PADRAO = [["Produção", "Atendimento médico em clínica (% do previsto)", "≥ 75%", "%", 15], ["Produção", "Atendimento médico em pediatria (% do previsto)", "≥ 75%", "%", 15], ["Produção", "Exames laboratoriais realizados (% do previsto)", "≥ 75%", "%", 15], ["Produção", "Exames de radiologia realizados (% do previsto)", "≥ 75%", "%", 15], ["Produção", "Dispensação de medicamentos (% do previsto)", "≥ 75%", "%", 15], ["Desempenho", "Tempo de espera risco AZUL (≤ 240 min)", "≤ 240 min", "min", 15], ["Desempenho", "Tempo de espera risco VERDE (≤ 120 min)", "≤ 120 min", "min", 15], ["Desempenho", "Tempo de espera risco AMARELO (≤ 30 min)", "≤ 30 min", "min", 15], ["Desempenho", "% de transferências (≤ 20%)", "≤ 20%", "%", 15], ["Desempenho", "Tempo de liberação de exames laboratoriais (≤ 60 min)", "≤ 60 min", "min", 15], ["Qualidade", "Usuários insatisfeitos (≤ 30%)", "≤ 30%", "%", 15], ["Qualidade", "Pontualidade na entrega de documentos (100%)", "100%", "%", 15], ["Qualidade", "Reuniões do comitê gestor (3 por trimestre)", "3/tri", "reuniões", 15], ["Qualidade", "Ações de educação permanente (≥ 3 por trimestre)", "≥ 3/tri", "ações", 15], ["Qualidade", "Atas das comissões (≥ 16 por trimestre)", "≥ 16/tri", "atas", 15]];
 const IND_TRANSPORTE = [["Desempenho", "Tempo aguardando transporte (≤ 15 min)", "≤ 15 min", "min", 15], ["Desempenho", "Tempo de acionamento da viatura (≤ 5 min)", "≤ 5 min", "min", 10], ["Desempenho", "Disponibilidade da frota (≥ 95%)", "≥ 95%", "%", 15], ["Desempenho", "Eventos adversos (< 1%)", "< 1%", "%", 15], ["Desempenho", "Indicação adequada do tipo de transporte (≥ 95%)", "≥ 95%", "%", 20]];

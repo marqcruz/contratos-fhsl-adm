@@ -279,6 +279,10 @@ tr:hover td{background:var(--surface2)}
   .app{flex-direction:column}
   .dgrid,.form-grid,.form-grid.g3,.chart-row{grid-template-columns:1fr}
   .fg.full{grid-column:1}
+  /* HUB no celular: bloco do usuário deixa de flutuar e vai para o topo, sem cobrir o logo */
+  .hub-topuser{position:static!important;top:auto!important;right:auto!important;width:100%;justify-content:flex-end;margin-bottom:1rem}
+  .hub-wrap{justify-content:flex-start!important;padding-top:1rem}
+  .hub-header{margin-bottom:1.6rem}
 }
 
 
@@ -289,6 +293,7 @@ tr:hover td{background:var(--surface2)}
 .hub-header h1{font-size:24px;font-weight:700;letter-spacing:-.5px}
 .hub-header p{font-size:14px;color:var(--text2);margin-top:6px}
 .hub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;max-width:820px;width:100%}
+.hub-footer{margin-top:2.5rem;text-align:center;font-size:12px;color:var(--text3)}
 .hub-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem 1.4rem;cursor:pointer;transition:.18s;text-decoration:none;color:inherit;display:block}
 .hub-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.28)}
 .hub-card.soon{opacity:.55;cursor:default}
@@ -321,7 +326,7 @@ tr:hover td{background:var(--surface2)}
 </div>
 <div id="app" style="display:none">
 <div class="hub-wrap">
-  <div style="position:absolute;top:1rem;right:1.25rem;display:flex;align-items:center;gap:8px">
+  <div class="hub-topuser" style="position:absolute;top:1rem;right:1.25rem;display:flex;align-items:center;gap:8px">
     <button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema claro/escuro">🌙</button>
     <div class="user-card" style="margin:0">
       <div class="user-avatar" id="side-avatar">?</div>
@@ -346,6 +351,7 @@ tr:hover td{background:var(--surface2)}
 <a class="hub-card" data-mod="admin" data-role="admin,cadastros" href="admin.html"><span class="hub-ico">⚙️</span><h3>Administração</h3><p>Usuários, permissões, unidades e locais do sistema.</p><span class="hub-tag ativo">Disponível</span></a>
 <div class="hub-card soon" id="hub-empty-hint" style="display:none"><span class="hub-ico">🔒</span><h3>Nenhum módulo liberado</h3><p>Fale com o administrador para liberar seus módulos.</p></div>
   </div>
+  <footer class="hub-footer">Desenvolvido por Marcos Cruz, com apoio de IA</footer>
   <div class="hub-foot">Fundação Hospital Santa Lydia · Ribeirão Preto/SP</div>
 </div>
 </div>

@@ -303,6 +303,13 @@ tr:hover td{background:var(--surface2)}
 .back-hub:hover{background:var(--surface2);color:var(--text)}
 .wip{background:var(--yellow-bg);border:1px solid #fde68a;color:var(--yellow-text);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem}
 
+
+.mbody input,.mbody select,.mbody textarea{width:100%;padding:11px 13px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;box-sizing:border-box}
+.mbody input::placeholder{font-size:13px;color:var(--text3);opacity:.9}
+.mbody .fg{margin-bottom:14px}
+.mbody label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.mbody .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mbody .fg.full{grid-column:1/-1}
 </style>
 <style>
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600}
@@ -440,7 +447,7 @@ tr:hover td{background:var(--surface2)}
       <div class="form-grid">
         <div class="fg"><label>Código</label><input type="text" id="ch-codigo" placeholder="(automático)" readonly style="opacity:.7"></div>
         <div class="fg"><label>Tipo *</label><select id="ch-tipo"></select></div>
-        <div class="fg full"><label>Nome / descrição *</label><input type="text" id="ch-nome" placeholder="Ex: Fiat Strada — placa ABC-1234, ou Sala 12 — Arquivo"></div>
+        <div class="fg full"><label>Nome / descrição *</label><input type="text" id="ch-nome" placeholder="Ex: Fiat Strada ABC-1234"></div>
         <div class="fg full"><label>Local *</label><select id="ch-local"></select></div>
       </div>
     </div>
@@ -456,8 +463,8 @@ tr:hover td{background:var(--surface2)}
       <input type="hidden" id="mv-chaveid"><input type="hidden" id="mv-acao">
       <div id="mv-info" style="background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:12px"></div>
       <div class="form-grid">
-        <div class="fg full" id="wrap-pessoa"><label>Retirada por *</label><input type="text" id="mv-pessoa" placeholder="Nome de quem está retirando"></div>
-        <div class="fg full" id="wrap-setor"><label>Setor / destino</label><input type="text" id="mv-setor" placeholder="Ex: Financeiro, manutenção..."></div>
+        <div class="fg full" id="wrap-pessoa"><label>Retirada por *</label><input type="text" id="mv-pessoa" placeholder="Nome da pessoa"></div>
+        <div class="fg full" id="wrap-setor"><label>Setor / destino</label><input type="text" id="mv-setor" placeholder="Ex: Financeiro"></div>
         <div class="fg full"><label>Observação</label><input type="text" id="mv-obs" placeholder="Opcional"></div>
       </div>
     </div>
@@ -579,10 +586,22 @@ function renderKPIs(){
   const emUso = chaves.filter(function(c){ return c.Status==='Em uso'; }).length;
   const disp = chaves.filter(function(c){ return c.Status!=='Em uso'; }).length;
   const hoje = hojeStr();
-  const retHoje = movs.filter(function(m){ return m.Acao==='Retirada' && String(m.DataHora).slice(0,10)===hoje; }).length;
+  const retHoje = movs.filter(function(m){ return m.Acao==='Retirada' && fmtData(m.DataHora).slice(0,10)===hoje; }).length;
   set('kpi-uso',emUso); set('kpi-disp',disp); set('kpi-hoje',retHoje); set('kpi-total',chaves.length);
 }
 function hojeStr(){ const d=new Date(); const dd=('0'+d.getDate()).slice(-2), mm=('0'+(d.getMonth()+1)).slice(-2); return dd+'/'+mm+'/'+d.getFullYear(); }
+function fmtData(v){
+  if(!v) return '—';
+  const s=String(v);
+  // já está em dd/mm/aaaa? devolve como veio
+  if(/^\d{2}\/\d{2}\/\d{4}/.test(s)) return s;
+  // ISO (2026-08-02T17:34:00.000Z) ou similar → converte para pt-BR
+  const d=new Date(s);
+  if(isNaN(d.getTime())) return s;
+  const dd=('0'+d.getDate()).slice(-2), mm=('0'+(d.getMonth()+1)).slice(-2), yy=d.getFullYear();
+  const hh=('0'+d.getHours()).slice(-2), mi=('0'+d.getMinutes()).slice(-2);
+  return dd+'/'+mm+'/'+yy+' '+hh+':'+mi;
+}
 function set(id,v){ const e=document.getElementById(id); if(e) e.textContent=v; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function badgeStatus(st){ return st==='Em uso' ? '<span class="badge c-red-b">🔴 Em uso</span>' : '<span class="badge c-green-b">🟢 Disponível</span>'; }
@@ -639,7 +658,7 @@ function renderEmUso(){
     const alvo=(c.Codigo+' '+c.Nome+' '+(r.Pessoa||'')+' '+(r.Setor||'')).toLowerCase();
     if(q && alvo.indexOf(q)<0) return '';
     return '<tr><td><strong>'+esc(c.Codigo)+'</strong></td><td>'+esc(c.Nome)+'</td><td>'+esc(c.Local)+'</td>'
-      +'<td>'+esc(r.Pessoa||'—')+'</td><td>'+esc(r.Setor||'—')+'</td><td>'+esc(r.DataHora||'—')+'</td>'
+      +'<td>'+esc(r.Pessoa||'—')+'</td><td>'+esc(r.Setor||'—')+'</td><td>'+fmtData(r.DataHora)+'</td>'
       +'<td>'+(podeEditar()?'<button class="btn sm" onclick="openMov(\''+c.ID+'\',\'Devolução\')">↩️ Devolver</button>':'—')+'</td></tr>';
   }).filter(Boolean);
   document.getElementById('uso-empty').style.display = rows.length?'none':'block';
@@ -656,7 +675,7 @@ function renderHistorico(){
   document.getElementById('hist-empty').style.display = lista.length?'none':'block';
   document.getElementById('historico-body').innerHTML = lista.map(function(m){
     const ic = m.Acao==='Retirada' ? '📤' : '↩️';
-    return '<tr><td>'+esc(m.DataHora)+'</td><td>'+ic+' '+esc(m.Acao)+'</td><td><strong>'+esc(m.Codigo)+'</strong></td>'
+    return '<tr><td>'+fmtData(m.DataHora)+'</td><td>'+ic+' '+esc(m.Acao)+'</td><td><strong>'+esc(m.Codigo)+'</strong></td>'
       +'<td>'+esc(m.ChaveNome)+'</td><td>'+esc(m.Pessoa||'—')+'</td><td>'+esc(m.Setor||'—')+'</td><td>'+esc(m.Usuario||'—')+'</td></tr>';
   }).join('');
 }
@@ -745,7 +764,7 @@ function openMov(chaveId, acao){
   document.getElementById('mv-pessoa').value=''; document.getElementById('mv-setor').value=''; document.getElementById('mv-obs').value='';
   if(!isRet){
     const r = ultimaRetirada(chaveId);
-    if(r) document.getElementById('mv-info').innerHTML += '<br><span style="color:var(--text2)">Retirada por <strong>'+esc(r.Pessoa)+'</strong>'+(r.Setor?(' ('+esc(r.Setor)+')'):'')+' em '+esc(r.DataHora)+'</span>';
+    if(r) document.getElementById('mv-info').innerHTML += '<br><span style="color:var(--text2)">Retirada por <strong>'+esc(r.Pessoa)+'</strong>'+(r.Setor?(' ('+esc(r.Setor)+')'):'')+' em '+fmtData(r.DataHora)+'</span>';
   }
   document.getElementById('modal-mov').classList.add('open');
 }

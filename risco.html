@@ -221,6 +221,15 @@
   table.ind tr.critical td{background:#fde5df !important;color:#7b2418}
   table.ind tr.warn td{background:#fdf4e3 !important}
 
+
+  .nurse-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0 0 20px}
+  .nurse-kpi{background:var(--panel);padding:17px 16px}
+  .nurse-kpi .n{font-family:"Fraunces",serif;font-size:28px;font-weight:900;line-height:1}
+  .nurse-kpi .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft);margin-top:7px}
+  .alert-box{margin:16px 0 0;padding:14px 16px;border:1px solid #e5c889;border-radius:10px;background:#fff8e8;font-size:13px;color:#5e4816}
+  .pdf-share{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 22px}
+  .pdf-share .btn{flex:1;justify-content:center;min-width:190px}
+
   /* ===== IMPRESSAO / PDF (somente #printArea) ===== */
   #printArea{display:none}
   @media print{
@@ -256,6 +265,30 @@
     .pdf-card .l{ font-size:10px; color:#555; text-transform:uppercase; letter-spacing:.05em; margin-top:3px; }
     .pdf-pill{ display:inline-block; padding:1px 8px; border-radius:999px; font-size:9.5px; font-weight:700; color:#fff; }
     .pdf-foot{ margin-top:18px; font-size:9px; color:#888; border-top:1px solid #ddd; padding-top:8px; }
+    .pdf-screen-page{font-family:"IBM Plex Sans",Arial,sans-serif;color:#161a1d}
+    .pdf-screen-page .screen-pdf-head{border-bottom:2px solid #161a1d;padding-bottom:9px;margin-bottom:12px}
+    .pdf-screen-page .screen-pdf-head h1{font-family:"Fraunces",Georgia,serif;font-size:20px;line-height:1.1;margin:0 0 4px;max-width:none}
+    .pdf-screen-page .screen-pdf-head p{font-size:10px;color:#555;margin:0}
+    .pdf-screen-page .card{box-shadow:none;border:1px solid #ccc;border-radius:8px;margin:0 0 10px;overflow:visible;page-break-inside:avoid}
+    .pdf-screen-page .card-head{padding:9px 12px;background:#f4f2eb}
+    .pdf-screen-page .card-head h2{font-size:14px}
+    .pdf-screen-page .card-pad{padding:11px 12px}
+    .pdf-screen-page .lede{font-size:10px!important;margin:0 0 8px!important}
+    .pdf-screen-page .summary-grid,.pdf-screen-page .nurse-grid{grid-template-columns:repeat(4,1fr)!important}
+    .pdf-screen-page .metric,.pdf-screen-page .nurse-kpi{padding:9px}
+    .pdf-screen-page .metric .n,.pdf-screen-page .nurse-kpi .n{font-size:20px}
+    .pdf-screen-page .metric .l,.pdf-screen-page .nurse-kpi .l{font-size:8px}
+    .pdf-screen-page table.ind{min-width:0!important;font-size:8.5px}
+    .pdf-screen-page table.ind th{font-size:7.5px;padding:4px}
+    .pdf-screen-page table.ind td{padding:4px}
+    .pdf-screen-page .ind-scroll{overflow:visible;border-radius:4px}
+    .pdf-screen-page .actions,.pdf-screen-page .seg,.pdf-screen-page .seg-title,.pdf-screen-page .ctrls,
+    .pdf-screen-page #perFileUnits,.pdf-screen-page details,.pdf-screen-page .threshold-row .field,
+    .pdf-screen-page #medHighInfo,.pdf-screen-page #filtroInfo{display:none!important}
+    .pdf-screen-page .ind-note,.pdf-screen-page .alert-box{font-size:8.5px;margin:5px 0;padding:6px}
+    .pdf-screen-page .prio{margin-bottom:5px;gap:7px}
+    .pdf-screen-page .prio .track{height:12px}
+    .pdf-screen-page .prio .name,.pdf-screen-page .prio .val{font-size:8px}
   }
 </style>
 </head>
@@ -360,6 +393,11 @@
     <button class="pgbtn" data-pg="2">P&aacute;gina 2 &middot; An&aacute;lise para gest&atilde;o</button>
     <button class="pgbtn" data-pg="3">P&aacute;gina 3 &middot; Tempos e produ&ccedil;&atilde;o m&eacute;dica</button>
   </nav>
+  <div class="pdf-share" id="pdfShare" style="display:none">
+    <button class="btn sm ghost" data-pdf-page="1">PDF da Página 1</button>
+    <button class="btn sm ghost" data-pdf-page="2">PDF da Página 2</button>
+    <button class="btn sm ghost" data-pdf-page="3">PDF da Página 3</button>
+  </div>
 
   <div id="page1">
   <section class="card" id="result">
@@ -505,8 +543,13 @@
         <button data-t="madrugada">Madrugada &middot; 01&ndash;07h</button>
       </div>
       <div style="height:18px"></div>
-      <p class="ind-note" style="border:none;margin:0 0 14px;padding:0">C&oacute;digo do classificador, n&uacute;mero de classifica&ccedil;&otilde;es, tempo m&eacute;dio na sala, espera m&eacute;dia (chegada &rarr; chamada) e o detalhe por situa&ccedil;&atilde;o. Um tra&ccedil;o (&ldquo;&mdash;&rdquo;) no tempo m&eacute;dio significa que aquele classificador n&atilde;o tem registros com In&iacute;cio/Fim C.R. (t&iacute;pico de casos emergentes, que v&atilde;o direto ao atendimento) &mdash; ent&atilde;o n&atilde;o h&aacute; dura&ccedil;&atilde;o de sala a calcular.</p>
+      <div class="nurse-grid" id="enfKpis"></div>
+      <p class="ind-note" style="border:none;margin:0 0 14px;padding:0">A análise apresenta produção, participação no total, tempo médio e mediano na sala, espera média e percentil 90 da espera. Os indicadores ajudam a identificar concentração de produção, variação entre classificadores e possíveis gargalos.</p>
       <div class="ind-scroll"><table class="ind" id="tblEnf"></table></div>
+      <div class="alert-box" id="enfAlert"></div>
+      <div style="height:18px"></div>
+      <div class="seg-title">Resumo da produção por turno</div>
+      <div class="ind-scroll"><table class="ind" id="tblEnfTurno"></table></div>
     </div>
   </section>
 
@@ -801,7 +844,7 @@ reset.addEventListener('click',()=>{ pickedFiles=[];processed=[];fileIn.value=""
   chip.textContent="nenhum arquivo selecionado";drop.classList.remove('has');
   go.disabled=true;reset.style.display="none";result.style.display="none";
   panel.style.display="none";bar.style.display="none";
-  var pn=$('#pageNav'); if(pn) pn.style.display="none";
+  var pn=$('#pageNav'); if(pn) pn.style.display="none"; var ps=$('#pdfShare'); if(ps) ps.style.display="none";
   var p2=$('#page2'); if(p2) p2.style.display="none";
   var p3=$('#page3'); if(p3) p3.style.display="none";
   var p1=$('#page1'); if(p1) p1.style.display="";
@@ -1026,16 +1069,25 @@ function enfResumo(){
   const map={};
   for(const r of currentRecs){
     if(turnoEnf!=="all" && r.turno!==turnoEnf) continue;
-    const e=r.enf||"(sem c\u00f3digo)";
-    if(!map[e]) map[e]={total:0,sit:{},dur:[],espera:[]};
+    const e=r.enf||"(sem código)";
+    if(!map[e]) map[e]={total:0,sit:{},dur:[],espera:[],turnos:{}};
     map[e].total++;
     map[e].sit[r.prio]=(map[e].sit[r.prio]||0)+1;
+    map[e].turnos[r.turno]=(map[e].turnos[r.turno]||0)+1;
     if(r.durSala!=null) map[e].dur.push(r.durSala);
     if(r.esperaCls!=null) map[e].espera.push(r.esperaCls);
   }
-  return Object.entries(map).map(([enf,v])=>({enf,total:v.total,sit:v.sit,
-    durMed:avgMin(v.dur), esperaMed:avgMin(v.espera)}))
+  const total=Object.values(map).reduce((a,v)=>a+v.total,0);
+  return Object.entries(map).map(([enf,v])=>({enf,total:v.total,sit:v.sit,turnos:v.turnos,
+    share:total?v.total/total*100:0,durMed:avgMin(v.dur),durMedian:percentile(v.dur,.5),
+    esperaMed:avgMin(v.espera),esperaP90:percentile(v.espera,.9)}))
     .sort((a,b)=>b.total-a.total);
+}
+function enfTurnoResumo(){
+  const by={}; TURNOS.forEach(t=>by[t.key]={q:0,enf:new Set(),dur:[],espera:[]});
+  currentRecs.forEach(r=>{const x=by[r.turno];if(!x)return;x.q++;if(r.enf)x.enf.add(r.enf);
+    if(r.durSala!=null)x.dur.push(r.durSala);if(r.esperaCls!=null)x.espera.push(r.esperaCls);});
+  return by;
 }
 // resumo por categoria de senha
 function categoriaResumo(){
@@ -1068,24 +1120,34 @@ function renderSituacao(){
 function renderEnf(){
   const list=enfResumo();
   const turnoTxt = turnoEnf==="all" ? "todos os turnos" : TURNO_LABEL[turnoEnf].toLowerCase();
-  $('#tagEnf').textContent=list.length+" classificadores \u00b7 "+turnoTxt;
+  $('#tagEnf').textContent=list.length+" classificadores · "+turnoTxt;
+  const total=list.reduce((a,e)=>a+e.total,0), esperaVals=list.map(e=>e.esperaMed).filter(v=>v!=null);
+  const top=list[0], avgProd=list.length?total/list.length:0, esperaGeral=avgMin(currentRecs.map(r=>r.esperaCls));
+  $('#enfKpis').innerHTML=
+    '<div class="nurse-kpi"><div class="n">'+br(total)+'</div><div class="l">Classificações no filtro</div></div>'+ 
+    '<div class="nurse-kpi"><div class="n">'+list.length+'</div><div class="l">Classificadores ativos</div></div>'+ 
+    '<div class="nurse-kpi"><div class="n">'+fmtOne(avgProd)+'</div><div class="l">Média por classificador</div></div>'+ 
+    '<div class="nurse-kpi"><div class="n">'+(esperaGeral==null?'—':fmtOne(esperaGeral))+'</div><div class="l">Espera média geral (min)</div></div>';
   let rows="";
-  for(const e of list){
-    const s=e.sit;
-    rows+='<tr><td>'+e.enf+'</td><td><b>'+br(e.total)+'</b></td>'+
-      '<td>'+fmtMin(e.durMed)+'</td>'+
-      '<td>'+fmtMin(e.esperaMed)+'</td>'+
-      '<td>'+br(s["EMERGENTE"]||0)+'</td>'+
-      '<td>'+br(s["MUITO URGENTE"]||0)+'</td>'+
-      '<td>'+br(s["URGENTE"]||0)+'</td>'+
-      '<td>'+br(s["POUCO URGENTE"]||0)+'</td>'+
-      '<td>'+br(s["N\u00c3O URGENTE"]||0)+'</td>'+
-      '<td>'+br(s["BRANCO"]||0)+'</td></tr>';
+  for(const e of list){ const s=e.sit;
+    rows+='<tr><td>'+e.enf+'</td><td><b>'+br(e.total)+'</b></td><td>'+pctBR(e.share)+'</td>'+ 
+      '<td>'+fmtMin(e.durMed)+'</td><td>'+fmtMin(e.durMedian)+'</td>'+ 
+      '<td>'+fmtMin(e.esperaMed)+'</td><td>'+fmtMin(e.esperaP90)+'</td>'+ 
+      '<td>'+br(s["EMERGENTE"]||0)+'</td><td>'+br(s["MUITO URGENTE"]||0)+'</td>'+ 
+      '<td>'+br(s["URGENTE"]||0)+'</td><td>'+br(s["POUCO URGENTE"]||0)+'</td>'+ 
+      '<td>'+br(s["NÃO URGENTE"]||0)+'</td><td>'+br(s["BRANCO"]||0)+'</td></tr>';
   }
-  $('#tblEnf').innerHTML=
-    '<thead><tr><th>ENFERMEIRO</th><th>TOTAL</th><th>T. m\u00e9dio sala</th><th>Espera m\u00e9dia</th>'+
-    '<th>Emerg.</th><th>Muito urg.</th>'+
-    '<th>Urgente</th><th>Pouco urg.</th><th>N\u00e3o urg.</th><th>Branco</th></tr></thead><tbody>'+rows+'</tbody>';
+  $('#tblEnf').innerHTML='<thead><tr><th>ENFERMEIRO</th><th>TOTAL</th><th>% PRODUÇÃO</th>'+ 
+    '<th>T. MÉDIO SALA</th><th>MEDIANA SALA</th><th>ESPERA MÉDIA</th><th>P90 ESPERA</th>'+ 
+    '<th>Emerg.</th><th>Muito urg.</th><th>Urgente</th><th>Pouco urg.</th><th>Não urg.</th><th>Branco</th></tr></thead><tbody>'+rows+'</tbody>';
+  const high=list.filter(e=>e.esperaMed!=null&&esperaGeral!=null&&e.esperaMed>esperaGeral*1.5);
+  $('#enfAlert').innerHTML= high.length
+    ? '<b>Ponto de atenção:</b> '+high.length+' classificador(es) apresentam espera média superior a 150% da média geral: '+high.map(e=>e.enf).join(', ')+'.'
+    : '<b>Leitura gerencial:</b> não foram identificados classificadores com espera média superior a 150% da média geral no filtro selecionado.';
+  const by=enfTurnoResumo(); let tr=""; const grand=currentRecs.length;
+  TURNOS.forEach(t=>{const x=by[t.key];tr+='<tr><td>'+t.label+'</td><td>'+t.faixa+'</td><td>'+br(x.q)+'</td>'+ 
+    '<td>'+pctBR(grand?x.q/grand*100:0)+'</td><td>'+x.enf.size+'</td><td>'+fmtMin(avgMin(x.dur))+'</td><td>'+fmtMin(avgMin(x.espera))+'</td></tr>';});
+  $('#tblEnfTurno').innerHTML='<thead><tr><th>TURNO</th><th>FAIXA</th><th>CLASSIFICAÇÕES</th><th>%</th><th>CLASSIFICADORES</th><th>T. MÉDIO SALA</th><th>ESPERA MÉDIA</th></tr></thead><tbody>'+tr+'</tbody>';
 }
 function renderCategoria(){
   const {by,tot}=categoriaResumo();
@@ -1295,14 +1357,13 @@ function pdfTurno(){
     '<th>T. M\u00c9DIO SALA</th><th>ESPERA M\u00c9DIA</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 function pdfEnf(){
-  const list=enfResumo(); // todos os turnos (turnoEnf pode estar filtrado; forçamos all)
+  const old=turnoEnf; turnoEnf="all"; const list=enfResumo(); turnoEnf=old;
   let rows="";
-  for(const e of list){ const s=e.sit;
-    rows+='<tr><td>'+e.enf+'</td><td>'+br(e.total)+'</td><td>'+fmtMin(e.durMed)+'</td><td>'+fmtMin(e.esperaMed)+'</td>'+
-      '<td>'+br(s["EMERGENTE"]||0)+'</td><td>'+br(s["MUITO URGENTE"]||0)+'</td><td>'+br(s["URGENTE"]||0)+'</td>'+
-      '<td>'+br(s["POUCO URGENTE"]||0)+'</td><td>'+br(s["N\u00c3O URGENTE"]||0)+'</td><td>'+br(s["BRANCO"]||0)+'</td></tr>'; }
-  return '<table class="pdf-t"><thead><tr><th>ENFERMEIRO</th><th>TOTAL</th><th>T.M\u00c9D SALA</th><th>ESPERA M\u00c9D</th>'+
-    '<th>Emerg.</th><th>M.urg.</th><th>Urg.</th><th>P.urg.</th><th>N.urg.</th><th>Branco</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  for(const e of list){
+    rows+='<tr><td>'+e.enf+'</td><td>'+br(e.total)+'</td><td>'+pctBR(e.share)+'</td><td>'+fmtMin(e.durMed)+'</td>'+ 
+      '<td>'+fmtMin(e.durMedian)+'</td><td>'+fmtMin(e.esperaMed)+'</td><td>'+fmtMin(e.esperaP90)+'</td></tr>'; }
+  return '<table class="pdf-t"><thead><tr><th>ENFERMEIRO</th><th>TOTAL</th><th>% PROD.</th><th>T.MÉD SALA</th>'+ 
+    '<th>MEDIANA</th><th>ESPERA MÉD.</th><th>P90 ESPERA</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 function pdfColor(s){ const m={"EMERGENTE":"#c8452f","MUITO URGENTE":"#dd7a2e","URGENTE":"#e0a021",
   "POUCO URGENTE":"#3f9d6a","N\u00c3O URGENTE":"#2f6fb0","BRANCO":"#9a958a"}; return m[s]||"#999"; }
@@ -1589,6 +1650,27 @@ $('#copyImg').addEventListener('click',async()=>{
   setTimeout(()=>b.textContent=orig,1800);
 });
 
+// ---- PDF individual por página para compartilhamento ----
+function buildPagePdf(pg){
+  if(!currentAgg){ setStatus("Processe um relatório antes de gerar o PDF.","err"); return; }
+  const source=document.getElementById('page'+pg);
+  if(!source) return;
+  const clone=source.cloneNode(true);
+  clone.style.display=''; clone.removeAttribute('id');
+  clone.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
+  clone.querySelectorAll('.actions,.seg,.seg-title,.ctrls,#perFileUnits,details,.pdf-share').forEach(el=>el.remove());
+  const head=document.createElement('div'); head.className='screen-pdf-head';
+  const titles={1:'Indicador de desempenho',2:'Análise para a gestão',3:'Tempos e produção médica'};
+  head.innerHTML='<h1>'+scopeUnitTitle()+' — '+titles[pg]+'</h1><p>Fonte: Sistema Hygia · '+currentScopeLabel()+' · Emitido em '+new Date().toLocaleDateString('pt-BR')+'</p>';
+  const wrap=document.createElement('div'); wrap.className='pdf-screen-page'; wrap.appendChild(head); wrap.appendChild(clone);
+  const pa=document.getElementById('printArea'); pa.innerHTML=''; pa.appendChild(wrap);
+  const oldTitle=document.title;
+  document.title='Pagina_'+pg+'_'+scopeUnitTitle().replace(/[^A-Za-z0-9]+/g,'_')+'_'+(monthScope.value!=="all"?monthScope.value.replace('/','-'):"periodo");
+  window.print();
+  setTimeout(()=>{document.title=oldTitle;pa.innerHTML='';},600);
+}
+document.getElementById('pdfShare').addEventListener('click',e=>{const b=e.target.closest('[data-pdf-page]');if(b)buildPagePdf(b.dataset.pdfPage);});
+
 // ---- pipeline principal (lote) ----
 go.addEventListener('click',async()=>{
   if(!pickedFiles.length) return;
@@ -1613,7 +1695,7 @@ go.addEventListener('click',async()=>{
     const totalKept=processed.reduce((a,p)=>a+p.data.out.length,0);
     setStatus("Pronto \u2014 "+processed.length+" arquivo(s), "+br(totalKept)+" atendimentos. Escolha a unidade e baixe abaixo.","ok");
     panel.style.display="block";
-    $('#pageNav').style.display="flex";
+    $('#pageNav').style.display="flex"; $('#pdfShare').style.display="flex";
     $('#page1').style.display=""; $('#page2').style.display="none"; $('#page3').style.display="none";
     $('#pageNav').querySelectorAll('.pgbtn').forEach((x,idx)=>x.classList.toggle('on',idx===0));
     result.scrollIntoView({behavior:"smooth",block:"nearest"});

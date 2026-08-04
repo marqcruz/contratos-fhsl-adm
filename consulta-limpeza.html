@@ -34,6 +34,9 @@ th{font-size:11px;text-transform:uppercase;color:#9a9a96;letter-spacing:.04em}
 .ok-box{background:#dcfce7;color:#166534;padding:12px 14px;border-radius:9px;font-size:13px;margin-bottom:12px;display:none}
 .hidden{display:none}
 .foot{text-align:center;font-size:11px;color:#9a9a96;margin-top:1rem}
+.assin-canvas{border:1px solid #e2e2de;border-radius:8px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair}
+.assin-mini{border:1px solid #eee;border-radius:6px;background:#fff;max-width:220px}
+.aviso{background:#fffbe6;border:1px solid #ffe58f;color:#8a6d00;font-size:12px;padding:9px 12px;border-radius:8px;margin:10px 0}
 </style>
 </head>
 <body>
@@ -60,7 +63,7 @@ th{font-size:11px;text-transform:uppercase;color:#9a9a96;letter-spacing:.04em}
       <div class="res-item destaque"><div class="res-num" id="r-perc">—</div><div class="res-lbl">Liberação da fatura</div></div>
     </div>
 
-    <div id="r-pdf" style="margin:10px 0"></div>
+    <div id="r-assinaturas" style="margin:12px 0"></div>
     <div id="r-detalhe"></div>
 
     <!-- CIÊNCIA -->
@@ -70,9 +73,17 @@ th{font-size:11px;text-transform:uppercase;color:#9a9a96;letter-spacing:.04em}
       <label>Nome do responsável *</label>
       <input type="text" id="ci-nome" placeholder="Seu nome completo">
       <div style="height:10px"></div>
+      <label>CPF ou matrícula *</label>
+      <input type="text" id="ci-doc" placeholder="000.000.000-00 ou matrícula">
+      <div style="height:10px"></div>
+      <label>Assinatura *</label>
+      <canvas class="assin-canvas" id="ci-canvas" width="600" height="140"></canvas>
+      <div style="height:6px"></div>
+      <button class="btn sec" type="button" onclick="limparCanvas()" style="width:auto;padding:8px 14px">🗑️ Limpar assinatura</button>
+      <div style="height:12px"></div>
       <label>Observação (opcional)</label>
       <textarea id="ci-obs" rows="2" placeholder="Alguma observação sobre o resultado"></textarea>
-      <div style="height:12px"></div>
+      <div class="aviso">Este é um registro eletrônico para gestão do contrato, com data e hora do servidor. Não constitui assinatura digital ICP-Brasil.</div>
       <button class="btn" onclick="registrarCiencia()">✅ Registrar ciência</button>
     </div>
   </div>
@@ -115,7 +126,14 @@ function mostrar(a){
   q('r-sub').textContent=(a.Unidade||'')+' · '+(a.MesRef||'')+(a.AreaAvaliada?(' · '+a.AreaAvaliada):'');
   q('r-aval').textContent=a.ResultadoAval; q('r-cont').textContent=a.Contingente;
   q('r-fatura').textContent=a.ValorFatura; q('r-perc').textContent=a.PercLiberacao+'%';
-  if(a.PdfEvidencia){ q('r-pdf').innerHTML='<a href="'+a.PdfEvidencia+'" target="_blank" style="font-size:13px;color:#1d6aad">📄 Ver relatório/evidência (PDF)</a>'; }
+  // assinaturas: avaliador + colaboradores
+  let sa='';
+  if(a.Avaliador||a.AvaliadorAssin){ sa+='<div class="mod-tit">Avaliador</div><div style="font-size:13px">'+(a.Avaliador||'')+'</div>';
+    if(a.AvaliadorAssin) sa+='<img class="assin-mini" src="'+a.AvaliadorAssin+'">'; }
+  const cols=a.ColaboradoresArr||[];
+  if(cols.length){ sa+='<div class="mod-tit">Colaboradores que acompanharam</div>';
+    cols.forEach(function(c){ sa+='<div style="margin-bottom:8px"><div style="font-size:13px">'+(c.nome||'')+'</div>'+(c.assin?'<img class="assin-mini" src="'+c.assin+'">':'')+'</div>'; }); }
+  q('r-assinaturas').innerHTML=sa;
   // detalhe dos módulos
   const notas=a.NotasObj||{};
   const lbl={3:'Muito Bom',2:'Bom',1:'Regular',0:'Péssimo'};
@@ -125,20 +143,38 @@ function mostrar(a){
       return '<tr><td>'+it+'</td><td style="text-align:right"><span class="nota-badge n'+n+'">'+n+'</span> '+lbl[n]+'</td></tr>'; }).join('');
     return '<div class="mod-tit">'+mod.nome+'</div><table><tbody>'+linhas+'</tbody></table>';
   }).join('');
+  initCanvas();
   // já tem ciência?
   if(a.CienciaData){
     q('bloco-ciencia').classList.add('hidden');
     const jc=q('ja-ciente'); jc.style.display='block';
-    jc.innerHTML='✅ Ciência já registrada por <strong>'+(a.CienciaNome||'')+'</strong> em '+a.CienciaData+(a.CienciaObs?('<br>Obs: '+a.CienciaObs):'');
+    jc.innerHTML='✅ Ciência registrada por <strong>'+(a.CienciaNome||'')+'</strong>'+(a.CienciaDoc?(' (doc: '+a.CienciaDoc+')'):'')+' em '+a.CienciaData+(a.CienciaObs?('<br>Obs: '+a.CienciaObs):'')+(a.CienciaAssin?('<br><img class="assin-mini" src="'+a.CienciaAssin+'">'):'');
   }
 }
 
+let canvasTouched=false;
+function initCanvas(){
+  const cv=q('ci-canvas'); if(!cv) return;
+  const ctx=cv.getContext('2d'); ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#1a1a18';
+  let drawing=false,last=null;
+  function pos(e){ const r=cv.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:(t.clientX-r.left)*(cv.width/r.width),y:(t.clientY-r.top)*(cv.height/r.height)}; }
+  function s(e){ drawing=true; last=pos(e); e.preventDefault(); }
+  function m(e){ if(!drawing)return; const pp=pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(pp.x,pp.y); ctx.stroke(); last=pp; canvasTouched=true; e.preventDefault(); }
+  function en(){ drawing=false; }
+  cv.onmousedown=s; cv.onmousemove=m; cv.onmouseup=en; cv.onmouseleave=en;
+  cv.ontouchstart=s; cv.ontouchmove=m; cv.ontouchend=en;
+}
+function limparCanvas(){ const cv=q('ci-canvas'); if(cv){ cv.getContext('2d').clearRect(0,0,cv.width,cv.height); canvasTouched=false; } }
 async function registrarCiencia(){
   const nome=(q('ci-nome').value||'').trim();
+  const doc=(q('ci-doc').value||'').trim();
   if(!nome){ alert('Informe o nome do responsável.'); return; }
+  if(!doc){ alert('Informe o CPF ou matrícula.'); return; }
+  if(!canvasTouched){ alert('Assine no quadro antes de registrar.'); return; }
+  const assin=q('ci-canvas').toDataURL('image/png');
   const obs=(q('ci-obs').value||'').trim();
   try{
-    const r=await fetch(SCRIPT_URL+'?action=cienlimpeza',{method:'POST',body:JSON.stringify({codigo:codigoAtual,nome:nome,obs:obs})});
+    const r=await fetch(SCRIPT_URL+'?action=cienlimpeza',{method:'POST',body:JSON.stringify({codigo:codigoAtual,nome:nome,doc:doc,assin:assin,obs:obs})});
     const d=await r.json();
     if(d.ok){
       q('bloco-ciencia').classList.add('hidden');

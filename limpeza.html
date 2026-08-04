@@ -322,6 +322,11 @@ tr:hover td{background:var(--surface2)}
 .c-blue-b{background:var(--accent-bg);color:var(--accent-text)}
 .pdf-drop{border:2px dashed var(--border);border-radius:12px;padding:1.4rem;text-align:center;cursor:pointer;color:var(--text2)}
 .pdf-drop:hover{border-color:var(--accent);color:var(--text)}
+
+.assin-wrap{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.assin-canvas{border:1px solid var(--border);border-radius:8px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair}
+.colab-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:10px;flex-wrap:wrap}
+.colab-row input{flex:1;min-width:180px}
 .nota-sel{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
 </style>
 <style>
@@ -414,6 +419,8 @@ tr:hover td{background:var(--surface2)}
         <div class="form-grid">
           <input type="hidden" id="av-id">
           <div class="fg"><label>Unidade / prédio *</label><select id="av-unidade"></select></div>
+          <div class="fg"><label>Contrato vinculado</label><select id="av-contrato" onchange="contratoMudou()"><option value="">Selecione...</option></select></div>
+          <div class="fg"><label>Empresa terceirizada</label><input type="text" id="av-empresa" placeholder="(vem do contrato ou digite)"></div>
           <div class="fg"><label>Nº da avaliação</label><input type="text" id="av-numero" placeholder="(automático)" readonly style="opacity:.7"></div>
           <div class="fg"><label>Mês de referência *</label><input type="month" id="av-mesref"></div>
           <div class="fg"><label>Data da avaliação</label><input type="date" id="av-data"></div>
@@ -429,6 +436,20 @@ tr:hover td{background:var(--surface2)}
       </div>
 
       <div class="form-section">
+        <div class="fsec-title">📍 Locais avaliados</div>
+        <div id="locais-check" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px"></div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <input type="text" id="local-novo" placeholder="Adicionar outro local..." style="flex:1" onkeydown="if(event.key==='Enter'){addLocalAvulso();event.preventDefault();}">
+          <button class="btn sm" type="button" onclick="addLocalAvulso()">➕ Adicionar</button>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="fsec-title">📝 Observações</div>
+        <textarea id="av-obs" rows="5" placeholder="Observações gerais sobre a avaliação, ocorrências, pontos de atenção..." style="width:100%;padding:11px 13px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;resize:vertical"></textarea>
+      </div>
+
+      <div class="form-section">
         <div class="fsec-title">👥 Contingente de operacionais</div>
         <div class="form-grid">
           <div class="fg"><label>Média diária de funcionários</label><input type="number" id="av-media" min="0" step="1" oninput="recalcular()"></div>
@@ -437,11 +458,19 @@ tr:hover td{background:var(--surface2)}
       </div>
 
       <div class="form-section">
-        <div class="fsec-title">📎 Evidência (PDF)</div>
-        <div class="pdf-drop" onclick="document.getElementById('av-pdf-input').click()">
-          <div style="font-size:26px">📎</div><p id="av-pdf-nome">Clique para anexar o relatório/evidência em PDF</p></div>
-        <input type="file" id="av-pdf-input" accept=".pdf" style="display:none" onchange="pdfEscolhido(this)">
-        <div id="av-pdf-atual" style="display:none;margin-top:8px"><a class="btn sm" id="av-pdf-link" target="_blank">📄 Ver PDF anexado</a></div>
+        <div class="fsec-title">👥 Colaboradores que acompanharam a visita</div>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Registre quem acompanhou a avaliação in loco. Cada um pode assinar na tela.</p>
+        <div id="colab-lista"></div>
+        <button class="btn sm" onclick="addColaborador()">➕ Adicionar colaborador</button>
+      </div>
+
+      <div class="form-section">
+        <div class="fsec-title">✍️ Assinatura do avaliador</div>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:8px" id="aval-nome-lbl">Avaliador responsável</p>
+        <div class="assin-wrap">
+          <canvas class="assin-canvas" id="canvas-avaliador" width="600" height="150"></canvas>
+          <button class="btn sm" type="button" onclick="limparAssinatura('avaliador')">🗑️ Limpar</button>
+        </div>
       </div>
 
       <div class="resultado-box" id="resultado-box">
@@ -452,6 +481,7 @@ tr:hover td{background:var(--surface2)}
       </div>
 
       <div class="toolbar" style="margin-top:1rem">
+        <button class="btn" onclick="imprimirRelatorio()">🖨️ Imprimir relatório</button>
         <button class="btn" onclick="showPage('lista')">Cancelar</button>
         <div style="flex:1"></div>
         <button class="btn" onclick="salvarAval('Rascunho')">💾 Salvar rascunho</button>
@@ -550,7 +580,10 @@ const MODULOS = [
 ];
 const CONCEITOS = [ {v:3,l:'Muito Bom'},{v:2,l:'Bom'},{v:1,l:'Regular'},{v:0,l:'Péssimo'} ];
 
-let avaliacoes=[], unidades=[], editId=null, pdfPend=null;
+let avaliacoes=[], unidades=[], editId=null, contratos=[];
+const LOCAIS_FIXOS=['Recepção / Espera','Consultórios','Sala de medicação','Sala de curativos','Sala de observação',
+  'Sala de emergência','Coleta / Laboratório','Farmácia','Sanitários públicos','Sanitários funcionários',
+  'Copa / Cozinha','Expurgo','Almoxarifado','Corredores','Áreas comuns','Área externa','DML (depósito de limpeza)'];
 
 function startApp(){
   document.getElementById('login-screen').style.display='none';
@@ -562,6 +595,7 @@ function startApp(){
   document.getElementById('side-name').textContent = currentUser.nome;
   document.getElementById('side-role').textContent = ({admin:'Administrador',gestor:'Gestor',cadastros:'Gestor de cadastros',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
   montarModulos();
+  initPad('canvas-avaliador');
   renderCriterios();
   carregar();
 }
@@ -580,16 +614,43 @@ function showPage(id, btn){
 
 async function carregar(){
   try{
-    const [rl, ra] = await Promise.all([ apiFetch('getlimpeza'), apiFetch('getadmin') ]);
+    const [rl, ra, rc] = await Promise.all([ apiFetch('getlimpeza'), apiFetch('getadmin'), apiFetch('getcontratoslist') ]);
     if(rl.ok) avaliacoes=rl.data||[];
     if(ra.ok){ unidades=(ra.unidades||[]).filter(function(u){ return String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'; }); }
-    preencherUnidades();
+    if(rc.ok) contratos=rc.data||[];
+    preencherUnidades(); preencherContratos(); montarLocais();
     renderLista();
   }catch(e){ showNotif('Erro ao carregar. Verifique a conexão.','err'); }
 }
 function preencherUnidades(){
   const s=document.getElementById('av-unidade');
   if(s) s.innerHTML='<option value="">Selecione...</option>'+unidades.map(function(u){return '<option>'+esc(u.Nome)+'</option>';}).join('');
+}
+function preencherContratos(){
+  const s=document.getElementById('av-contrato'); if(!s) return;
+  s.innerHTML='<option value="">Selecione...</option>'+contratos.map(function(c){return '<option value="'+c.id+'">'+esc(c.numero)+(c.empresa?(' — '+esc(c.empresa)):'')+'</option>';}).join('');
+}
+function contratoMudou(){
+  const id=document.getElementById('av-contrato').value;
+  const c=contratos.find(function(x){return String(x.id)===String(id);});
+  if(c && c.empresa) document.getElementById('av-empresa').value=c.empresa;
+}
+function montarLocais(marcados){
+  const cont=document.getElementById('locais-check');
+  const lista=LOCAIS_FIXOS.slice();
+  (marcados||[]).forEach(function(m){ if(lista.indexOf(m)<0) lista.push(m); });
+  cont.innerHTML=lista.map(function(loc){
+    const ck=(marcados||[]).indexOf(loc)>=0?'checked':'';
+    return '<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="loc-ck" value="'+esc(loc)+'" '+ck+'> '+esc(loc)+'</label>';
+  }).join('');
+}
+function addLocalAvulso(){
+  const inp=document.getElementById('local-novo'); const v=inp.value.trim(); if(!v) return;
+  const marcados=coletarLocais(); if(marcados.indexOf(v)<0) marcados.push(v);
+  montarLocais(marcados); inp.value='';
+}
+function coletarLocais(){
+  return Array.prototype.map.call(document.querySelectorAll('.loc-ck:checked'),function(c){return c.value;});
 }
 
 // ── Montagem dos módulos (inputs de nota) ──
@@ -636,18 +697,20 @@ function recalcular(){
 }
 
 function novaAval(){
-  editId=null; pdfPend=null;
+  editId=null;
   document.getElementById('av-id').value='';
   ['av-numero','av-mesref','av-data','av-inicio','av-fim','av-area','av-media','av-contratado'].forEach(function(k){document.getElementById(k).value='';});
   document.getElementById('av-unidade').value='';
   document.querySelectorAll('.nota-sel').forEach(function(s){ s.value='0'; });
-  document.getElementById('av-pdf-nome').textContent='Clique para anexar o relatório/evidência em PDF';
-  document.getElementById('av-pdf-atual').style.display='none';
+  initPad('canvas-avaliador'); limparAssinatura('avaliador');
+  document.getElementById('colab-lista').innerHTML=''; colabs=[];
+  document.getElementById('av-contrato').value=''; document.getElementById('av-empresa').value='';
+  document.getElementById('av-obs').value=''; montarLocais();
   recalcular();
 }
 function editarAval(id){
   const a=avaliacoes.find(function(x){return String(x.ID)===String(id);}); if(!a) return;
-  editId=id; pdfPend=null;
+  editId=id;
   showPage('nova');
   document.getElementById('av-id').value=id;
   document.getElementById('av-numero').value=a.Numero||'';
@@ -664,15 +727,72 @@ function editarAval(id){
     const sel=document.querySelector('.nota-sel[data-mod="'+mod.id+'"][data-idx="'+idx+'"]');
     if(sel) sel.value = (notas[mod.id] && notas[mod.id][idx]!=null) ? notas[mod.id][idx] : 0;
   }); });
-  if(a.PdfEvidencia){ document.getElementById('av-pdf-atual').style.display='block'; document.getElementById('av-pdf-link').href=a.PdfEvidencia; document.getElementById('av-pdf-nome').textContent='PDF já anexado (clique para trocar)'; }
+  document.getElementById('av-contrato').value=a.ContratoID||'';
+  document.getElementById('av-empresa').value=a.Empresa||'';
+  document.getElementById('av-obs').value=a.Observacoes||'';
+  montarLocais(a.LocaisArr||[]);
+  renderColaboradoresEdit(a.ColaboradoresArr||[]);
+  initPad('canvas-avaliador'); limparAssinatura('avaliador');
+  if(a.AvaliadorAssin){ const cv=document.getElementById('canvas-avaliador'); const img=new Image(); img.onload=function(){ cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height); pads['canvas-avaliador']=true; }; img.src=a.AvaliadorAssin; }
   recalcular();
 }
-function pdfEscolhido(input){
-  const f=input.files[0]; if(!f) return;
-  const reader=new FileReader();
-  reader.onload=function(){ pdfPend={ nome:f.name, base64:reader.result.split(',')[1] };
-    document.getElementById('av-pdf-nome').textContent='📄 '+f.name+' (será enviado ao salvar)'; };
-  reader.readAsDataURL(f);
+// ── Assinaturas (canvas) ──
+const pads={}; // guarda estado de cada canvas
+function initPad(canvasId){
+  const cv=document.getElementById(canvasId); if(!cv) return;
+  const ctx=cv.getContext('2d'); ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#1a1a18';
+  let drawing=false, last=null;
+  function pos(e){ const r=cv.getBoundingClientRect(); const t=e.touches?e.touches[0]:e;
+    return { x:(t.clientX-r.left)*(cv.width/r.width), y:(t.clientY-r.top)*(cv.height/r.height) }; }
+  function start(e){ drawing=true; last=pos(e); e.preventDefault(); }
+  function move(e){ if(!drawing)return; const p=pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; pads[canvasId]=true; e.preventDefault(); }
+  function end(){ drawing=false; }
+  cv.onmousedown=start; cv.onmousemove=move; cv.onmouseup=end; cv.onmouseleave=end;
+  cv.ontouchstart=start; cv.ontouchmove=move; cv.ontouchend=end;
+}
+function limparAssinatura(qual){
+  const cv=document.getElementById('canvas-'+qual); if(!cv) return;
+  cv.getContext('2d').clearRect(0,0,cv.width,cv.height); pads['canvas-'+qual]=false;
+}
+function assinaturaData(canvasId){
+  const cv=document.getElementById(canvasId); if(!cv||!pads[canvasId]) return '';
+  return cv.toDataURL('image/png');
+}
+
+// ── Colaboradores ──
+let colabs=[]; // [{nome, assinCanvasId}]
+function addColaborador(nome){
+  const idx=colabs.length; const cid='canvas-colab-'+idx;
+  colabs.push({ nome:nome||'' });
+  const div=document.createElement('div'); div.className='colab-row'; div.id='colab-row-'+idx;
+  div.innerHTML='<div style="flex:1;min-width:180px"><label>Nome do colaborador</label>'
+    +'<input type="text" id="colab-nome-'+idx+'" value="'+(nome||'').replace(/"/g,'&quot;')+'" placeholder="Nome completo"></div>'
+    +'<div><label>Assinatura</label><div class="assin-wrap">'
+    +'<canvas class="assin-canvas" id="'+cid+'" width="300" height="90" style="width:260px"></canvas>'
+    +'<div style="display:flex;gap:6px"><button class="btn sm" type="button" onclick="limparAssinaturaColab('+idx+')">🗑️ Limpar</button>'
+    +'<button class="btn sm danger" type="button" onclick="removerColaborador('+idx+')">Remover</button></div></div></div>';
+  document.getElementById('colab-lista').appendChild(div);
+  initPad(cid);
+}
+function limparAssinaturaColab(idx){ const cid='canvas-colab-'+idx; const cv=document.getElementById(cid); if(cv){ cv.getContext('2d').clearRect(0,0,cv.width,cv.height); pads[cid]=false; } }
+function removerColaborador(idx){ const row=document.getElementById('colab-row-'+idx); if(row) row.remove(); colabs[idx]=null; }
+function coletarColaboradores(){
+  const out=[];
+  colabs.forEach(function(c,idx){
+    if(c===null) return;
+    const inp=document.getElementById('colab-nome-'+idx);
+    const nome=inp?inp.value.trim():'';
+    if(!nome) return;
+    out.push({ nome:nome, assin:assinaturaData('canvas-colab-'+idx) });
+  });
+  return out;
+}
+function renderColaboradoresEdit(arr){
+  document.getElementById('colab-lista').innerHTML=''; colabs=[];
+  (arr||[]).forEach(function(c){ addColaborador(c.nome); });
+  // repinta assinaturas existentes
+  (arr||[]).forEach(function(c,i){ if(c.assin){ const cv=document.getElementById('canvas-colab-'+i);
+    if(cv){ const img=new Image(); img.onload=function(){ cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height); pads['canvas-colab-'+i]=true; }; img.src=c.assin; } } });
 }
 async function salvarAval(statusAlvo){
   if(!podeEditar()){ showNotif('Sem permissão para salvar.','err'); return; }
@@ -685,16 +805,13 @@ async function salvarAval(statusAlvo){
     HoraInicio:document.getElementById('av-inicio').value, HoraFim:document.getElementById('av-fim').value,
     AreaAvaliada:document.getElementById('av-area').value, Notas:notas,
     MediaDiaria:document.getElementById('av-media').value, ContingenteContratado:document.getElementById('av-contratado').value,
+    AvaliadorAssin:assinaturaData('canvas-avaliador'), Colaboradores:coletarColaboradores(),
+    ContratoID:document.getElementById('av-contrato').value, ContratoNum:(contratos.find(function(x){return String(x.id)===String(document.getElementById('av-contrato').value);})||{}).numero||'',
+    Empresa:document.getElementById('av-empresa').value.trim(), LocaisAvaliados:coletarLocais(), Observacoes:document.getElementById('av-obs').value.trim(),
     Status:statusAlvo, __actor:{ nome:currentUser.nome, email:currentUser.email } };
   showNotif('Salvando...','info');
-  // envia PDF primeiro, se houver
-  if(pdfPend){
-    const up=await apiFetch('uploadpdf', { nome:'Limpeza_'+(unidade)+'_'+(mesref)+'_'+pdfPend.nome, base64:pdfPend.base64 });
-    if(up && up.ok && up.url){ payload.PdfEvidencia=up.url; }
-  }
   const r=await apiFetch('savelimpeza', payload);
   if(r.ok){
-    pdfPend=null;
     if(statusAlvo==='Liberada'){
       const url = location.origin+location.pathname.replace(/[^/]*$/,'')+'consulta-limpeza.html';
       mostrarLink(url, r.codigo || (avaliacoes.find(function(x){return String(x.ID)===String(r.id);})||{}).Codigo);
@@ -768,6 +885,57 @@ function renderCriterios(){
     +'<div class="step"><div class="step-n">5</div><div><div class="step-title">Liberação da fatura</div><div class="step-desc"><table style="margin-top:6px"><tbody>'
     + faixas.map(function(f){return '<tr><td style="padding:2px 12px 2px 0">'+f[0]+' pontos</td><td><strong>'+f[1]+'</strong></td></tr>';}).join('')
     +'</tbody></table></div></div></div>';
+}
+
+
+function imprimirRelatorio(){
+  const un=document.getElementById('av-unidade').value||'—';
+  const emp=document.getElementById('av-empresa').value||'—';
+  const cnum=(contratos.find(function(x){return String(x.id)===String(document.getElementById('av-contrato').value);})||{}).numero||'—';
+  const mes=document.getElementById('av-mesref').value||'—';
+  const dt=document.getElementById('av-data').value||'—';
+  const area=document.getElementById('av-area').value||'—';
+  const obs=document.getElementById('av-obs').value||'';
+  const locais=coletarLocais();
+  const notas=coletarNotas();
+  const c=calcular(notas, document.getElementById('av-media').value, document.getElementById('av-contratado').value);
+  const lbl={3:'Muito Bom',2:'Bom',1:'Regular',0:'Péssimo'};
+  let modHtml='';
+  MODULOS.forEach(function(mod){
+    let linhas='';
+    mod.itens.forEach(function(it,i){ const n=(notas[mod.id]&&notas[mod.id][i]!=null)?notas[mod.id][i]:0;
+      linhas+='<tr><td>'+it+'</td><td style="text-align:center">'+n+' — '+lbl[n]+'</td></tr>'; });
+    modHtml+='<h3>'+mod.nome+'</h3><table>'+linhas+'</table>';
+  });
+  const colabs=coletarColaboradores();
+  let colHtml=colabs.map(function(x){return '<div style="margin:8px 0"><strong>'+x.nome+'</strong>'+(x.assin?'<br><img src="'+x.assin+'" style="height:50px">':'')+'</div>';}).join('');
+  const avalAssin=assinaturaData('canvas-avaliador');
+  const w=window.open('','_blank');
+  w.document.write('<html><head><title>Relatorio de Avaliacao - Limpeza</title><style>'
+    +'body{font-family:Arial,sans-serif;color:#1a1a18;padding:24px;max-width:800px;margin:0 auto;font-size:13px}'
+    +'h1{font-size:18px;border-bottom:2px solid #1d6aad;padding-bottom:8px}h3{font-size:14px;color:#1d6aad;margin:16px 0 4px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:8px}td,th{border:1px solid #ddd;padding:6px 10px;text-align:left}'
+    +'.grid{display:flex;flex-wrap:wrap;gap:4px 24px}.grid div{min-width:200px}'
+    +'.res{display:flex;gap:12px;margin:14px 0}.res div{flex:1;text-align:center;background:#f4f4f2;padding:10px;border-radius:8px}'
+    +'.res .n{font-size:22px;font-weight:800}.assin{margin-top:24px;display:flex;gap:40px}'
+    +'@media print{button{display:none}}</style></head><body>'
+    +'<h1>Relatorio de Avaliacao de Qualidade da Limpeza</h1>'
+    +'<div class="grid"><div><strong>Unidade:</strong> '+un+'</div><div><strong>Empresa:</strong> '+emp+'</div>'
+    +'<div><strong>Contrato:</strong> '+cnum+'</div><div><strong>Mes ref.:</strong> '+mes+'</div>'
+    +'<div><strong>Data:</strong> '+dt+'</div><div><strong>Area:</strong> '+area+'</div></div>'
+    +(locais.length?('<h3>Locais avaliados</h3><div>'+locais.join(' - ')+'</div>'):'')
+    +modHtml
+    +'<div class="res"><div><div class="n">'+c.resultadoAval+'</div>Resultado (237)</div>'
+    +'<div><div class="n">'+c.contingente+'</div>Contingente (100)</div>'
+    +'<div><div class="n">'+c.valorFatura+'</div>Fatura (674)</div>'
+    +'<div><div class="n">'+c.percLiberacao+'%</div>Liberacao</div></div>'
+    +(obs?('<h3>Observacoes</h3><div style="white-space:pre-wrap">'+obs+'</div>'):'')
+    +(colHtml?('<h3>Colaboradores que acompanharam</h3>'+colHtml):'')
+    +'<div class="assin"><div><strong>Avaliador</strong>'+(avalAssin?'<br><img src="'+avalAssin+'" style="height:50px">':'<br>___________________')+'</div></div>'
+    +'<p style="margin-top:24px;font-size:11px;color:#888">Registro eletronico para gestao contratual. Emitido em '+new Date().toLocaleString('pt-BR')+'.</p>'
+    +'<button onclick="window.print()" style="margin-top:16px;padding:10px 20px;background:#1d6aad;color:#fff;border:none;border-radius:8px;cursor:pointer">Imprimir / Salvar PDF</button>'
+    +'</body></html>');
+  w.document.close();
 }
 
 </script>

@@ -323,6 +323,17 @@ tr:hover td{background:var(--surface2)}
 .pdf-drop{border:2px dashed var(--border);border-radius:12px;padding:1.4rem;text-align:center;cursor:pointer;color:var(--text2)}
 .pdf-drop:hover{border-color:var(--accent);color:var(--text)}
 
+
+#page-nova input[type=text],#page-nova input[type=number],#page-nova input[type=date],#page-nova input[type=time],#page-nova input[type=month],#page-nova select,#page-nova textarea{
+  width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;box-sizing:border-box}
+#page-nova .fg{margin-bottom:14px}
+#page-nova label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem;max-width:900px}
+.form-section{margin-bottom:1.6rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
+.form-section:last-of-type{border-bottom:none}
+.fsec-title{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
+.assin-canvas{border:2px dashed var(--border);border-radius:10px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair;box-shadow:inset 0 0 0 1px rgba(0,0,0,.02)}
+.assin-wrap{background:var(--surface2);border-radius:10px;padding:12px;display:inline-block}
 .assin-wrap{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .assin-canvas{border:1px solid var(--border);border-radius:8px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair}
 .colab-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:10px;flex-wrap:wrap}
@@ -426,13 +437,7 @@ tr:hover td{background:var(--surface2)}
           <div class="fg"><label>Data da avaliação</label><input type="date" id="av-data"></div>
           <div class="fg"><label>Início</label><input type="time" id="av-inicio"></div>
           <div class="fg"><label>Término</label><input type="time" id="av-fim"></div>
-          <div class="fg full"><label>Área avaliada</label><input type="text" id="av-area" placeholder="Ex: 2º andar - ala cirúrgica"></div>
         </div>
-      </div>
-
-      <div class="form-section">
-        <div class="fsec-title">📝 Módulos de avaliação <span style="font-weight:400;font-size:12px;color:var(--text3)">— 3 Muito Bom · 2 Bom · 1 Regular · 0 Péssimo</span></div>
-        <div id="modulos-container"></div>
       </div>
 
       <div class="form-section">
@@ -442,6 +447,20 @@ tr:hover td{background:var(--surface2)}
           <input type="text" id="local-novo" placeholder="Adicionar outro local..." style="flex:1" onkeydown="if(event.key==='Enter'){addLocalAvulso();event.preventDefault();}">
           <button class="btn sm" type="button" onclick="addLocalAvulso()">➕ Adicionar</button>
         </div>
+      </div>
+
+      <div class="form-section">
+        <div class="fsec-title">📝 Módulos de avaliação <span style="font-weight:400;font-size:12px;color:var(--text3)">— 3 Muito Bom · 2 Bom · 1 Regular · 0 Péssimo</span></div>
+        <details style="margin-bottom:12px;background:var(--surface2);border-radius:8px;padding:10px 12px">
+          <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--accent-text)">ℹ️ O que significa cada conceito?</summary>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-top:8px">
+            <p><strong>3 — Muito Bom</strong> (conformidade total): sem poeira nem sujidade; vidros limpos; superfícies sem sangue/fluidos; dispensadores limpos e abastecidos; lixeiras com embalagem adequada e até 2/3; empregado fixo, treinado, uniformizado e com EPIs; materiais padronizados e suficientes; carrinho e mops limpos.</p>
+            <p style="margin-top:6px"><strong>2 — Bom</strong> (conformidade parcial): poeira em local isolado longe de procedimentos invasivos; ocorrência isolada de lixeira fora do padrão; falha isolada no reabastecimento.</p>
+            <p style="margin-top:6px"><strong>1 — Regular</strong> (desconformidade parcial): poeira em vários locais (não próximos a procedimentos invasivos); várias lixeiras fora do padrão; falhas de reabastecimento.</p>
+            <p style="margin-top:6px"><strong>0 — Péssimo</strong> (desconformidade total): poeira/sujidade em salas cirúrgicas e mobiliário; sangue ou fluidos em superfícies; quebra de técnica; carro incompleto; lixeiras transbordando; piso molhado com risco; uniforme/EPI incompletos; sanitários sujos.</p>
+          </div>
+        </details>
+        <div id="modulos-container"></div>
       </div>
 
       <div class="form-section">
@@ -699,7 +718,7 @@ function recalcular(){
 function novaAval(){
   editId=null;
   document.getElementById('av-id').value='';
-  ['av-numero','av-mesref','av-data','av-inicio','av-fim','av-area','av-media','av-contratado'].forEach(function(k){document.getElementById(k).value='';});
+  ['av-numero','av-mesref','av-data','av-inicio','av-fim','av-media','av-contratado'].forEach(function(k){document.getElementById(k).value='';});
   document.getElementById('av-unidade').value='';
   document.querySelectorAll('.nota-sel').forEach(function(s){ s.value='0'; });
   initPad('canvas-avaliador'); limparAssinatura('avaliador');
@@ -719,7 +738,6 @@ function editarAval(id){
   document.getElementById('av-data').value=a.DataAval||'';
   document.getElementById('av-inicio').value=a.HoraInicio||'';
   document.getElementById('av-fim').value=a.HoraFim||'';
-  document.getElementById('av-area').value=a.AreaAvaliada||'';
   document.getElementById('av-media').value=a.MediaDiaria||'';
   document.getElementById('av-contratado').value=a.ContingenteContratado||'';
   const notas=a.NotasObj||{};
@@ -803,7 +821,7 @@ async function salvarAval(statusAlvo){
   const notas=coletarNotas();
   const payload={ ID:editId||'', Unidade:unidade, MesRef:mesref, DataAval:document.getElementById('av-data').value,
     HoraInicio:document.getElementById('av-inicio').value, HoraFim:document.getElementById('av-fim').value,
-    AreaAvaliada:document.getElementById('av-area').value, Notas:notas,
+    AreaAvaliada:coletarLocais().join(', '), Notas:notas,
     MediaDiaria:document.getElementById('av-media').value, ContingenteContratado:document.getElementById('av-contratado').value,
     AvaliadorAssin:assinaturaData('canvas-avaliador'), Colaboradores:coletarColaboradores(),
     ContratoID:document.getElementById('av-contrato').value, ContratoNum:(contratos.find(function(x){return String(x.id)===String(document.getElementById('av-contrato').value);})||{}).numero||'',
@@ -894,7 +912,7 @@ function imprimirRelatorio(){
   const cnum=(contratos.find(function(x){return String(x.id)===String(document.getElementById('av-contrato').value);})||{}).numero||'—';
   const mes=document.getElementById('av-mesref').value||'—';
   const dt=document.getElementById('av-data').value||'—';
-  const area=document.getElementById('av-area').value||'—';
+  const area=coletarLocais().join(', ')||'—';
   const obs=document.getElementById('av-obs').value||'';
   const locais=coletarLocais();
   const notas=coletarNotas();
@@ -904,7 +922,7 @@ function imprimirRelatorio(){
   MODULOS.forEach(function(mod){
     let linhas='';
     mod.itens.forEach(function(it,i){ const n=(notas[mod.id]&&notas[mod.id][i]!=null)?notas[mod.id][i]:0;
-      linhas+='<tr><td>'+it+'</td><td style="text-align:center">'+n+' — '+lbl[n]+'</td></tr>'; });
+      linhas+='<tr><td>'+it+'</td><td style="text-align:center"><span class="nb n'+n+'">'+n+'</span> '+lbl[n]+'</td></tr>'; });
     modHtml+='<h3>'+mod.nome+'</h3><table>'+linhas+'</table>';
   });
   const colabs=coletarColaboradores();
@@ -912,18 +930,25 @@ function imprimirRelatorio(){
   const avalAssin=assinaturaData('canvas-avaliador');
   const w=window.open('','_blank');
   w.document.write('<html><head><title>Relatorio de Avaliacao - Limpeza</title><style>'
-    +'body{font-family:Arial,sans-serif;color:#1a1a18;padding:24px;max-width:800px;margin:0 auto;font-size:13px}'
-    +'h1{font-size:18px;border-bottom:2px solid #1d6aad;padding-bottom:8px}h3{font-size:14px;color:#1d6aad;margin:16px 0 4px}'
-    +'table{width:100%;border-collapse:collapse;margin-bottom:8px}td,th{border:1px solid #ddd;padding:6px 10px;text-align:left}'
-    +'.grid{display:flex;flex-wrap:wrap;gap:4px 24px}.grid div{min-width:200px}'
-    +'.res{display:flex;gap:12px;margin:14px 0}.res div{flex:1;text-align:center;background:#f4f4f2;padding:10px;border-radius:8px}'
-    +'.res .n{font-size:22px;font-weight:800}.assin{margin-top:24px;display:flex;gap:40px}'
-    +'@media print{button{display:none}}</style></head><body>'
-    +'<h1>Relatorio de Avaliacao de Qualidade da Limpeza</h1>'
+    +'*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#222;padding:0;max-width:820px;margin:0 auto;font-size:12.5px;line-height:1.5}'
+    +'.cab{background:#1d6aad;color:#fff;padding:20px 24px}.cab h1{margin:0;font-size:17px}.cab p{margin:3px 0 0;font-size:11px;opacity:.9}'
+    +'.body{padding:24px}h3{font-size:13px;color:#1d6aad;margin:18px 0 6px;border-bottom:1px solid #e2e2e2;padding-bottom:3px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:12px}td,th{border:1px solid #e2e2e2;padding:6px 10px;text-align:left}'
+    +'th{background:#f4f4f2;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:#666}'
+    +'.grid{display:flex;flex-wrap:wrap;gap:6px 28px;background:#f8f8f6;padding:14px;border-radius:8px}.grid div{min-width:210px;font-size:12px}'
+    +'.res{display:flex;gap:10px;margin:16px 0}.res div{flex:1;text-align:center;background:#eef4fa;padding:12px;border-radius:8px}'
+    +'.res .n{font-size:24px;font-weight:800;color:#1d6aad}.res .l{font-size:10px;color:#666;margin-top:2px}'
+    +'.nb{display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:4px;font-weight:700;color:#fff;font-size:11px}'
+    +'.n3{background:#16a34a}.n2{background:#2563eb}.n1{background:#ca8a04}.n0{background:#dc2626}'
+    +'.assin{margin-top:28px;display:flex;gap:50px;flex-wrap:wrap}.assin img{border-bottom:1px solid #999}'
+    +'@media print{button{display:none}.cab{-webkit-print-color-adjust:exact;print-color-adjust:exact}}'
+    +'</style></head><body>'
+    +'<div class="cab"><h1>Relatorio de Avaliacao de Qualidade da Limpeza</h1><p>TDN Gestao Operacional - TDNGo</p></div>'
+    +'<div class="body">'
     +'<div class="grid"><div><strong>Unidade:</strong> '+un+'</div><div><strong>Empresa:</strong> '+emp+'</div>'
     +'<div><strong>Contrato:</strong> '+cnum+'</div><div><strong>Mes ref.:</strong> '+mes+'</div>'
-    +'<div><strong>Data:</strong> '+dt+'</div><div><strong>Area:</strong> '+area+'</div></div>'
-    +(locais.length?('<h3>Locais avaliados</h3><div>'+locais.join(' - ')+'</div>'):'')
+    +'<div><strong>Data:</strong> '+dt+'</div></div>'
+    +(locais.length?('<h3>Locais avaliados</h3><div>'+locais.join(' · ')+'</div>'):'')
     +modHtml
     +'<div class="res"><div><div class="n">'+c.resultadoAval+'</div>Resultado (237)</div>'
     +'<div><div class="n">'+c.contingente+'</div>Contingente (100)</div>'
@@ -933,7 +958,8 @@ function imprimirRelatorio(){
     +(colHtml?('<h3>Colaboradores que acompanharam</h3>'+colHtml):'')
     +'<div class="assin"><div><strong>Avaliador</strong>'+(avalAssin?'<br><img src="'+avalAssin+'" style="height:50px">':'<br>___________________')+'</div></div>'
     +'<p style="margin-top:24px;font-size:11px;color:#888">Registro eletronico para gestao contratual. Emitido em '+new Date().toLocaleString('pt-BR')+'.</p>'
-    +'<button onclick="window.print()" style="margin-top:16px;padding:10px 20px;background:#1d6aad;color:#fff;border:none;border-radius:8px;cursor:pointer">Imprimir / Salvar PDF</button>'
+    +'</div>'
+    +'<div style="padding:0 24px 24px"><button onclick="window.print()" style="margin-top:16px;padding:10px 20px;background:#1d6aad;color:#fff;border:none;border-radius:8px;cursor:pointer">Imprimir / Salvar PDF</button>'
     +'</body></html>');
   w.document.close();
 }

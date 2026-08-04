@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta de Avaliação — Limpeza</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f4f4f2;color:#1a1a18;line-height:1.5;padding:1rem}
+.wrap{max-width:760px;margin:0 auto}
+.card{background:#fff;border:1px solid #e2e2de;border-radius:16px;padding:1.6rem;margin-bottom:1rem;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.head{text-align:center;margin-bottom:1.4rem}
+.head .ico{width:56px;height:56px;background:#1d6aad;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px}
+.head h1{font-size:19px}
+.head p{font-size:13px;color:#5c5c58;margin-top:3px}
+label{display:block;font-size:12px;font-weight:600;color:#5c5c58;margin-bottom:5px}
+input,textarea{width:100%;padding:11px 13px;font-size:15px;border:1px solid #e2e2de;border-radius:8px;font-family:inherit;background:#fff}
+input[type=text]#codigo{text-transform:uppercase;letter-spacing:3px;font-weight:700;font-size:18px;text-align:center}
+.btn{padding:12px 18px;background:#1d6aad;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;width:100%}
+.btn:hover{background:#17568c}
+.btn.sec{background:#e8e8e4;color:#1a1a18}
+.err{background:#fde8e8;color:#a12020;font-size:13px;padding:10px 12px;border-radius:8px;margin-bottom:10px;display:none}
+.res-box{display:flex;gap:12px;flex-wrap:wrap;margin:1rem 0}
+.res-item{flex:1;min-width:120px;text-align:center;background:#f4f4f2;border-radius:10px;padding:1rem}
+.res-num{font-size:26px;font-weight:800}
+.res-lbl{font-size:11px;color:#5c5c58;margin-top:2px}
+.destaque{background:#e7f0f9}.destaque .res-num{color:#1d6aad}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid #eee}
+th{font-size:11px;text-transform:uppercase;color:#9a9a96;letter-spacing:.04em}
+.mod-tit{font-weight:700;font-size:13px;color:#1d6aad;margin:14px 0 4px}
+.nota-badge{display:inline-block;min-width:22px;text-align:center;padding:2px 6px;border-radius:5px;font-weight:700;font-size:12px}
+.n3{background:#dcfce7;color:#166534}.n2{background:#dbeafe;color:#1e40af}.n1{background:#fef9c3;color:#854d0e}.n0{background:#fee2e2;color:#991b1b}
+.ok-box{background:#dcfce7;color:#166534;padding:12px 14px;border-radius:9px;font-size:13px;margin-bottom:12px;display:none}
+.hidden{display:none}
+.foot{text-align:center;font-size:11px;color:#9a9a96;margin-top:1rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- TELA DE CÓDIGO -->
+  <div class="card" id="tela-codigo">
+    <div class="head"><div class="ico">🧹</div><h1>Consulta de Avaliação de Limpeza</h1><p>TDN Gestão Operacional — acesso da empresa terceirizada</p></div>
+    <div class="err" id="err"></div>
+    <label>Digite o código de acesso recebido</label>
+    <input type="text" id="codigo" maxlength="8" placeholder="XXXXXXXX" onkeydown="if(event.key==='Enter')consultar()">
+    <div style="height:12px"></div>
+    <button class="btn" onclick="consultar()">Consultar avaliação</button>
+  </div>
+
+  <!-- RESULTADO -->
+  <div class="card hidden" id="tela-resultado">
+    <div class="ok-box" id="ja-ciente"></div>
+    <div class="head"><div class="ico">🧹</div><h1 id="r-titulo">Avaliação</h1><p id="r-sub"></p></div>
+
+    <div class="res-box">
+      <div class="res-item"><div class="res-num" id="r-aval">—</div><div class="res-lbl">Resultado<br>(máx 237)</div></div>
+      <div class="res-item"><div class="res-num" id="r-cont">—</div><div class="res-lbl">Contingente<br>(máx 100)</div></div>
+      <div class="res-item"><div class="res-num" id="r-fatura">—</div><div class="res-lbl">Valor fatura<br>(máx 674)</div></div>
+      <div class="res-item destaque"><div class="res-num" id="r-perc">—</div><div class="res-lbl">Liberação da fatura</div></div>
+    </div>
+
+    <div id="r-pdf" style="margin:10px 0"></div>
+    <div id="r-detalhe"></div>
+
+    <!-- CIÊNCIA -->
+    <div id="bloco-ciencia" style="margin-top:1.4rem;border-top:1px solid #eee;padding-top:1.2rem">
+      <div class="mod-tit">Registrar ciência</div>
+      <p style="font-size:13px;color:#5c5c58;margin-bottom:10px">Ao registrar ciência, você confirma que tomou conhecimento do resultado desta avaliação.</p>
+      <label>Nome do responsável *</label>
+      <input type="text" id="ci-nome" placeholder="Seu nome completo">
+      <div style="height:10px"></div>
+      <label>Observação (opcional)</label>
+      <textarea id="ci-obs" rows="2" placeholder="Alguma observação sobre o resultado"></textarea>
+      <div style="height:12px"></div>
+      <button class="btn" onclick="registrarCiencia()">✅ Registrar ciência</button>
+    </div>
+  </div>
+  <div class="foot">Desenvolvido por Marcos Cruz, com IA</div>
+</div>
+
+<script>
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
+const MODULOS=[
+  {id:'A',nome:'Módulo A — Equipamentos, Produtos e Técnica',itens:['Carro de limpeza','Produtos de limpeza','Técnicas de limpeza']},
+  {id:'B',nome:'Módulo B — Qualidade dos Profissionais',itens:['Uniformidade da equipe','Apresentação / Uniformização','EPI']},
+  {id:'C',nome:'Módulo C — Frequência',itens:['Cumprimento do cronograma e atividades']},
+  {id:'D',nome:'Módulo D — Inspeção dos Serviços',itens:['Acessórios sanitários','Aparelhos telefônicos','Bebedouro','Box de banho','Extintores e quadros','Lavatórios','Móveis','Parede','Persianas','Pias / Cubas','Piso','Porta / Batentes / Maçanetas','Lixeiras','Ar condicionado / exaustores','Tapetes','Teto','Vidros']}
+];
+let codigoAtual='';
+function q(id){ return document.getElementById(id); }
+function erro(msg){ const e=q('err'); e.textContent=msg; e.style.display='block'; }
+
+// pré-preenche código da URL (?cod=XXXX) se houver
+(function(){ const p=new URLSearchParams(location.search); const c=p.get('cod'); if(c){ q('codigo').value=c.toUpperCase(); } })();
+
+async function consultar(){
+  const cod=(q('codigo').value||'').trim().toUpperCase();
+  q('err').style.display='none';
+  if(cod.length<4){ erro('Digite o código de acesso.'); return; }
+  q('codigo').disabled=true;
+  try{
+    const r=await fetch(SCRIPT_URL+'?action=getlimpezacodigo&codigo='+encodeURIComponent(cod));
+    const d=await r.json();
+    if(!d.ok){ erro(d.message||'Código inválido.'); q('codigo').disabled=false; return; }
+    codigoAtual=cod;
+    mostrar(d.data);
+  }catch(e){ erro('Erro de conexão. Tente novamente.'); q('codigo').disabled=false; }
+}
+
+function mostrar(a){
+  q('tela-codigo').classList.add('hidden');
+  q('tela-resultado').classList.remove('hidden');
+  q('r-titulo').textContent='Avaliação '+(a.Numero||'');
+  q('r-sub').textContent=(a.Unidade||'')+' · '+(a.MesRef||'')+(a.AreaAvaliada?(' · '+a.AreaAvaliada):'');
+  q('r-aval').textContent=a.ResultadoAval; q('r-cont').textContent=a.Contingente;
+  q('r-fatura').textContent=a.ValorFatura; q('r-perc').textContent=a.PercLiberacao+'%';
+  if(a.PdfEvidencia){ q('r-pdf').innerHTML='<a href="'+a.PdfEvidencia+'" target="_blank" style="font-size:13px;color:#1d6aad">📄 Ver relatório/evidência (PDF)</a>'; }
+  // detalhe dos módulos
+  const notas=a.NotasObj||{};
+  const lbl={3:'Muito Bom',2:'Bom',1:'Regular',0:'Péssimo'};
+  q('r-detalhe').innerHTML = MODULOS.map(function(mod){
+    const arr=notas[mod.id]||[];
+    const linhas=mod.itens.map(function(it,i){ const n=(arr[i]!=null?arr[i]:0);
+      return '<tr><td>'+it+'</td><td style="text-align:right"><span class="nota-badge n'+n+'">'+n+'</span> '+lbl[n]+'</td></tr>'; }).join('');
+    return '<div class="mod-tit">'+mod.nome+'</div><table><tbody>'+linhas+'</tbody></table>';
+  }).join('');
+  // já tem ciência?
+  if(a.CienciaData){
+    q('bloco-ciencia').classList.add('hidden');
+    const jc=q('ja-ciente'); jc.style.display='block';
+    jc.innerHTML='✅ Ciência já registrada por <strong>'+(a.CienciaNome||'')+'</strong> em '+a.CienciaData+(a.CienciaObs?('<br>Obs: '+a.CienciaObs):'');
+  }
+}
+
+async function registrarCiencia(){
+  const nome=(q('ci-nome').value||'').trim();
+  if(!nome){ alert('Informe o nome do responsável.'); return; }
+  const obs=(q('ci-obs').value||'').trim();
+  try{
+    const r=await fetch(SCRIPT_URL+'?action=cienlimpeza',{method:'POST',body:JSON.stringify({codigo:codigoAtual,nome:nome,obs:obs})});
+    const d=await r.json();
+    if(d.ok){
+      q('bloco-ciencia').classList.add('hidden');
+      const jc=q('ja-ciente'); jc.style.display='block';
+      jc.innerHTML='✅ Ciência registrada com sucesso. Obrigado!';
+    } else alert(d.message||'Erro ao registrar.');
+  }catch(e){ alert('Erro de conexão.'); }
+}
+</script>
+</body>
+</html>

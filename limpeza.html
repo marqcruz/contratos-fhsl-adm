@@ -334,6 +334,14 @@ tr:hover td{background:var(--surface2)}
 .fsec-title{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
 .assin-canvas{border:2px dashed var(--border);border-radius:10px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair;box-shadow:inset 0 0 0 1px rgba(0,0,0,.02)}
 .assin-wrap{background:var(--surface2);border-radius:10px;padding:12px;display:inline-block}
+
+.crit-det{margin-top:4px}
+.crit-det summary{cursor:pointer;font-size:11px;color:var(--accent-text);font-weight:600;list-style:none}
+.crit-det summary::-webkit-details-marker{display:none}
+.crit-box{margin-top:6px;background:var(--surface2);border-radius:8px;padding:8px 10px}
+.crit-linha{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:5px;display:flex;gap:7px;align-items:flex-start}
+.crit-linha:last-child{margin-bottom:0}
+.crit-n{flex-shrink:0;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;color:#fff;font-weight:700;font-size:11px}
 .assin-wrap{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .assin-canvas{border:1px solid var(--border);border-radius:8px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair}
 .colab-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:10px;flex-wrap:wrap}
@@ -598,6 +606,34 @@ const MODULOS = [
     'D.16 — Teto','D.17 — Vidros' ]}
 ];
 const CONCEITOS = [ {v:3,l:'Muito Bom'},{v:2,l:'Bom'},{v:1,l:'Regular'},{v:0,l:'Péssimo'} ];
+// Critérios de cada nota por item (do Anexo II) — chave = "MOD.idx"
+const CRITERIOS={
+ 'A.0':['Carrinho limpo, mops e panos livres de resíduos, completo','Carrinho em bom estado, pequenas faltas','Carrinho com sujidade ou itens faltando','Carro de limpeza incompleto/sujo'],
+ 'A.1':['Produtos padronizados, em quantidade suficiente','Produtos adequados, pequena insuficiência','Produtos em quantidade insuficiente','Produtos incompletos ou inadequados'],
+ 'A.2':['Técnica de limpeza correta e completa','Técnica adequada com pequenos desvios','Falhas na técnica de limpeza','Quebra de técnica de limpeza'],
+ 'B.0':['Equipe fixa, treinada e em quantidade adequada','Equipe adequada, escalas pouco fixas','Capacitação precária e/ou quantidade inadequada','Capacitação precária, atrasos/absenteísmo, postura inadequada'],
+ 'B.1':['Uniformizado como no descritivo, limpo, passado, com identificação; cabelos presos e gorro','Uniforme incompleto, porém limpo e com identificação','Uniforme rasgado/sujo/amarrotado; unhas e adereços','Uniforme incompleto, peças pessoais, cabelos soltos, adereços, barba'],
+ 'B.2':['EPIs adequados e disponíveis (luvas, máscara, gorro, botas)','Disponibilidade parcial de EPIs; falta 1+ item','EPIs usados incorretamente','Não utilizam EPIs'],
+ 'C.0':['Cronograma cumprido, checado e impresso assinado','Ocorre, mas cronograma não checado','Ocorre parcialmente; impresso em desacordo','Não ocorre; sem checagem nem impresso'],
+ 'D.0':['Acessórios completos e isentos de sujidade','Pequena quantidade de sujidade','Sujidade nos cantos; falta de material','Sujidade em extensão/interior; falta material'],
+ 'D.1':['Aparelho limpo e sem gordura','Pouca sujidade no fone/teclas','Sujidade em fiação, teclas e disco','Sujidade, manchas e pó no aparelho'],
+ 'D.2':['Isento de sujidade; bandeja limpa','Sujidade na carcaça; bandeja limpa','Manchas antigas; bandeja sem sujidade orgânica','Sujidade orgânica e lodo'],
+ 'D.3':['Limpo e isento de manchas','Manchas antigas incrustadas','Sujidade nos trilhos e ralos','Lodo e sujidade orgânica'],
+ 'D.4':['Ausência de pó','Pouca quantidade de pó','Grande quantidade de pó','Objetos mal acondicionados e sujidade'],
+ 'D.5':['Cubas/louças limpas sem manchas','Manchas secas de água/sabonete sem sujidade','Registros com sujidade; cabelos/crostas no ralo','Sujidade orgânica e lodo; crostas'],
+ 'D.6':['Móveis limpos','Pouca sujidade nos cantos','Sujidade nos cantos e pés','Pó e manchas na superfície'],
+ 'D.7':['Parede isenta de sujidade','Sujidade em pontos localizados; resquícios de produto','Manchas de fita adesiva e pó','Manchas de secreção, restos, respingos'],
+ 'D.8':['Persianas limpas','Algumas manchas','Sujidade em pontos isolados e pó','Sujas e com pó'],
+ 'D.9':['Pias isentas de sujidade','Manchas secas de água/produto','Resto de água suja; torneira com sujidade','Sujidade orgânica e lodo'],
+ 'D.10':['Piso sem sujidade, encerado e com brilho','Pó nos cantos; pouco material sólido recente','Sujidade sólida na extensão; alguma orgânica','Sujidade orgânica (sangue, secreção, restos)'],
+ 'D.11':['Portas e maçanetas limpas sem manchas','Sujidade removível próxima à maçaneta; pó','Sujidade removível: mão, fita, respingo','Sujidade orgânica e pó'],
+ 'D.12':['Cesto limpo, seco, embalagem correta, até 2/3','Alguns resquícios; saco além de 2/3','Sujo internamente; resíduos transbordando','Sujo, transbordando, embalagem errada, sem troca'],
+ 'D.13':['Ar-condicionado/exaustores isentos de poeira','Poeira em pontos localizados','Poeira/manchas/cabelos na maioria','Todas com poeira, manchas e cabelos'],
+ 'D.14':['Tapete limpo','Limpo com algumas sujidades sólidas','Sujidade nos cantos e adesivos','Sujidade sólida, papéis e pó'],
+ 'D.15':['Teto limpo, sem sujidades','Sujidade em pontos isolados','Sujidade nos cantos próximos à parede','Sujidade como cabelo e matéria orgânica'],
+ 'D.16':['Vidros limpos; cronograma cumprido','Pequenas marcas','Sujidade/marcas em pontos','Vidros sujos e com marcas']
+};
+
 
 let avaliacoes=[], unidades=[], editId=null, contratos=[];
 const LOCAIS_FIXOS=['Recepção / Espera','Consultórios','Sala de medicação','Sala de curativos','Sala de observação',
@@ -620,6 +656,30 @@ function startApp(){
 }
 function podeEditar(){ return currentUser && (currentUser.role==='admin'||currentUser.role==='gestor'||currentUser.role==='cadastros'); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function normData(v){ // para input type=date -> YYYY-MM-DD
+  if(!v) return '';
+  const s=String(v);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d=new Date(s); if(isNaN(d.getTime())) return s.slice(0,10);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+}
+function normMes(v){ // para input type=month -> YYYY-MM
+  if(!v) return '';
+  const s=String(v);
+  if(/^\d{4}-\d{2}$/.test(s)) return s;
+  const d=new Date(s); if(isNaN(d.getTime())) return s.slice(0,7);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
+}
+const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+function fmtMes(v){ // exibição amigável: "junho/2026"
+  const s=normMes(v); if(!/^\d{4}-\d{2}$/.test(s)) return v||'—';
+  const p=s.split('-'); return MESES[parseInt(p[1],10)-1]+'/'+p[0];
+}
+function fmtData(v){ // exibição "01/06/2026"
+  const s=normData(v); if(!/^\d{4}-\d{2}-\d{2}$/.test(s)) return v||'—';
+  const p=s.split('-'); return p[2]+'/'+p[1]+'/'+p[0];
+}
+
 
 function showPage(id, btn){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
@@ -677,8 +737,16 @@ function montarModulos(){
   document.getElementById('modulos-container').innerHTML = MODULOS.map(function(mod){
     const linhas = mod.itens.map(function(item, idx){
       const opts = CONCEITOS.map(function(c){ return '<option value="'+c.v+'">'+c.v+' — '+c.l+'</option>'; }).join('');
-      return '<tr><td style="font-size:13px">'+esc(item)+'</td>'
-        +'<td style="width:150px"><select class="nota-sel" data-mod="'+mod.id+'" data-idx="'+idx+'" onchange="recalcular()">'+opts+'</select></td></tr>';
+      const crit = CRITERIOS[mod.id+'.'+idx];
+      let ajuda='';
+      if(crit){
+        const cores=['#16a34a','#2563eb','#ca8a04','#dc2626']; const notas=[3,2,1,0];
+        ajuda='<details class="crit-det"><summary>ℹ️ o que é cada nota</summary><div class="crit-box">'
+          + crit.map(function(txt,i){ return '<div class="crit-linha"><span class="crit-n" style="background:'+cores[i]+'">'+notas[i]+'</span> '+esc(txt)+'</div>'; }).join('')
+          + '</div></details>';
+      }
+      return '<tr><td style="font-size:13px">'+esc(item)+ajuda+'</td>'
+        +'<td style="width:150px;vertical-align:top"><select class="nota-sel" data-mod="'+mod.id+'" data-idx="'+idx+'" onchange="recalcular()">'+opts+'</select></td></tr>';
     }).join('');
     return '<div style="margin-bottom:1.2rem"><div style="font-weight:700;font-size:13px;margin-bottom:6px;color:var(--accent-text)">'+esc(mod.nome)
       +' <span style="font-weight:400;color:var(--text3)">(peso '+mod.peso+')</span></div>'
@@ -734,8 +802,8 @@ function editarAval(id){
   document.getElementById('av-id').value=id;
   document.getElementById('av-numero').value=a.Numero||'';
   document.getElementById('av-unidade').value=a.Unidade||'';
-  document.getElementById('av-mesref').value=a.MesRef||'';
-  document.getElementById('av-data').value=a.DataAval||'';
+  document.getElementById('av-mesref').value=normMes(a.MesRef);
+  document.getElementById('av-data').value=normData(a.DataAval);
   document.getElementById('av-inicio').value=a.HoraInicio||'';
   document.getElementById('av-fim').value=a.HoraFim||'';
   document.getElementById('av-media').value=a.MediaDiaria||'';
@@ -876,7 +944,7 @@ function renderLista(){
         +(a.Status!=='Rascunho'?' <button class="btn sm" onclick="reabrirLink(\''+a.ID+'\')" title="Ver link">🔗</button>':'')
         +(currentUser.role==='admin'?' <button class="btn sm danger" onclick="delAval(\''+a.ID+'\')" title="Excluir">🗑️</button>':'')
       : '<button class="btn sm" onclick="editarAval(\''+a.ID+'\')">👁️</button>';
-    return '<tr><td><strong>'+esc(a.Numero)+'</strong></td><td>'+esc(a.Unidade)+'</td><td>'+esc(a.MesRef)+'</td>'
+    return '<tr><td><strong>'+esc(a.Numero)+'</strong></td><td>'+esc(a.Unidade)+'</td><td>'+fmtMes(a.MesRef)+'</td>'
       +'<td>'+esc(a.ResultadoAval)+' / 237</td><td>'+esc(a.ValorFatura)+' / 674</td>'
       +'<td><strong>'+esc(a.PercLiberacao)+'%</strong></td><td>'+badge(a.Status)+'</td><td style="white-space:nowrap">'+acoes+'</td></tr>';
   }).join('');
@@ -910,8 +978,8 @@ function imprimirRelatorio(){
   const un=document.getElementById('av-unidade').value||'—';
   const emp=document.getElementById('av-empresa').value||'—';
   const cnum=(contratos.find(function(x){return String(x.id)===String(document.getElementById('av-contrato').value);})||{}).numero||'—';
-  const mes=document.getElementById('av-mesref').value||'—';
-  const dt=document.getElementById('av-data').value||'—';
+  const mes=fmtMes(document.getElementById('av-mesref').value)||'—';
+  const dt=fmtData(document.getElementById('av-data').value)||'—';
   const area=coletarLocais().join(', ')||'—';
   const obs=document.getElementById('av-obs').value||'';
   const locais=coletarLocais();
@@ -959,7 +1027,8 @@ function imprimirRelatorio(){
     +'<div class="assin"><div><strong>Avaliador</strong>'+(avalAssin?'<br><img src="'+avalAssin+'" style="height:50px">':'<br>___________________')+'</div></div>'
     +'<p style="margin-top:24px;font-size:11px;color:#888">Registro eletronico para gestao contratual. Emitido em '+new Date().toLocaleString('pt-BR')+'.</p>'
     +'</div>'
-    +'<div style="padding:0 24px 24px"><button onclick="window.print()" style="margin-top:16px;padding:10px 20px;background:#1d6aad;color:#fff;border:none;border-radius:8px;cursor:pointer">Imprimir / Salvar PDF</button>'
+    +'<div style="padding:0 24px 24px;display:flex;gap:10px"><button onclick="window.print()" style="margin-top:16px;padding:12px 22px;background:#1d6aad;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">🖨️ Imprimir / Salvar PDF</button>'
+    +'<button onclick="window.close();setTimeout(function(){document.body.innerHTML=&quot;<p style=padding:40px;text-align:center;font-family:Arial>Pode fechar esta aba e voltar ao sistema.</p>&quot;},300)" style="margin-top:16px;padding:12px 22px;background:#e8e8e4;color:#1a1a18;border:none;border-radius:8px;cursor:pointer;font-size:14px">✕ Fechar</button>'
     +'</body></html>');
   w.document.close();
 }

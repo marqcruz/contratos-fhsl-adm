@@ -206,6 +206,21 @@
   }
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+
+  /* pagina 3 — tempos e producao medica */
+  .kpi-alert .n{color:var(--vermelho)}
+  .med-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+  .med-box{border:1px solid var(--line);border-radius:12px;padding:16px;background:#faf8f2}
+  .med-box h3{font-family:"Fraunces",serif;font-size:16px;margin-bottom:10px}
+  .bucket{display:grid;grid-template-columns:120px 1fr 72px;gap:10px;align-items:center;margin:9px 0;font-size:13px}
+  .bucket-track{height:18px;background:#e9e5da;border-radius:5px;overflow:hidden}
+  .bucket-fill{height:100%;background:var(--accent-2);border-radius:5px}
+  .bucket-val{text-align:right;font-family:"IBM Plex Mono",monospace;font-size:12px}
+  .threshold-row{display:grid;grid-template-columns:1fr 180px;gap:14px;align-items:end;margin-bottom:18px}
+  @media(max-width:620px){.threshold-row{grid-template-columns:1fr}.bucket{grid-template-columns:100px 1fr 62px}}
+  table.ind tr.critical td{background:#fde5df !important;color:#7b2418}
+  table.ind tr.warn td{background:#fdf4e3 !important}
+
   /* ===== IMPRESSAO / PDF (somente #printArea) ===== */
   #printArea{display:none}
   @media print{
@@ -343,6 +358,7 @@
   <nav class="pagenav" id="pageNav" style="display:none">
     <button class="pgbtn on" data-pg="1">P&aacute;gina 1 &middot; Indicador</button>
     <button class="pgbtn" data-pg="2">P&aacute;gina 2 &middot; An&aacute;lise para gest&atilde;o</button>
+    <button class="pgbtn" data-pg="3">P&aacute;gina 3 &middot; Tempos e produ&ccedil;&atilde;o m&eacute;dica</button>
   </nav>
 
   <div id="page1">
@@ -522,6 +538,49 @@
     </div>
   </section>
   </div><!-- /page2 -->
+
+  <div id="page3" style="display:none">
+  <section class="card">
+    <div class="card-head"><h2>Tempos de atendimento m&eacute;dico</h2><span class="tag" id="p3scope"></span></div>
+    <div class="card-pad">
+      <p class="lede" style="font-size:15px;margin:0 0 20px">A an&aacute;lise utiliza a <b>Chamada M&eacute;dica</b> (coluna L da planilha tratada) e calcula o tempo entre a chegada e o momento em que o m&eacute;dico chama o paciente no sistema.</p>
+      <div class="summary-grid" id="medKpis"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Distribui&ccedil;&atilde;o dos tempos</h2><span class="tag">faixas em minutos</span></div>
+    <div class="card-pad"><div id="medBuckets"></div></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Produ&ccedil;&atilde;o m&eacute;dica por turno</h2><span class="tag">turno pela chamada m&eacute;dica</span></div>
+    <div class="card-pad">
+      <p class="ind-note" style="border:none;margin:0 0 14px;padding:0">Manh&atilde; 07h&ndash;13h; Tarde 13h&ndash;19h; Vespertino 19h&ndash;01h; Madrugada 01h&ndash;07h. O enquadramento considera o hor&aacute;rio da Chamada M&eacute;dica, e n&atilde;o a chegada do paciente.</p>
+      <div class="ind-scroll"><table class="ind" id="tblMedTurno"></table></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Produ&ccedil;&atilde;o e desempenho por m&eacute;dico</h2><span class="tag" id="tagMed"></span></div>
+    <div class="card-pad">
+      <div class="ind-scroll"><table class="ind" id="tblMedico"></table></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Tempos muito altos para revis&atilde;o</h2><span class="tag">auditoria</span></div>
+    <div class="card-pad">
+      <div class="threshold-row">
+        <div class="ind-note" style="border:none;margin:0;padding:0">Lista pacientes com tempo igual ou superior ao corte definido. A marca&ccedil;&atilde;o em vermelho indica tempo superior ao dobro do corte.</div>
+        <div class="field"><label for="medThreshold">Corte (minutos)</label><input id="medThreshold" type="number" min="30" step="30" value="180"></div>
+      </div>
+      <div id="medHighInfo" class="ind-note" style="border:none;padding:0;margin:0 0 10px"></div>
+      <div class="ind-scroll" style="max-height:520px;overflow:auto"><table class="ind lst" id="tblMedHigh"></table></div>
+      <div class="actions"><button class="btn sm ghost" id="dlMedAnalise">Exportar an&aacute;lise m&eacute;dica (.xlsx)</button></div>
+    </div>
+  </section>
+  </div><!-- /page3 -->
 
   <footer>
     <span class="lock">
@@ -744,6 +803,7 @@ reset.addEventListener('click',()=>{ pickedFiles=[];processed=[];fileIn.value=""
   panel.style.display="none";bar.style.display="none";
   var pn=$('#pageNav'); if(pn) pn.style.display="none";
   var p2=$('#page2'); if(p2) p2.style.display="none";
+  var p3=$('#page3'); if(p3) p3.style.display="none";
   var p1=$('#page1'); if(p1) p1.style.display="";
   setStatus("Aguardando arquivo"); });
 
@@ -900,12 +960,13 @@ function renderAll(){
   renderResult(currentAgg);
   renderIndicator(currentAgg);
   renderPage2(currentRecs);
+  renderPage3(currentRecs);
 }
 
 seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
   seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
   hlKey=b.dataset.k; if(currentAgg) renderIndicator(currentAgg); });
-unitIn.addEventListener('change',()=>{ if(currentAgg){ renderIndicator(currentAgg); renderPage2(currentRecs);} });
+unitIn.addEventListener('change',()=>{ if(currentAgg){ renderIndicator(currentAgg); renderPage2(currentRecs); renderPage3(currentRecs);} });
 refdateIn.addEventListener('input',()=>{ if(currentAgg) renderIndicator(currentAgg); });
 
 // ============ PAGINA 2 — ANALISE PARA GESTAO ============
@@ -1091,12 +1152,94 @@ $('#segTurno').addEventListener('click',e=>{ const b=e.target.closest('button');
   $('#segTurno').querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
   turnoEnf=b.dataset.t; renderEnf(); });
 
+
+// ============ PAGINA 3 — TEMPOS E PRODUCAO MEDICA ============
+function percentile(vals,p){
+  const a=vals.filter(v=>v!==""&&v!=null&&isFinite(v)).map(Number).sort((x,y)=>x-y);
+  if(!a.length) return null;
+  const pos=(a.length-1)*p, lo=Math.floor(pos), hi=Math.ceil(pos);
+  return lo===hi?a[lo]:a[lo]+(a[hi]-a[lo])*(pos-lo);
+}
+function medRecords(){ return currentRecs.filter(r=>hasval(r.med)&&hasval(r.chammed)&&r.mins!==""); }
+function turnoMedico(r){ return turnoDe(r.chammed); }
+function medStats(){
+  const rs=medRecords(), vals=rs.map(r=>+r.mins);
+  const media=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null;
+  return {rs,total:rs.length,medicos:new Set(rs.map(r=>r.med)).size,media,mediana:percentile(vals,.5),p90:percentile(vals,.9),max:vals.length?Math.max(...vals):null};
+}
+function fmtOne(v){ return v==null?"—":v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}); }
+function renderMedKpis(){
+  const s=medStats(), corte=+(($('#medThreshold')||{}).value||180), altos=s.rs.filter(r=>+r.mins>=corte).length;
+  $('#medKpis').innerHTML=
+    '<div class="metric"><div class="n">'+br(s.total)+'</div><div class="l">Chamadas médicas registradas</div></div>'+ 
+    '<div class="metric"><div class="n">'+br(s.medicos)+'</div><div class="l">Médicos com produção</div></div>'+ 
+    '<div class="metric"><div class="n">'+fmtOne(s.media)+'</div><div class="l">Tempo médio (min)</div></div>'+ 
+    '<div class="metric"><div class="n">'+fmtOne(s.mediana)+'</div><div class="l">Mediana (min)</div></div>'+ 
+    '<div class="metric"><div class="n">'+fmtOne(s.p90)+'</div><div class="l">Percentil 90 (min)</div></div>'+ 
+    '<div class="metric kpi-alert"><div class="n">'+br(altos)+'</div><div class="l">Tempos ≥ '+corte+' min</div></div>';
+}
+function renderMedBuckets(){
+  const vals=medRecords().map(r=>+r.mins);
+  const buckets=[{l:'Até 30 min',a:0,b:30},{l:'31–60 min',a:31,b:60},{l:'61–120 min',a:61,b:120},{l:'121–180 min',a:121,b:180},{l:'181–240 min',a:181,b:240},{l:'Acima de 240',a:241,b:Infinity}];
+  const counts=buckets.map(x=>vals.filter(v=>v>=x.a&&v<=x.b).length), max=Math.max(1,...counts), total=vals.length;
+  $('#medBuckets').innerHTML=buckets.map((x,i)=>'<div class="bucket"><div>'+x.l+'</div><div class="bucket-track"><div class="bucket-fill" style="width:'+(counts[i]/max*100)+'%"></div></div><div class="bucket-val">'+br(counts[i])+' · '+(total?(counts[i]/total*100).toFixed(1).replace('.',','):'0,0')+'%</div></div>').join('');
+}
+function medTurnoResumo(){
+  const map={}; TURNOS.forEach(t=>map[t.key]={q:0,mins:[],meds:new Set()});
+  for(const r of medRecords()){ const t=turnoMedico(r); if(!map[t]) continue; map[t].q++; map[t].mins.push(+r.mins); map[t].meds.add(r.med); }
+  return map;
+}
+function renderMedTurno(){
+  const m=medTurnoResumo(); let rows='';
+  for(const t of TURNOS){ const x=m[t.key]; rows+='<tr><td>'+t.label+'</td><td>'+t.faixa+'</td><td><b>'+br(x.q)+'</b></td><td>'+br(x.meds.size)+'</td><td>'+fmtOne(x.mins.length?x.mins.reduce((a,b)=>a+b,0)/x.mins.length:null)+'</td><td>'+fmtOne(percentile(x.mins,.9))+'</td></tr>'; }
+  $('#tblMedTurno').innerHTML='<thead><tr><th>TURNO</th><th>FAIXA</th><th>ATENDIMENTOS</th><th>MÉDICOS</th><th>TEMPO MÉDIO</th><th>P90</th></tr></thead><tbody>'+rows+'</tbody>';
+}
+function medicoResumo(){
+  const map={};
+  for(const r of medRecords()){
+    if(!map[r.med]) map[r.med]={q:0,mins:[],turnos:{manha:0,tarde:0,vespertino:0,madrugada:0},acima:0};
+    const x=map[r.med]; x.q++; x.mins.push(+r.mins); const t=turnoMedico(r); if(t)x.turnos[t]++;
+    const lim=LIMITE_DE[r.prio]; if(lim!==undefined&&+r.mins>lim)x.acima++;
+  }
+  return Object.entries(map).map(([med,x])=>({med,...x,media:x.mins.reduce((a,b)=>a+b,0)/x.mins.length,mediana:percentile(x.mins,.5),p90:percentile(x.mins,.9)})).sort((a,b)=>b.q-a.q||a.media-b.media);
+}
+function renderMedico(){
+  const list=medicoResumo(); $('#tagMed').textContent=list.length+' médicos'; let rows='';
+  for(const x of list){ rows+='<tr><td>'+x.med+'</td><td><b>'+br(x.q)+'</b></td><td>'+fmtOne(x.media)+'</td><td>'+fmtOne(x.mediana)+'</td><td>'+fmtOne(x.p90)+'</td><td>'+br(x.acima)+'</td><td>'+br(x.turnos.manha)+'</td><td>'+br(x.turnos.tarde)+'</td><td>'+br(x.turnos.vespertino)+'</td><td>'+br(x.turnos.madrugada)+'</td></tr>'; }
+  $('#tblMedico').innerHTML='<thead><tr><th>MÉDICO</th><th>PRODUÇÃO</th><th>MÉDIA</th><th>MEDIANA</th><th>P90</th><th>ACIMA DO LIMITE</th><th>MANHÃ</th><th>TARDE</th><th>VESPERTINO</th><th>MADRUGADA</th></tr></thead><tbody>'+rows+'</tbody>';
+}
+function medHighRecords(){ const c=+$('#medThreshold').value||180; return medRecords().filter(r=>+r.mins>=c).sort((a,b)=>+b.mins-+a.mins); }
+function renderMedHigh(){
+  const corte=+$('#medThreshold').value||180, rs=medHighRecords();
+  $('#medHighInfo').innerHTML='<b>'+br(rs.length)+'</b> atendimento(s) com tempo igual ou superior a <b>'+corte+' minutos</b>.';
+  let rows=''; const cap=Math.min(rs.length,500);
+  for(let i=0;i<cap;i++){ const r=rs[i], cls=+r.mins>=corte*2?'critical':'warn';
+    rows+='<tr class="'+cls+'"><td>'+(r._unit||'')+'</td><td>'+r.date+'</td><td>'+r.senha+'</td><td style="text-align:left">'+r.pac+'</td><td>'+r.prio+'</td><td>'+r.cheg+'</td><td>'+r.chammed+'</td><td><b>'+r.mins+'</b></td><td>'+r.med+'</td><td>'+(TURNO_LABEL[turnoMedico(r)]||'')+'</td></tr>'; }
+  $('#tblMedHigh').innerHTML='<thead><tr><th>UNIDADE</th><th>DATA</th><th>SENHA</th><th>PACIENTE</th><th>PRIORIDADE</th><th>CHEGADA</th><th>CHAMADA MÉD.</th><th>MIN.</th><th>MÉDICO</th><th>TURNO</th></tr></thead><tbody>'+rows+'</tbody>';
+}
+function renderPage3(){
+  if(!processed.length)return;
+  $('#p3scope').textContent=currentScopeLabel(); renderMedKpis(); renderMedBuckets(); renderMedTurno(); renderMedico(); renderMedHigh();
+}
+$('#medThreshold').addEventListener('input',()=>{renderMedKpis();renderMedHigh();});
+$('#dlMedAnalise').addEventListener('click',()=>{
+  const wb=XLSX.utils.book_new();
+  const med=medicoResumo().map(x=>({MEDICO:x.med,PRODUCAO:x.q,MEDIA_MIN:+x.media.toFixed(1),MEDIANA_MIN:+x.mediana.toFixed(1),P90_MIN:+x.p90.toFixed(1),ACIMA_LIMITE:x.acima,MANHA:x.turnos.manha,TARDE:x.turnos.tarde,VESPERTINO:x.turnos.vespertino,MADRUGADA:x.turnos.madrugada}));
+  const turn=TURNOS.map(t=>{const x=medTurnoResumo()[t.key];return {TURNO:t.label,FAIXA:t.faixa,ATENDIMENTOS:x.q,MEDICOS:x.meds.size,TEMPO_MEDIO:x.mins.length?+(x.mins.reduce((a,b)=>a+b,0)/x.mins.length).toFixed(1):'',P90:x.mins.length?+percentile(x.mins,.9).toFixed(1):''};});
+  const high=medHighRecords().map(r=>({UNIDADE:r._unit||'',DATA:r.date,SENHA:r.senha,PACIENTE:r.pac,PRIORIDADE:r.prio,CHEGADA:r.cheg,CHAMADA_MEDICA:r.chammed,MINUTOS:r.mins,MEDICO:r.med,TURNO:TURNO_LABEL[turnoMedico(r)]||''}));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(med),'Por Medico');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(turn),'Por Turno');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(high),'Tempos Altos');
+  XLSX.writeFile(wb,'analise_medica_'+(monthScope.value||'periodo').replace('/','_')+'.xlsx');
+});
+
 // navegacao de paginas
 $('#pageNav').addEventListener('click',e=>{ const b=e.target.closest('.pgbtn'); if(!b) return;
   $('#pageNav').querySelectorAll('.pgbtn').forEach(x=>x.classList.remove('on')); b.classList.add('on');
   const pg=b.dataset.pg;
   $('#page1').style.display = pg==="1"?"":"none";
   $('#page2').style.display = pg==="2"?"":"none";
+  $('#page3').style.display = pg==="3"?"":"none";
   window.scrollTo({top:0,behavior:"smooth"});
 });
 
@@ -1471,7 +1614,7 @@ go.addEventListener('click',async()=>{
     setStatus("Pronto \u2014 "+processed.length+" arquivo(s), "+br(totalKept)+" atendimentos. Escolha a unidade e baixe abaixo.","ok");
     panel.style.display="block";
     $('#pageNav').style.display="flex";
-    $('#page1').style.display=""; $('#page2').style.display="none";
+    $('#page1').style.display=""; $('#page2').style.display="none"; $('#page3').style.display="none";
     $('#pageNav').querySelectorAll('.pgbtn').forEach((x,idx)=>x.classList.toggle('on',idx===0));
     result.scrollIntoView({behavior:"smooth",block:"nearest"});
     go.disabled=false;

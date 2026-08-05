@@ -1250,7 +1250,7 @@ function applyPermissions(){
   document.querySelectorAll('.perm-edit').forEach(function(el){ el.style.display = role==='visualizador' ? 'none' : ''; });
 }
 
-async function loadAll(){ await loadUnits(); await loadContracts(); await loadUsers(); }
+async function loadAll(){ await Promise.all([ loadUnits(), loadContracts(), loadUsers() ]); }
 
 async function loadUnits(){
   const FALLBACK = ['Hospital Santa Lydia','UPA Norte','UPA Sul','UPA Leste','UBS Central','CAPS','SAMU','Administração / Sede'];

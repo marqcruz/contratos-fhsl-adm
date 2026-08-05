@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Administração — TDNGo</title>
+<title>Conferência Documental — TDNGo</title>
 
 <style>
 
@@ -312,6 +312,60 @@ tr:hover td{background:var(--surface2)}
 .step-desc{font-size:13px;color:var(--text2);line-height:1.6}
 .step-desc code{background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:12px}
 .code-block{position:relative;margin-top:8px}
+.resultado-box{display:flex;gap:1rem;flex-wrap:wrap;background:var(--surface2);border-radius:12px;padding:1.2rem;margin-top:1rem;border:2px solid var(--border)}
+.resultado-box.ok{border-color:var(--green)}
+.resultado-box.alerta{border-color:var(--red)}
+.res-item{flex:1;min-width:120px;text-align:center}
+.res-item.destaque .res-num{color:var(--accent-text)}
+.res-num{font-size:28px;font-weight:800}
+.res-lbl{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.4}
+.c-blue-b{background:var(--accent-bg);color:var(--accent-text)}
+.pdf-drop{border:2px dashed var(--border);border-radius:12px;padding:1.4rem;text-align:center;cursor:pointer;color:var(--text2)}
+.pdf-drop:hover{border-color:var(--accent);color:var(--text)}
+
+
+#page-nova input[type=text],#page-nova input[type=number],#page-nova input[type=date],#page-nova input[type=time],#page-nova input[type=month],#page-nova select,#page-nova textarea{
+  width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;box-sizing:border-box}
+#page-nova .fg{margin-bottom:14px}
+#page-nova label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem;max-width:900px}
+.form-section{margin-bottom:1.6rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
+.form-section:last-of-type{border-bottom:none}
+.fsec-title{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
+.assin-canvas{border:2px dashed var(--border);border-radius:10px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair;box-shadow:inset 0 0 0 1px rgba(0,0,0,.02)}
+.assin-wrap{background:var(--surface2);border-radius:10px;padding:12px;display:inline-block}
+
+.crit-det{margin-top:4px}
+.crit-det summary{cursor:pointer;font-size:11px;color:var(--accent-text);font-weight:600;list-style:none}
+.crit-det summary::-webkit-details-marker{display:none}
+.crit-box{margin-top:6px;background:var(--surface2);border-radius:8px;padding:8px 10px}
+.crit-linha{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:5px;display:flex;gap:7px;align-items:flex-start}
+.crit-linha:last-child{margin-bottom:0}
+.crit-n{flex-shrink:0;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;color:#fff;font-weight:700;font-size:11px}
+.assin-wrap{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.assin-canvas{border:1px solid var(--border);border-radius:8px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair}
+.colab-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:10px;flex-wrap:wrap}
+.colab-row input{flex:1;min-width:180px}
+.nota-sel{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
+.aviso-fin{background:var(--yellow-bg,#fff8e6);border:1px solid #ffe08a;color:#8a6d00;padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:1.4rem}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem;max-width:920px}
+.form-section{margin-bottom:1.6rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
+.form-section:last-of-type{border-bottom:none}
+.fsec-title{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
+#page-nova input[type=text],#page-nova input[type=month],#page-nova select,#page-nova textarea{width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;box-sizing:border-box}
+#page-nova .fg{margin-bottom:14px}
+#page-nova label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.grupo-tit{font-weight:700;font-size:13px;color:var(--accent-text);margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.item-row{padding:10px 0;border-bottom:1px solid var(--border)}
+.item-txt{font-size:13px;margin-bottom:6px;line-height:1.4}
+.item-ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.item-est{padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text)}
+.item-anexos{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px}
+.anexo-chip{background:var(--surface2);border-radius:6px;padding:3px 9px;font-size:12px;color:var(--text2)}
+.anexo-chip b{cursor:pointer;color:var(--red-text);margin-left:4px;font-weight:700}
+.resumo-box{display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border-radius:10px;padding:12px 16px;font-size:13px;flex-wrap:wrap;gap:8px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg.full{grid-column:1/-1}
 </style>
 <style>
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600}
@@ -340,8 +394,8 @@ tr:hover td{background:var(--surface2)}
 <div class="login-screen" id="login-screen">
   <div class="login-box">
     <div class="login-logo">
-      <div class="icon">⚙️</div>
-      <h1>Administração</h1>
+      <div class="icon">📑</div>
+      <h1>Conferência Documental</h1>
       <p>TDN Gestão Operacional</p>
       <p style="font-size:11px;color:var(--text3);margin-top:10px">Desenvolvido por Marcos Cruz, com IA</p>
     </div>
@@ -354,8 +408,8 @@ tr:hover td{background:var(--surface2)}
 <div class="app" id="app" style="display:none">
 <aside class="sidebar">
   <div class="logo">
-    <div class="logo-icon">⚙️</div>
-    <div><div class="logo-text">Administração</div><div class="logo-sub">Cadastros e acessos</div></div>
+    <div class="logo-icon">📑</div>
+    <div><div class="logo-text">Conferência Documental</div><div class="logo-sub">Pagamento de terceirizadas</div></div>
   </div>
   <div class="user-card">
     <div class="user-avatar" id="side-avatar">?</div>
@@ -363,164 +417,89 @@ tr:hover td{background:var(--surface2)}
     <button class="user-logout" onclick="doLogout()" title="Sair">⏻</button>
   </div>
   <div class="nav-group">
-    <div class="nav-label">Gestão</div>
-    <button class="nav-item active" data-page="usuarios" onclick="showPage('usuarios',this)">👤 Usuários e permissões</button>
-    <button class="nav-item" data-page="unidades" onclick="showPage('unidades',this)">🏥 Unidades de saúde</button>
-    <button class="nav-item" data-page="locais" onclick="showPage('locais',this)">📍 Locais de chaves</button>
-    <button class="nav-item" data-page="auditoria" onclick="showPage('auditoria',this)">🕘 Auditoria</button>
-    <button class="nav-item" data-page="config" onclick="showPage('config',this)">⚙️ Configuração da planilha</button>
+    <div class="nav-label">Conferências</div>
+    <button class="nav-item active" data-page="lista" onclick="showPage('lista',this)">📋 Conferências</button>
+    <button class="nav-item" data-page="nova" onclick="showPage('nova',this)">➕ Nova conferência</button>
   </div>
-  <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">
-    
-  </div>
+  <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)"></div>
 </aside>
 <main class="main">
   <div class="topbar">
     <div class="topbar-left"><div class="page-title" id="pg-title">—</div><div class="page-sub" id="pg-sub">—</div></div>
-    <div class="topbar-right">
-      <button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema claro/escuro">🌙</button>
-      <button class="btn primary" id="btn-topo" onclick="acaoTopo()">➕ Novo</button>
-    </div>
+    <div class="topbar-right"><button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema claro/escuro">🌙</button></div>
   </div>
 
-  <!-- USUÁRIOS -->
-  <div class="page active" id="page-usuarios">
+  <!-- LISTA -->
+  <div class="page active" id="page-lista">
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-num" id="kpi-users">0</div><div class="stat-label">Usuários cadastrados</div></div>
-      <div class="stat-card c-green"><div class="stat-num" id="kpi-users-ativos">0</div><div class="stat-label">Ativos</div></div>
-      <div class="stat-card c-red"><div class="stat-num" id="kpi-users-inativos">0</div><div class="stat-label">Desativados</div></div>
+      <div class="stat-card"><div class="stat-num" id="kpi-total">0</div><div class="stat-label">Conferências</div></div>
+      <div class="stat-card c-yellow"><div class="stat-num" id="kpi-andamento">0</div><div class="stat-label">Em conferência</div></div>
+      <div class="stat-card c-green"><div class="stat-num" id="kpi-ok">0</div><div class="stat-label">Concluídas</div></div>
     </div>
     <div class="toolbar">
-      <input type="text" id="busca-user" placeholder="🔍 Buscar por nome ou e-mail..." oninput="renderUsuarios()">
-      <select id="filtro-user-status" onchange="renderUsuarios()"><option value="">Todos</option><option value="ativo">Ativos</option><option value="inativo">Desativados</option></select>
-      <button class="btn primary" onclick="openUser()">➕ Novo usuário</button>
+      <input type="text" id="busca-lista" placeholder="🔍 Buscar por nº, empresa, unidade ou mês..." oninput="renderLista()">
+      <select id="filtro-status" onchange="renderLista()"><option value="">Todos</option><option value="Em conferência">Em conferência</option><option value="Concluída">Concluída</option></select>
+      <button class="btn primary" onclick="showPage('nova')">➕ Nova conferência</button>
     </div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Módulos</th><th>Situação</th><th></th></tr></thead>
-      <tbody id="usuarios-body"></tbody>
-    </table><div class="empty-state" id="user-empty" style="display:none"><span class="empty-icon">👤</span>Nenhum usuário encontrado</div></div>
+      <thead><tr><th>Nº</th><th>Empresa</th><th>Unidade</th><th>Mês ref.</th><th>Progresso</th><th>Status</th><th></th></tr></thead>
+      <tbody id="lista-body"></tbody>
+    </table><div class="empty-state" id="lista-empty" style="display:none"><span class="empty-icon">📑</span>Nenhuma conferência registrada ainda</div></div>
   </div>
 
-  <!-- UNIDADES -->
-  <div class="page" id="page-unidades">
-    <div class="toolbar">
-      <input type="text" id="busca-uni" placeholder="🔍 Buscar unidade..." oninput="renderUnidades()">
-      <select id="filtro-uni-status" onchange="renderUnidades()"><option value="">Todas</option><option value="ativo">Ativas</option><option value="inativo">Desativadas</option></select>
-      <button class="btn primary" onclick="openUni()">➕ Nova unidade</button>
-    </div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Nome</th><th>Tipo</th><th>Cidade/UF</th><th>Responsável</th><th>Situação</th><th></th></tr></thead>
-      <tbody id="unidades-body"></tbody>
-    </table><div class="empty-state" id="uni-empty" style="display:none"><span class="empty-icon">🏥</span>Nenhuma unidade cadastrada</div></div>
-    <p style="font-size:12px;color:var(--text3);margin-top:8px">As unidades ativas aparecem automaticamente nos módulos que usam unidades (Contratos, etc.).</p>
-  </div>
+  <!-- NOVA / EDITAR -->
+  <div class="page" id="page-nova">
+    <div class="form-card">
+      <div class="aviso-fin">⚠️ O financeiro só efetua o pagamento com a <strong>nota fiscal carimbada e assinada</strong> pelo gestor do contrato e gerentes/profissional designado, com descrição e valores previamente conferidos.</div>
 
-  <!-- LOCAIS -->
-  <div class="page" id="page-locais">
-    <div class="toolbar">
-      <input type="text" id="busca-loc" placeholder="🔍 Buscar local..." oninput="renderLocais()">
-      <select id="filtro-loc-status" onchange="renderLocais()"><option value="">Todos</option><option value="ativo">Ativos</option><option value="inativo">Desativados</option></select>
-      <button class="btn primary" onclick="openLoc()">➕ Novo local</button>
-    </div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Local</th><th>Situação</th><th></th></tr></thead>
-      <tbody id="locais-body"></tbody>
-    </table><div class="empty-state" id="loc-empty" style="display:none"><span class="empty-icon">📍</span>Nenhum local cadastrado</div></div>
-    <p style="font-size:12px;color:var(--text3);margin-top:8px">Os locais ativos aparecem no módulo Chaves ao cadastrar ou movimentar uma chave.</p>
-  </div>
-
-  <!-- AUDITORIA -->
-  <div class="page" id="page-auditoria">
-    <div class="toolbar"><input type="text" id="busca-aud" placeholder="🔍 Buscar em ações, usuários..." oninput="renderAuditoria()"><button class="btn" onclick="carregarAuditoria()">🔄 Atualizar</button></div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Data/Hora</th><th>Usuário</th><th>Ação</th><th>Detalhe</th></tr></thead>
-      <tbody id="auditoria-body"></tbody>
-    </table><div class="empty-state" id="aud-empty" style="display:none"><span class="empty-icon">🕘</span>Sem registros de auditoria</div></div>
-  </div>
-
-  <!-- CONFIGURAÇÃO DA PLANILHA -->
-  <div class="page" id="page-config">
-    <div class="setup-card">
-      <div class="step"><div class="step-n">1</div><div><div class="step-title">Crie a planilha</div><div class="step-desc">Acesse <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> e crie uma planilha com o nome <strong>Contratos FHSL</strong>.</div></div></div>
-      <div class="step"><div class="step-n">2</div><div><div class="step-title">Cole o código do Apps Script</div><div class="step-desc">Na planilha: <strong>Extensões → Apps Script</strong>. Apague tudo, cole o código abaixo e ajuste no topo: <code>EMAIL_ADMIN</code> (seu e-mail) e <code>API_KEY</code> (chave Anthropic, só para leitura de PDF). <strong>Este é sempre o código mais atual do sistema.</strong></div>
-        <div style="display:flex;gap:8px;margin:8px 0;flex-wrap:wrap">
-          <button class="btn primary" onclick="copyScript()">📋 Copiar código</button>
-          <a class="btn" href="Codigo_AppsScript_FHSL.gs" target="_blank" download>⬇️ Baixar .gs</a>
-          <button class="btn" onclick="carregarScript()">🔄 Recarregar código</button>
+      <div class="form-section">
+        <div class="fsec-title">📋 Identificação</div>
+        <div class="form-grid">
+          <input type="hidden" id="cf-id">
+          <div class="fg"><label>Contrato vinculado *</label><select id="cf-contrato" onchange="contratoMudou()"><option value="">Selecione...</option></select></div>
+          <div class="fg"><label>Nº da conferência</label><input type="text" id="cf-numero" placeholder="(automático)" readonly style="opacity:.7"></div>
+          <div class="fg"><label>Empresa contratada</label><input type="text" id="cf-empresa" placeholder="(vem do contrato)"></div>
+          <div class="fg"><label>CNPJ</label><input type="text" id="cf-cnpj" placeholder="(vem do contrato)"></div>
+          <div class="fg"><label>Unidade *</label><select id="cf-unidade"></select></div>
+          <div class="fg"><label>Mês de referência *</label><input type="month" id="cf-mesref"></div>
+          <div class="fg full"><label>Nota(s) fiscal(is) nº(s)</label><input type="text" id="cf-nf" placeholder="Ex: 1234, 1235"></div>
         </div>
-        <div class="code-block"><pre id="script-pre" style="white-space:pre-wrap;max-height:340px;overflow:auto;font-size:11px;background:var(--surface2);padding:12px;border-radius:8px">Carregando código...</pre></div></div></div>
-      <div class="step"><div class="step-n">3</div><div><div class="step-title">Crie a coluna de módulos e chaves (automático)</div><div class="step-desc">Rode uma vez a função <strong>repair</strong> no editor do Apps Script, ou apenas publique — o sistema cria sozinho as abas e colunas que faltam (usuários, unidades, locais, chaves, movimentações).</div></div></div>
-      <div class="step"><div class="step-n">4</div><div><div class="step-title">Ative o e-mail diário de vencimentos</div><div class="step-desc">Ícone de relógio ⏰ (Gatilhos) → <strong>Adicionar gatilho</strong> → função <strong>verificarVencimentos</strong> · Temporizador por dia · 8h–9h.</div></div></div>
-      <div class="step"><div class="step-n">5</div><div><div class="step-title">Publique como app web</div><div class="step-desc"><strong>Implantar → Gerenciar implantações → editar (lápis) → Versão: Nova versão → Implantar</strong>. Executar como: você. Acesso: qualquer pessoa. <strong>A URL já está travada no sistema</strong> — republicando com a mesma implantação, a URL não muda. Se gerar URL nova, avise para atualizar.</div></div></div>
-      <div class="step"><div class="step-n">6</div><div><div class="step-title">Pasta de PDFs (automática)</div><div class="step-desc">Na primeira vez que anexar um PDF, o script cria sozinho a pasta <strong>"Contratos FHSL - PDFs"</strong> no Google Drive.</div></div></div>
+      </div>
+
+      <div class="form-section">
+        <div class="fsec-title">📝 Documentos <span style="font-weight:400;font-size:12px;color:var(--text3)">— marque o status e anexe os PDFs de cada item</span></div>
+        <div id="itens-container"></div>
+      </div>
+
+      <div class="form-section">
+        <div class="fsec-title">👥 Profissionais sócios</div>
+        <div class="fg"><label>A empresa tem, na mão de obra alocada, profissionais sócios?</label>
+          <select id="cf-socios" onchange="toggleSocios()"><option value="Não">Não (guias de sócios dispensadas)</option><option value="Sim">Sim (preencher guias de sócios)</option></select></div>
+        <div id="itens-socios" style="display:none"></div>
+      </div>
+
+      <div class="form-section">
+        <div class="fsec-title">📝 Observações</div>
+        <textarea id="cf-obs" rows="4" placeholder="Observações gerais da conferência..." style="width:100%;padding:11px 13px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;resize:vertical"></textarea>
+      </div>
+
+      <div class="resumo-box" id="resumo-box">
+        <div><strong id="rs-marcados">0</strong> marcados · <strong id="rs-na">0</strong> não se aplica · <strong id="rs-pend" style="color:var(--red-text)">0</strong> pendentes</div>
+        <div style="font-size:12px;color:var(--text2)" id="rs-pdfs">0 PDFs anexados (0 MB)</div>
+      </div>
+
+      <div class="toolbar" style="margin-top:1rem;flex-wrap:wrap">
+        <button class="btn" onclick="showPage('lista')">Cancelar</button>
+        <div style="flex:1"></div>
+        <button class="btn" onclick="imprimirChecklist()">🖨️ Imprimir checklist</button>
+        <button class="btn" onclick="compilarPDF()" id="btn-compilar">📎 Compilar PDF final</button>
+        <button class="btn" onclick="salvarConf('Em conferência')">💾 Salvar</button>
+        <button class="btn primary" onclick="salvarConf('Concluída')">✅ Concluir conferência</button>
+      </div>
+      <div id="compilar-status" style="font-size:12px;color:var(--text2);margin-top:8px"></div>
     </div>
-    <div id="diag-box" style="margin-top:1rem;font-size:13px;color:var(--text2)"></div>
   </div>
 </main>
-</div>
-
-<!-- MODAL USUÁRIO -->
-<div class="modal-overlay" id="modal-user" onclick="if(event.target.id==='modal-user')closeUser()">
-  <div class="modal">
-    <div class="mhead"><div class="mtitle" id="user-title">Novo usuário</div><button class="mclose" onclick="closeUser()">✕</button></div>
-    <div class="mbody">
-      <input type="hidden" id="us-id">
-      <div class="form-grid">
-        <div class="fg full"><label>Nome *</label><input type="text" id="us-nome" placeholder="Nome completo"></div>
-        <div class="fg full"><label>E-mail *</label><input type="email" id="us-email" placeholder="email@fhsl.org.br"></div>
-        <div class="fg full"><label>Senha</label><input type="password" id="us-senha" placeholder="Mínimo 6 caracteres"></div>
-        <div class="fg"><label>Perfil *</label><select id="us-role" onchange="toggleModulosBox()">
-          <option value="visualizador">Visualizador (só leitura)</option>
-          <option value="gestor">Gestor (edita, não exclui)</option>
-          <option value="cadastros">Gestor de cadastros (Admin)</option>
-          <option value="admin">Administrador (acesso total)</option>
-        </select></div>
-        <div class="fg"><label>Situação</label><select id="us-ativo"><option value="true">Ativo</option><option value="false">Desativado</option></select></div>
-      </div>
-      <div class="fg" id="us-modulos-box" style="margin-top:12px">
-        <label>Módulos que este usuário pode acessar</label>
-        <div id="us-modulos" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px"></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px">Se nenhum for marcado, o usuário verá todos os módulos (padrão).</div>
-      </div>
-      <div id="us-modulos-admin" style="display:none;font-size:12px;color:var(--text2);background:var(--surface2);padding:8px 10px;border-radius:7px;margin-top:12px">👑 Administrador tem acesso a todos os módulos automaticamente.</div>
-    </div>
-    <div class="mfoot"><button class="btn" onclick="closeUser()">Cancelar</button><button class="btn primary" onclick="saveUser()">Salvar</button></div>
-  </div>
-</div>
-
-<!-- MODAL UNIDADE -->
-<div class="modal-overlay" id="modal-uni" onclick="if(event.target.id==='modal-uni')closeUni()">
-  <div class="modal">
-    <div class="mhead"><div class="mtitle" id="uni-title">Nova unidade</div><button class="mclose" onclick="closeUni()">✕</button></div>
-    <div class="mbody">
-      <input type="hidden" id="un-id">
-      <div class="form-grid">
-        <div class="fg full"><label>Nome *</label><input type="text" id="un-nome" placeholder="Ex: UPA Norte"></div>
-        <div class="fg"><label>Tipo</label><select id="un-tipo"><option>UPA</option><option>Hospital</option><option>PA</option><option>UBS</option><option>Sede</option><option>Outro</option></select></div>
-        <div class="fg"><label>Situação</label><select id="un-ativo"><option value="true">Ativa</option><option value="false">Desativada</option></select></div>
-        <div class="fg"><label>Cidade</label><input type="text" id="un-cidade" placeholder="Ribeirão Preto"></div>
-        <div class="fg"><label>UF</label><input type="text" id="un-uf" placeholder="SP" maxlength="2"></div>
-        <div class="fg full"><label>Responsável</label><input type="text" id="un-resp" placeholder="Nome do responsável"></div>
-        <div class="fg full"><label>Telefone</label><input type="text" id="un-tel" placeholder="(16) 0000-0000"></div>
-      </div>
-    </div>
-    <div class="mfoot"><button class="btn" onclick="closeUni()">Cancelar</button><button class="btn primary" onclick="saveUni()">Salvar</button></div>
-  </div>
-</div>
-
-<!-- MODAL LOCAL -->
-<div class="modal-overlay" id="modal-loc" onclick="if(event.target.id==='modal-loc')closeLoc()">
-  <div class="modal" style="max-width:420px">
-    <div class="mhead"><div class="mtitle" id="loc-title">Novo local</div><button class="mclose" onclick="closeLoc()">✕</button></div>
-    <div class="mbody">
-      <input type="hidden" id="lo-id">
-      <div class="form-grid">
-        <div class="fg full"><label>Nome do local *</label><input type="text" id="lo-nome" placeholder="Ex: Garagem, Recepção, 2º andar"></div>
-        <div class="fg full"><label>Situação</label><select id="lo-ativo"><option value="true">Ativo</option><option value="false">Desativado</option></select></div>
-      </div>
-    </div>
-    <div class="mfoot"><button class="btn" onclick="closeLoc()">Cancelar</button><button class="btn primary" onclick="saveLoc()">Salvar</button></div>
-  </div>
 </div>
 
 <div class="notif-toast" id="notif" style="display:none"></div>
@@ -569,20 +548,47 @@ window.addEventListener('DOMContentLoaded', function(){
   if(s){ try{ currentUser=JSON.parse(s); startApp(); }catch(e){} }
 });
 const PAGE_META = {
-  usuarios:['Usuários e permissões','Quem acessa o sistema e o que cada um vê'],
-  unidades:['Unidades de saúde','Compartilhadas com Contratos e demais módulos'],
-  locais:['Locais de chaves','Onde as chaves ficam guardadas'],
-  auditoria:['Auditoria','Registro de ações no sistema']
+  lista:['Conferências Documentais','Controle de documentos para pagamento'],
+  nova:['Conferência Documental','Marque os itens e anexe os PDFs']
 };
-const MODULOS_SISTEMA = [
-  ['contratos','📋 Contratos'],['cg','🏛️ Contratos de Gestão'],
-  ['risco','🎯 Classificação de Risco'],['painel_ubs','🏥 Painel UBS'],
-  ['painel_upas','📈 Especialidades UPAs'],['malotes','📦 Malotes'],
-  ['visitantes','🪪 Visitantes'],['chaves','🔑 Chaves'],['limpeza','🧹 Avaliação de Limpeza'],['conferencia','📑 Conferência Documental'],['admin','⚙️ Administração']
+// Grupos e itens do roteiro
+const GRUPOS = [
+  { g:'Notas fiscais e lançamentos', itens:[
+    'Nota(s) fiscal(is) carimbada(s) e assinada(s) pelo gestor e gerentes, com descrição e valores conferidos',
+    'Pedido da nota fiscal no SisHosp',
+    'Entrada da nota fiscal no SisHosp',
+    'Relação de colaboradores para validar a conferência de cada item' ]},
+  { g:'Documentos gerais', itens:[
+    'Declaração de Optantes pelo Simples Nacional por NF, assinada pela representante',
+    'Declaração com relação dos profissionais que atuaram em cada unidade, assinada e validada',
+    'Escala da competência',
+    'Relatório da SEFIP da empresa conforme NF, com conferência prévia dos profissionais',
+    'Guia GPS + comprovante de pagamento bancário (DCTFWeb)',
+    'Guia do FGTS + comprovante de pagamento bancário',
+    'Cópia dos cartões de ponto dos funcionários (mês anterior)',
+    'Cópia dos holerites dos funcionários (mês anterior)',
+    'Comprovante de depósito bancário do salário de cada funcionário',
+    'Comprovante assinado de recebimento de cesta básica / vale alimentação / outra espécie',
+    'Comprovante de depósito de FGTS individualizado na conta vinculada',
+    'Novas admissões: contrato de trabalho, ASO admissional e ficha de empregado',
+    'Demissões: TRCT, verbas rescisórias, depósito da rescisão, multa/FGTS e guias de seguro-desemprego' ]},
+  { g:'CNDs atualizadas', itens:[
+    'Certidão Negativa de Débitos Trabalhistas (CNDT)',
+    'Certificado de Regularidade do FGTS (CRF)',
+    'Certidão Negativa do Ministério da Fazenda (CND Federal)',
+    'Certidão Negativa de Tributos Mobiliários (CND Municipal)',
+    'Certidão Negativa de Débitos Inscritos na Dívida Ativa do Estado',
+    'Certidão Negativa de Falência' ]}
 ];
-const ROLE_LABEL = { admin:'Administrador', gestor:'Gestor', cadastros:'Gestor de cadastros', visualizador:'Visualizador' };
-let usuarios=[], unidades=[], locais=[], auditoria=[];
-let paginaAtual='usuarios';
+const GRUPO_SOCIOS = { g:'Complemento — mão de obra com sócios', itens:[
+  'Declaração de que o serviço foi prestado por sócio, em profissão regulamentada, sem concurso de empregados (ou consignar na NF)',
+  'Comprovação da forma de distribuição de resultados dos sócios (acordo dos sócios e cumprimento)',
+  'Comprovante de pagamento (holerite) na competência da prestação de serviço' ]};
+
+const ESTADOS = [ {v:'ok',l:'✔️ Marcado'},{v:'na',l:'➖ Não se aplica'},{v:'pend',l:'⏳ Pendente'} ];
+
+let conferencias=[], unidades=[], contratos=[], editId=null;
+let anexos={}; // { itemKey: [{nome, bytes(Uint8Array), size}] }
 
 function startApp(){
   document.getElementById('login-screen').style.display='none';
@@ -592,295 +598,285 @@ function startApp(){
   const cores={admin:'#86198f',cadastros:'#0f766e',gestor:'#1d6aad',visualizador:'#5c5c58'};
   document.getElementById('side-avatar').style.background = cores[currentUser.role]||'#1d6aad';
   document.getElementById('side-name').textContent = currentUser.nome;
-  document.getElementById('side-role').textContent = ROLE_LABEL[currentUser.role]||currentUser.role;
-  // trava de acesso: só admin e gestor de cadastros
-  if(!podeAdmin()){
-    document.getElementById('app').innerHTML =
-      '<div style="margin:auto;text-align:center;padding:3rem"><div style="font-size:40px">🔒</div>'
-      +'<h2 style="margin:12px 0">Acesso restrito</h2>'
-      +'<p style="color:var(--text2)">Este módulo é exclusivo para administradores e gestores de cadastros.</p>'
-      +'<a class="btn primary" href="index.html" style="margin-top:16px;display:inline-block">← Voltar aos módulos</a></div>';
-    return;
-  }
-  carregarTudo();
+  document.getElementById('side-role').textContent = ({admin:'Administrador',gestor:'Gestor',cadastros:'Gestor de cadastros',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
+  montarItens();
+  carregar();
 }
-function podeAdmin(){ return currentUser && (currentUser.role==='admin' || currentUser.role==='cadastros'); }
-function ehAdmin(){ return currentUser && currentUser.role==='admin'; }
+function podeEditar(){ return currentUser && (currentUser.role==='admin'||currentUser.role==='gestor'||currentUser.role==='cadastros'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+function fmtMes(v){ if(!v) return '—'; const s=String(v); let m=s.match(/^(\d{4})-(\d{2})/); if(!m){ const d=new Date(s); if(!isNaN(d.getTime())) return MESES[d.getMonth()]+'/'+d.getFullYear(); return v; } return MESES[parseInt(m[2],10)-1]+'/'+m[1]; }
+function normMes(v){ if(!v) return ''; const s=String(v); if(/^\d{4}-\d{2}$/.test(s)) return s; const d=new Date(s); if(isNaN(d.getTime())) return s.slice(0,7); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
 
 function showPage(id, btn){
-  paginaAtual=id;
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   const pg=document.getElementById('page-'+id); if(pg) pg.classList.add('active');
   if(btn) btn.classList.add('active'); else { const nb=document.querySelector('[data-page="'+id+'"]'); if(nb) nb.classList.add('active'); }
   const m=PAGE_META[id]||['','']; document.getElementById('pg-title').textContent=m[0]; document.getElementById('pg-sub').textContent=m[1];
-  const bt=document.getElementById('btn-topo');
-  if(id==='usuarios'){ bt.textContent='➕ Novo usuário'; bt.style.display=''; }
-  else if(id==='unidades'){ bt.textContent='➕ Nova unidade'; bt.style.display=''; }
-  else if(id==='locais'){ bt.textContent='➕ Novo local'; bt.style.display=''; }
-  else { bt.style.display='none'; }
-  if(id==='auditoria') carregarAuditoria();
-  if(id==='config'){ if(!scriptCodeCache) carregarScript(); verificarDiag(); }
-  render();
+  if(id==='nova' && !editId) novaConf();
+  if(id==='lista') renderLista();
 }
-function acaoTopo(){ if(paginaAtual==='usuarios')openUser(); else if(paginaAtual==='unidades')openUni(); else if(paginaAtual==='locais')openLoc(); }
 
-async function carregarTudo(){
+async function carregar(){
   try{
-    const r = await apiFetch('getadmin');
-    if(r && r.ok && (r.usuarios || r.unidades || r.locais)){
-      usuarios=r.usuarios||[]; unidades=r.unidades||[]; locais=r.locais||[];
-    } else {
-      // fallback: rotas individuais (caso getadmin ainda não esteja publicado)
-      const [ru, rn, rl] = await Promise.all([ apiFetch('getusers'), apiFetch('getunits'), apiFetch('getlocais') ]);
-      usuarios = (ru && ru.ok && ru.data) ? ru.data : [];
-      unidades = (rn && rn.ok && rn.data) ? rn.data : [];
-      locais   = (rl && rl.ok && rl.data) ? rl.data : [];
+    const [rc, ra, rk] = await Promise.all([ apiFetch('getconferencia'), apiFetch('getadmin'), apiFetch('getcontratoslist') ]);
+    if(rc.ok) conferencias=rc.data||[];
+    if(ra.ok) unidades=(ra.unidades||[]).filter(function(u){ return String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'; });
+    if(rk.ok) contratos=rk.data||[];
+    preencherUnidades(); preencherContratos(); renderLista();
+  }catch(e){ showNotif('Erro ao carregar. Verifique a conexão.','err'); }
+}
+function preencherUnidades(){
+  const s=document.getElementById('cf-unidade');
+  if(s) s.innerHTML='<option value="">Selecione...</option>'+unidades.map(function(u){return '<option>'+esc(u.Nome)+'</option>';}).join('');
+}
+function preencherContratos(){
+  const s=document.getElementById('cf-contrato'); if(!s) return;
+  s.innerHTML='<option value="">Selecione...</option>'+contratos.map(function(c){return '<option value="'+c.id+'">'+esc(c.numero)+(c.empresa?(' — '+esc(c.empresa)):'')+'</option>';}).join('');
+}
+function contratoMudou(){
+  const id=document.getElementById('cf-contrato').value;
+  const c=contratos.find(function(x){return String(x.id)===String(id);});
+  if(c){ if(c.empresa) document.getElementById('cf-empresa').value=c.empresa; if(c.cnpj) document.getElementById('cf-cnpj').value=c.cnpj; }
+}
+
+// ── Itens (checklist com PDFs) ──
+function itemKey(gi, ii){ return 'g'+gi+'i'+ii; }
+function montarItens(){
+  let html='';
+  GRUPOS.forEach(function(grupo, gi){
+    html+='<div class="grupo-tit">'+esc(grupo.g)+'</div>';
+    grupo.itens.forEach(function(item, ii){ html+=linhaItem(gi, ii, item); });
+  });
+  document.getElementById('itens-container').innerHTML=html;
+  // grupo de sócios (separado)
+  let hs='<div class="grupo-tit">'+esc(GRUPO_SOCIOS.g)+'</div>';
+  GRUPO_SOCIOS.itens.forEach(function(item, ii){ hs+=linhaItem('S', ii, item); });
+  document.getElementById('itens-socios').innerHTML=hs;
+}
+function linhaItem(gi, ii, texto){
+  const key=itemKey(gi,ii);
+  const ops=ESTADOS.map(function(e){return '<option value="'+e.v+'">'+e.l+'</option>';}).join('');
+  return '<div class="item-row" id="row-'+key+'">'
+    +'<div class="item-txt">'+esc(texto)+'</div>'
+    +'<div class="item-ctrl">'
+    +'<select class="item-est" data-key="'+key+'" onchange="atualizaResumo()">'+ops+'</select>'
+    +'<button class="btn sm" type="button" onclick="anexarPdf(\''+key+'\')">📎 PDF</button>'
+    +'</div>'
+    +'<div class="item-anexos" id="anexos-'+key+'"></div></div>';
+}
+function anexarPdf(key){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.pdf'; inp.multiple=true;
+  inp.onchange=function(){
+    if(!anexos[key]) anexos[key]=[];
+    Array.prototype.forEach.call(inp.files, function(f){
+      const reader=new FileReader();
+      reader.onload=function(){ anexos[key].push({ nome:f.name, bytes:new Uint8Array(reader.result), size:f.size }); renderAnexos(key); atualizaResumo(); };
+      reader.readAsArrayBuffer(f);
+    });
+  };
+  inp.click();
+}
+function renderAnexos(key){
+  const cont=document.getElementById('anexos-'+key); if(!cont) return;
+  const lista=anexos[key]||[];
+  cont.innerHTML=lista.map(function(a,idx){ return '<span class="anexo-chip">📄 '+esc(a.nome)+' <b onclick="removerAnexo(\''+key+'\','+idx+')">✕</b></span>'; }).join('');
+}
+function removerAnexo(key, idx){ anexos[key].splice(idx,1); renderAnexos(key); atualizaResumo(); }
+
+function coletarItens(){
+  const out={};
+  document.querySelectorAll('.item-est').forEach(function(sel){ out[sel.getAttribute('data-key')]=sel.value; });
+  return out;
+}
+function atualizaResumo(){
+  const itens=coletarItens(); let ok=0,na=0,pend=0;
+  Object.keys(itens).forEach(function(k){ if(itens[k]==='ok')ok++; else if(itens[k]==='na')na++; else pend++; });
+  document.getElementById('rs-marcados').textContent=ok;
+  document.getElementById('rs-na').textContent=na;
+  document.getElementById('rs-pend').textContent=pend;
+  let nPdf=0, bytes=0;
+  Object.keys(anexos).forEach(function(k){ (anexos[k]||[]).forEach(function(a){ nPdf++; bytes+=a.size; }); });
+  document.getElementById('rs-pdfs').textContent=nPdf+' PDFs anexados ('+(bytes/1048576).toFixed(1)+' MB)';
+}
+function toggleSocios(){ document.getElementById('itens-socios').style.display = document.getElementById('cf-socios').value==='Sim'?'block':'none'; }
+
+function novaConf(){
+  editId=null; anexos={};
+  document.getElementById('cf-id').value='';
+  ['cf-numero','cf-empresa','cf-cnpj','cf-mesref','cf-nf','cf-obs'].forEach(function(k){document.getElementById(k).value='';});
+  document.getElementById('cf-contrato').value=''; document.getElementById('cf-unidade').value='';
+  document.getElementById('cf-socios').value='Não'; toggleSocios();
+  document.querySelectorAll('.item-est').forEach(function(s){ s.value='pend'; });
+  document.querySelectorAll('.item-anexos').forEach(function(a){ a.innerHTML=''; });
+  document.getElementById('compilar-status').textContent='';
+  atualizaResumo();
+}
+function editarConf(id){
+  const c=conferencias.find(function(x){return String(x.ID)===String(id);}); if(!c) return;
+  editId=id; anexos={};
+  showPage('nova');
+  document.getElementById('cf-id').value=id;
+  document.getElementById('cf-numero').value=c.Numero||'';
+  document.getElementById('cf-contrato').value=c.ContratoID||'';
+  document.getElementById('cf-empresa').value=c.Empresa||'';
+  document.getElementById('cf-cnpj').value=c.CNPJ||'';
+  document.getElementById('cf-unidade').value=c.Unidade||'';
+  document.getElementById('cf-mesref').value=normMes(c.MesRef);
+  document.getElementById('cf-nf').value=c.NotaFiscal||'';
+  document.getElementById('cf-obs').value=c.Observacoes||'';
+  document.getElementById('cf-socios').value=c.TemSocios||'Não'; toggleSocios();
+  const itens=c.ItensObj||{};
+  document.querySelectorAll('.item-est').forEach(function(s){ const k=s.getAttribute('data-key'); s.value=itens[k]||'pend'; });
+  document.querySelectorAll('.item-anexos').forEach(function(a){ a.innerHTML=''; });
+  document.getElementById('compilar-status').textContent='Os PDFs não ficam salvos — reanexe se for compilar novamente.';
+  atualizaResumo();
+}
+
+async function salvarConf(statusAlvo){
+  if(!podeEditar()){ showNotif('Sem permissão.','err'); return; }
+  const contrato=document.getElementById('cf-contrato').value;
+  const unidade=document.getElementById('cf-unidade').value;
+  const mes=document.getElementById('cf-mesref').value;
+  if(!contrato){ showNotif('Selecione o contrato.','err'); return; }
+  if(!unidade){ showNotif('Selecione a unidade.','err'); return; }
+  if(!mes){ showNotif('Informe o mês de referência.','err'); return; }
+  const c=contratos.find(function(x){return String(x.id)===String(contrato);})||{};
+  const payload={ ID:editId||'', Unidade:unidade, MesRef:mes, ContratoID:contrato, ContratoNum:c.numero||'',
+    Empresa:document.getElementById('cf-empresa').value.trim(), CNPJ:document.getElementById('cf-cnpj').value.trim(),
+    NotaFiscal:document.getElementById('cf-nf').value.trim(), TemSocios:document.getElementById('cf-socios').value,
+    Itens:coletarItens(), Observacoes:document.getElementById('cf-obs').value.trim(), Status:statusAlvo,
+    __actor:{ nome:currentUser.nome, email:currentUser.email } };
+  showNotif('Salvando...','info');
+  const r=await apiFetch('saveconferencia', payload);
+  if(r.ok){ showNotif('Conferência salva.','ok'); editId=null; carregar(); showPage('lista'); }
+  else showNotif(r.message||'Erro ao salvar.','err');
+}
+
+// ── Lista ──
+function renderLista(){
+  const q=(document.getElementById('busca-lista')?.value||'').toLowerCase();
+  const fs=document.getElementById('filtro-status')?.value||'';
+  let lista=conferencias.filter(function(c){
+    if(q && !((c.Numero+' '+c.Empresa+' '+c.Unidade+' '+c.MesRef).toLowerCase().includes(q))) return false;
+    if(fs && c.Status!==fs) return false;
+    return true;
+  });
+  const and=conferencias.filter(function(c){return c.Status==='Em conferência';}).length;
+  const ok=conferencias.filter(function(c){return c.Status==='Concluída';}).length;
+  document.getElementById('kpi-total').textContent=conferencias.length;
+  document.getElementById('kpi-andamento').textContent=and;
+  document.getElementById('kpi-ok').textContent=ok;
+  document.getElementById('lista-empty').style.display=lista.length?'none':'block';
+  const badge=function(st){ return st==='Concluída'?'<span class="badge c-green-b">✅ Concluída</span>':'<span class="badge c-yellow-b">⏳ Em conferência</span>'; };
+  document.getElementById('lista-body').innerHTML=lista.map(function(c){
+    const itens=c.ItensObj||{}; let ok=0,tot=0; Object.keys(itens).forEach(function(k){ tot++; if(itens[k]==='ok')ok++; });
+    const prog=tot?Math.round(ok/tot*100):0;
+    const acoes=(podeEditar()?'<button class="btn sm" onclick="editarConf(\''+c.ID+'\')">✏️</button>':'<button class="btn sm" onclick="editarConf(\''+c.ID+'\')">👁️</button>')
+      +(currentUser.role==='admin'?' <button class="btn sm danger" onclick="delConf(\''+c.ID+'\')">🗑️</button>':'');
+    return '<tr><td><strong>'+esc(c.Numero)+'</strong></td><td>'+esc(c.Empresa)+'</td><td>'+esc(c.Unidade)+'</td>'
+      +'<td>'+fmtMes(c.MesRef)+'</td><td>'+ok+' ok · '+prog+'%</td><td>'+badge(c.Status)+'</td>'
+      +'<td style="white-space:nowrap">'+acoes+'</td></tr>';
+  }).join('');
+}
+async function delConf(id){
+  if(!confirm('Excluir esta conferência?')) return;
+  const r=await apiFetch('deleteconferencia', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  if(r.ok){ showNotif('Excluída.','ok'); carregar(); } else showNotif(r.message||'Erro.','err');
+}
+
+// ── Compilar PDF (merge no navegador via pdf-lib) ──
+async function compilarPDF(){
+  const st=document.getElementById('compilar-status');
+  // reúne todos os anexos na ordem dos itens
+  let ordem=[];
+  GRUPOS.forEach(function(g,gi){ g.itens.forEach(function(_,ii){ const k=itemKey(gi,ii); if(anexos[k]) ordem.push({key:k, grupo:g.g}); }); });
+  if(document.getElementById('cf-socios').value==='Sim'){ GRUPO_SOCIOS.itens.forEach(function(_,ii){ const k=itemKey('S',ii); if(anexos[k]) ordem.push({key:k, grupo:GRUPO_SOCIOS.g}); }); }
+  let total=0; ordem.forEach(function(o){ total+=anexos[o.key].length; });
+  if(total===0){ showNotif('Nenhum PDF anexado para compilar.','err'); return; }
+  st.textContent='Carregando biblioteca de PDF...';
+  try{
+    await garantirPdfLib();
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const merged = await PDFDocument.create();
+    const font = await merged.embedFont(StandardFonts.Helvetica);
+    let feitos=0;
+    for(const o of ordem){
+      for(const a of anexos[o.key]){
+        st.textContent='Juntando '+(feitos+1)+' de '+total+': '+a.nome;
+        try{
+          const src = await PDFDocument.load(a.bytes, { ignoreEncryption:true });
+          const pages = await merged.copyPages(src, src.getPageIndices());
+          pages.forEach(function(pg){ merged.addPage(pg); });
+        }catch(e){ st.textContent='⚠️ Falha em '+a.nome+' (PDF protegido ou inválido) — pulando'; }
+        feitos++;
+        await new Promise(function(r){ setTimeout(r,10); });
+      }
     }
-    render();
-  }catch(e){
-    // último recurso: tenta rotas individuais
-    try{
-      const [ru, rn, rl] = await Promise.all([ apiFetch('getusers'), apiFetch('getunits'), apiFetch('getlocais') ]);
-      usuarios = (ru && ru.ok && ru.data) ? ru.data : [];
-      unidades = (rn && rn.ok && rn.data) ? rn.data : [];
-      locais   = (rl && rl.ok && rl.data) ? rl.data : [];
-      render();
-    }catch(e2){ showNotif('Erro ao carregar dados. Verifique a conexão e a publicação do Apps Script.','err'); }
+    // numeração de página no rodapé
+    const paginas = merged.getPages();
+    paginas.forEach(function(pg, i){
+      const { width } = pg.getSize();
+      pg.drawText((i+1)+' / '+paginas.length, { x: width-70, y: 15, size:9, font:font, color:rgb(0.4,0.4,0.4) });
+    });
+    const bytes = await merged.save();
+    const blob = new Blob([bytes], { type:'application/pdf' });
+    const emp=(document.getElementById('cf-empresa').value||'empresa').replace(/[^a-zA-Z0-9]/g,'_');
+    const mes=(document.getElementById('cf-mesref').value||'');
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Conferencia_'+emp+'_'+mes+'.pdf'; a.click();
+    st.textContent='✅ PDF compilado gerado ('+paginas.length+' páginas).';
+    showNotif('PDF compilado gerado!','ok');
+  }catch(e){ st.textContent='Erro ao compilar: '+e.message; showNotif('Erro ao compilar PDF.','err'); }
+}
+function garantirPdfLib(){
+  return new Promise(function(resolve, reject){
+    if(window.PDFLib) return resolve();
+    const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+    s.onload=resolve; s.onerror=function(){ reject(new Error('Não foi possível carregar a biblioteca de PDF (verifique a internet).')); };
+    document.head.appendChild(s);
+  });
+}
+
+// ── Imprimir checklist ──
+function imprimirChecklist(){
+  const emp=document.getElementById('cf-empresa').value||'—';
+  const cnpj=document.getElementById('cf-cnpj').value||'—';
+  const un=document.getElementById('cf-unidade').value||'—';
+  const mes=fmtMes(document.getElementById('cf-mesref').value);
+  const nf=document.getElementById('cf-nf').value||'—';
+  const obs=document.getElementById('cf-obs').value||'';
+  const itens=coletarItens();
+  const lblEst={ok:'☑ Marcado', na:'➖ Não se aplica', pend:'☐ Pendente'};
+  let corpo='';
+  function bloco(grupo, gi){
+    let linhas='';
+    grupo.itens.forEach(function(item, ii){ const k=(gi==='S')?itemKey('S',ii):itemKey(gi,ii); const est=itens[k]||'pend';
+      linhas+='<tr><td>'+item+'</td><td style="white-space:nowrap;text-align:center">'+lblEst[est]+'</td></tr>'; });
+    return '<h3>'+grupo.g+'</h3><table>'+linhas+'</table>';
   }
-}
-function render(){ renderUsuarios(); renderUnidades(); renderLocais(); }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
-function ativoBool(v){ return String(v)!=='false' && String(v)!=='FALSE' && v!==false; }
-function badgeAtivo(v){ return ativoBool(v) ? '<span class="badge c-green-b">🟢 Ativo</span>' : '<span class="badge c-red-b">⚫ Desativado</span>'; }
-
-// ── Usuários ──
-function renderUsuarios(){
-  const q=(document.getElementById('busca-user')?.value||'').toLowerCase();
-  const fs=document.getElementById('filtro-user-status')?.value||'';
-  let lista=usuarios.filter(function(u){
-    const alvo=((u.Nome||u.nome||'')+' '+(u.Email||u.email||'')).toLowerCase();
-    if(q && alvo.indexOf(q)<0) return false;
-    const at=ativoBool(u.Ativo!==undefined?u.Ativo:u.ativo);
-    if(fs==='ativo' && !at) return false;
-    if(fs==='inativo' && at) return false;
-    return true;
-  });
-  const ativos=usuarios.filter(function(u){return ativoBool(u.Ativo!==undefined?u.Ativo:u.ativo);}).length;
-  document.getElementById('kpi-users').textContent=usuarios.length;
-  document.getElementById('kpi-users-ativos').textContent=ativos;
-  document.getElementById('kpi-users-inativos').textContent=usuarios.length-ativos;
-  document.getElementById('user-empty').style.display=lista.length?'none':'block';
-  document.getElementById('usuarios-body').innerHTML=lista.map(function(u){
-    const id=u.ID||u.id, nome=u.Nome||u.nome, email=u.Email||u.email, role=u.Role||u.role;
-    const mods=(u.Modulos||u.modulos||''); const at=ativoBool(u.Ativo!==undefined?u.Ativo:u.ativo);
-    const modTxt = role==='admin' ? 'Todos' : (mods? String(mods).split(',').length+' módulo(s)' : 'Todos');
-    return '<tr'+(at?'':' style="opacity:.55"')+'><td><strong>'+esc(nome)+'</strong></td><td>'+esc(email)+'</td>'
-      +'<td>'+esc(ROLE_LABEL[role]||role)+'</td><td style="font-size:12px;color:var(--text2)">'+modTxt+'</td>'
-      +'<td>'+badgeAtivo(at)+'</td>'
-      +'<td><button class="btn sm" onclick="openUser(\''+id+'\')">✏️</button> '
-      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleUser(\''+id+'\','+(!at)+')">'+(at?'⏸️':'▶️')+'</button>'
-      +(ehAdmin()?' <button class="btn sm danger" onclick="delUser(\''+id+'\')">🗑️</button>':'')+'</td></tr>';
-  }).join('');
-}
-function montarModulos(marcados){
-  const sel=(marcados||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
-  document.getElementById('us-modulos').innerHTML = MODULOS_SISTEMA.map(function(m){
-    const ck=sel.indexOf(m[0])>=0?'checked':'';
-    return '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;text-transform:none">'
-      +'<input type="checkbox" class="us-mod-ck" value="'+m[0]+'" '+ck+' style="width:15px;height:15px"> '+m[1]+'</label>';
-  }).join('');
-}
-function toggleModulosBox(){
-  const admin=document.getElementById('us-role').value==='admin';
-  document.getElementById('us-modulos-box').style.display=admin?'none':'block';
-  document.getElementById('us-modulos-admin').style.display=admin?'block':'none';
-}
-function openUser(id){
-  document.getElementById('us-id').value=id||'';
-  document.getElementById('user-title').textContent=id?'Editar usuário':'Novo usuário';
-  document.getElementById('us-nome').value=''; document.getElementById('us-email').value='';
-  document.getElementById('us-senha').value=''; document.getElementById('us-role').value='visualizador';
-  document.getElementById('us-ativo').value='true';
-  let mods='';
-  if(id){ const u=usuarios.find(function(x){return String(x.ID||x.id)===String(id);});
-    if(u){ document.getElementById('us-nome').value=u.Nome||u.nome||'';
-      document.getElementById('us-email').value=u.Email||u.email||'';
-      document.getElementById('us-role').value=u.Role||u.role||'visualizador';
-      document.getElementById('us-ativo').value=ativoBool(u.Ativo!==undefined?u.Ativo:u.ativo)?'true':'false';
-      document.getElementById('us-senha').placeholder='(deixe em branco para manter)';
-      mods=u.Modulos||u.modulos||''; }
-  } else document.getElementById('us-senha').placeholder='Mínimo 6 caracteres';
-  montarModulos(mods); toggleModulosBox();
-  document.getElementById('modal-user').classList.add('open');
-}
-function closeUser(){ document.getElementById('modal-user').classList.remove('open'); }
-async function saveUser(){
-  const nome=document.getElementById('us-nome').value.trim();
-  const email=document.getElementById('us-email').value.trim().toLowerCase();
-  const senha=document.getElementById('us-senha').value;
-  const role=document.getElementById('us-role').value;
-  const ativo=document.getElementById('us-ativo').value;
-  if(!nome||!email){ showNotif('Preencha nome e e-mail.','err'); return; }
-  const id=document.getElementById('us-id').value;
-  if(!id && senha.length<6){ showNotif('Senha de no mínimo 6 caracteres.','err'); return; }
-  let modulos='';
-  if(role!=='admin'){ const cks=document.querySelectorAll('.us-mod-ck:checked');
-    modulos=Array.prototype.map.call(cks,function(c){return c.value;}).join(','); }
-  const payload={ ID:id||'', Nome:nome, Email:email, Senha:senha, Role:role, Ativo:(ativo==='true'), Modulos:modulos,
-    __actor:{ nome:currentUser.nome, email:currentUser.email } };
-  showNotif('Salvando...','info');
-  const r=await apiFetch('saveuser', payload);
-  if(r.ok){ closeUser(); showNotif('Usuário salvo.','ok'); carregarTudo(); } else showNotif(r.message||'Erro ao salvar.','err');
-}
-async function toggleUser(id,novo){
-  const u=usuarios.find(function(x){return String(x.ID||x.id)===String(id);}); if(!u) return;
-  const r=await apiFetch('saveuser', { ID:id, Nome:u.Nome||u.nome, Email:u.Email||u.email, Role:u.Role||u.role,
-    Modulos:(u.Modulos||u.modulos||''), Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } });
-  if(r.ok){ showNotif(novo?'Usuário ativado.':'Usuário desativado.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
-}
-async function delUser(id){
-  if(!confirm('Excluir este usuário definitivamente? (desativar costuma ser melhor)')) return;
-  const r=await apiFetch('deleteuser', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
-  if(r.ok){ showNotif('Usuário excluído.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
-}
-
-// ── Unidades ──
-function renderUnidades(){
-  const q=(document.getElementById('busca-uni')?.value||'').toLowerCase();
-  const fs=document.getElementById('filtro-uni-status')?.value||'';
-  let lista=unidades.filter(function(u){
-    if(q && !((u.Nome||'')+' '+(u.Cidade||'')+' '+(u.Responsavel||'')).toLowerCase().includes(q)) return false;
-    const at=ativoBool(u.Ativo);
-    if(fs==='ativo'&&!at) return false; if(fs==='inativo'&&at) return false;
-    return true;
-  });
-  document.getElementById('uni-empty').style.display=lista.length?'none':'block';
-  document.getElementById('unidades-body').innerHTML=lista.map(function(u){
-    const at=ativoBool(u.Ativo);
-    return '<tr'+(at?'':' style="opacity:.55"')+'><td><strong>'+esc(u.Nome)+'</strong></td><td>'+esc(u.Tipo||'—')+'</td>'
-      +'<td>'+esc((u.Cidade||'—')+(u.UF?('/'+u.UF):''))+'</td><td>'+esc(u.Responsavel||'—')+'</td>'
-      +'<td>'+badgeAtivo(at)+'</td>'
-      +'<td><button class="btn sm" onclick="openUni(\''+u.ID+'\')">✏️</button> '
-      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleUni(\''+u.ID+'\','+(!at)+')">'+(at?'⏸️':'▶️')+'</button></td></tr>';
-  }).join('');
-}
-function openUni(id){
-  document.getElementById('un-id').value=id||'';
-  document.getElementById('uni-title').textContent=id?'Editar unidade':'Nova unidade';
-  ['un-nome','un-cidade','un-uf','un-resp','un-tel'].forEach(function(k){document.getElementById(k).value='';});
-  document.getElementById('un-tipo').value='UPA'; document.getElementById('un-ativo').value='true';
-  if(id){ const u=unidades.find(function(x){return String(x.ID)===String(id);});
-    if(u){ document.getElementById('un-nome').value=u.Nome||''; document.getElementById('un-tipo').value=u.Tipo||'UPA';
-      document.getElementById('un-cidade').value=u.Cidade||''; document.getElementById('un-uf').value=u.UF||'';
-      document.getElementById('un-resp').value=u.Responsavel||''; document.getElementById('un-tel').value=u.Telefone||'';
-      document.getElementById('un-ativo').value=ativoBool(u.Ativo)?'true':'false'; } }
-  document.getElementById('modal-uni').classList.add('open');
-}
-function closeUni(){ document.getElementById('modal-uni').classList.remove('open'); }
-async function saveUni(){
-  const nome=document.getElementById('un-nome').value.trim();
-  if(!nome){ showNotif('Informe o nome da unidade.','err'); return; }
-  const payload={ ID:document.getElementById('un-id').value||'', Nome:nome,
-    Tipo:document.getElementById('un-tipo').value, Cidade:document.getElementById('un-cidade').value.trim(),
-    UF:document.getElementById('un-uf').value.trim().toUpperCase(), Responsavel:document.getElementById('un-resp').value.trim(),
-    Telefone:document.getElementById('un-tel').value.trim(), Ativo:(document.getElementById('un-ativo').value==='true'),
-    __actor:{ nome:currentUser.nome, email:currentUser.email } };
-  showNotif('Salvando...','info');
-  const r=await apiFetch('saveunit', payload);
-  if(r.ok){ closeUni(); showNotif('Unidade salva.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
-}
-async function toggleUni(id,novo){
-  const r=await apiFetch('saveunit', { ID:id, Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } });
-  if(r.ok){ showNotif(novo?'Unidade ativada.':'Unidade desativada.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
-}
-
-// ── Locais ──
-function renderLocais(){
-  const q=(document.getElementById('busca-loc')?.value||'').toLowerCase();
-  const fs=document.getElementById('filtro-loc-status')?.value||'';
-  let lista=locais.filter(function(l){
-    if(q && !String(l.Nome).toLowerCase().includes(q)) return false;
-    const at=ativoBool(l.Ativo);
-    if(fs==='ativo'&&!at) return false; if(fs==='inativo'&&at) return false;
-    return true;
-  });
-  document.getElementById('loc-empty').style.display=lista.length?'none':'block';
-  document.getElementById('locais-body').innerHTML=lista.map(function(l){
-    const at=ativoBool(l.Ativo);
-    return '<tr'+(at?'':' style="opacity:.55"')+'><td><strong>'+esc(l.Nome)+'</strong></td><td>'+badgeAtivo(at)+'</td>'
-      +'<td><button class="btn sm" onclick="openLoc(\''+l.ID+'\')">✏️</button> '
-      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleLoc(\''+l.ID+'\','+(!at)+')">'+(at?'⏸️':'▶️')+'</button></td></tr>';
-  }).join('');
-}
-function openLoc(id){
-  document.getElementById('lo-id').value=id||'';
-  document.getElementById('loc-title').textContent=id?'Editar local':'Novo local';
-  document.getElementById('lo-nome').value=''; document.getElementById('lo-ativo').value='true';
-  if(id){ const l=locais.find(function(x){return String(x.ID)===String(id);});
-    if(l){ document.getElementById('lo-nome').value=l.Nome||''; document.getElementById('lo-ativo').value=ativoBool(l.Ativo)?'true':'false'; } }
-  document.getElementById('modal-loc').classList.add('open');
-}
-function closeLoc(){ document.getElementById('modal-loc').classList.remove('open'); }
-async function saveLoc(){
-  const nome=document.getElementById('lo-nome').value.trim();
-  if(!nome){ showNotif('Informe o nome do local.','err'); return; }
-  const payload={ ID:document.getElementById('lo-id').value||'', Nome:nome,
-    Ativo:(document.getElementById('lo-ativo').value==='true'), __actor:{ nome:currentUser.nome, email:currentUser.email } };
-  const r=await apiFetch('savelocal', payload);
-  if(r.ok){ closeLoc(); showNotif('Local salvo.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
-}
-async function toggleLoc(id,novo){
-  const l=locais.find(function(x){return String(x.ID)===String(id);}); if(!l) return;
-  const r=await apiFetch('savelocal', { ID:id, Nome:l.Nome, Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } });
-  if(r.ok){ showNotif(novo?'Local ativado.':'Local desativado.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
-}
-
-// ── Auditoria ──
-async function carregarAuditoria(){
-  try{ const r=await apiFetch('getlog'); if(r.ok){ auditoria=r.data||[]; renderAuditoria(); } }
-  catch(e){ showNotif('Erro ao carregar auditoria.','err'); }
-}
-function renderAuditoria(){
-  const q=(document.getElementById('busca-aud')?.value||'').toLowerCase();
-  let lista=auditoria.filter(function(a){
-    return !q || ((a.Usuario||'')+' '+(a.Acao||'')+' '+(a.Detalhe||'')).toLowerCase().includes(q);
-  });
-  document.getElementById('aud-empty').style.display=lista.length?'none':'block';
-  document.getElementById('auditoria-body').innerHTML=lista.slice(0,300).map(function(a){
-    return '<tr><td style="white-space:nowrap;font-size:12px">'+esc(a.DataHora||'')+'</td><td>'+esc(a.Usuario||'—')+'</td>'
-      +'<td>'+esc(a.Acao||'')+'</td><td style="font-size:12px;color:var(--text2)">'+esc(a.Detalhe||'')+'</td></tr>';
-  }).join('');
-}
-
-// ── Configuração da planilha ──
-let scriptCodeCache = '';
-async function carregarScript(){
-  const pre=document.getElementById('script-pre');
-  pre.textContent='Carregando código...';
-  try{
-    const r = await fetch('Codigo_AppsScript_FHSL.gs', { cache:'no-store' });
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    scriptCodeCache = await r.text();
-    pre.textContent = scriptCodeCache;
-  }catch(e){
-    pre.textContent = 'Não foi possível carregar o arquivo Codigo_AppsScript_FHSL.gs automaticamente.\n\nUse o botão "Baixar .gs" ou abra o arquivo diretamente no repositório do GitHub.';
-  }
-}
-function copyScript(){
-  if(!scriptCodeCache){ showNotif('Código ainda carregando, tente em instantes.','info'); return; }
-  navigator.clipboard.writeText(scriptCodeCache).then(function(){ showNotif('✓ Código copiado!','ok'); })
-    .catch(function(){ showNotif('Não foi possível copiar. Use "Baixar .gs".','err'); });
-}
-async function verificarDiag(){
-  const box=document.getElementById('diag-box'); if(!box) return;
-  box.textContent='Verificando conexão com o servidor...';
-  try{
-    const r = await apiFetch('diag');
-    if(r && (r.ok || r.versao)){
-      box.innerHTML = '🟢 Conectado ao Apps Script'+(r.versao?(' — versão <strong>'+esc(r.versao)+'</strong>'):'')+'.';
-    } else box.innerHTML = '🟡 Servidor respondeu, mas sem diagnóstico. Talvez precise republicar como Nova versão.';
-  }catch(e){ box.innerHTML = '🔴 Sem conexão com o Apps Script. Verifique a publicação.'; }
+  GRUPOS.forEach(function(g,gi){ corpo+=bloco(g,gi); });
+  if(document.getElementById('cf-socios').value==='Sim') corpo+=bloco(GRUPO_SOCIOS,'S');
+  const w=window.open('','_blank');
+  w.document.write('<html><head><title>Conferencia Documental</title><style>'
+    +'body{font-family:Arial,sans-serif;color:#222;max-width:820px;margin:0 auto;font-size:12px}'
+    +'.cab{background:#1d6aad;color:#fff;padding:18px 24px}.cab h1{margin:0;font-size:16px}.cab p{margin:2px 0 0;font-size:11px;opacity:.9}'
+    +'.body{padding:24px}h3{font-size:13px;color:#1d6aad;margin:16px 0 5px;border-bottom:1px solid #ddd;padding-bottom:3px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:6px}td{border:1px solid #e2e2e2;padding:5px 9px;font-size:11.5px}'
+    +'.grid{display:flex;flex-wrap:wrap;gap:5px 26px;background:#f8f8f6;padding:12px;border-radius:8px;margin-bottom:8px}.grid div{min-width:200px}'
+    +'.aviso{background:#fff8e6;border:1px solid #ffe08a;padding:9px 12px;border-radius:8px;font-size:11px;margin:10px 0}'
+    +'@media print{button{display:none}.cab{-webkit-print-color-adjust:exact;print-color-adjust:exact}}'
+    +'</style></head><body><div class="cab"><h1>Relacao de Documentos - Pagamento de Terceirizadas</h1><p>TDN Gestao Operacional - FHSL</p></div><div class="body">'
+    +'<div class="grid"><div><strong>Empresa:</strong> '+emp+'</div><div><strong>CNPJ:</strong> '+cnpj+'</div>'
+    +'<div><strong>Unidade:</strong> '+un+'</div><div><strong>Mes ref.:</strong> '+mes+'</div><div><strong>NF nº:</strong> '+nf+'</div></div>'
+    +'<div class="aviso">⚠️ O financeiro so efetua o pagamento com a nota fiscal carimbada e assinada pelo gestor do contrato e gerentes/profissional designado, com descricao e valores previamente conferidos.</div>'
+    +corpo
+    +(obs?('<h3>Observacoes</h3><div style="white-space:pre-wrap">'+obs+'</div>'):'')
+    +'<div style="margin-top:40px;display:flex;gap:60px"><div>_______________________<br>Coordenador Administrativo</div><div>_______________________<br>Gerencia Medica Avancada - FHSL</div></div>'
+    +'<p style="margin-top:20px;font-size:10px;color:#888">Emitido em '+new Date().toLocaleString('pt-BR')+'</p>'
+    +'</div><div style="padding:0 24px 24px;display:flex;gap:10px"><button onclick="window.print()" style="padding:12px 22px;background:#1d6aad;color:#fff;border:none;border-radius:8px;cursor:pointer">🖨️ Imprimir / Salvar PDF</button>'
+    +'<button onclick="window.close()" style="padding:12px 22px;background:#e8e8e4;color:#1a1a18;border:none;border-radius:8px;cursor:pointer">✕ Fechar</button></div></body></html>');
+  w.document.close();
 }
 
 </script>

@@ -817,8 +817,10 @@ function renderLocais(){
   document.getElementById('locais-body').innerHTML=lista.map(function(l){
     const at=ativoBool(l.Ativo);
     return '<tr'+(at?'':' style="opacity:.55"')+'><td><strong>'+esc(l.Nome)+'</strong></td><td>'+badgeAtivo(at)+'</td>'
-      +'<td><button class="btn sm" onclick="openLoc(\''+l.ID+'\')">✏️</button> '
-      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleLoc(\''+l.ID+'\','+(!at)+')">'+(at?'⏸️':'▶️')+'</button></td></tr>';
+      +'<td style="white-space:nowrap"><button class="btn sm" onclick="openLoc(\''+l.ID+'\')" title="Editar">✏️</button> '
+      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleLoc(\''+l.ID+'\','+(!at)+')" title="'+(at?'Desabilitar':'Reativar')+'">'+(at?'⏸️':'▶️')+'</button>'
+      +(ehAdmin()?' <button class="btn sm danger" onclick="delLoc(\''+l.ID+'\')" title="Excluir definitivamente">🗑️</button>':'')
+      +'</td></tr>';
   }).join('');
 }
 function openLoc(id){
@@ -842,6 +844,12 @@ async function toggleLoc(id,novo){
   const l=locais.find(function(x){return String(x.ID)===String(id);}); if(!l) return;
   const r=await apiFetch('savelocal', { ID:id, Nome:l.Nome, Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } });
   if(r.ok){ showNotif(novo?'Local ativado.':'Local desativado.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
+}
+async function delLoc(id){
+  const l=locais.find(function(x){return String(x.ID)===String(id);});
+  if(!confirm('Excluir definitivamente o local "'+((l&&l.Nome)||'')+'"? Esta ação não pode ser desfeita.\n\nDica: se quiser apenas tirá-lo de uso, use o botão ⏸️ (desabilitar) em vez de excluir.')) return;
+  const r=await apiFetch('deletelocal', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  if(r.ok){ showNotif('Local excluído.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
 }
 
 // ── Auditoria ──

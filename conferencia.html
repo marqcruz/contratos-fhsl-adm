@@ -504,6 +504,28 @@ tr:hover td{background:var(--surface2)}
 
 <div class="notif-toast" id="notif" style="display:none"></div>
 
+<!-- MODAL APROVAR -->
+<div class="modal-overlay" id="modal-aprovar" onclick="if(event.target.id==='modal-aprovar')fecharAprovar()">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle">Aprovar conferência</div><button class="mclose" onclick="fecharAprovar()">✕</button></div>
+    <div class="mbody">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Ao aprovar, a conferência é liberada para o criador seguir com o cadastro no SolarBPM e informar o financeiro.</p>
+      <div class="fg"><label>Observação da aprovação (opcional)</label>
+        <textarea id="apr-obs" rows="3" placeholder="Alguma observação..." style="width:100%;padding:11px 13px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;resize:vertical"></textarea></div>
+    </div>
+    <div class="mfoot"><button class="btn" onclick="fecharAprovar()">Cancelar</button><button class="btn primary" onclick="confirmarAprovacao()">✅ Aprovar</button></div>
+  </div>
+</div>
+
+<!-- MODAL MENSAGEM PÓS-APROVAÇÃO -->
+<div class="modal-overlay" id="modal-msg" onclick="if(event.target.id==='modal-msg')fecharMsg()">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle">✅ Conferência aprovada</div><button class="mclose" onclick="fecharMsg()">✕</button></div>
+    <div class="mbody" id="msg-conteudo"></div>
+    <div class="mfoot"><button class="btn primary" onclick="fecharMsg()">Entendi</button></div>
+  </div>
+</div>
+
 <script>
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
@@ -586,6 +608,20 @@ const GRUPO_SOCIOS = { g:'Complemento — mão de obra com sócios', itens:[
   'Comprovante de pagamento (holerite) na competência da prestação de serviço' ]};
 
 const ESTADOS = [ {v:'ok',l:'✔️ Marcado'},{v:'na',l:'➖ Não se aplica'},{v:'pend',l:'⏳ Pendente'} ];
+// ===== MENSAGEM E PASSO A PASSO DO SOLAR (edite este texto livremente) =====
+const MSG_APROVADA = {
+  titulo:'Conferência aprovada — prossiga no SolarBPM',
+  intro:'A conferência documental foi aprovada. Você já pode seguir com o cadastro no Sistema SolarBPM e informar o financeiro.',
+  passos:[
+    'Acesse o SolarBPM com seu login.',
+    'Abra o processo de pagamento de terceirizados.',
+    'Preencha os campos conforme o modelo (empresa, CNPJ, unidade, mês de referência e nº da NF).',
+    'Anexe o PDF compilado da conferência.',
+    'Encaminhe ao financeiro seguindo o fluxo padrão.'
+  ],
+  rodape:'Modelo de preenchimento a definir — este texto pode ser editado depois no código.'
+};
+
 
 let conferencias=[], unidades=[], contratos=[], editId=null;
 let anexos={}; // { itemKey: [{nome, bytes(Uint8Array), size}] }
@@ -769,12 +805,20 @@ function renderLista(){
   document.getElementById('kpi-andamento').textContent=and;
   document.getElementById('kpi-ok').textContent=ok;
   document.getElementById('lista-empty').style.display=lista.length?'none':'block';
-  const badge=function(st){ return st==='Concluída'?'<span class="badge c-green-b">✅ Concluída</span>':'<span class="badge c-yellow-b">⏳ Em conferência</span>'; };
+  const badge=function(st){
+    if(st==='Aprovada') return '<span class="badge c-green-b">✅ Aprovada</span>';
+    if(st==='Concluída') return '<span class="badge c-blue-b">✔️ Concluída</span>';
+    return '<span class="badge c-yellow-b">⏳ Em conferência</span>';
+  };
   document.getElementById('lista-body').innerHTML=lista.map(function(c){
     const itens=c.ItensObj||{}; let ok=0,tot=0; Object.keys(itens).forEach(function(k){ tot++; if(itens[k]==='ok')ok++; });
     const prog=tot?Math.round(ok/tot*100):0;
-    const acoes=(podeEditar()?'<button class="btn sm" onclick="editarConf(\''+c.ID+'\')">✏️</button>':'<button class="btn sm" onclick="editarConf(\''+c.ID+'\')">👁️</button>')
-      +(currentUser.role==='admin'?' <button class="btn sm danger" onclick="delConf(\''+c.ID+'\')">🗑️</button>':'');
+    let acoes=(podeEditar()?'<button class="btn sm" onclick="editarConf(\''+c.ID+'\')" title="Editar/ver">✏️</button>':'<button class="btn sm" onclick="editarConf(\''+c.ID+'\')">👁️</button>');
+    // botão aprovar (só quem pode e se ainda não aprovada)
+    if(c.Status!=='Aprovada' && podeAprovar()) acoes+=' <button class="btn sm primary" onclick="abrirAprovar(\''+c.ID+'\')" title="Aprovar">✅</button>';
+    // se aprovada, botão para rever a mensagem do Solar
+    if(c.Status==='Aprovada') acoes+=' <button class="btn sm" onclick="verMsgSolar(\''+c.ID+'\')" title="Ver próximos passos">📄</button>';
+    if(currentUser.role==='admin') acoes+=' <button class="btn sm danger" onclick="delConf(\''+c.ID+'\')">🗑️</button>';
     return '<tr><td><strong>'+esc(c.Numero)+'</strong></td><td>'+esc(c.Empresa)+'</td><td>'+esc(c.Unidade)+'</td>'
       +'<td>'+fmtMes(c.MesRef)+'</td><td>'+ok+' ok · '+prog+'%</td><td>'+badge(c.Status)+'</td>'
       +'<td style="white-space:nowrap">'+acoes+'</td></tr>';
@@ -785,6 +829,37 @@ async function delConf(id){
   const r=await apiFetch('deleteconferencia', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
   if(r.ok){ showNotif('Excluída.','ok'); carregar(); } else showNotif(r.message||'Erro.','err');
 }
+
+
+// ── Aprovação ──
+let aprovandoId=null;
+function podeAprovar(){ return currentUser && (currentUser.role==='admin' || currentUser.aprovaConf===true); }
+function abrirAprovar(id){
+  if(!podeAprovar()){ showNotif('Você não tem permissão para aprovar.','err'); return; }
+  aprovandoId=id; document.getElementById('apr-obs').value='';
+  document.getElementById('modal-aprovar').classList.add('open');
+}
+function fecharAprovar(){ document.getElementById('modal-aprovar').classList.remove('open'); }
+async function confirmarAprovacao(){
+  const obs=document.getElementById('apr-obs').value.trim();
+  showNotif('Aprovando...','info');
+  const r=await apiFetch('aprovarconferencia', { id:aprovandoId, obs:obs, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  if(r.ok){ fecharAprovar(); showNotif('Conferência aprovada.','ok'); mostrarMsgSolar(); carregar(); }
+  else showNotif(r.message||'Erro ao aprovar.','err');
+}
+function mostrarMsgSolar(){
+  const m=MSG_APROVADA;
+  document.getElementById('msg-conteudo').innerHTML =
+    '<div style="background:var(--green-bg);color:var(--green-text);padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px">'+esc(m.intro)+'</div>'
+    +'<div style="font-weight:700;font-size:13px;margin-bottom:8px">'+esc(m.titulo)+'</div>'
+    +'<ol style="font-size:13px;color:var(--text2);line-height:1.7;padding-left:20px">'
+    + m.passos.map(function(p){return '<li>'+esc(p)+'</li>';}).join('')
+    +'</ol>'
+    +'<p style="font-size:11px;color:var(--text3);margin-top:10px">'+esc(m.rodape)+'</p>';
+  document.getElementById('modal-msg').classList.add('open');
+}
+function fecharMsg(){ document.getElementById('modal-msg').classList.remove('open'); }
+function verMsgSolar(id){ mostrarMsgSolar(); }
 
 // ── Compilar PDF (merge no navegador via pdf-lib) ──
 async function compilarPDF(){

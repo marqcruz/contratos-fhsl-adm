@@ -483,6 +483,12 @@ tr:hover td{background:var(--surface2)}
         <div style="font-size:11px;color:var(--text3);margin-top:6px">Se nenhum for marcado, o usuário verá todos os módulos (padrão).</div>
       </div>
       <div id="us-modulos-admin" style="display:none;font-size:12px;color:var(--text2);background:var(--surface2);padding:8px 10px;border-radius:7px;margin-top:12px">👑 Administrador tem acesso a todos os módulos automaticamente.</div>
+      <div class="fg" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none">
+          <input type="checkbox" id="us-aprovaconf" style="width:16px;height:16px"> Pode <strong>aprovar conferências documentais</strong>
+        </label>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Permite a este usuário aprovar as conferências antes da liberação para o financeiro.</div>
+      </div>
     </div>
     <div class="mfoot"><button class="btn" onclick="closeUser()">Cancelar</button><button class="btn primary" onclick="saveUser()">Salvar</button></div>
   </div>
@@ -702,6 +708,7 @@ function openUser(id){
   document.getElementById('us-nome').value=''; document.getElementById('us-email').value='';
   document.getElementById('us-senha').value=''; document.getElementById('us-role').value='visualizador';
   document.getElementById('us-ativo').value='true';
+  document.getElementById('us-aprovaconf').checked=false;
   let mods='';
   if(id){ const u=usuarios.find(function(x){return String(x.ID||x.id)===String(id);});
     if(u){ document.getElementById('us-nome').value=u.Nome||u.nome||'';
@@ -709,6 +716,7 @@ function openUser(id){
       document.getElementById('us-role').value=u.Role||u.role||'visualizador';
       document.getElementById('us-ativo').value=ativoBool(u.Ativo!==undefined?u.Ativo:u.ativo)?'true':'false';
       document.getElementById('us-senha').placeholder='(deixe em branco para manter)';
+      document.getElementById('us-aprovaconf').checked=(String(u.AprovaConf||u.aprovaConf)==='true'||u.AprovaConf===true);
       mods=u.Modulos||u.modulos||''; }
   } else document.getElementById('us-senha').placeholder='Mínimo 6 caracteres';
   montarModulos(mods); toggleModulosBox();
@@ -727,7 +735,7 @@ async function saveUser(){
   let modulos='';
   if(role!=='admin'){ const cks=document.querySelectorAll('.us-mod-ck:checked');
     modulos=Array.prototype.map.call(cks,function(c){return c.value;}).join(','); }
-  const payload={ ID:id||'', Nome:nome, Email:email, Senha:senha, Role:role, Ativo:(ativo==='true'), Modulos:modulos,
+  const payload={ ID:id||'', Nome:nome, Email:email, Senha:senha, Role:role, Ativo:(ativo==='true'), Modulos:modulos, AprovaConf:document.getElementById('us-aprovaconf').checked,
     __actor:{ nome:currentUser.nome, email:currentUser.email } };
   showNotif('Salvando...','info');
   const r=await apiFetch('saveuser', payload);
@@ -736,7 +744,7 @@ async function saveUser(){
 async function toggleUser(id,novo){
   const u=usuarios.find(function(x){return String(x.ID||x.id)===String(id);}); if(!u) return;
   const r=await apiFetch('saveuser', { ID:id, Nome:u.Nome||u.nome, Email:u.Email||u.email, Role:u.Role||u.role,
-    Modulos:(u.Modulos||u.modulos||''), Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+    Modulos:(u.Modulos||u.modulos||''), AprovaConf:(String(u.AprovaConf||u.aprovaConf)==='true'||u.AprovaConf===true), Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } });
   if(r.ok){ showNotif(novo?'Usuário ativado.':'Usuário desativado.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
 }
 async function delUser(id){

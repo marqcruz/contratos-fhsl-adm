@@ -99,6 +99,9 @@ const MODULOS=[
   {id:'D',nome:'Módulo D — Inspeção dos Serviços',itens:['Acessórios sanitários','Aparelhos telefônicos','Bebedouro','Box de banho','Extintores e quadros','Lavatórios','Móveis','Parede','Persianas','Pias / Cubas','Piso','Porta / Batentes / Maçanetas','Lixeiras','Ar condicionado / exaustores','Tapetes','Teto','Vidros']}
 ];
 let codigoAtual='';
+const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+function fmtMes(v){ if(!v) return ''; const s=String(v); let m=s.match(/^(\d{4})-(\d{2})/); if(!m){ const d=new Date(s); if(!isNaN(d.getTime())) return MESES[d.getMonth()]+'/'+d.getFullYear(); return v; } return MESES[parseInt(m[2],10)-1]+'/'+m[1]; }
+function fmtData(v){ if(!v) return ''; const s=String(v); if(/^\d{2}\/\d{2}\/\d{4}/.test(s)) return s; const d=new Date(s); if(isNaN(d.getTime())) return v; return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); }
 function q(id){ return document.getElementById(id); }
 function erro(msg){ const e=q('err'); e.textContent=msg; e.style.display='block'; }
 
@@ -123,7 +126,7 @@ function mostrar(a){
   q('tela-codigo').classList.add('hidden');
   q('tela-resultado').classList.remove('hidden');
   q('r-titulo').textContent='Avaliação '+(a.Numero||'');
-  q('r-sub').textContent=(a.Unidade||'')+' · '+(a.MesRef||'')+(a.AreaAvaliada?(' · '+a.AreaAvaliada):'');
+  q('r-sub').textContent=(a.Unidade||'')+' · '+fmtMes(a.MesRef)+(a.DataAval?(' · '+fmtData(a.DataAval)):'');
   q('r-aval').textContent=a.ResultadoAval; q('r-cont').textContent=a.Contingente;
   q('r-fatura').textContent=a.ValorFatura; q('r-perc').textContent=a.PercLiberacao+'%';
   // assinaturas: avaliador + colaboradores
@@ -148,7 +151,7 @@ function mostrar(a){
   if(a.CienciaData){
     q('bloco-ciencia').classList.add('hidden');
     const jc=q('ja-ciente'); jc.style.display='block';
-    jc.innerHTML='✅ Ciência registrada por <strong>'+(a.CienciaNome||'')+'</strong>'+(a.CienciaDoc?(' (doc: '+a.CienciaDoc+')'):'')+' em '+a.CienciaData+(a.CienciaObs?('<br>Obs: '+a.CienciaObs):'')+(a.CienciaAssin?('<br><img class="assin-mini" src="'+a.CienciaAssin+'">'):'');
+    jc.innerHTML='✅ Ciência registrada por <strong>'+(a.CienciaNome||'')+'</strong>'+(a.CienciaDoc?(' (doc: '+a.CienciaDoc+')'):'')+' em '+fmtData(a.CienciaData)+(a.CienciaObs?('<br>Obs: '+a.CienciaObs):'')+(a.CienciaAssin?('<br><img class="assin-mini" src="'+a.CienciaAssin+'">'):'');
   }
 }
 

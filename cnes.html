@@ -462,22 +462,25 @@ td.nowrap{white-space:nowrap}
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-num" id="kpi-total">0</div><div class="stat-label">Cadastros</div></div>
       <div class="stat-card c-green"><div class="stat-num" id="kpi-ativos">0</div><div class="stat-label">Ativos</div></div>
-      <div class="stat-card c-blue"><div class="stat-num" id="kpi-med">0</div><div class="stat-label">Médicos (tipo 3)</div></div>
-      <div class="stat-card c-yellow"><div class="stat-num" id="kpi-assist">0</div><div class="stat-label">Assistenciais (tipo 2)</div></div>
+      <div class="stat-card c-blue"><div class="stat-num" id="kpi-med">0</div><div class="stat-label">Médicos (tipo 2)</div></div>
+      <div class="stat-card c-yellow"><div class="stat-num" id="kpi-assist">0</div><div class="stat-label">Assistenciais (tipo 3)</div></div>
       <div class="stat-card c-red"><div class="stat-num" id="kpi-corrigir">0</div><div class="stat-label">A corrigir</div></div>
+      <div class="stat-card c-green"><div class="stat-num" id="kpi-cnes-sim">0</div><div class="stat-label">✔️ No CNES</div></div>
+      <div class="stat-card c-yellow"><div class="stat-num" id="kpi-cnes-nao">0</div><div class="stat-label">⏳ Aguardando cadastro</div></div>
     </div>
     <div class="toolbar">
       <input type="text" id="busca" placeholder="🔍 Buscar por nome, CPF, CBO..." oninput="renderTabela()">
       <select id="filtro-comp" onchange="renderTabela()"><option value="">Todas as competências</option></select>
-      <select id="filtro-tipo" onchange="renderTabela()"><option value="">Todos os tipos</option><option value="1">1 - Administrativo</option><option value="2">2 - Assistencial</option><option value="3">3 - Médico</option></select>
+      <select id="filtro-tipo" onchange="renderTabela()"><option value="">Todos os tipos</option><option value="1">1 - Administrativo</option><option value="2">2 - Médico</option><option value="3">3 - Assistencial</option></select>
       <select id="filtro-status" onchange="renderTabela()"><option value="">Todos os status</option><option value="ATIVO">Ativo</option><option value="AGUARDANDO INSERÇÃO">Aguardando inserção</option><option value="CORRIGIR CNPJ">Corrigir CNPJ</option><option value="CORRIGIR CPF">Corrigir CPF</option><option value="EXCLUÍDO">Excluído</option></select>
+      <select id="filtro-cnes" onchange="renderTabela()"><option value="">CNES: todos</option><option value="sim">✔️ No CNES</option><option value="nao">⏳ Aguardando</option></select>
       <div style="flex:1"></div>
       <button class="btn" onclick="abrirImport()">📥 Importar CSV</button>
       <button class="btn" onclick="exportarCsv()">📤 Exportar CSV</button>
       <button class="btn primary" onclick="abrirCadastro()">➕ Novo cadastro</button>
     </div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Nome</th><th>CPF</th><th>Tipo</th><th>CBO</th><th>Conselho</th><th>Vínculo</th><th>CH (A/H/O)</th><th>Comp.</th><th>Status</th><th>Atualizado em</th><th></th></tr></thead>
+      <thead><tr><th>Nome</th><th>CPF</th><th>Tipo</th><th>CBO</th><th>Conselho</th><th>Vínculo</th><th>CH (A/H/O)</th><th>Comp.</th><th>Status</th><th>CNES</th><th>Atualizado em</th><th></th></tr></thead>
       <tbody id="tabela-body"></tbody>
     </table><div class="empty-state" id="tabela-empty" style="display:none"><span class="empty-icon">📋</span>Nenhum cadastro nesta unidade ainda</div></div>
   </div>
@@ -493,7 +496,7 @@ td.nowrap{white-space:nowrap}
       <div class="form-grid">
         <div class="fg full"><label>Nome do profissional *</label><input type="text" id="cd-nome" placeholder="Nome completo"></div>
         <div class="fg"><label>CPF *</label><input type="text" id="cd-cpf" placeholder="000.000.000-00" oninput="validarCpfVisual()"><div class="valid-msg" id="cpf-msg"></div></div>
-        <div class="fg"><label>Tipo de cadastro *</label><select id="cd-tipo"><option value="1">1 - Administrativo</option><option value="2">2 - Assistencial (enfermagem, técnicos, farmácia...)</option><option value="3">3 - Médico</option></select></div>
+        <div class="fg"><label>Tipo de cadastro *</label><select id="cd-tipo"><option value="1">1 - Administrativo</option><option value="2">2 - Médico</option><option value="3">3 - Assistencial (enfermagem, técnicos, farmácia...)</option></select></div>
         <div class="fg"><label>CBO *</label><select id="cd-cbo" onchange="cboMudou()"><option value="">Selecione...</option></select></div>
         <div class="fg"><label>Código CBO <span style="font-weight:400;color:var(--text3)">(copie p/ o outro sistema)</span></label>
           <div style="display:flex;gap:6px"><input type="text" id="cd-cbo-cod" readonly style="font-family:monospace;font-weight:700"><button class="btn sm" type="button" onclick="copiarCbo()">📋</button></div></div>
@@ -508,6 +511,10 @@ td.nowrap{white-space:nowrap}
         <div class="fg"><label>Data de inclusão</label><input type="date" id="cd-datainc"></div>
         <div class="fg"><label>Data de saída</label><input type="date" id="cd-datasaida"></div>
         <div class="fg"><label>Status</label><select id="cd-status"><option value="ATIVO">Ativo</option><option value="AGUARDANDO INSERÇÃO">Aguardando inserção</option><option value="CORRIGIR CNPJ">Corrigir CNPJ</option><option value="CORRIGIR CPF">Corrigir CPF</option><option value="EXCLUÍDO">Excluído</option></select></div>
+        <div class="fg"><label>Situação no CNES</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;text-transform:none;margin-top:4px">
+            <input type="checkbox" id="cd-cnes" style="width:16px;height:16px"> Já cadastrado no sistema CNES
+          </label></div>
         <div class="fg full"><label>Observação</label><input type="text" id="cd-obs" placeholder="Opcional"></div>
       </div>
     </div>
@@ -662,8 +669,8 @@ function cboMudou(){
   // sugere tipo pelo CBO (médico=3, alguns assistenciais=2)
   const c=CBOS.find(function(x){return x[0]===cod;});
   if(c){ const desc=c[1].toLowerCase();
-    if(desc.indexOf('médico')>=0) document.getElementById('cd-tipo').value='3';
-    else if(/enfermeiro|técnico de enfermagem|auxiliar de enfermagem|farmac|assistente social|biomédico|fisioterap|nutricion|psicólog|fonoaudiólog|dentista|saúde bucal/.test(desc)) document.getElementById('cd-tipo').value='2';
+    if(desc.indexOf('médico')>=0) document.getElementById('cd-tipo').value='2';
+    else if(/enfermeiro|técnico de enfermagem|auxiliar de enfermagem|farmac|assistente social|biólogo|biomédico|fisioterap|nutricion|psicólog|fonoaudiólog|dentista|saúde bucal/.test(desc)) document.getElementById('cd-tipo').value='3';
     else document.getElementById('cd-tipo').value='1';
   }
 }
@@ -728,14 +735,19 @@ function renderTabela(){
     if(fc && fmtComp(c.Competencia)!==fc) return false;
     if(ft && String(c.Tipo)!==ft) return false;
     if(fs && (c.Status||'Ativo')!==fs) return false;
+    const fcnes=document.getElementById('filtro-cnes')?document.getElementById('filtro-cnes').value:'';
+    if(fcnes==='sim' && String(c.CadastradoCNES)!=='true') return false;
+    if(fcnes==='nao' && String(c.CadastradoCNES)==='true') return false;
     return true;
   });
   // KPIs (da unidade toda, não do filtro)
   document.getElementById('kpi-total').textContent=cadastros.length;
   document.getElementById('kpi-ativos').textContent=cadastros.filter(function(c){return (c.Status||'Ativo')==='Ativo';}).length;
-  document.getElementById('kpi-med').textContent=cadastros.filter(function(c){return String(c.Tipo)==='3';}).length;
-  document.getElementById('kpi-assist').textContent=cadastros.filter(function(c){return String(c.Tipo)==='2';}).length;
+  document.getElementById('kpi-med').textContent=cadastros.filter(function(c){return String(c.Tipo)==='2';}).length;
+  document.getElementById('kpi-assist').textContent=cadastros.filter(function(c){return String(c.Tipo)==='3';}).length;
   document.getElementById('kpi-corrigir').textContent=cadastros.filter(function(c){return /^CORRIGIR/i.test(String(c.Status||''));}).length;
+  document.getElementById('kpi-cnes-sim').textContent=cadastros.filter(function(c){return String(c.CadastradoCNES)==='true';}).length;
+  document.getElementById('kpi-cnes-nao').textContent=cadastros.filter(function(c){return String(c.CadastradoCNES)!=='true';}).length;
   document.getElementById('tabela-empty').style.display=lista.length?'none':'block';
   const tipoBadge=function(t){ const m={'1':'c-yellow-b','2':'c-blue-b','3':'c-green-b'}; return '<span class="badge '+(m[t]||'')+'">'+(t||'?')+'</span>'; };
   document.getElementById('tabela-body').innerHTML=lista.map(function(c){
@@ -753,6 +765,7 @@ function renderTabela(){
       +'<td>'+esc(c.Conselho||'')+' '+esc(c.NumConselho||'')+'</td><td>'+esc(c.IndicadorVinculo||'')+'</td>'
       +'<td class="nowrap">'+ch+' <button class="cp-btn" title="Copiar CH total ('+chTotal+')" onclick="copiar(\''+chTotal+'\',\'Carga horária\')">📋</button></td>'
       +'<td>'+esc(fmtComp(c.Competencia))+'</td><td>'+stCell+'</td>'
+      +'<td>'+(String(c.CadastradoCNES)==='true'?'<span class="badge c-green-b">✔️ Sim</span>':'<span class="badge c-yellow-b">Não</span>')+'</td>'
       +'<td style="font-size:12px;color:var(--text2)">'+esc(fmtDataHora(c.AtualizadoEm||c.CriadoEm))+'</td>'
       +'<td style="white-space:nowrap">'+acoes+'</td></tr>';
   }).join('');
@@ -790,7 +803,7 @@ function abrirCadastro(){
   document.getElementById('cad-title').textContent='Novo cadastro';
   document.getElementById('cd-id').value='';
   ['cd-nome','cd-cpf','cd-cbo-cod','cd-conselho','cd-numconselho','cd-vinculo','cd-cnpj','cd-cha','cd-chh','cd-cho','cd-comp','cd-datainc','cd-datasaida','cd-obs'].forEach(function(k){document.getElementById(k).value='';});
-  document.getElementById('cd-cbo').value=''; document.getElementById('cd-tipo').value='1'; document.getElementById('cd-status').value='Ativo';
+  document.getElementById('cd-cbo').value=''; document.getElementById('cd-tipo').value='1'; document.getElementById('cd-status').value='ATIVO'; document.getElementById('cd-cnes').checked=false;
   document.getElementById('cpf-msg').textContent=''; document.getElementById('cnpj-msg').textContent='';
   document.getElementById('modal-cad').classList.add('open');
 }
@@ -809,7 +822,8 @@ function editarCad(id){
   document.getElementById('cd-cha').value=c.CHAmbulatorial||''; document.getElementById('cd-chh').value=c.CHHospitalar||''; document.getElementById('cd-cho').value=c.CHOutros||'';
   document.getElementById('cd-comp').value=c.Competencia||'';
   document.getElementById('cd-datainc').value=normDataInput(c.DataInclusao); document.getElementById('cd-datasaida').value=normDataInput(c.DataSaida);
-  document.getElementById('cd-status').value=c.Status||'Ativo';
+  document.getElementById('cd-status').value=c.Status||'ATIVO';
+  document.getElementById('cd-cnes').checked=(String(c.CadastradoCNES)==='true');
   document.getElementById('cd-obs').value=c.Obs||'';
   document.getElementById('cpf-msg').textContent=''; document.getElementById('cnpj-msg').textContent='';
   document.getElementById('modal-cad').classList.add('open');
@@ -833,7 +847,7 @@ async function salvarCadastro(){
     CHAmbulatorial:document.getElementById('cd-cha').value, CHHospitalar:document.getElementById('cd-chh').value, CHOutros:document.getElementById('cd-cho').value,
     Competencia:document.getElementById('cd-comp').value.trim(), DataInclusao:document.getElementById('cd-datainc').value,
     DataSaida:document.getElementById('cd-datasaida').value, Status:document.getElementById('cd-status').value,
-    Obs:document.getElementById('cd-obs').value.trim(), __actor:{ nome:currentUser.nome, email:currentUser.email } };
+    CadastradoCNES:document.getElementById('cd-cnes').checked, Obs:document.getElementById('cd-obs').value.trim(), __actor:{ nome:currentUser.nome, email:currentUser.email } };
   showNotif('Salvando...','info');
   const r=await apiFetch('savecnes', payload);
   if(r.ok){
@@ -841,6 +855,7 @@ async function salvarCadastro(){
     else showNotif('Cadastro salvo.','ok');
     fecharCadastro(); carregar();
   }
+  else if(r.duplicado){ showNotif('Duplicidade: '+r.message,'err'); alert('Cadastro bloqueado por duplicidade:\n\n'+r.message); }
   else showNotif(r.message||'Erro ao salvar.','err');
 }
 async function delCad(id){
@@ -951,7 +966,7 @@ async function confirmarImport(){
   document.getElementById('btn-import').disabled=true;
   const total=importPend.length;
   const LOTE=100; // envia de 100 em 100 (evita timeout e permite barra de progresso)
-  let importados=0, marcados=[];
+  let importados=0, marcados=[], duplicados=[];
   // monta a barra
   const prev=document.getElementById('csv-preview');
   prev.innerHTML='<div style="font-size:13px;margin-bottom:8px">Importando <strong id="imp-cont">0</strong> de '+total+'...</div>'
@@ -960,7 +975,7 @@ async function confirmarImport(){
     for(let i=0;i<total;i+=LOTE){
       const lote=importPend.slice(i, i+LOTE);
       const r=await apiFetch('importcnes', { unidade:unidadeAtual, linhas:lote, __actor:{ nome:currentUser.nome, email:currentUser.email } });
-      if(r.ok){ importados+=r.importados||lote.length; if(r.marcados) marcados=marcados.concat(r.marcados); }
+      if(r.ok){ importados+=r.importados||lote.length; if(r.marcados) marcados=marcados.concat(r.marcados); if(r.duplicados) duplicados=duplicados.concat(r.duplicados); }
       else { showNotif('Erro no lote: '+(r.message||''),'err'); break; }
       const feito=Math.min(i+LOTE, total);
       const pct=Math.round(feito/total*100);
@@ -969,10 +984,16 @@ async function confirmarImport(){
     }
     document.getElementById('btn-import').disabled=false;
     let msg=importados+' cadastros importados.';
-    if(marcados.length) msg+=' '+marcados.length+' marcado(s) para corrigir.';
+    if(marcados.length) msg+=' '+marcados.length+' p/ corrigir.';
+    if(duplicados.length) msg+=' '+duplicados.length+' duplicado(s) bloqueado(s).';
     showNotif(msg,'ok');
     await carregar();
-    setTimeout(function(){ fecharImport(); if(marcados.length) alert('Importados e marcados como CORRIGIR (aparecem em vermelho):\n\n'+marcados.join('\n')); }, 600);
+    setTimeout(function(){ fecharImport();
+      let av='';
+      if(marcados.length) av+='Marcados como CORRIGIR (vermelho na lista):\n'+marcados.join('\n')+'\n\n';
+      if(duplicados.length) av+='DUPLICADOS bloqueados (CPF ja existia na unidade, nao importados):\n'+duplicados.join('\n');
+      if(av) alert(av);
+    }, 600);
   }catch(e){ document.getElementById('btn-import').disabled=false; showNotif('Erro ao importar: '+e.message,'err'); }
 }
 

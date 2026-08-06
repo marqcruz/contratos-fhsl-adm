@@ -875,8 +875,12 @@ async function salvarCadastro(){
 async function delCad(id){
   const c=cadastros.find(function(x){return String(x.ID)===String(id);});
   if(!confirm('Excluir o cadastro de "'+((c&&c.Nome)||'')+'"?')) return;
-  const r=await apiFetch('deletecnes', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
-  if(r.ok){ showNotif('Excluído.','ok'); carregar(); } else showNotif(r.message||'Erro.','err');
+  showNotif('Excluindo, aguarde...','info');
+  try{
+    const r=await apiFetch('deletecnes', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+    if(r.ok){ showNotif('Cadastro excluído com sucesso.','ok'); await carregar(); }
+    else showNotif(r.message||'Erro ao excluir.','err');
+  }catch(e){ showNotif('Erro de conexão ao excluir.','err'); }
 }
 
 // ── Seleção múltipla ──
@@ -885,10 +889,8 @@ function atualizaSelecao(){
   const sel=idsSelecionados();
   document.getElementById('sel-count').textContent=sel.length;
   document.getElementById('barra-sel').style.display=sel.length?'flex':'none';
-  // botão excluir só habilitado para admin
   const btn=document.getElementById('btn-del-sel');
   if(currentUser.role!=='admin'){ btn.style.display='none'; } else { btn.style.display='inline-flex'; }
-  // estado do "selecionar todos"
   const todos=document.querySelectorAll('.ck-linha'); const marc=document.querySelectorAll('.ck-linha:checked');
   const ckt=document.getElementById('ck-todos'); if(ckt){ ckt.checked=todos.length>0&&todos.length===marc.length; ckt.indeterminate=marc.length>0&&marc.length<todos.length; }
 }
@@ -899,12 +901,17 @@ async function excluirSelecionados(){
   const ids=idsSelecionados();
   if(!ids.length){ showNotif('Nada selecionado.','err'); return; }
   if(!confirm('Excluir '+ids.length+' cadastro(s) selecionado(s)? Esta ação não pode ser desfeita.')) return;
-  // segunda confirmação para grandes volumes
   if(ids.length>=20 && !confirm('CONFIRMAÇÃO FINAL: você está prestes a excluir '+ids.length+' cadastros de forma permanente. Continuar?')) return;
-  showNotif('Excluindo '+ids.length+'...','info');
-  const r=await apiFetch('deletecnesbatch', { ids:ids, __actor:{ nome:currentUser.nome, email:currentUser.email } });
-  if(r.ok){ showNotif(r.removidos+' cadastro(s) excluído(s).','ok'); carregar(); }
-  else showNotif(r.message||'Erro ao excluir.','err');
+  const btn=document.getElementById('btn-del-sel');
+  const txtOrig=btn.innerHTML;
+  btn.disabled=true; btn.innerHTML='⏳ Excluindo '+ids.length+'...';
+  showNotif('Excluindo '+ids.length+' cadastro(s), aguarde...','info');
+  try{
+    const r=await apiFetch('deletecnesbatch', { ids:ids, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+    btn.disabled=false; btn.innerHTML=txtOrig;
+    if(r.ok){ showNotif('✅ '+r.removidos+' cadastro(s) excluído(s) com sucesso.','ok'); limparSelecao(); await carregar(); }
+    else showNotif(r.message||'Erro ao excluir.','err');
+  }catch(e){ btn.disabled=false; btn.innerHTML=txtOrig; showNotif('Erro de conexão. Recarregue e verifique se os cadastros foram excluídos.','err'); }
 }
 
 // ── Imprimir ──

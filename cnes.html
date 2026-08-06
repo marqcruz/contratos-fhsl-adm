@@ -533,38 +533,22 @@ td.nowrap{white-space:nowrap}
 <!-- MODAL IMPORTAR CSV -->
 <div class="modal-overlay" id="modal-import" onclick="if(event.target.id==='modal-import')fecharImport()">
   <div class="modal">
-    <div class="mhead"><div class="mtitle">Importar carga inicial (CSV) <span style="font-size:10px;color:var(--text3);font-weight:400">v2</span></div><button class="mclose" onclick="fecharImport()">✕</button></div>
+    <div class="mhead"><div class="mtitle">Importar carga inicial (CSV)</div><button class="mclose" onclick="fecharImport()">✕</button></div>
     <div class="mbody">
-      <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Importa cadastros para <strong id="import-unidade">—</strong>.</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Importa cadastros para <strong id="import-unidade">—</strong>.</p>
 
-      <div style="display:flex;gap:8px;align-items:center;background:var(--accent-bg,#e7f0f9);border-radius:8px;padding:10px 12px;margin-bottom:12px;flex-wrap:wrap">
-        <span style="font-size:13px;color:var(--text2)">Não tem o arquivo pronto?</span>
-        <button class="btn sm" onclick="baixarModelo()">⬇️ Baixar modelo CSV</button>
+      <div style="background:#e7f0f9;border:1px solid #b8d4ea;border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:13px;color:#1a3550;margin-bottom:10px;font-weight:600">Não tem o arquivo pronto? Baixe o modelo:</div>
+        <button type="button" onclick="baixarModelo()" style="padding:10px 18px;background:#1d6aad;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:block;width:100%">⬇️ BAIXAR MODELO CSV</button>
       </div>
 
-      <details style="margin-bottom:12px;background:var(--surface2);border-radius:8px;padding:10px 12px">
-        <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--accent-text)">📖 Como preencher o modelo (guia)</summary>
-        <div style="font-size:12px;color:var(--text2);line-height:1.7;margin-top:10px">
-          <p><strong>1 linha por profissional.</strong> A unidade não vai na planilha — é definida aqui, pela unidade que você está com aberta (<strong id="guia-unidade">—</strong>).</p>
-          <p style="margin-top:8px"><strong>Colunas:</strong></p>
-          <table style="width:100%;font-size:11.5px;border-collapse:collapse;margin-top:4px">
-            <tr><td style="padding:2px 6px"><strong>Nome</strong></td><td>obrigatório — nome completo</td></tr>
-            <tr><td style="padding:2px 6px"><strong>CPF</strong></td><td>obrigatório — só números (zeros à esquerda mantidos)</td></tr>
-            <tr><td style="padding:2px 6px"><strong>Tipo</strong></td><td>1=Administrativo · 2=Médico · 3=Assistencial</td></tr>
-            <tr><td style="padding:2px 6px"><strong>CBO</strong></td><td>código (6 dígitos), com ou sem descrição junto</td></tr>
-            <tr><td style="padding:2px 6px"><strong>Conselho</strong></td><td>órgão de classe (ex: 06-MEDICINA CONSELHO REGIONAL)</td></tr>
-            <tr><td style="padding:2px 6px"><strong>NumConselho</strong></td><td>número do registro</td></tr>
-            <tr><td style="padding:2px 6px"><strong>IndicadorVinculo</strong></td><td>ex: Empregado / Autônomo</td></tr>
-            <tr><td style="padding:2px 6px"><strong>CNPJ</strong></td><td>só números (validado)</td></tr>
-            <tr><td style="padding:2px 6px"><strong>CHAmbulatorial / CHHospitalar / CHOutros</strong></td><td>horas (números)</td></tr>
-            <tr><td style="padding:2px 6px"><strong>Competencia</strong></td><td>obrigatório — formato MM/AAAA (ex: 05/2026)</td></tr>
-            <tr><td style="padding:2px 6px"><strong>DataInclusao</strong></td><td>DD/MM/AAAA</td></tr>
-            <tr><td style="padding:2px 6px"><strong>Status</strong></td><td>ATIVO (padrão), AGUARDANDO INSERÇÃO, etc.</td></tr>
-          </table>
-          <p style="margin-top:8px"><strong>Regras:</strong> CPF/CNPJ inválidos são importados e marcados como CORRIGIR (aparecem em vermelho, nada se perde). CPF duplicado na mesma unidade é bloqueado. Nomes de coluna são flexíveis (reconhece "NOME DO PROFISSIONAL", "DATA INSERÇÃO", "ÓRGÃO", "REG CLASSE", "CNPJ DO DETALHAMENTO", etc.).</p>
-          <p style="margin-top:8px;color:var(--text3)">Dica: teste com 5 linhas primeiro para conferir antes de importar tudo.</p>
-        </div>
-      </details>
+      <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.7">
+        <div style="font-weight:700;margin-bottom:6px;color:var(--text)">📖 Como preencher</div>
+        <div><strong>1 linha por profissional.</strong> A unidade é definida aqui (a que está aberta), não vai na planilha.</div>
+        <div style="margin-top:8px"><strong>Colunas:</strong> Nome, CPF (obrigatórios) · Tipo (1=Adm, 2=Médico, 3=Assistencial) · CBO · Conselho · NumConselho · IndicadorVinculo · CNPJ · CHAmbulatorial · CHHospitalar · CHOutros · Competencia (MM/AAAA, obrigatório) · DataInclusao · Status.</div>
+        <div style="margin-top:8px"><strong>Regras:</strong> CPF/CNPJ inválidos entram marcados como CORRIGIR (em vermelho, nada se perde). CPF duplicado na mesma unidade é bloqueado. Nomes de coluna são flexíveis.</div>
+        <div style="margin-top:8px;color:var(--text3)">Dica: teste com 5 linhas antes de importar tudo.</div>
+      </div>
 
       <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px">Selecione o arquivo CSV preenchido:</label>
       <input type="file" id="csv-input" accept=".csv" onchange="lerCsv(this)">

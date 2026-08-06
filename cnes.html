@@ -477,10 +477,18 @@ td.nowrap{white-space:nowrap}
       <div style="flex:1"></div>
       <button class="btn" onclick="abrirImport()">📥 Importar CSV</button>
       <button class="btn" onclick="exportarCsv()">📤 Exportar CSV</button>
+      <button class="btn" onclick="imprimirLista(false)">🖨️ Imprimir</button>
       <button class="btn primary" onclick="abrirCadastro()">➕ Novo cadastro</button>
     </div>
+    <div id="barra-sel" style="display:none;align-items:center;gap:10px;background:var(--accent-bg,#e7f0f9);border-radius:10px;padding:8px 14px;margin-bottom:10px;flex-wrap:wrap">
+      <strong id="sel-count">0</strong> selecionado(s)
+      <div style="flex:1"></div>
+      <button class="btn sm" onclick="imprimirLista(true)">🖨️ Imprimir selecionados</button>
+      <button class="btn sm danger" id="btn-del-sel" onclick="excluirSelecionados()">🗑️ Excluir selecionados</button>
+      <button class="btn sm" onclick="limparSelecao()">Limpar seleção</button>
+    </div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Nome</th><th>CPF</th><th>Tipo</th><th>CBO</th><th>Conselho</th><th>Vínculo</th><th>CH (A/H/O)</th><th>Comp.</th><th>Status</th><th>CNES</th><th>Atualizado em</th><th></th></tr></thead>
+      <thead><tr><th style="width:32px"><input type="checkbox" id="ck-todos" onclick="toggleTodos(this)" title="Selecionar todos"></th><th>Nome</th><th>CPF</th><th>Tipo</th><th>CBO</th><th>Conselho</th><th>Vínculo</th><th>CH (A/H/O)</th><th>Comp.</th><th>Status</th><th>CNES</th><th>Atualizado em</th><th></th></tr></thead>
       <tbody id="tabela-body"></tbody>
     </table><div class="empty-state" id="tabela-empty" style="display:none"><span class="empty-icon">📋</span>Nenhum cadastro nesta unidade ainda</div></div>
   </div>
@@ -725,21 +733,24 @@ function montarFiltroComp(){
   s.innerHTML='<option value="">Todas as competências</option>'+comps.map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
 }
 
-function renderTabela(){
+function listaFiltrada(){
   const q=(document.getElementById('busca').value||'').toLowerCase();
   const fc=document.getElementById('filtro-comp').value;
   const ft=document.getElementById('filtro-tipo').value;
   const fs=document.getElementById('filtro-status').value;
-  let lista=cadastros.filter(function(c){
+  const fcnes=document.getElementById('filtro-cnes')?document.getElementById('filtro-cnes').value:'';
+  return cadastros.filter(function(c){
     if(q && !((c.Nome+' '+c.CPF+' '+c.CBO+' '+c.CBODesc).toLowerCase().includes(q))) return false;
     if(fc && fmtComp(c.Competencia)!==fc) return false;
     if(ft && String(c.Tipo)!==ft) return false;
     if(fs && (c.Status||'Ativo')!==fs) return false;
-    const fcnes=document.getElementById('filtro-cnes')?document.getElementById('filtro-cnes').value:'';
     if(fcnes==='sim' && String(c.CadastradoCNES)!=='true') return false;
     if(fcnes==='nao' && String(c.CadastradoCNES)==='true') return false;
     return true;
   });
+}
+function renderTabela(){
+  let lista=listaFiltrada();
   // KPIs (da unidade toda, não do filtro)
   document.getElementById('kpi-total').textContent=cadastros.length;
   document.getElementById('kpi-ativos').textContent=cadastros.filter(function(c){return (c.Status||'Ativo')==='Ativo';}).length;
@@ -758,7 +769,7 @@ function renderTabela(){
     const stCell=corrigir?('<span class="badge c-red-b">⚠️ '+esc(st)+'</span>'):esc(st);
     const cpfLimpo=padCPF(c.CPF);
     const chTotal=(parseInt(c.CHAmbulatorial||0,10)+parseInt(c.CHHospitalar||0,10)+parseInt(c.CHOutros||0,10));
-    return '<tr'+(corrigir?' class="row-corrigir"':'')+'><td><strong>'+esc(c.Nome)+'</strong></td>'
+    return '<tr'+(corrigir?' class="row-corrigir"':'')+'><td><input type="checkbox" class="ck-linha" value="'+c.ID+'" onclick="atualizaSelecao()"></td><td><strong>'+esc(c.Nome)+'</strong></td>'
       +'<td class="nowrap">'+fmtCpf(c.CPF)+' <button class="cp-btn" title="Copiar CPF sem pontos" onclick="copiar(\''+cpfLimpo+'\',\'CPF\')">📋</button></td>'
       +'<td>'+tipoBadge(String(c.Tipo))+'</td>'
       +'<td class="nowrap"><span style="font-family:monospace">'+esc(c.CBO)+'</span> <button class="cp-btn" title="Copiar código CBO" onclick="copiar(\''+esc(c.CBO)+'\',\'CBO\')">📋</button> '+esc(c.CBODesc||'')+'</td>'
@@ -769,6 +780,9 @@ function renderTabela(){
       +'<td style="font-size:12px;color:var(--text2)">'+esc(fmtDataHora(c.AtualizadoEm||c.CriadoEm))+'</td>'
       +'<td style="white-space:nowrap">'+acoes+'</td></tr>';
   }).join('');
+  // reseta seleção ao re-renderizar
+  const bs=document.getElementById('barra-sel'); if(bs) bs.style.display='none';
+  const ct=document.getElementById('ck-todos'); if(ct){ ct.checked=false; ct.indeterminate=false; }
 }
 function copiar(txt, label){
   navigator.clipboard.writeText(String(txt)).then(function(){ showNotif((label||'Valor')+' copiado: '+txt,'ok'); });
@@ -863,6 +877,68 @@ async function delCad(id){
   if(!confirm('Excluir o cadastro de "'+((c&&c.Nome)||'')+'"?')) return;
   const r=await apiFetch('deletecnes', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
   if(r.ok){ showNotif('Excluído.','ok'); carregar(); } else showNotif(r.message||'Erro.','err');
+}
+
+// ── Seleção múltipla ──
+function idsSelecionados(){ return Array.prototype.map.call(document.querySelectorAll('.ck-linha:checked'), function(c){ return c.value; }); }
+function atualizaSelecao(){
+  const sel=idsSelecionados();
+  document.getElementById('sel-count').textContent=sel.length;
+  document.getElementById('barra-sel').style.display=sel.length?'flex':'none';
+  // botão excluir só habilitado para admin
+  const btn=document.getElementById('btn-del-sel');
+  if(currentUser.role!=='admin'){ btn.style.display='none'; } else { btn.style.display='inline-flex'; }
+  // estado do "selecionar todos"
+  const todos=document.querySelectorAll('.ck-linha'); const marc=document.querySelectorAll('.ck-linha:checked');
+  const ckt=document.getElementById('ck-todos'); if(ckt){ ckt.checked=todos.length>0&&todos.length===marc.length; ckt.indeterminate=marc.length>0&&marc.length<todos.length; }
+}
+function toggleTodos(el){ document.querySelectorAll('.ck-linha').forEach(function(c){ c.checked=el.checked; }); atualizaSelecao(); }
+function limparSelecao(){ document.querySelectorAll('.ck-linha').forEach(function(c){ c.checked=false; }); const t=document.getElementById('ck-todos'); if(t){t.checked=false;t.indeterminate=false;} atualizaSelecao(); }
+async function excluirSelecionados(){
+  if(currentUser.role!=='admin'){ showNotif('Apenas administradores podem excluir em massa.','err'); return; }
+  const ids=idsSelecionados();
+  if(!ids.length){ showNotif('Nada selecionado.','err'); return; }
+  if(!confirm('Excluir '+ids.length+' cadastro(s) selecionado(s)? Esta ação não pode ser desfeita.')) return;
+  // segunda confirmação para grandes volumes
+  if(ids.length>=20 && !confirm('CONFIRMAÇÃO FINAL: você está prestes a excluir '+ids.length+' cadastros de forma permanente. Continuar?')) return;
+  showNotif('Excluindo '+ids.length+'...','info');
+  const r=await apiFetch('deletecnesbatch', { ids:ids, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  if(r.ok){ showNotif(r.removidos+' cadastro(s) excluído(s).','ok'); carregar(); }
+  else showNotif(r.message||'Erro ao excluir.','err');
+}
+
+// ── Imprimir ──
+function imprimirLista(apenasSelecionados){
+  let lista;
+  if(apenasSelecionados){
+    const ids=idsSelecionados();
+    lista=cadastros.filter(function(c){ return ids.indexOf(String(c.ID))>=0; });
+  } else {
+    lista=listaFiltrada(); // respeita os filtros ativos
+  }
+  if(!lista.length){ showNotif('Nada para imprimir.','err'); return; }
+  const tiposLbl={'1':'Administrativo','2':'Médico','3':'Assistencial'};
+  let linhas='';
+  lista.forEach(function(c){
+    linhas+='<tr><td>'+esc(c.Nome)+'</td><td>'+padCPF(c.CPF)+'</td><td>'+(tiposLbl[String(c.Tipo)]||c.Tipo||'')+'</td>'
+      +'<td>'+esc(c.CBO||'')+' '+esc(c.CBODesc||'')+'</td><td>'+esc(c.Conselho||'')+' '+esc(c.NumConselho||'')+'</td>'
+      +'<td>'+((c.CHAmbulatorial||'0')+'/'+(c.CHHospitalar||'0')+'/'+(c.CHOutros||'0'))+'</td>'
+      +'<td>'+esc(fmtComp(c.Competencia))+'</td><td>'+esc(c.Status||'')+'</td>'
+      +'<td>'+(String(c.CadastradoCNES)==='true'?'Sim':'Não')+'</td></tr>';
+  });
+  const w=window.open('','_blank');
+  w.document.write('<html><head><title>CNES - '+esc(unidadeAtual||'')+'</title><style>'
+    +'body{font-family:Arial,sans-serif;color:#222;padding:0;font-size:11px}'
+    +'.cab{background:#1d6aad;color:#fff;padding:16px 22px}.cab h1{margin:0;font-size:15px}.cab p{margin:2px 0 0;font-size:11px;opacity:.9}'
+    +'.body{padding:18px 22px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:4px 7px;text-align:left;font-size:10.5px}'
+    +'th{background:#f0f0ee;text-transform:uppercase;font-size:9px;letter-spacing:.03em}'
+    +'@media print{button{display:none}.cab{-webkit-print-color-adjust:exact;print-color-adjust:exact}}'
+    +'</style></head><body><div class="cab"><h1>CNES — '+esc(unidadeAtual||'')+'</h1><p>'+lista.length+' profissional(is) · Emitido em '+new Date().toLocaleString('pt-BR')+'</p></div>'
+    +'<div class="body"><table><thead><tr><th>Nome</th><th>CPF</th><th>Tipo</th><th>CBO</th><th>Conselho</th><th>CH A/H/O</th><th>Comp.</th><th>Status</th><th>CNES</th></tr></thead><tbody>'
+    +linhas+'</tbody></table></div>'
+    +'<div style="padding:0 22px 22px;display:flex;gap:10px"><button onclick="window.print()" style="padding:11px 20px;background:#1d6aad;color:#fff;border:none;border-radius:8px;cursor:pointer">🖨️ Imprimir</button>'
+    +'<button onclick="window.close()" style="padding:11px 20px;background:#e8e8e4;border:none;border-radius:8px;cursor:pointer">✕ Fechar</button></div></body></html>');
+  w.document.close();
 }
 
 // ── Importar CSV ──

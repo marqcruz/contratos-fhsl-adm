@@ -378,6 +378,18 @@ tr:hover td{background:var(--surface2)}
 .c-yellow-b{background:#fef9c3;color:#854d0e}
 #nav-unidades .nav-item{width:100%;text-align:left}
 .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600}
+
+
+.prog-wrap{width:100%;height:14px;background:var(--surface2);border-radius:8px;overflow:hidden}
+.prog-bar{height:100%;background:var(--accent,#1d6aad);transition:width .3s;border-radius:8px}
+.cp-btn{background:none;border:none;cursor:pointer;font-size:12px;padding:1px 3px;border-radius:4px;opacity:.6;vertical-align:middle}
+.cp-btn:hover{opacity:1;background:var(--surface2)}
+td.nowrap{white-space:nowrap}
+.row-corrigir{background:rgba(220,38,38,.07)}
+.row-corrigir td{border-top:1px solid rgba(220,38,38,.2);border-bottom:1px solid rgba(220,38,38,.2)}
+.c-red-b{background:#fee2e2;color:#991b1b}
+.stat-card.c-red .stat-num{color:#dc2626}
+
 </style>
 <style>
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600}
@@ -452,6 +464,7 @@ tr:hover td{background:var(--surface2)}
       <div class="stat-card c-green"><div class="stat-num" id="kpi-ativos">0</div><div class="stat-label">Ativos</div></div>
       <div class="stat-card c-blue"><div class="stat-num" id="kpi-med">0</div><div class="stat-label">Médicos (tipo 3)</div></div>
       <div class="stat-card c-yellow"><div class="stat-num" id="kpi-assist">0</div><div class="stat-label">Assistenciais (tipo 2)</div></div>
+      <div class="stat-card c-red"><div class="stat-num" id="kpi-corrigir">0</div><div class="stat-label">A corrigir</div></div>
     </div>
     <div class="toolbar">
       <input type="text" id="busca" placeholder="🔍 Buscar por nome, CPF, CBO..." oninput="renderTabela()">
@@ -464,7 +477,7 @@ tr:hover td{background:var(--surface2)}
       <button class="btn primary" onclick="abrirCadastro()">➕ Novo cadastro</button>
     </div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Nome</th><th>CPF</th><th>Tipo</th><th>CBO</th><th>Conselho</th><th>Vínculo</th><th>CH (A/H/O)</th><th>Comp.</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th>Nome</th><th>CPF</th><th>Tipo</th><th>CBO</th><th>Conselho</th><th>Vínculo</th><th>CH (A/H/O)</th><th>Comp.</th><th>Status</th><th>Atualizado em</th><th></th></tr></thead>
       <tbody id="tabela-body"></tbody>
     </table><div class="empty-state" id="tabela-empty" style="display:none"><span class="empty-icon">📋</span>Nenhum cadastro nesta unidade ainda</div></div>
   </div>
@@ -699,7 +712,7 @@ async function carregar(){
 function hideNotif(){ const n=document.getElementById('notif'); if(n) n.style.display='none'; }
 
 function montarFiltroComp(){
-  const comps=[]; cadastros.forEach(function(c){ if(c.Competencia && comps.indexOf(c.Competencia)<0) comps.push(c.Competencia); });
+  const comps=[]; cadastros.forEach(function(c){ const cp=fmtComp(c.Competencia); if(cp && cp!=='—' && comps.indexOf(cp)<0) comps.push(cp); });
   comps.sort();
   const s=document.getElementById('filtro-comp');
   s.innerHTML='<option value="">Todas as competências</option>'+comps.map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
@@ -712,7 +725,7 @@ function renderTabela(){
   const fs=document.getElementById('filtro-status').value;
   let lista=cadastros.filter(function(c){
     if(q && !((c.Nome+' '+c.CPF+' '+c.CBO+' '+c.CBODesc).toLowerCase().includes(q))) return false;
-    if(fc && c.Competencia!==fc) return false;
+    if(fc && fmtComp(c.Competencia)!==fc) return false;
     if(ft && String(c.Tipo)!==ft) return false;
     if(fs && (c.Status||'Ativo')!==fs) return false;
     return true;
@@ -722,17 +735,54 @@ function renderTabela(){
   document.getElementById('kpi-ativos').textContent=cadastros.filter(function(c){return (c.Status||'Ativo')==='Ativo';}).length;
   document.getElementById('kpi-med').textContent=cadastros.filter(function(c){return String(c.Tipo)==='3';}).length;
   document.getElementById('kpi-assist').textContent=cadastros.filter(function(c){return String(c.Tipo)==='2';}).length;
+  document.getElementById('kpi-corrigir').textContent=cadastros.filter(function(c){return /^CORRIGIR/i.test(String(c.Status||''));}).length;
   document.getElementById('tabela-empty').style.display=lista.length?'none':'block';
   const tipoBadge=function(t){ const m={'1':'c-yellow-b','2':'c-blue-b','3':'c-green-b'}; return '<span class="badge '+(m[t]||'')+'">'+(t||'?')+'</span>'; };
   document.getElementById('tabela-body').innerHTML=lista.map(function(c){
     const acoes=(podeEditar()?'<button class="btn sm" onclick="editarCad(\''+c.ID+'\')">✏️</button> <button class="btn sm danger" onclick="delCad(\''+c.ID+'\')">🗑️</button>':'<button class="btn sm" onclick="editarCad(\''+c.ID+'\')">👁️</button>');
     const ch=(c.CHAmbulatorial||'0')+'/'+(c.CHHospitalar||'0')+'/'+(c.CHOutros||'0');
-    return '<tr><td><strong>'+esc(c.Nome)+'</strong></td><td>'+fmtCpf(c.CPF)+'</td><td>'+tipoBadge(String(c.Tipo))+'</td>'
-      +'<td><span style="font-family:monospace">'+esc(c.CBO)+'</span> '+esc(c.CBODesc||'')+'</td>'
+    const st=String(c.Status||'Ativo');
+    const corrigir=/^CORRIGIR/i.test(st);
+    const stCell=corrigir?('<span class="badge c-red-b">⚠️ '+esc(st)+'</span>'):esc(st);
+    const cpfLimpo=padCPF(c.CPF);
+    const chTotal=(parseInt(c.CHAmbulatorial||0,10)+parseInt(c.CHHospitalar||0,10)+parseInt(c.CHOutros||0,10));
+    return '<tr'+(corrigir?' class="row-corrigir"':'')+'><td><strong>'+esc(c.Nome)+'</strong></td>'
+      +'<td class="nowrap">'+fmtCpf(c.CPF)+' <button class="cp-btn" title="Copiar CPF sem pontos" onclick="copiar(\''+cpfLimpo+'\',\'CPF\')">📋</button></td>'
+      +'<td>'+tipoBadge(String(c.Tipo))+'</td>'
+      +'<td class="nowrap"><span style="font-family:monospace">'+esc(c.CBO)+'</span> <button class="cp-btn" title="Copiar código CBO" onclick="copiar(\''+esc(c.CBO)+'\',\'CBO\')">📋</button> '+esc(c.CBODesc||'')+'</td>'
       +'<td>'+esc(c.Conselho||'')+' '+esc(c.NumConselho||'')+'</td><td>'+esc(c.IndicadorVinculo||'')+'</td>'
-      +'<td>'+ch+'</td><td>'+esc(c.Competencia||'')+'</td><td>'+esc(c.Status||'Ativo')+'</td>'
+      +'<td class="nowrap">'+ch+' <button class="cp-btn" title="Copiar CH total ('+chTotal+')" onclick="copiar(\''+chTotal+'\',\'Carga horária\')">📋</button></td>'
+      +'<td>'+esc(fmtComp(c.Competencia))+'</td><td>'+stCell+'</td>'
+      +'<td style="font-size:12px;color:var(--text2)">'+esc(fmtDataHora(c.AtualizadoEm||c.CriadoEm))+'</td>'
       +'<td style="white-space:nowrap">'+acoes+'</td></tr>';
   }).join('');
+}
+function copiar(txt, label){
+  navigator.clipboard.writeText(String(txt)).then(function(){ showNotif((label||'Valor')+' copiado: '+txt,'ok'); });
+}
+// formata datas ISO -> dd/MM/yyyy (e mantém dd/MM/yyyy HH:mm se já vier assim)
+function fmtDataHora(v){
+  if(!v) return '—'; const s=String(v);
+  if(/^\d{2}\/\d{2}\/\d{4}/.test(s)) return s;
+  const d=new Date(s); if(isNaN(d.getTime())) return s;
+  return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+}
+// converte dd/MM/yyyy ou ISO -> YYYY-MM-DD (para input type=date)
+function normDataInput(v){
+  if(!v) return ''; const s=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  let m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})/); if(m) return m[3]+'-'+m[2]+'-'+m[1];
+  const d=new Date(s); if(!isNaN(d.getTime())) return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  return '';
+}
+// competência sempre MM/AAAA (aceita ISO, dd/MM/yyyy, MM/AAAA)
+function fmtComp(v){
+  if(!v) return '—'; const s=String(v).trim();
+  if(/^\d{2}\/\d{4}$/.test(s)) return s;
+  let m=s.match(/^(\d{4})-(\d{2})/); if(m) return m[2]+'/'+m[1];
+  m=s.match(/\d{2}\/(\d{2})\/(\d{4})/); if(m) return m[1]+'/'+m[2];
+  const d=new Date(s); if(!isNaN(d.getTime())) return ('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+  return s;
 }
 
 // ── Cadastro ──
@@ -758,7 +808,7 @@ function editarCad(id){
   document.getElementById('cd-cnpj').value=c.CNPJ||'';
   document.getElementById('cd-cha').value=c.CHAmbulatorial||''; document.getElementById('cd-chh').value=c.CHHospitalar||''; document.getElementById('cd-cho').value=c.CHOutros||'';
   document.getElementById('cd-comp').value=c.Competencia||'';
-  document.getElementById('cd-datainc').value=c.DataInclusao||''; document.getElementById('cd-datasaida').value=c.DataSaida||'';
+  document.getElementById('cd-datainc').value=normDataInput(c.DataInclusao); document.getElementById('cd-datasaida').value=normDataInput(c.DataSaida);
   document.getElementById('cd-status').value=c.Status||'Ativo';
   document.getElementById('cd-obs').value=c.Obs||'';
   document.getElementById('cpf-msg').textContent=''; document.getElementById('cnpj-msg').textContent='';
@@ -770,9 +820,10 @@ async function salvarCadastro(){
   const nome=document.getElementById('cd-nome').value.trim();
   const cpf=document.getElementById('cd-cpf').value.trim();
   if(!nome){ showNotif('Informe o nome.','err'); return; }
-  if(cpf && !validaCPF(cpf)){ showNotif('CPF inválido.','err'); return; }
   const cnpj=document.getElementById('cd-cnpj').value.trim();
-  if(cnpj && !validaCNPJ(cnpj)){ showNotif('CNPJ inválido.','err'); return; }
+  // não bloqueia: apenas avisa; o servidor marca status CORRIGIR
+  if(cpf && !validaCPF(cpf)) showNotif('CPF inválido — será salvo e marcado como CORRIGIR CPF.','info');
+  else if(cnpj && !validaCNPJ(cnpj)) showNotif('CNPJ inválido — será salvo e marcado como CORRIGIR CNPJ.','info');
   const cbo=document.getElementById('cd-cbo').value;
   const cboObj=CBOS.find(function(x){return x[0]===cbo;});
   const payload={ ID:document.getElementById('cd-id').value||'', Unidade:unidadeAtual, Nome:nome, CPF:cpf,
@@ -785,7 +836,11 @@ async function salvarCadastro(){
     Obs:document.getElementById('cd-obs').value.trim(), __actor:{ nome:currentUser.nome, email:currentUser.email } };
   showNotif('Salvando...','info');
   const r=await apiFetch('savecnes', payload);
-  if(r.ok){ showNotif('Cadastro salvo.','ok'); fecharCadastro(); carregar(); }
+  if(r.ok){
+    if(r.statusAjustado) showNotif('Cadastro salvo e marcado como '+r.statusAjustado+'.','ok');
+    else showNotif('Cadastro salvo.','ok');
+    fecharCadastro(); carregar();
+  }
   else showNotif(r.message||'Erro ao salvar.','err');
 }
 async function delCad(id){
@@ -884,8 +939,8 @@ function lerCsv(input){
     document.getElementById('csv-preview').innerHTML=
       '<div style="margin-bottom:8px"><strong>'+convert.length+'</strong> linhas lidas.</div>'
       +'<div style="font-size:12px;margin-bottom:8px">Colunas: '+colsRecon+'</div>'
-      +(badCpf?'<div style="color:var(--red-text);font-size:12px">⚠️ '+badCpf+' CPF(s) inválido(s) serão pulados.</div>':'')
-      +(badCnpj?'<div style="color:var(--red-text);font-size:12px">⚠️ '+badCnpj+' CNPJ(s) inválido(s) serão pulados.</div>':'')
+      +(badCpf?'<div style="color:var(--red-text);font-size:12px">⚠️ '+badCpf+' CPF(s) inválido(s) serão importados e marcados como CORRIGIR CPF.</div>':'')
+      +(badCnpj?'<div style="color:var(--red-text);font-size:12px">⚠️ '+badCnpj+' CNPJ(s) inválido(s) serão importados e marcados como CORRIGIR CNPJ.</div>':'')
       +'<div style="color:var(--green-text);font-size:12px">✔️ '+okCpf+' CPF(s) válido(s).</div>';
     document.getElementById('btn-import').style.display='inline-flex';
   };
@@ -894,15 +949,31 @@ function lerCsv(input){
 async function confirmarImport(){
   if(!importPend || !importPend.length){ showNotif('Nada para importar.','err'); return; }
   document.getElementById('btn-import').disabled=true;
-  showNotif('Importando '+importPend.length+' cadastros...','info');
-  const r=await apiFetch('importcnes', { unidade:unidadeAtual, linhas:importPend, __actor:{ nome:currentUser.nome, email:currentUser.email } });
-  document.getElementById('btn-import').disabled=false;
-  if(r.ok){
-    let msg=r.importados+' cadastros importados.';
-    if(r.erros && r.erros.length) msg+=' '+r.erros.length+' com erro (pulados).';
-    showNotif(msg,'ok'); fecharImport(); carregar();
-    if(r.erros && r.erros.length) alert('Linhas com erro:\n\n'+r.erros.join('\n'));
-  } else showNotif(r.message||'Erro ao importar.','err');
+  const total=importPend.length;
+  const LOTE=100; // envia de 100 em 100 (evita timeout e permite barra de progresso)
+  let importados=0, marcados=[];
+  // monta a barra
+  const prev=document.getElementById('csv-preview');
+  prev.innerHTML='<div style="font-size:13px;margin-bottom:8px">Importando <strong id="imp-cont">0</strong> de '+total+'...</div>'
+    +'<div class="prog-wrap"><div class="prog-bar" id="imp-bar" style="width:0%"></div></div>';
+  try{
+    for(let i=0;i<total;i+=LOTE){
+      const lote=importPend.slice(i, i+LOTE);
+      const r=await apiFetch('importcnes', { unidade:unidadeAtual, linhas:lote, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+      if(r.ok){ importados+=r.importados||lote.length; if(r.marcados) marcados=marcados.concat(r.marcados); }
+      else { showNotif('Erro no lote: '+(r.message||''),'err'); break; }
+      const feito=Math.min(i+LOTE, total);
+      const pct=Math.round(feito/total*100);
+      document.getElementById('imp-bar').style.width=pct+'%';
+      document.getElementById('imp-cont').textContent=feito;
+    }
+    document.getElementById('btn-import').disabled=false;
+    let msg=importados+' cadastros importados.';
+    if(marcados.length) msg+=' '+marcados.length+' marcado(s) para corrigir.';
+    showNotif(msg,'ok');
+    await carregar();
+    setTimeout(function(){ fecharImport(); if(marcados.length) alert('Importados e marcados como CORRIGIR (aparecem em vermelho):\n\n'+marcados.join('\n')); }, 600);
+  }catch(e){ document.getElementById('btn-import').disabled=false; showNotif('Erro ao importar: '+e.message,'err'); }
 }
 
 // ── Exportar CSV ──

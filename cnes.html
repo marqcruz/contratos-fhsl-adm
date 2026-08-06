@@ -535,10 +535,38 @@ td.nowrap{white-space:nowrap}
   <div class="modal">
     <div class="mhead"><div class="mtitle">Importar carga inicial (CSV)</div><button class="mclose" onclick="fecharImport()">✕</button></div>
     <div class="mbody">
-      <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Importa cadastros para <strong id="import-unidade">—</strong>. O CSV deve ter cabeçalho na 1ª linha.</p>
-      <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2);margin-bottom:12px">
-        Colunas reconhecidas (nessa ordem ou por nome): <strong>Nome, CPF, Tipo, CBO, CBODesc, Conselho, NumConselho, IndicadorVinculo, CNPJ, CHAmbulatorial, CHHospitalar, CHOutros, Competencia, DataInclusao, DataSaida, Status</strong>. CPF e CNPJ são validados; zeros à esquerda do CPF são preservados.
+      <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Importa cadastros para <strong id="import-unidade">—</strong>.</p>
+
+      <div style="display:flex;gap:8px;align-items:center;background:var(--accent-bg,#e7f0f9);border-radius:8px;padding:10px 12px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-size:13px;color:var(--text2)">Não tem o arquivo pronto?</span>
+        <button class="btn sm" onclick="baixarModelo()">⬇️ Baixar modelo CSV</button>
       </div>
+
+      <details style="margin-bottom:12px;background:var(--surface2);border-radius:8px;padding:10px 12px">
+        <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--accent-text)">📖 Como preencher o modelo (guia)</summary>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;margin-top:10px">
+          <p><strong>1 linha por profissional.</strong> A unidade não vai na planilha — é definida aqui, pela unidade que você está com aberta (<strong id="guia-unidade">—</strong>).</p>
+          <p style="margin-top:8px"><strong>Colunas:</strong></p>
+          <table style="width:100%;font-size:11.5px;border-collapse:collapse;margin-top:4px">
+            <tr><td style="padding:2px 6px"><strong>Nome</strong></td><td>obrigatório — nome completo</td></tr>
+            <tr><td style="padding:2px 6px"><strong>CPF</strong></td><td>obrigatório — só números (zeros à esquerda mantidos)</td></tr>
+            <tr><td style="padding:2px 6px"><strong>Tipo</strong></td><td>1=Administrativo · 2=Médico · 3=Assistencial</td></tr>
+            <tr><td style="padding:2px 6px"><strong>CBO</strong></td><td>código (6 dígitos), com ou sem descrição junto</td></tr>
+            <tr><td style="padding:2px 6px"><strong>Conselho</strong></td><td>órgão de classe (ex: 06-MEDICINA CONSELHO REGIONAL)</td></tr>
+            <tr><td style="padding:2px 6px"><strong>NumConselho</strong></td><td>número do registro</td></tr>
+            <tr><td style="padding:2px 6px"><strong>IndicadorVinculo</strong></td><td>ex: Empregado / Autônomo</td></tr>
+            <tr><td style="padding:2px 6px"><strong>CNPJ</strong></td><td>só números (validado)</td></tr>
+            <tr><td style="padding:2px 6px"><strong>CHAmbulatorial / CHHospitalar / CHOutros</strong></td><td>horas (números)</td></tr>
+            <tr><td style="padding:2px 6px"><strong>Competencia</strong></td><td>obrigatório — formato MM/AAAA (ex: 05/2026)</td></tr>
+            <tr><td style="padding:2px 6px"><strong>DataInclusao</strong></td><td>DD/MM/AAAA</td></tr>
+            <tr><td style="padding:2px 6px"><strong>Status</strong></td><td>ATIVO (padrão), AGUARDANDO INSERÇÃO, etc.</td></tr>
+          </table>
+          <p style="margin-top:8px"><strong>Regras:</strong> CPF/CNPJ inválidos são importados e marcados como CORRIGIR (aparecem em vermelho, nada se perde). CPF duplicado na mesma unidade é bloqueado. Nomes de coluna são flexíveis (reconhece "NOME DO PROFISSIONAL", "DATA INSERÇÃO", "ÓRGÃO", "REG CLASSE", "CNPJ DO DETALHAMENTO", etc.).</p>
+          <p style="margin-top:8px;color:var(--text3)">Dica: teste com 5 linhas primeiro para conferir antes de importar tudo.</p>
+        </div>
+      </details>
+
+      <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px">Selecione o arquivo CSV preenchido:</label>
       <input type="file" id="csv-input" accept=".csv" onchange="lerCsv(this)">
       <div id="csv-preview" style="margin-top:12px;font-size:13px"></div>
     </div>
@@ -952,9 +980,23 @@ function imprimirLista(apenasSelecionados){
 function abrirImport(){
   if(!unidadeAtual){ showNotif('Selecione uma unidade primeiro.','err'); return; }
   document.getElementById('import-unidade').textContent=unidadeAtual;
+  const gu=document.getElementById('guia-unidade'); if(gu) gu.textContent=unidadeAtual;
   document.getElementById('csv-input').value=''; document.getElementById('csv-preview').innerHTML='';
   document.getElementById('btn-import').style.display='none'; importPend=null;
   document.getElementById('modal-import').classList.add('open');
+}
+function baixarModelo(){
+  const cab=['Nome','CPF','Tipo','CBO','Conselho','NumConselho','IndicadorVinculo','CNPJ','CHAmbulatorial','CHHospitalar','CHOutros','Competencia','DataInclusao','Status'];
+  const exemplos=[
+    ['MARIA SILVA SANTOS','11144477735','2','225125','06-MEDICINA CONSELHO REGIONAL','123456','Autônomo','13370183000189','0','20','0','05/2026','01/05/2026','ATIVO'],
+    ['JOAO PEREIRA LIMA','22255588846','3','223505','66-ENFERMAGEM CONSELHO REGIONAL','654321','Empregado','13370183000189','36','0','0','05/2026','01/05/2026','ATIVO'],
+    ['ANA COSTA OLIVEIRA','33366699957','1','422105','Não possui conselho de classe','','Empregado','13370183000189','0','0','36','05/2026','01/05/2026','ATIVO']
+  ];
+  let csv=cab.join(';')+'\n';
+  exemplos.forEach(function(e){ csv+=e.join(';')+'\n'; });
+  const blob=new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='MODELO_Importacao_CNES.csv'; a.click();
+  showNotif('Modelo baixado. Preencha e importe.','ok');
 }
 function fecharImport(){ document.getElementById('modal-import').classList.remove('open'); }
 function parseCsv(txt){

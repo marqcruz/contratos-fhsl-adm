@@ -457,7 +457,7 @@ tr:hover td{background:var(--surface2)}
       <input type="text" id="busca" placeholder="🔍 Buscar por nome, CPF, CBO..." oninput="renderTabela()">
       <select id="filtro-comp" onchange="renderTabela()"><option value="">Todas as competências</option></select>
       <select id="filtro-tipo" onchange="renderTabela()"><option value="">Todos os tipos</option><option value="1">1 - Administrativo</option><option value="2">2 - Assistencial</option><option value="3">3 - Médico</option></select>
-      <select id="filtro-status" onchange="renderTabela()"><option value="">Todos</option><option value="Ativo">Ativos</option><option value="Inativo">Inativos</option></select>
+      <select id="filtro-status" onchange="renderTabela()"><option value="">Todos os status</option><option value="ATIVO">Ativo</option><option value="AGUARDANDO INSERÇÃO">Aguardando inserção</option><option value="CORRIGIR CNPJ">Corrigir CNPJ</option><option value="CORRIGIR CPF">Corrigir CPF</option><option value="EXCLUÍDO">Excluído</option></select>
       <div style="flex:1"></div>
       <button class="btn" onclick="abrirImport()">📥 Importar CSV</button>
       <button class="btn" onclick="exportarCsv()">📤 Exportar CSV</button>
@@ -494,7 +494,7 @@ tr:hover td{background:var(--surface2)}
         <div class="fg"><label>Competência *</label><input type="text" id="cd-comp" placeholder="MM/AAAA (ex: 08/2026)"></div>
         <div class="fg"><label>Data de inclusão</label><input type="date" id="cd-datainc"></div>
         <div class="fg"><label>Data de saída</label><input type="date" id="cd-datasaida"></div>
-        <div class="fg"><label>Status</label><select id="cd-status"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option></select></div>
+        <div class="fg"><label>Status</label><select id="cd-status"><option value="ATIVO">Ativo</option><option value="AGUARDANDO INSERÇÃO">Aguardando inserção</option><option value="CORRIGIR CNPJ">Corrigir CNPJ</option><option value="CORRIGIR CPF">Corrigir CPF</option><option value="EXCLUÍDO">Excluído</option></select></div>
         <div class="fg full"><label>Observação</label><input type="text" id="cd-obs" placeholder="Opcional"></div>
       </div>
     </div>
@@ -565,18 +565,33 @@ window.addEventListener('DOMContentLoaded', function(){
 });
 // Lista de CBOs comuns em saúde (código + descrição). Ajuste conforme sua base.
 const CBOS = [
-  ['225125','Médico clínico'],['225124','Médico pediatra'],['225133','Médico psiquiatra'],
-  ['225250','Médico ginecologista e obstetra'],['225270','Médico ortopedista'],['225225','Médico cirurgião geral'],
-  ['225150','Médico cardiologista'],['225145','Médico anestesiologista'],['225320','Médico radiologista'],
-  ['223505','Enfermeiro'],['223565','Enfermeiro da estratégia de saúde da família'],
-  ['322205','Técnico de enfermagem'],['322230','Auxiliar de enfermagem'],
-  ['223405','Farmacêutico'],['351505','Técnico em farmácia'],
-  ['251605','Assistente social'],['221205','Biólogo'],['223810','Biomédico'],
-  ['223605','Fisioterapeuta'],['223705','Nutricionista'],['251510','Psicólogo clínico'],
-  ['223905','Fonoaudiólogo'],['223208','Cirurgião-dentista'],['322415','Auxiliar em saúde bucal'],
-  ['515105','Agente comunitário de saúde'],['411005','Auxiliar administrativo'],
-  ['422105','Recepcionista'],['514320','Servente de limpeza'],['517420','Vigia'],
-  ['252105','Administrador'],['142105','Gerente administrativo'],['411010','Assistente administrativo']
+  ['131210','Gerente de serviços de saúde'],
+  ['221105','Biólogo'],
+  ['223405','Farmacêutico'],
+  ['223505','Enfermeiro'],
+  ['225124','Médico pediatra'],
+  ['225125','Médico clínico'],
+  ['225133','Médico psiquiatra'],
+  ['225225','Médico cirurgião geral'],
+  ['225250','Médico ginecologista e obstetra'],
+  ['225270','Médico ortopedista e traumatologista'],
+  ['251605','Assistente social'],
+  ['322205','Técnico de enfermagem'],
+  ['422105','Recepcionista'],
+  ['513430','Copeiro de hospital'],
+  ['517410','Porteiro(a)'],
+  ['521130','Atendente de farmácia / balconista'],
+  ['223810','Biomédico'],
+  ['322230','Auxiliar de enfermagem'],
+  ['225145','Médico anestesiologista'],
+  ['225150','Médico cardiologista'],
+  ['223605','Fisioterapeuta'],
+  ['223705','Nutricionista'],
+  ['251510','Psicólogo clínico'],
+  ['223208','Cirurgião-dentista'],
+  ['411005','Auxiliar administrativo'],
+  ['514320','Servente de limpeza'],
+  ['517420','Vigia']
 ];
 
 const PAGE_META = {};
@@ -805,15 +820,35 @@ function parseCsv(txt){
 }
 // mapeia nomes de coluna flexíveis -> campos do sistema
 function mapearColuna(nome){
-  const n=nome.toLowerCase().replace(/[^a-z0-9]/g,'');
-  const mapa={ nome:'Nome', nomedoprofissional:'Nome', profissional:'Nome',
-    cpf:'CPF', tipo:'Tipo', cbo:'CBO', cbodesc:'CBODesc', descricaocbo:'CBODesc', cbodescricao:'CBODesc',
-    conselho:'Conselho', conselhodeclasse:'Conselho', numconselho:'NumConselho', numerodoconselho:'NumConselho', regclasse:'NumConselho',
-    indicadorvinculo:'IndicadorVinculo', indicadordevinculo:'IndicadorVinculo', vinculo:'IndicadorVinculo',
-    cnpj:'CNPJ', cnpjdetalhamento:'CNPJ', chambulatorial:'CHAmbulatorial', amb:'CHAmbulatorial', ambulatorial:'CHAmbulatorial',
-    chhospitalar:'CHHospitalar', hosp:'CHHospitalar', hospitalar:'CHHospitalar', choutros:'CHOutros', outros:'CHOutros',
-    competencia:'Competencia', comp:'Competencia', datainclusao:'DataInclusao', datainsercao:'DataInclusao', datadeinclusao:'DataInclusao',
-    datasaida:'DataSaida', status:'Status', statuscomp:'Status' };
+  const n=nome.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]/g,'');
+  const mapa={
+    // Nome
+    nome:'Nome', nomedoprofissional:'Nome', profissional:'Nome',
+    // CPF (prioriza o sem pontos; o formatado também cai aqui)
+    cpf:'CPF', cpfautomatico:'CPF',
+    // CBO: a coluna "CBO" traz código+descrição; "CBO II" traz só o código
+    cbo:'CBOFull', cboii:'CBO',
+    // Órgão/conselho e registro
+    orgao:'Conselho', orgo:'Conselho', conselho:'Conselho', conselhodeclasse:'Conselho',
+    regclasse:'NumConselho', numconselho:'NumConselho', numerodoconselho:'NumConselho', registro:'NumConselho',
+    // Vínculo
+    indicadordevinculo:'IndicadorVinculo', indicadorvinculo:'IndicadorVinculo', vinculo:'IndicadorVinculo',
+    // Cargas horárias
+    cargahorariaoutros:'CHOutros', choutros:'CHOutros', outros:'CHOutros',
+    cargahorariaamb:'CHAmbulatorial', chambulatorial:'CHAmbulatorial', amb:'CHAmbulatorial', ambulatorial:'CHAmbulatorial',
+    cargahorariahosp:'CHHospitalar', chhospitalar:'CHHospitalar', hosp:'CHHospitalar', hospitalar:'CHHospitalar',
+    // CNPJ
+    cnpjdodetalhamento:'CNPJ', cnpjdetalhamento:'CNPJ', cnpj:'CNPJ',
+    // Tipo
+    tipo:'Tipo',
+    // Status e data
+    statuscomp:'Status', status:'Status',
+    datainsercao:'DataInclusao', datainclusao:'DataInclusao', datadeinsercao:'DataInclusao', datadeinclusao:'DataInclusao',
+    datasaida:'DataSaida', competencia:'Competencia', comp:'Competencia',
+    // CH final (ignorada, é redundante) — não mapeada
+  };
   return mapa[n]||null;
 }
 function lerCsv(input){
@@ -826,6 +861,19 @@ function lerCsv(input){
     const convert=parsed.linhas.map(function(row){
       const o={ Unidade:unidadeAtual };
       Object.keys(row).forEach(function(col){ const campo=mapearColuna(col); if(campo) o[campo]=row[col]; });
+      // CBO: se veio "223505  ENFERMEIRO" (CBOFull), separa código e descrição
+      if(o.CBOFull){
+        const m=String(o.CBOFull).trim().match(/^(\d{4,6})\s+(.*)$/);
+        if(m){ if(!o.CBO) o.CBO=m[1]; o.CBODesc=m[2]; }
+        else if(!o.CBO){ o.CBO=String(o.CBOFull).trim(); }
+        delete o.CBOFull;
+      }
+      // se CBO tem código mas sem descrição, busca na lista conhecida
+      if(o.CBO && !o.CBODesc){ const c=CBOS.find(function(x){return x[0]===String(o.CBO).trim();}); if(c) o.CBODesc=c[1]; }
+      // competência: se não veio, deriva da data de inclusão (MM/AAAA)
+      if(!o.Competencia && o.DataInclusao){ const dm=String(o.DataInclusao).match(/(\d{2})\/(\d{4})/); if(dm) o.Competencia=dm[1]+'/'+dm[2]; else { const dm2=String(o.DataInclusao).match(/\d{2}\/(\d{2})\/(\d{4})/); if(dm2) o.Competencia=dm2[1]+'/'+dm2[2]; } }
+      // vínculo "-" vira vazio
+      if(o.IndicadorVinculo==='-') o.IndicadorVinculo='';
       return o;
     });
     importPend=convert;

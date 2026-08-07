@@ -69,6 +69,8 @@ Evite "Nova implantação", que gera uma URL diferente.
 
 ## Gatilho de e-mail (avisos de vencimento)
 
+Nova validação do projeto.
+
 No Apps Script, em **Gatilhos (ícone de relógio) → Adicionar gatilho**:
 função `verificarVencimentos`, temporizador por dia, entre 8h e 9h.
 Envia aviso ao admin, fiscal e gestor quando faltam 60, 30 e 15 dias

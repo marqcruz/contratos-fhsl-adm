@@ -382,6 +382,14 @@ tr:hover td{background:var(--surface2)}
 
 .prog-wrap{width:100%;height:14px;background:var(--surface2);border-radius:8px;overflow:hidden}
 .prog-bar{height:100%;background:var(--accent,#1d6aad);transition:width .3s;border-radius:8px}
+
+th.ord{cursor:pointer;user-select:none;white-space:nowrap}
+th.ord:hover{background:var(--accent-bg,#e7f0f9)}
+.ord-i{font-size:10px;color:var(--accent-text,#1d6aad)}
+.cnes-toggle{border:none;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.cnes-toggle.on{background:#dcfce7;color:#166534}
+.cnes-toggle.off{background:#fef9c3;color:#854d0e}
+.cnes-toggle:hover{filter:brightness(.95)}
 .cp-btn{background:none;border:none;cursor:pointer;font-size:12px;padding:1px 3px;border-radius:4px;opacity:.6;vertical-align:middle}
 .cp-btn:hover{opacity:1;background:var(--surface2)}
 td.nowrap{white-space:nowrap}
@@ -488,9 +496,10 @@ td.nowrap{white-space:nowrap}
       <button class="btn sm" onclick="limparSelecao()">Limpar seleção</button>
     </div>
     <div class="table-wrap"><table>
-      <thead><tr><th style="width:32px"><input type="checkbox" id="ck-todos" onclick="toggleTodos(this)" title="Selecionar todos"></th><th>Nome</th><th>CPF</th><th>Tipo</th><th>CBO</th><th>Conselho</th><th>Vínculo</th><th>CH (A/H/O)</th><th>Comp.</th><th>Status</th><th>CNES</th><th>Atualizado em</th><th></th></tr></thead>
+      <thead><tr><th style="width:32px"><input type="checkbox" id="ck-todos" onclick="toggleTodos(this)" title="Selecionar todos"></th><th class="ord" onclick="ordenarPor('Nome')">Nome <span class="ord-i" data-col="Nome"></span></th><th class="ord" onclick="ordenarPor('CPF')">CPF <span class="ord-i" data-col="CPF"></span></th><th class="ord" onclick="ordenarPor('Tipo')">Tipo <span class="ord-i" data-col="Tipo"></span></th><th>CBO</th><th>CNPJ</th><th>Conselho</th><th>Vínculo</th><th>CH (A/H/O)</th><th class="ord" onclick="ordenarPor('Competencia')">Comp. <span class="ord-i" data-col="Competencia"></span></th><th class="ord" onclick="ordenarPor('Status')">Status <span class="ord-i" data-col="Status"></span></th><th class="ord" onclick="ordenarPor('CadastradoCNES')">CNES <span class="ord-i" data-col="CadastradoCNES"></span></th><th class="ord" onclick="ordenarPor('CriadoEm')">Cadastrado em <span class="ord-i" data-col="CriadoEm"></span></th><th class="ord" onclick="ordenarPor('AtualizadoEm')">Atualizado em <span class="ord-i" data-col="AtualizadoEm"></span></th><th></th></tr></thead>
       <tbody id="tabela-body"></tbody>
     </table><div class="empty-state" id="tabela-empty" style="display:none"><span class="empty-icon">📋</span>Nenhum cadastro nesta unidade ainda</div></div>
+    <div id="paginacao" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;flex-wrap:wrap"></div>
   </div>
 </main>
 </div>
@@ -504,13 +513,13 @@ td.nowrap{white-space:nowrap}
       <div class="form-grid">
         <div class="fg full"><label>Nome do profissional *</label><input type="text" id="cd-nome" placeholder="Nome completo"></div>
         <div class="fg"><label>CPF *</label><input type="text" id="cd-cpf" placeholder="000.000.000-00" oninput="validarCpfVisual()"><div class="valid-msg" id="cpf-msg"></div></div>
-        <div class="fg"><label>Tipo de cadastro *</label><select id="cd-tipo" onchange="aplicarRegrasTipo()"><option value="1">1 - Administrativo</option><option value="2">2 - Médico</option><option value="3">3 - Assistencial (enfermagem, técnicos, farmácia...)</option></select></div>
+        <div class="fg"><label>Tipo de cadastro *</label><select id="cd-tipo"><option value="1">1 - Administrativo</option><option value="2">2 - Médico</option><option value="3">3 - Assistencial (enfermagem, técnicos, farmácia...)</option></select></div>
         <div class="fg"><label>CBO *</label><select id="cd-cbo" onchange="cboMudou()"><option value="">Selecione...</option></select></div>
         <div class="fg"><label>Código CBO <span style="font-weight:400;color:var(--text3)">(copie p/ o outro sistema)</span></label>
           <div style="display:flex;gap:6px"><input type="text" id="cd-cbo-cod" readonly style="font-family:monospace;font-weight:700"><button class="btn sm" type="button" onclick="copiarCbo()">📋</button></div></div>
         <div class="fg"><label>Conselho de classe</label><input type="text" id="cd-conselho" placeholder="Ex: CRM, COREN"></div>
         <div class="fg"><label>Nº do conselho</label><input type="text" id="cd-numconselho" placeholder="Número"></div>
-        <div class="fg"><label>Indicador de vínculo</label><select id="cd-vinculo"><option value="">Selecione...</option><option value="080400">080400</option><option value="080501">080501</option></select></div>
+        <div class="fg"><label>Indicador de vínculo</label><input type="text" id="cd-vinculo" placeholder="Ex: Empregado, Autônomo"></div>
         <div class="fg"><label>CNPJ</label><input type="text" id="cd-cnpj" placeholder="00.000.000/0000-00" oninput="validarCnpjVisual()"><div class="valid-msg" id="cnpj-msg"></div></div>
         <div class="fg"><label>CH Ambulatorial</label><input type="number" id="cd-cha" min="0" placeholder="Horas"></div>
         <div class="fg"><label>CH Hospitalar</label><input type="number" id="cd-chh" min="0" placeholder="Horas"></div>
@@ -692,30 +701,8 @@ function cboMudou(){
     if(desc.indexOf('médico')>=0) document.getElementById('cd-tipo').value='2';
     else if(/enfermeiro|técnico de enfermagem|auxiliar de enfermagem|farmac|assistente social|biólogo|biomédico|fisioterap|nutricion|psicólog|fonoaudiólog|dentista|saúde bucal/.test(desc)) document.getElementById('cd-tipo').value='3';
     else document.getElementById('cd-tipo').value='1';
-    aplicarRegrasTipo();
   }
 }
-
-function aplicarRegrasTipo(){
-  const tipo=document.getElementById('cd-tipo').value;
-  const conselho=document.getElementById('cd-conselho');
-  const numero=document.getElementById('cd-numconselho');
-  const administrativo=(tipo==='1');
-
-  conselho.disabled=administrativo;
-  numero.disabled=administrativo;
-
-  if(administrativo){
-    conselho.value='';
-    numero.value='';
-    conselho.placeholder='Não se aplica ao tipo 1';
-    numero.placeholder='Não se aplica ao tipo 1';
-  }else{
-    conselho.placeholder='Ex: CRM, COREN';
-    numero.placeholder='Número';
-  }
-}
-
 function copiarCbo(){
   const el=document.getElementById('cd-cbo-cod'); if(!el.value){ showNotif('Selecione um CBO primeiro.','err'); return; }
   navigator.clipboard.writeText(el.value).then(function(){ showNotif('Código CBO copiado: '+el.value,'ok'); });
@@ -783,6 +770,28 @@ function listaFiltrada(){
     return true;
   });
 }
+let ordCampo='Nome', ordDir=1, pagina=1, porPagina=50;
+function ordenarPor(campo){
+  if(ordCampo===campo) ordDir=-ordDir; else { ordCampo=campo; ordDir=1; }
+  pagina=1; renderTabela();
+}
+function ordenarLista(lista){
+  const c=ordCampo;
+  return lista.slice().sort(function(a,b){
+    let va=a[c]||'', vb=b[c]||'';
+    if(c==='CPF'){ va=padCPF(a.CPF); vb=padCPF(b.CPF); }
+    if(c==='Tipo'){ va=parseInt(a.Tipo||0,10); vb=parseInt(b.Tipo||0,10); }
+    if(c==='CriadoEm'||c==='AtualizadoEm'){ va=parseData(a[c]); vb=parseData(b[c]); }
+    if(c==='Competencia'){ va=compChave(a.Competencia); vb=compChave(b.Competencia); }
+    if(va<vb) return -1*ordDir; if(va>vb) return 1*ordDir; return 0;
+  });
+}
+function parseData(v){ // dd/MM/yyyy HH:mm -> número comparável
+  if(!v) return 0; const m=String(v).match(/(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?/);
+  if(!m) return 0; return new Date(m[3],m[2]-1,m[1],m[5]||0,m[6]||0).getTime();
+}
+function compChave(v){ const s=fmtComp(v); const m=s.match(/(\d{2})\/(\d{4})/); return m?(m[2]+m[1]):s; }
+
 function renderTabela(){
   let lista=listaFiltrada();
   // KPIs (da unidade toda, não do filtro)
@@ -793,30 +802,66 @@ function renderTabela(){
   document.getElementById('kpi-corrigir').textContent=cadastros.filter(function(c){return /^CORRIGIR/i.test(String(c.Status||''));}).length;
   document.getElementById('kpi-cnes-sim').textContent=cadastros.filter(function(c){return String(c.CadastradoCNES)==='true';}).length;
   document.getElementById('kpi-cnes-nao').textContent=cadastros.filter(function(c){return String(c.CadastradoCNES)!=='true';}).length;
+  // ordena
+  lista=ordenarLista(lista);
+  // atualiza indicadores de ordenação no cabeçalho
+  document.querySelectorAll('.ord-i').forEach(function(el){ el.textContent = (el.dataset.col===ordCampo)?(ordDir>0?'▲':'▼'):''; });
   document.getElementById('tabela-empty').style.display=lista.length?'none':'block';
+  // paginação
+  const totalPag=Math.max(1, Math.ceil(lista.length/porPagina));
+  if(pagina>totalPag) pagina=totalPag;
+  const ini=(pagina-1)*porPagina;
+  const pageLista=lista.slice(ini, ini+porPagina);
   const tipoBadge=function(t){ const m={'1':'c-yellow-b','2':'c-blue-b','3':'c-green-b'}; return '<span class="badge '+(m[t]||'')+'">'+(t||'?')+'</span>'; };
-  document.getElementById('tabela-body').innerHTML=lista.map(function(c){
+  document.getElementById('tabela-body').innerHTML=pageLista.map(function(c){
     const acoes=(podeEditar()?'<button class="btn sm" onclick="editarCad(\''+c.ID+'\')">✏️</button> <button class="btn sm danger" onclick="delCad(\''+c.ID+'\')">🗑️</button>':'<button class="btn sm" onclick="editarCad(\''+c.ID+'\')">👁️</button>');
     const ch=(c.CHAmbulatorial||'0')+'/'+(c.CHHospitalar||'0')+'/'+(c.CHOutros||'0');
     const st=String(c.Status||'Ativo');
     const corrigir=/^CORRIGIR/i.test(st);
     const stCell=corrigir?('<span class="badge c-red-b">⚠️ '+esc(st)+'</span>'):esc(st);
     const cpfLimpo=padCPF(c.CPF);
+    const cnpjLimpo=String(c.CNPJ||'').replace(/\D/g,'');
     const chTotal=(parseInt(c.CHAmbulatorial||0,10)+parseInt(c.CHHospitalar||0,10)+parseInt(c.CHOutros||0,10));
+    const noCnes=(String(c.CadastradoCNES)==='true');
+    const btnCnes=podeEditar()
+      ? '<button class="cnes-toggle '+(noCnes?'on':'off')+'" onclick="toggleCadCnes(\''+c.ID+'\','+(!noCnes)+')" title="Clique para '+(noCnes?'desmarcar':'marcar')+'">'+(noCnes?'✔️ Sim':'Não')+'</button>'
+      : (noCnes?'<span class="badge c-green-b">✔️ Sim</span>':'<span class="badge c-yellow-b">Não</span>');
     return '<tr'+(corrigir?' class="row-corrigir"':'')+'><td><input type="checkbox" class="ck-linha" value="'+c.ID+'" onclick="atualizaSelecao()"></td><td><strong>'+esc(c.Nome)+'</strong></td>'
       +'<td class="nowrap">'+fmtCpf(c.CPF)+' <button class="cp-btn" title="Copiar CPF sem pontos" onclick="copiar(\''+cpfLimpo+'\',\'CPF\')">📋</button></td>'
       +'<td>'+tipoBadge(String(c.Tipo))+'</td>'
       +'<td class="nowrap"><span style="font-family:monospace">'+esc(c.CBO)+'</span> <button class="cp-btn" title="Copiar código CBO" onclick="copiar(\''+esc(c.CBO)+'\',\'CBO\')">📋</button> '+esc(c.CBODesc||'')+'</td>'
+      +'<td class="nowrap">'+(cnpjLimpo?esc(cnpjLimpo)+' <button class="cp-btn" title="Copiar CNPJ" onclick="copiar(\''+cnpjLimpo+'\',\'CNPJ\')">📋</button>':'')+'</td>'
       +'<td>'+esc(c.Conselho||'')+' '+esc(c.NumConselho||'')+'</td><td>'+esc(c.IndicadorVinculo||'')+'</td>'
       +'<td class="nowrap">'+ch+' <button class="cp-btn" title="Copiar CH total ('+chTotal+')" onclick="copiar(\''+chTotal+'\',\'Carga horária\')">📋</button></td>'
       +'<td>'+esc(fmtComp(c.Competencia))+'</td><td>'+stCell+'</td>'
-      +'<td>'+(String(c.CadastradoCNES)==='true'?'<span class="badge c-green-b">✔️ Sim</span>':'<span class="badge c-yellow-b">Não</span>')+'</td>'
+      +'<td>'+btnCnes+'</td>'
+      +'<td style="font-size:12px;color:var(--text2)">'+esc(fmtDataHora(c.CriadoEm))+'</td>'
       +'<td style="font-size:12px;color:var(--text2)">'+esc(fmtDataHora(c.AtualizadoEm||c.CriadoEm))+'</td>'
       +'<td style="white-space:nowrap">'+acoes+'</td></tr>';
   }).join('');
+  // controles de paginação
+  renderPaginacao(lista.length, totalPag, ini, pageLista.length);
   // reseta seleção ao re-renderizar
   const bs=document.getElementById('barra-sel'); if(bs) bs.style.display='none';
   const ct=document.getElementById('ck-todos'); if(ct){ ct.checked=false; ct.indeterminate=false; }
+}
+function renderPaginacao(total, totalPag, ini, mostrados){
+  const el=document.getElementById('paginacao'); if(!el) return;
+  if(total<=porPagina){ el.innerHTML='<span style="font-size:12px;color:var(--text2)">'+total+' registro(s)</span>'; return; }
+  el.innerHTML=
+    '<button class="btn sm" '+(pagina<=1?'disabled':'')+' onclick="irPagina('+(pagina-1)+')">‹ Anterior</button>'
+    +'<span style="font-size:13px;margin:0 10px">Página <strong>'+pagina+'</strong> de '+totalPag+' · mostrando '+(ini+1)+'–'+(ini+mostrados)+' de '+total+'</span>'
+    +'<button class="btn sm" '+(pagina>=totalPag?'disabled':'')+' onclick="irPagina('+(pagina+1)+')">Próxima ›</button>';
+}
+function irPagina(p){ pagina=p; renderTabela(); document.querySelector('.table-wrap').scrollTop=0; }
+async function toggleCadCnes(id, novoValor){
+  const r=await apiFetch('togglecnes', { id:id, valor:novoValor, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  if(r.ok){
+    const c=cadastros.find(function(x){return String(x.ID)===String(id);});
+    if(c){ c.CadastradoCNES=novoValor?'true':''; c.AtualizadoEm=(new Date()).toLocaleString('pt-BR'); }
+    showNotif(novoValor?'Marcado como cadastrado no CNES.':'Desmarcado do CNES.','ok');
+    renderTabela();
+  } else showNotif(r.message||'Erro.','err');
 }
 function copiar(txt, label){
   navigator.clipboard.writeText(String(txt)).then(function(){ showNotif((label||'Valor')+' copiado: '+txt,'ok'); });
@@ -852,7 +897,6 @@ function abrirCadastro(){
   document.getElementById('cd-id').value='';
   ['cd-nome','cd-cpf','cd-cbo-cod','cd-conselho','cd-numconselho','cd-vinculo','cd-cnpj','cd-cha','cd-chh','cd-cho','cd-comp','cd-datainc','cd-datasaida','cd-obs'].forEach(function(k){document.getElementById(k).value='';});
   document.getElementById('cd-cbo').value=''; document.getElementById('cd-tipo').value='1'; document.getElementById('cd-status').value='ATIVO'; document.getElementById('cd-cnes').checked=false;
-  aplicarRegrasTipo();
   document.getElementById('cpf-msg').textContent=''; document.getElementById('cnpj-msg').textContent='';
   document.getElementById('modal-cad').classList.add('open');
 }
@@ -874,7 +918,6 @@ function editarCad(id){
   document.getElementById('cd-status').value=c.Status||'ATIVO';
   document.getElementById('cd-cnes').checked=(String(c.CadastradoCNES)==='true');
   document.getElementById('cd-obs').value=c.Obs||'';
-  aplicarRegrasTipo();
   document.getElementById('cpf-msg').textContent=''; document.getElementById('cnpj-msg').textContent='';
   document.getElementById('modal-cad').classList.add('open');
 }
@@ -890,10 +933,9 @@ async function salvarCadastro(){
   else if(cnpj && !validaCNPJ(cnpj)) showNotif('CNPJ inválido — será salvo e marcado como CORRIGIR CNPJ.','info');
   const cbo=document.getElementById('cd-cbo').value;
   const cboObj=CBOS.find(function(x){return x[0]===cbo;});
-  const tipo=document.getElementById('cd-tipo').value;
   const payload={ ID:document.getElementById('cd-id').value||'', Unidade:unidadeAtual, Nome:nome, CPF:cpf,
-    Tipo:tipo, CBO:cbo, CBODesc:cboObj?cboObj[1]:'',
-    Conselho:tipo==='1'?'':document.getElementById('cd-conselho').value.trim(), NumConselho:tipo==='1'?'':document.getElementById('cd-numconselho').value.trim(),
+    Tipo:document.getElementById('cd-tipo').value, CBO:cbo, CBODesc:cboObj?cboObj[1]:'',
+    Conselho:document.getElementById('cd-conselho').value.trim(), NumConselho:document.getElementById('cd-numconselho').value.trim(),
     IndicadorVinculo:document.getElementById('cd-vinculo').value.trim(), CNPJ:cnpj,
     CHAmbulatorial:document.getElementById('cd-cha').value, CHHospitalar:document.getElementById('cd-chh').value, CHOutros:document.getElementById('cd-cho').value,
     Competencia:document.getElementById('cd-comp').value.trim(), DataInclusao:document.getElementById('cd-datainc').value,

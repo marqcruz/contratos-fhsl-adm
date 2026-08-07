@@ -519,7 +519,7 @@ td.nowrap{white-space:nowrap}
           <div style="display:flex;gap:6px"><input type="text" id="cd-cbo-cod" readonly style="font-family:monospace;font-weight:700"><button class="btn sm" type="button" onclick="copiarCbo()">📋</button></div></div>
         <div class="fg" id="fg-conselho"><label>Conselho de classe</label><input type="text" id="cd-conselho" placeholder="Ex: CRM, COREN"></div>
         <div class="fg" id="fg-numconselho"><label>Nº do conselho</label><input type="text" id="cd-numconselho" placeholder="Número"></div>
-        <div class="fg"><label>Indicador de vínculo</label><select id="cd-vinculo"><option value="">Selecione...</option><option value="080501">080501 - Autônomo</option><option value="080400">080400 - Celetista</option></select></div>
+        <div class="fg"><label>Indicador de vínculo</label><select id="cd-vinculo"><option value="">Selecione...</option><option value="080501">080501</option><option value="080400">080400</option></select></div>
         <div class="fg"><label>CNPJ</label><input type="text" id="cd-cnpj" placeholder="00.000.000/0000-00" oninput="validarCnpjVisual()"><div class="valid-msg" id="cnpj-msg"></div></div>
         <div class="fg" id="fg-cha"><label>CH Ambulatorial</label><input type="number" id="cd-cha" min="0" placeholder="Horas"></div>
         <div class="fg" id="fg-chh"><label>CH Hospitalar</label><input type="number" id="cd-chh" min="0" placeholder="Horas"></div>
@@ -1053,17 +1053,36 @@ function abrirImport(){
   document.getElementById('modal-import').classList.add('open');
 }
 function baixarModelo(){
-  const cab=['Nome','CPF','Tipo','CBO','Conselho','NumConselho','IndicadorVinculo','CNPJ','CHAmbulatorial','CHHospitalar','CHOutros','Competencia','DataInclusao','Status'];
+  const cab=['Nome','CPF','Tipo','CBO','Conselho','NumConselho','IndicadorVinculo','CNPJ','CHAmbulatorial','CHHospitalar','CHOutros','Competencia','DataInclusao','Status','CadastradoCNES'];
+  // linha de instrução (o usuário deve APAGAR esta linha antes de importar)
+  const instr=[
+    'APAGUE ESTA LINHA >>> Nome completo (obrigatório)',
+    'Só números, com zero à esquerda (obrigatório)',
+    '1=Administrativo, 2=Médico, 3=Assistencial',
+    'Código CBO (6 dígitos) - ex 225125',
+    'Conselho/órgão exatamente como no CNES (deixe vazio se tipo 1)',
+    'Número do registro no conselho (vazio se tipo 1)',
+    'Código: 080501=Autônomo, 080400=Celetista',
+    'Só números, 14 dígitos (será validado)',
+    'Horas ambulatoriais (vazio/0 se tipo 1)',
+    'Horas hospitalares (vazio/0 se tipo 1)',
+    'Horas outros',
+    'MM/AAAA - ex 07/2026',
+    'DD/MM/AAAA - ex 01/07/2026',
+    'ATIVO, AGUARDANDO INSERÇÃO, etc.',
+    'sim ou nao (já cadastrado no CNES?)'
+  ];
   const exemplos=[
-    ['MARIA SILVA SANTOS','11144477735','2','225125','06-MEDICINA CONSELHO REGIONAL','123456','Autônomo','13370183000189','0','20','0','05/2026','01/05/2026','ATIVO'],
-    ['JOAO PEREIRA LIMA','22255588846','3','223505','66-ENFERMAGEM CONSELHO REGIONAL','654321','Empregado','13370183000189','36','0','0','05/2026','01/05/2026','ATIVO'],
-    ['ANA COSTA OLIVEIRA','33366699957','1','422105','Não possui conselho de classe','','Empregado','13370183000189','0','0','36','05/2026','01/05/2026','ATIVO']
+    ['MARIA SILVA SANTOS','11144477735','2','225125','06-MEDICINA CONSELHO REGIONAL','123456','080501','13370183000189','20','0','0','07/2026','01/07/2026','ATIVO','nao'],
+    ['JOAO PEREIRA LIMA','22255588846','3','223505','66-ENFERMAGEM CONSELHO REGIONAL','654321','080400','13370183000189','36','0','0','07/2026','01/07/2026','ATIVO','sim'],
+    ['ANA COSTA OLIVEIRA','33366699957','1','422105','','','080400','13370183000189','0','0','36','07/2026','01/07/2026','ATIVO','nao']
   ];
   let csv=cab.join(';')+'\n';
+  csv+=instr.join(';')+'\n';
   exemplos.forEach(function(e){ csv+=e.join(';')+'\n'; });
   const blob=new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='MODELO_Importacao_CNES.csv'; a.click();
-  showNotif('Modelo baixado. Preencha e importe.','ok');
+  showNotif('Modelo baixado. Apague a linha de instrução e os exemplos antes de importar.','ok');
 }
 function fecharImport(){ document.getElementById('modal-import').classList.remove('open'); }
 function parseCsv(txt){
@@ -1105,6 +1124,7 @@ function mapearColuna(nome){
     cnpjdodetalhamento:'CNPJ', cnpjdetalhamento:'CNPJ', cnpj:'CNPJ',
     // Tipo
     tipo:'Tipo',
+    cadastradocnes:'CadastradoCNES', cadastrocnes:'CadastradoCNES', nocnes:'CadastradoCNES', cnes:'CadastradoCNES',
     // Status e data
     statuscomp:'Status', status:'Status',
     datainsercao:'DataInclusao', datainclusao:'DataInclusao', datadeinsercao:'DataInclusao', datadeinclusao:'DataInclusao',
@@ -1120,7 +1140,11 @@ function lerCsv(input){
     const parsed=parseCsv(reader.result);
     if(!parsed.linhas || !parsed.linhas.length){ document.getElementById('csv-preview').innerHTML='<span style="color:var(--red-text)">CSV vazio ou inválido.</span>'; return; }
     // converte para os campos do sistema
-    const convert=parsed.linhas.map(function(row){
+    const convert=parsed.linhas.filter(function(row){
+      // ignora a linha de instrução do modelo (caso o usuário esqueça de apagar)
+      const vals=Object.values(row).join(' ').toUpperCase();
+      return vals.indexOf('APAGUE ESTA LINHA')<0;
+    }).map(function(row){
       const o={ Unidade:unidadeAtual };
       Object.keys(row).forEach(function(col){ const campo=mapearColuna(col); if(campo) o[campo]=row[col]; });
       // CBO: se veio "223505  ENFERMEIRO" (CBOFull), separa código e descrição
@@ -1134,8 +1158,25 @@ function lerCsv(input){
       if(o.CBO && !o.CBODesc){ const c=CBOS.find(function(x){return x[0]===String(o.CBO).trim();}); if(c) o.CBODesc=c[1]; }
       // competência: se não veio, deriva da data de inclusão (MM/AAAA)
       if(!o.Competencia && o.DataInclusao){ const dm=String(o.DataInclusao).match(/(\d{2})\/(\d{4})/); if(dm) o.Competencia=dm[1]+'/'+dm[2]; else { const dm2=String(o.DataInclusao).match(/\d{2}\/(\d{2})\/(\d{4})/); if(dm2) o.Competencia=dm2[1]+'/'+dm2[2]; } }
-      // vínculo "-" vira vazio
+      // vínculo: se já vier código (080501/080400 ou só dígitos), mantém; se vier texto, converte
       if(o.IndicadorVinculo==='-') o.IndicadorVinculo='';
+      if(o.IndicadorVinculo){
+        const orig=String(o.IndicadorVinculo).trim();
+        if(/^\d{4,6}$/.test(orig)){
+          o.IndicadorVinculo=orig; // já é código, respeita exatamente
+        } else {
+          const vl=orig.toLowerCase();
+          if(/aut[oô]nomo/.test(vl)) o.IndicadorVinculo='080501';
+          else if(/celetista|empregado|clt/.test(vl)) o.IndicadorVinculo='080400';
+          else o.IndicadorVinculo=orig; // texto desconhecido: mantém como veio
+        }
+      }
+      // Conselho e NumConselho: importados EXATAMENTE como no CSV (sem alteração)
+      // CadastradoCNES: sim/s/true/1 -> true
+      if(o.CadastradoCNES!==undefined){
+        const cv=String(o.CadastradoCNES).toLowerCase().trim();
+        o.CadastradoCNES=(cv==='sim'||cv==='s'||cv==='true'||cv==='1'||cv==='x')?true:false;
+      }
       return o;
     });
     importPend=convert;
@@ -1192,11 +1233,23 @@ async function confirmarImport(){
 // ── Exportar CSV ──
 function exportarCsv(){
   if(!cadastros.length){ showNotif('Nada para exportar.','err'); return; }
-  const cols=['Nome','CPF','Tipo','CBO','CBODesc','Conselho','NumConselho','IndicadorVinculo','CNPJ','CHAmbulatorial','CHHospitalar','CHOutros','Competencia','DataInclusao','DataSaida','Status'];
+  // mesmas colunas do modelo de importação -> exportação pode ser reimportada direto
+  const cols=['Nome','CPF','Tipo','CBO','Conselho','NumConselho','IndicadorVinculo','CNPJ','CHAmbulatorial','CHHospitalar','CHOutros','Competencia','DataInclusao','Status','CadastradoCNES'];
   let csv=cols.join(';')+'\n';
-  cadastros.forEach(function(c){ csv+=cols.map(function(k){ let v=(c[k]!=null?c[k]:''); if(k==='CPF') v="'"+padCPF(v); return String(v).replace(/;/g,','); }).join(';')+'\n'; });
+  // exporta o que está filtrado na tela (respeita busca/filtros); se quiser tudo, limpa os filtros
+  listaFiltrada().forEach(function(c){
+    csv+=cols.map(function(k){
+      let v=(c[k]!=null?c[k]:'');
+      if(k==='CPF') v="'"+padCPF(c.CPF);            // preserva zero à esquerda no Excel
+      else if(k==='CNPJ') v=String(c.CNPJ||'').replace(/\D/g,'');
+      else if(k==='CadastradoCNES') v=(String(c.CadastradoCNES)==='true')?'sim':'nao';
+      else if(k==='Competencia') v=fmtComp(c.Competencia);
+      return String(v).replace(/;/g,',');
+    }).join(';')+'\n';
+  });
   const blob=new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='CNES_'+(unidadeAtual||'unidade').replace(/[^a-zA-Z0-9]/g,'_')+'.csv'; a.click();
+  showNotif('Exportado ('+listaFiltrada().length+' registros).','ok');
 }
 
 </script>

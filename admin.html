@@ -312,6 +312,7 @@ tr:hover td{background:var(--surface2)}
 .step-desc{font-size:13px;color:var(--text2);line-height:1.6}
 .step-desc code{background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:12px}
 .code-block{position:relative;margin-top:8px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
 </style>
 <style>
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600}
@@ -367,6 +368,7 @@ tr:hover td{background:var(--surface2)}
     <button class="nav-item active" data-page="usuarios" onclick="showPage('usuarios',this)">👤 Usuários e permissões</button>
     <button class="nav-item" data-page="unidades" onclick="showPage('unidades',this)">🏥 Unidades de saúde</button>
     <button class="nav-item" data-page="locais" onclick="showPage('locais',this)">📍 Locais de chaves</button>
+    <button class="nav-item" data-page="listascnes" onclick="showPage('listascnes',this)">🏥 Listas CNES</button>
     <button class="nav-item" data-page="auditoria" onclick="showPage('auditoria',this)">🕘 Auditoria</button>
     <button class="nav-item" data-page="config" onclick="showPage('config',this)">⚙️ Configuração da planilha</button>
   </div>
@@ -439,6 +441,27 @@ tr:hover td{background:var(--surface2)}
   </div>
 
   <!-- CONFIGURAÇÃO DA PLANILHA -->
+  <div class="page" id="page-listascnes">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Edite as listas usadas no módulo CNES. As mudanças valem para todas as unidades.</div>
+    <div class="card" style="margin-bottom:16px">
+      <h3 style="margin:0 0 4px;font-size:15px">📋 Conselhos de classe</h3>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Um por linha, exatamente como deve aparecer.</div>
+      <textarea id="lst-conselhos" rows="7" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-family:monospace;font-size:12px;box-sizing:border-box"></textarea>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <h3 style="margin:0 0 4px;font-size:15px">🔗 Indicadores de vínculo</h3>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Um por linha, formato <code>código - descrição</code> (ex: <code>080501 - Autônomo</code>). No cadastro aparece só o código.</div>
+      <textarea id="lst-vinculos" rows="4" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-family:monospace;font-size:12px;box-sizing:border-box"></textarea>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <h3 style="margin:0 0 4px;font-size:15px">👥 CBOs</h3>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Um por linha, formato <code>código - descrição</code> (ex: <code>223505 - Enfermeiro</code>).</div>
+      <textarea id="lst-cbos" rows="12" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-family:monospace;font-size:12px;box-sizing:border-box"></textarea>
+    </div>
+    <button class="btn primary" onclick="salvarListasCnes()">💾 Salvar listas</button>
+    <div id="listas-msg" style="margin-top:12px;font-size:13px"></div>
+  </div>
+
   <div class="page" id="page-config">
     <div class="setup-card">
       <div class="step"><div class="step-n">1</div><div><div class="step-title">Crie a planilha</div><div class="step-desc">Acesse <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> e crie uma planilha com o nome <strong>Contratos FHSL</strong>.</div></div></div>
@@ -578,6 +601,7 @@ const PAGE_META = {
   usuarios:['Usuários e permissões','Quem acessa o sistema e o que cada um vê'],
   unidades:['Unidades de saúde','Compartilhadas com Contratos e demais módulos'],
   locais:['Locais de chaves','Onde as chaves ficam guardadas'],
+  listascnes:['Listas CNES','Conselhos, vínculos e CBOs do módulo CNES'],
   auditoria:['Auditoria','Registro de ações no sistema']
 };
 const MODULOS_SISTEMA = [
@@ -626,6 +650,7 @@ function showPage(id, btn){
   else if(id==='locais'){ bt.textContent='➕ Novo local'; bt.style.display=''; }
   else { bt.style.display='none'; }
   if(id==='auditoria') carregarAuditoria();
+  if(id==='listascnes') carregarListasCnes();
   if(id==='config'){ if(!scriptCodeCache) carregarScript(); verificarDiag(); }
   render();
 }
@@ -856,6 +881,39 @@ async function delLoc(id){
 async function carregarAuditoria(){
   try{ const r=await apiFetch('getlog'); if(r.ok){ auditoria=r.data||[]; renderAuditoria(); } }
   catch(e){ showNotif('Erro ao carregar auditoria.','err'); }
+}
+// ── Listas CNES ──
+async function carregarListasCnes(){
+  document.getElementById('listas-msg').textContent='Carregando...';
+  try{
+    const r=await apiFetch('getcneslistas');
+    if(r.ok && r.listas){
+      document.getElementById('lst-conselhos').value=(r.listas.conselhos||[]).join('\n');
+      document.getElementById('lst-vinculos').value=(r.listas.vinculos||[]).map(function(v){return v[0]+' - '+v[1];}).join('\n');
+      document.getElementById('lst-cbos').value=(r.listas.cbos||[]).map(function(c){return c[0]+' - '+c[1];}).join('\n');
+      document.getElementById('listas-msg').textContent='';
+    }
+  }catch(e){ document.getElementById('listas-msg').innerHTML='<span style="color:var(--red-text)">Erro ao carregar.</span>'; }
+}
+function parseLinhasPareadas(txt){
+  // "123456 - Descrição" -> ['123456','Descrição']
+  return String(txt||'').split('\n').map(function(l){return l.trim();}).filter(Boolean).map(function(l){
+    const m=l.match(/^(\S+)\s*[-–]\s*(.+)$/);
+    if(m) return [m[1].trim(), m[2].trim()];
+    return [l, l]; // sem separador: usa o mesmo dos dois lados
+  });
+}
+async function salvarListasCnes(){
+  const conselhos=String(document.getElementById('lst-conselhos').value||'').split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  const vinculos=parseLinhasPareadas(document.getElementById('lst-vinculos').value);
+  const cbos=parseLinhasPareadas(document.getElementById('lst-cbos').value);
+  if(!cbos.length || !conselhos.length){ document.getElementById('listas-msg').innerHTML='<span style="color:var(--red-text)">CBO e Conselho não podem ficar vazios.</span>'; return; }
+  document.getElementById('listas-msg').textContent='Salvando...';
+  try{
+    const r=await apiFetch('savecneslistas', { conselhos:conselhos, vinculos:vinculos, cbos:cbos, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+    if(r.ok){ document.getElementById('listas-msg').innerHTML='<span style="color:var(--green-text)">✔️ Listas salvas. Elas já valem no módulo CNES.</span>'; }
+    else document.getElementById('listas-msg').innerHTML='<span style="color:var(--red-text)">'+esc(r.message||'Erro.')+'</span>';
+  }catch(e){ document.getElementById('listas-msg').innerHTML='<span style="color:var(--red-text)">Erro ao salvar.</span>'; }
 }
 function renderAuditoria(){
   const q=(document.getElementById('busca-aud')?.value||'').toLowerCase();

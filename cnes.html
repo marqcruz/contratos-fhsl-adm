@@ -517,8 +517,9 @@ td.nowrap{white-space:nowrap}
         <div class="fg"><label>CBO *</label><select id="cd-cbo" onchange="cboMudou()"><option value="">Selecione...</option></select></div>
         <div class="fg"><label>Código CBO <span style="font-weight:400;color:var(--text3)">(copie p/ o outro sistema)</span></label>
           <div style="display:flex;gap:6px"><input type="text" id="cd-cbo-cod" readonly style="font-family:monospace;font-weight:700"><button class="btn sm" type="button" onclick="copiarCbo()">📋</button></div></div>
-        <div class="fg" id="fg-conselho"><label>Conselho de classe</label><input type="text" id="cd-conselho" placeholder="Ex: CRM, COREN"></div>
+        <div class="fg" id="fg-conselho"><label>Conselho de classe</label><select id="cd-conselho"><option value="">Selecione...</option></select></div>
         <div class="fg" id="fg-numconselho"><label>Nº do conselho</label><input type="text" id="cd-numconselho" placeholder="Número"></div>
+        <div class="fg" id="fg-uf"><label>Estado (UF)</label><input type="text" id="cd-uf" maxlength="2" placeholder="SP" style="text-transform:uppercase"></div>
         <div class="fg"><label>Indicador de vínculo</label><select id="cd-vinculo"><option value="">Selecione...</option><option value="080501">080501</option><option value="080400">080400</option></select></div>
         <div class="fg"><label>CNPJ</label><input type="text" id="cd-cnpj" placeholder="00.000.000/0000-00" oninput="validarCnpjVisual()"><div class="valid-msg" id="cnpj-msg"></div></div>
         <div class="fg" id="fg-cha"><label>CH Ambulatorial</label><input type="number" id="cd-cha" min="0" placeholder="Horas"></div>
@@ -613,7 +614,7 @@ window.addEventListener('DOMContentLoaded', function(){
   if(s){ try{ currentUser=JSON.parse(s); startApp(); }catch(e){} }
 });
 // Lista de CBOs comuns em saúde (código + descrição). Ajuste conforme sua base.
-const CBOS = [
+let CBOS = [
   ['131210','Gerente de serviços de saúde'],
   ['221105','Biólogo'],
   ['223405','Farmacêutico'],
@@ -632,6 +633,7 @@ const CBOS = [
   ['521130','Atendente de farmácia / balconista'],
   ['223810','Biomédico'],
   ['322230','Auxiliar de enfermagem'],
+  ['322415','Auxiliar em saúde bucal'],
   ['225145','Médico anestesiologista'],
   ['225150','Médico cardiologista'],
   ['223605','Fisioterapeuta'],
@@ -642,6 +644,8 @@ const CBOS = [
   ['514320','Servente de limpeza'],
   ['517420','Vigia']
 ];
+let CONSELHOS = ['66-ENFERMAGEM CONSELHO REGIONAL','Não possui conselho de classe','69-FARMACIA CONSELHO REGIONAL','62-ASSISTENCIA SOCIAL CONSELHO REGIONAL','18-CR BIOLOGIA','71-MEDICINA CONSELHO REGIONAL'];
+let VINCULOS = [['080501','Autônomo'],['080400','Celetista']];
 
 const PAGE_META = {};
 let cadastros=[], unidades=[], unidadesPermitidas=[], unidadeAtual=null, tipos={};
@@ -656,8 +660,28 @@ function startApp(){
   document.getElementById('side-avatar').style.background = cores[currentUser.role]||'#1d6aad';
   document.getElementById('side-name').textContent = currentUser.nome;
   document.getElementById('side-role').textContent = ({admin:'Administrador',gestor:'Gestor',cadastros:'Gestor de cadastros',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
-  preencherCbos();
+  carregarListas();
   carregarUnidades();
+}
+// carrega as listas configuráveis (CBO, conselho, vínculo) do servidor
+async function carregarListas(){
+  try{
+    const r=await apiFetch('getcneslistas');
+    if(r.ok && r.listas){
+      if(Array.isArray(r.listas.cbos) && r.listas.cbos.length) CBOS=r.listas.cbos;
+      if(Array.isArray(r.listas.conselhos) && r.listas.conselhos.length) CONSELHOS=r.listas.conselhos;
+      if(Array.isArray(r.listas.vinculos) && r.listas.vinculos.length) VINCULOS=r.listas.vinculos;
+    }
+  }catch(e){ /* usa os valores padrão embutidos */ }
+  preencherCbos(); preencherConselhos(); preencherVinculos();
+}
+function preencherConselhos(){
+  const s=document.getElementById('cd-conselho'); if(!s) return;
+  s.innerHTML='<option value="">Selecione...</option>'+CONSELHOS.map(function(c){return '<option value="'+esc(c)+'">'+esc(c)+'</option>';}).join('');
+}
+function preencherVinculos(){
+  const s=document.getElementById('cd-vinculo'); if(!s) return;
+  s.innerHTML='<option value="">Selecione...</option>'+VINCULOS.map(function(v){return '<option value="'+esc(v[0])+'">'+esc(v[0])+'</option>';}).join('');
 }
 function podeEditar(){ return currentUser && (currentUser.role==='admin'||currentUser.role==='gestor'||currentUser.role==='cadastros'); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
@@ -712,12 +736,13 @@ function copiarCbo(){
 function tipoMudou(){
   const t=document.getElementById('cd-tipo').value;
   const esconder=(t==='1');
-  ['fg-conselho','fg-numconselho','fg-cha','fg-chh'].forEach(function(id){
+  ['fg-conselho','fg-numconselho','fg-uf','fg-cha','fg-chh'].forEach(function(id){
     const el=document.getElementById(id); if(el) el.style.display=esconder?'none':'';
   });
   if(esconder){
     document.getElementById('cd-conselho').value='';
     document.getElementById('cd-numconselho').value='';
+    document.getElementById('cd-uf').value='';
     document.getElementById('cd-cha').value='';
     document.getElementById('cd-chh').value='';
   }
@@ -911,6 +936,7 @@ function abrirCadastro(){
   document.getElementById('cad-title').textContent='Novo cadastro';
   document.getElementById('cd-id').value='';
   ['cd-nome','cd-cpf','cd-cbo-cod','cd-conselho','cd-numconselho','cd-vinculo','cd-cnpj','cd-cha','cd-chh','cd-cho','cd-comp','cd-datainc','cd-datasaida','cd-obs'].forEach(function(k){document.getElementById(k).value='';});
+  document.getElementById('cd-uf').value='SP';
   document.getElementById('cd-cbo').value=''; document.getElementById('cd-tipo').value='1'; document.getElementById('cd-status').value='ATIVO'; document.getElementById('cd-cnes').checked=false; tipoMudou();
   document.getElementById('cpf-msg').textContent=''; document.getElementById('cnpj-msg').textContent='';
   document.getElementById('modal-cad').classList.add('open');
@@ -926,6 +952,7 @@ function editarCad(id){
   document.getElementById('cd-conselho').value=c.Conselho||'';
   document.getElementById('cd-numconselho').value=c.NumConselho||'';
   document.getElementById('cd-vinculo').value=c.IndicadorVinculo||'';
+  document.getElementById('cd-uf').value=c.UF||'SP';
   document.getElementById('cd-cnpj').value=c.CNPJ||'';
   document.getElementById('cd-cha').value=c.CHAmbulatorial||''; document.getElementById('cd-chh').value=c.CHHospitalar||''; document.getElementById('cd-cho').value=c.CHOutros||'';
   document.getElementById('cd-comp').value=c.Competencia||'';
@@ -952,7 +979,7 @@ async function salvarCadastro(){
   const payload={ ID:document.getElementById('cd-id').value||'', Unidade:unidadeAtual, Nome:nome, CPF:cpf,
     Tipo:document.getElementById('cd-tipo').value, CBO:cbo, CBODesc:cboObj?cboObj[1]:'',
     Conselho:document.getElementById('cd-conselho').value.trim(), NumConselho:document.getElementById('cd-numconselho').value.trim(),
-    IndicadorVinculo:document.getElementById('cd-vinculo').value.trim(), CNPJ:cnpj,
+    IndicadorVinculo:document.getElementById('cd-vinculo').value.trim(), UF:document.getElementById('cd-uf').value.trim().toUpperCase(), CNPJ:cnpj,
     CHAmbulatorial:document.getElementById('cd-cha').value, CHHospitalar:document.getElementById('cd-chh').value, CHOutros:document.getElementById('cd-cho').value,
     Competencia:document.getElementById('cd-comp').value.trim(), DataInclusao:document.getElementById('cd-datainc').value,
     DataSaida:document.getElementById('cd-datasaida').value, Status:document.getElementById('cd-status').value,

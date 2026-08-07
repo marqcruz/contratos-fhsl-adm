@@ -513,16 +513,16 @@ td.nowrap{white-space:nowrap}
       <div class="form-grid">
         <div class="fg full"><label>Nome do profissional *</label><input type="text" id="cd-nome" placeholder="Nome completo"></div>
         <div class="fg"><label>CPF *</label><input type="text" id="cd-cpf" placeholder="000.000.000-00" oninput="validarCpfVisual()"><div class="valid-msg" id="cpf-msg"></div></div>
-        <div class="fg"><label>Tipo de cadastro *</label><select id="cd-tipo"><option value="1">1 - Administrativo</option><option value="2">2 - Médico</option><option value="3">3 - Assistencial (enfermagem, técnicos, farmácia...)</option></select></div>
+        <div class="fg"><label>Tipo de cadastro *</label><select id="cd-tipo" onchange="tipoMudou()"><option value="1">1 - Administrativo</option><option value="2">2 - Médico</option><option value="3">3 - Assistencial (enfermagem, técnicos, farmácia...)</option></select></div>
         <div class="fg"><label>CBO *</label><select id="cd-cbo" onchange="cboMudou()"><option value="">Selecione...</option></select></div>
         <div class="fg"><label>Código CBO <span style="font-weight:400;color:var(--text3)">(copie p/ o outro sistema)</span></label>
           <div style="display:flex;gap:6px"><input type="text" id="cd-cbo-cod" readonly style="font-family:monospace;font-weight:700"><button class="btn sm" type="button" onclick="copiarCbo()">📋</button></div></div>
-        <div class="fg"><label>Conselho de classe</label><input type="text" id="cd-conselho" placeholder="Ex: CRM, COREN"></div>
-        <div class="fg"><label>Nº do conselho</label><input type="text" id="cd-numconselho" placeholder="Número"></div>
-        <div class="fg"><label>Indicador de vínculo</label><input type="text" id="cd-vinculo" placeholder="Ex: Empregado, Autônomo"></div>
+        <div class="fg" id="fg-conselho"><label>Conselho de classe</label><input type="text" id="cd-conselho" placeholder="Ex: CRM, COREN"></div>
+        <div class="fg" id="fg-numconselho"><label>Nº do conselho</label><input type="text" id="cd-numconselho" placeholder="Número"></div>
+        <div class="fg"><label>Indicador de vínculo</label><select id="cd-vinculo"><option value="">Selecione...</option><option value="080501">080501 - Autônomo</option><option value="080400">080400 - Celetista</option></select></div>
         <div class="fg"><label>CNPJ</label><input type="text" id="cd-cnpj" placeholder="00.000.000/0000-00" oninput="validarCnpjVisual()"><div class="valid-msg" id="cnpj-msg"></div></div>
-        <div class="fg"><label>CH Ambulatorial</label><input type="number" id="cd-cha" min="0" placeholder="Horas"></div>
-        <div class="fg"><label>CH Hospitalar</label><input type="number" id="cd-chh" min="0" placeholder="Horas"></div>
+        <div class="fg" id="fg-cha"><label>CH Ambulatorial</label><input type="number" id="cd-cha" min="0" placeholder="Horas"></div>
+        <div class="fg" id="fg-chh"><label>CH Hospitalar</label><input type="number" id="cd-chh" min="0" placeholder="Horas"></div>
         <div class="fg"><label>CH Outros</label><input type="number" id="cd-cho" min="0" placeholder="Horas"></div>
         <div class="fg"><label>Competência *</label><input type="text" id="cd-comp" placeholder="MM/AAAA (ex: 08/2026)"></div>
         <div class="fg"><label>Data de inclusão</label><input type="date" id="cd-datainc"></div>
@@ -702,10 +702,25 @@ function cboMudou(){
     else if(/enfermeiro|técnico de enfermagem|auxiliar de enfermagem|farmac|assistente social|biólogo|biomédico|fisioterap|nutricion|psicólog|fonoaudiólog|dentista|saúde bucal/.test(desc)) document.getElementById('cd-tipo').value='3';
     else document.getElementById('cd-tipo').value='1';
   }
+  tipoMudou();
 }
 function copiarCbo(){
   const el=document.getElementById('cd-cbo-cod'); if(!el.value){ showNotif('Selecione um CBO primeiro.','err'); return; }
   navigator.clipboard.writeText(el.value).then(function(){ showNotif('Código CBO copiado: '+el.value,'ok'); });
+}
+// esconde CH amb/hosp, conselho e nº conselho quando tipo = 1 (Administrativo)
+function tipoMudou(){
+  const t=document.getElementById('cd-tipo').value;
+  const esconder=(t==='1');
+  ['fg-conselho','fg-numconselho','fg-cha','fg-chh'].forEach(function(id){
+    const el=document.getElementById(id); if(el) el.style.display=esconder?'none':'';
+  });
+  if(esconder){
+    document.getElementById('cd-conselho').value='';
+    document.getElementById('cd-numconselho').value='';
+    document.getElementById('cd-cha').value='';
+    document.getElementById('cd-chh').value='';
+  }
 }
 
 // ── Unidades (menu lateral) ──
@@ -896,7 +911,7 @@ function abrirCadastro(){
   document.getElementById('cad-title').textContent='Novo cadastro';
   document.getElementById('cd-id').value='';
   ['cd-nome','cd-cpf','cd-cbo-cod','cd-conselho','cd-numconselho','cd-vinculo','cd-cnpj','cd-cha','cd-chh','cd-cho','cd-comp','cd-datainc','cd-datasaida','cd-obs'].forEach(function(k){document.getElementById(k).value='';});
-  document.getElementById('cd-cbo').value=''; document.getElementById('cd-tipo').value='1'; document.getElementById('cd-status').value='ATIVO'; document.getElementById('cd-cnes').checked=false;
+  document.getElementById('cd-cbo').value=''; document.getElementById('cd-tipo').value='1'; document.getElementById('cd-status').value='ATIVO'; document.getElementById('cd-cnes').checked=false; tipoMudou();
   document.getElementById('cpf-msg').textContent=''; document.getElementById('cnpj-msg').textContent='';
   document.getElementById('modal-cad').classList.add('open');
 }
@@ -919,6 +934,7 @@ function editarCad(id){
   document.getElementById('cd-cnes').checked=(String(c.CadastradoCNES)==='true');
   document.getElementById('cd-obs').value=c.Obs||'';
   document.getElementById('cpf-msg').textContent=''; document.getElementById('cnpj-msg').textContent='';
+  tipoMudou();
   document.getElementById('modal-cad').classList.add('open');
 }
 function fecharCadastro(){ document.getElementById('modal-cad').classList.remove('open'); }

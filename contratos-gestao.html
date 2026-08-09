@@ -343,6 +343,40 @@ tr.rub-row:hover{background:var(--surface2)}
 .cfg-note{font-size:12px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);padding:10px;border-radius:8px}.warn-box{font-size:12px;color:var(--yellow-text);background:var(--yellow-bg);border:1px solid var(--yellow);padding:10px 12px;border-radius:8px;margin:10px 0}
 .monitor-badge{display:inline-block;padding:2px 7px;border-radius:99px;background:var(--accent-bg);color:var(--accent-text);font-size:10px;font-weight:700}.inactive-row{opacity:.5}
 
+
+/* ===== v10 — Comparativo gerencial ===== */
+.cmp-controls{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px}
+.cmp-controls .fg{min-width:150px;flex:0 1 210px}
+.cmp-controls .fg label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:4px}
+.cmp-controls select,.cmp-controls input{width:100%}
+.cmp-section{margin-top:18px}
+.cmp-section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.cmp-section-title h3{font-size:14px;margin:0}
+.cmp-muted{font-size:11px;color:var(--text3)}
+.cmp-unit-name{font-weight:700;white-space:nowrap}
+.cmp-contract{font-size:10px;color:var(--text3);margin-top:2px}
+.cmp-value{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cmp-total-row td{font-weight:700;background:var(--surface2)}
+.cmp-empty{padding:24px;text-align:center;color:var(--text2);border:1px dashed var(--border);border-radius:10px}
+.cmp-ficha-card{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:16px;margin-top:14px}
+.cmp-ficha-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.cmp-ficha-title{font-size:18px;font-weight:800}
+.cmp-ficha-sub{font-size:12px;color:var(--text2);margin-top:4px;line-height:1.6}
+.cmp-mini-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.cmp-mini{border:1px solid var(--border);border-radius:9px;padding:10px;background:var(--surface2)}
+.cmp-mini b{display:block;font-size:14px}.cmp-mini span{font-size:10px;color:var(--text2)}
+.cmp-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cmp-list{font-size:12px;line-height:1.55}.cmp-list li{margin:5px 0}
+@media(max-width:900px){.cmp-mini-grid{grid-template-columns:repeat(2,1fr)}.cmp-cols{grid-template-columns:1fr}}
+@media print{
+  .sidebar,.topbar,#fhsl-back-hub,.no-print{display:none!important}
+  .main{margin:0!important;width:100%!important}
+  .page{display:none!important}
+  .page.active{display:block!important;padding:0!important}
+  body{background:#fff!important;color:#111!important}
+  .table-wrap,.chart-card,.score-card,.cmp-ficha-card{box-shadow:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -372,6 +406,7 @@ tr.rub-row:hover{background:var(--surface2)}
     <button class="nav-item active" data-page="painel" onclick="showPage('painel',this)">📊 Painel</button>
     <button class="nav-item" data-page="contrato" onclick="showPage('contrato',this)">📑 Contrato & PDF</button>
     <button class="nav-item" data-page="custos" onclick="showPage('custos',this)">🧾 Custos & Rubricas</button>
+    <button class="nav-item" data-page="comparativo" onclick="showPage('comparativo',this)">🔎 Comparativo de Unidades</button>
     <button class="nav-item" data-page="metas" onclick="showPage('metas',this)">🎯 Metas & Indicadores</button>
     <button class="nav-item" data-page="servicos" onclick="showPage('servicos',this)">🧩 Responsabilidades</button>
     <button class="nav-item" data-page="clausulas" onclick="showPage('clausulas',this)">📌 Cláusulas & Riscos</button>
@@ -384,7 +419,7 @@ tr.rub-row:hover{background:var(--surface2)}
     <div class="topbar-left"><div class="page-title" id="pg-title">—</div><div class="page-sub" id="pg-sub">—</div></div>
     <div class="topbar-right"><button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema">🌙</button></div>
   </div>
-  <div class="page active" id="page-painel"><div class="wip">✅ <strong>Base contratual configurável v9.</strong> Contratos 050/2026, 051/2026 e 071/2026 com rubricas detalhadas, edição e exclusão administrativa.</div><div class="toolbar" style="margin-bottom:1rem">
+  <div class="page active" id="page-painel"><div class="wip">✅ <strong>Base contratual configurável v10.</strong> Contratos 050/2026, 051/2026 e 071/2026 com rubricas detalhadas, edição e exclusão administrativa.</div><div class="toolbar" style="margin-bottom:1rem">
   <label style="font-size:12px;color:var(--text2);font-weight:600">Contrato:</label>
   <select class="contrato-sel" onchange="selContrato(this.value)"></select>
   <div style="flex:1"></div>
@@ -400,7 +435,7 @@ tr.rub-row:hover{background:var(--surface2)}
   <div class="chart-card"><div class="chart-title">Custo anual por unidade</div><div id="painel-unidades"></div></div>
   <div class="chart-card"><div class="chart-title">Vigência e identificação</div><div id="painel-info" style="font-size:13px;color:var(--text2);line-height:1.9"></div></div>
 </div></div>
-  <div class="page" id="page-contrato"><div class="wip">✅ <strong>Base contratual configurável v9.</strong> Contratos 050/2026, 051/2026 e 071/2026 com rubricas detalhadas, edição e exclusão administrativa.</div><div class="toolbar" style="margin-bottom:1rem">
+  <div class="page" id="page-contrato"><div class="wip">✅ <strong>Base contratual configurável v10.</strong> Contratos 050/2026, 051/2026 e 071/2026 com rubricas detalhadas, edição e exclusão administrativa.</div><div class="toolbar" style="margin-bottom:1rem">
   <label style="font-size:12px;color:var(--text2);font-weight:600">Contrato:</label>
   <select class="contrato-sel" onchange="selContrato(this.value)"></select>
   <div style="flex:1"></div>
@@ -443,7 +478,7 @@ tr.rub-row:hover{background:var(--surface2)}
   <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="pdfChosen(this)">
   <div id="pdf-nome" style="font-size:12px;color:var(--text2);margin-top:8px"></div>
 </div></div></div>
-  <div class="page" id="page-custos"><div class="wip">✅ <strong>Base contratual configurável v9.</strong> As rubricas agora ficam no Google Sheets e podem ser incluídas, editadas e excluídas por administradores.</div>
+  <div class="page" id="page-custos"><div class="wip">✅ <strong>Base contratual configurável v10.</strong> As rubricas agora ficam no Google Sheets e podem ser incluídas, editadas e excluídas por administradores.</div>
 <div class="toolbar" style="margin-bottom:1rem">
   <label style="font-size:12px;color:var(--text2);font-weight:600">Contrato:</label><select class="contrato-sel" onchange="selContrato(this.value)"></select>
   <label style="font-size:12px;color:var(--text2);font-weight:600;margin-left:8px">Exercício:</label><select id="cu-ano" onchange="selAnoCusto(this.value)"></select>
@@ -455,6 +490,55 @@ tr.rub-row:hover{background:var(--surface2)}
 <div class="toolbar"><input type="text" id="cu-busca" placeholder="🔍 Buscar código, rubrica, categoria ou grupo..." oninput="renderCustos()"><button class="btn" onclick="toggleMeses()" id="btn-meses">📅 Mostrar meses</button></div>
 <div class="table-wrap" style="overflow-x:auto"><table id="cu-tabela"><thead id="cu-head"></thead><tbody id="cu-body"></tbody></table></div>
 <p class="cfg-note" style="margin-top:10px">O total anual é calculado automaticamente pela soma de janeiro a dezembro. A categoria gerencial é independente do nome contratual da rubrica, permitindo relatórios gerenciais sem alterar a descrição original do Plano de Trabalho.</p></div>
+
+  <div class="page" id="page-comparativo">
+    <div class="wip">📊 <strong>Visão para reunião e consulta rápida.</strong> Compare a composição prevista das unidades sem transformar diferenças de perfil em ranking de desempenho.</div>
+    <div class="cmp-controls no-print">
+      <div class="fg"><label>Contrato</label><select id="cmp-contrato" onchange="cmpFiltroMudou()"><option value="todos">Todos os contratos</option></select></div>
+      <div class="fg"><label>Exercício</label><select id="cmp-ano" onchange="cmpFiltroMudou()"></select></div>
+      <div class="fg"><label>Categoria / detalhamento</label><select id="cmp-cat" onchange="renderComparativo()"><option value="__TODAS__">Todas as categorias</option></select></div>
+      <div class="fg"><label>Grupo de metas</label><select id="cmp-meta-grupo" onchange="renderComparativo()"><option>Produção</option><option>Monitoramento</option><option>Desempenho</option><option>Qualidade</option><option>Outro</option></select></div>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="imprimirComparativo()">🖨️ Imprimir / PDF</button>
+    </div>
+    <div id="cmp-status" class="cfg-note" style="display:none;margin-bottom:12px"></div>
+    <div id="cmp-print-area">
+      <div class="score-box">
+        <div class="score-card"><div class="score-num grp-prod" id="cmp-kpi-unidades">—</div><div class="score-lbl">Unidades / serviços</div></div>
+        <div class="score-card"><div class="score-num" id="cmp-kpi-total" style="font-size:16px">—</div><div class="score-lbl">Custo previsto no exercício</div></div>
+        <div class="score-card"><div class="score-num" id="cmp-kpi-op" style="font-size:16px">—</div><div class="score-lbl">Custos operacionais</div></div>
+        <div class="score-card"><div class="score-num grp-qual" id="cmp-kpi-ano">—</div><div class="score-lbl">Exercício comparado</div></div>
+      </div>
+
+      <div class="cmp-section">
+        <div class="cmp-section-title"><h3>Visão geral das unidades</h3><span class="cmp-muted">Comparação de composição contratual</span></div>
+        <div class="table-wrap" style="overflow-x:auto"><table>
+          <thead><tr><th>Unidade / serviço</th><th>Contrato</th><th class="cmp-value">Total</th><th class="cmp-value">RH / pessoal</th><th class="cmp-value">Serviços médicos</th><th class="cmp-value">Custos operacionais</th></tr></thead>
+          <tbody id="cmp-overview-body"></tbody>
+        </table></div>
+      </div>
+
+      <div class="cmp-section">
+        <div class="cmp-section-title"><h3 id="cmp-detail-title">Comparativo por categoria</h3><span class="cmp-muted">Valores previstos no Plano de Trabalho / base cadastrada</span></div>
+        <div class="table-wrap" style="overflow-x:auto"><table><thead id="cmp-detail-head"></thead><tbody id="cmp-detail-body"></tbody></table></div>
+      </div>
+
+      <div class="cmp-section">
+        <div class="cmp-section-title"><h3 id="cmp-meta-title">Metas de Produção</h3><span class="cmp-muted">Monitoramento aparece mesmo sem pontuação</span></div>
+        <div class="table-wrap" style="overflow-x:auto"><table><thead id="cmp-meta-head"></thead><tbody id="cmp-meta-body"></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="cmp-section no-print">
+      <div class="cmp-section-title"><h3>Ficha gerencial da unidade</h3><span class="cmp-muted">Resumo para apresentar ou compartilhar</span></div>
+      <div class="toolbar">
+        <select id="cmp-ficha-unidade" onchange="renderFichaGerencial()"></select>
+        <button class="btn primary" onclick="imprimirFichaGerencial()">📄 Imprimir ficha / PDF</button>
+      </div>
+      <div id="cmp-ficha"></div>
+    </div>
+  </div>
+
   <div class="page" id="page-metas"><div class="wip">✅ <strong>Metas configuráveis.</strong> Indicadores de monitoramento são exibidos mesmo quando não geram pontuação.</div>
 <div class="toolbar" style="margin-bottom:1rem"><label style="font-size:12px;color:var(--text2);font-weight:600">Contrato:</label><select class="contrato-sel" onchange="selContrato(this.value)"></select><div style="flex:1"></div><button class="btn primary" onclick="novaMeta()">＋ Novo indicador</button></div>
 <div class="unit-pills" id="metas-pills"></div>
@@ -468,7 +552,7 @@ tr.rub-row:hover{background:var(--surface2)}
 <div class="score-box"><div class="score-card"><div class="score-num" id="r-fund">0</div><div class="score-lbl">Fundação</div></div><div class="score-card"><div class="score-num" id="r-sec">0</div><div class="score-lbl">Secretaria</div></div><div class="score-card"><div class="score-num" id="r-comp">0</div><div class="score-lbl">Compartilhadas</div></div></div>
 <div class="table-wrap"><table><thead><tr><th>Categoria</th><th>Responsabilidade / obrigação</th><th>Responsável</th><th>Referência contratual</th><th>Observações</th><th>Ações</th></tr></thead><tbody id="servicos-body"></tbody></table></div>
 <p class="cfg-note" style="margin-top:10px">A matriz inicial reúne responsabilidades expressas nos Planos de Trabalho e pode ser complementada pela gestão à medida que novos contratos, rerratificações ou definições operacionais forem formalizados.</p></div>
-  <div class="page" id="page-clausulas"><div class="wip">✅ <strong>Base contratual configurável v9.</strong> Contratos 050/2026, 051/2026 e 071/2026 com rubricas detalhadas, edição e exclusão administrativa.</div>
+  <div class="page" id="page-clausulas"><div class="wip">✅ <strong>Base contratual configurável v10.</strong> Contratos 050/2026, 051/2026 e 071/2026 com rubricas detalhadas, edição e exclusão administrativa.</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
   <div><div class="fsec-title" style="margin-bottom:10px">📌 Principais cláusulas</div><div id="clausulas-body"></div></div>
   <div><div class="fsec-title" style="margin-bottom:10px">⚠️ Riscos para a Fundação</div><div id="riscos-body"></div></div>
@@ -544,6 +628,7 @@ const PAGE_META = {
   painel:['Painel de Acompanhamento','Visão geral do contrato selecionado'],
   contrato:['Contrato & PDF','Dados do instrumento e documento para consulta'],
   custos:['Custos & Rubricas','Análise gerencial por contrato, unidade, exercício e rubrica'],
+  comparativo:['Comparativo de Unidades','Custos, rubricas, metas e ficha gerencial lado a lado'],
   metas:['Metas por Unidade','Metas e indicadores configuráveis, incluindo monitoramento sem pontuação'],
   servicos:['Responsabilidades Contratuais','Matriz configurável por contrato e escopo'],
   clausulas:['Cláusulas & Riscos','Principais cláusulas e riscos para a Fundação']
@@ -557,6 +642,8 @@ function ct(){ return CONTRATOS.find(function(c){return c.id===ctSel;}) || CONTR
 function unidadeObj(id){ return UNIDADES.find(function(u){return u.id===id;}) || {id:id,nome:id,tipo:'Serviço',escala:'custom'}; }
 function undsDoContrato(){ return (ct().unidades||[]).map(unidadeObj); }
 let CG_RUBRICAS=[],CG_METAS=[],CG_RESP=[],rubricasCtCarregado=null,metasCtCarregado=null,respCtCarregado=null,metaEscopoSel=null,respEscopoSel=null;
+let CMP_CACHE={},cmpContratoSel='todos',cmpAnoSel=2027,cmpCarregando=false;
+
 function dataISO(v){ if(!v)return ''; const s=String(v); const m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m)return m[1]+'-'+m[2]+'-'+m[3]; const d=new Date(v); if(isNaN(d.getTime()))return s; return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function fmtDataBR(v){ const s=dataISO(v); const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/); return m?m[3]+'/'+m[2]+'/'+m[1]:(s||'—'); }
 function fmtCodigoRubrica(v){
@@ -648,6 +735,7 @@ async function carregarContratosBackend(){
       if(id==='painel') renderPainel();
       if(id==='contrato'){ preencherContrato(); renderListaContratos(); }
       if(id==='custos'){ garanteAnoCusto(); garanteUnidade(true); renderCustos(); }
+      if(id==='comparativo'){ prepararComparativo(true); }
     }
   }catch(e){ /* mantém a base embarcada quando o backend estiver indisponível */ }
 }
@@ -674,6 +762,7 @@ function showPage(id, btn){
   if(id==='painel') renderPainel();
   if(id==='contrato') { preencherContrato(); renderListaContratos(); }
   if(id==='custos') { garanteAnoCusto(); garanteUnidade(true); renderCustos(); carregarRubricasContrato(); }
+  if(id==='comparativo') { prepararComparativo(); }
   if(id==='metas') { renderMetas(); carregarMetasContrato(); }
   if(id==='servicos') { renderServicos(); carregarRespContrato(); }
   if(id==='clausulas') renderClausulas();
@@ -869,6 +958,230 @@ function novaResponsabilidade(){if(!isAdmin()){showNotif('Somente administradore
 function editarResponsabilidade(id){const x=CG_RESP.find(function(r){return String(r.ID)===String(id);});if(!x)return;document.getElementById('resp-title').textContent='Editar responsabilidade';document.getElementById('resp-id').value=x.ID;document.getElementById('resp-escopo-id').value=x.EscopoID||'';document.getElementById('resp-escopo-nome').value=x.EscopoNome||'';document.getElementById('resp-categoria').value=x.Categoria||'';document.getElementById('resp-texto').value=x.Responsabilidade||'';document.getElementById('resp-responsavel').value=x.Responsavel||'Outro';document.getElementById('resp-referencia').value=x.Referencia||'';document.getElementById('resp-obs').value=x.Observacoes||'';abreModal('modal-resp');}
 async function salvarResponsabilidade(){if(!isAdmin())return;const p={ID:document.getElementById('resp-id').value,ContratoID:ctSel,EscopoID:document.getElementById('resp-escopo-id').value.trim()||'geral',EscopoNome:document.getElementById('resp-escopo-nome').value.trim()||'Geral',Categoria:document.getElementById('resp-categoria').value.trim(),Responsabilidade:document.getElementById('resp-texto').value.trim(),Responsavel:document.getElementById('resp-responsavel').value,Referencia:document.getElementById('resp-referencia').value.trim(),Observacoes:document.getElementById('resp-obs').value.trim(),Ativo:'SIM',__actor:currentUser};if(!p.Responsabilidade){showNotif('Informe a responsabilidade.','err');return;}const r=await apiFetch('savecgresp',p);if(!r.ok){showNotif(r.message||'Falha ao salvar.','err');return;}fechaModal('modal-resp');respCtCarregado=null;await carregarRespContrato(true);showNotif('Responsabilidade salva.','ok');}
 async function excluirResponsabilidade(id){if(!isAdmin())return;if(!confirm('Excluir esta responsabilidade?'))return;const r=await apiFetch('deletecgresp',{id:id,__actor:currentUser});if(!r.ok){showNotif(r.message||'Falha ao excluir.','err');return;}respCtCarregado=null;await carregarRespContrato(true);showNotif('Responsabilidade excluída.','ok');}
+
+
+// ── Comparativo gerencial de unidades (v10) ──
+function cmpContratosSelecionados(){
+  if(cmpContratoSel==='todos') return CONTRATOS.slice();
+  return CONTRATOS.filter(function(c){return c.id===cmpContratoSel;});
+}
+function cmpUnidadesSelecionadas(){
+  const arr=[];
+  cmpContratosSelecionados().forEach(function(c){
+    (c.unidades||[]).forEach(function(uid){
+      const u=unidadeObj(uid);
+      arr.push({key:c.id+'::'+uid,contratoId:c.id,contratoNumero:c.numero,uid:uid,nome:u.nome,tipo:u.tipo});
+    });
+  });
+  return arr;
+}
+function cmpAnosDisponiveis(){
+  const ys={};
+  cmpContratosSelecionados().forEach(function(c){
+    const emb=CUSTOS_POR_CONTRATO[c.id]||{};
+    Object.keys(emb).forEach(function(y){ys[Number(y)]=true;});
+    const cc=CMP_CACHE[c.id];
+    if(cc) (cc.rubricas||[]).forEach(function(r){const y=Number(r.Exercicio);if(y)ys[y]=true;});
+  });
+  const out=Object.keys(ys).map(Number).sort(function(a,b){return a-b;});
+  return out.length?out:[2026,2027,2028,2029,2030,2031];
+}
+function cmpNormRubrica(r,cid){
+  const meses=MESES.map(function(m){return Number(r[m])||0;});
+  const total=Number(r.TotalAnual)||meses.reduce(function(s,v){return s+v;},0);
+  return {
+    contratoId:cid,unidadeId:String(r.UnidadeID||r.UnidadeNome||'geral'),
+    unidadeNome:r.UnidadeNome||unidadeObj(r.UnidadeID).nome,
+    exercicio:Number(r.Exercicio)||0,grupo:String(r.Grupo||''),categoria:String(r.CategoriaGerencial||'').trim(),
+    codigo:fmtCodigoRubrica(r.Codigo),rubrica:String(r.Rubrica||''),total:total,meses:meses
+  };
+}
+function cmpFallbackRubricas(c){
+  const out=[], anos=CUSTOS_POR_CONTRATO[c.id]||{};
+  Object.keys(anos).forEach(function(y){
+    const units=anos[y]||{};
+    Object.keys(units).forEach(function(uid){
+      (units[uid].itens||[]).forEach(function(i){
+        const rub=String(i.rubrica||'');
+        const m=rub.match(/^([0-9]+(?:\.[0-9]+)?)\s+(.+)$/);
+        out.push({contratoId:c.id,unidadeId:uid,unidadeNome:unidadeObj(uid).nome,exercicio:Number(y),
+          grupo:String(i.grupo||''),categoria:'',codigo:m?m[1]:'',rubrica:m?m[2]:rub,total:Number(i.total)||0,meses:i.meses||[]});
+      });
+    });
+  });
+  return out;
+}
+async function cmpLoadContrato(c,force){
+  if(!force&&CMP_CACHE[c.id]) return CMP_CACHE[c.id];
+  let rubricas=[],metas=[],resp=[];
+  try{
+    const rr=await Promise.all([
+      apiFetch('getcgrubricas',{ContratoID:c.id}),
+      apiFetch('getcgmetas',{ContratoID:c.id}),
+      apiFetch('getcgresp',{ContratoID:c.id})
+    ]);
+    if(rr[0]&&rr[0].ok) rubricas=(rr[0].data||[]).filter(function(x){return String(x.Ativo||'SIM')!=='NAO';}).map(function(x){return cmpNormRubrica(x,c.id);});
+    if(rr[1]&&rr[1].ok) metas=(rr[1].data||[]).filter(function(x){return String(x.Ativo||'SIM')!=='NAO';});
+    if(rr[2]&&rr[2].ok) resp=(rr[2].data||[]).filter(function(x){return String(x.Ativo||'SIM')!=='NAO';});
+  }catch(e){}
+  if(!rubricas.length) rubricas=cmpFallbackRubricas(c);
+  CMP_CACHE[c.id]={rubricas:rubricas,metas:metas,resp:resp};
+  return CMP_CACHE[c.id];
+}
+async function prepararComparativo(force){
+  if(cmpCarregando)return;
+  cmpCarregando=true;
+  const st=document.getElementById('cmp-status');
+  if(st){st.style.display='block';st.textContent='Carregando dados gerenciais...';}
+  try{
+    preencherFiltrosComparativo();
+    await Promise.all(cmpContratosSelecionados().map(function(c){return cmpLoadContrato(c,force);}));
+    preencherFiltrosComparativo();
+    renderComparativo();
+    renderFichaGerencial();
+    if(st)st.style.display='none';
+  }catch(e){
+    if(st){st.style.display='block';st.textContent='Não foi possível carregar toda a base online. O comparativo usará os dados locais disponíveis.';}
+    renderComparativo();renderFichaGerencial();
+  }finally{cmpCarregando=false;}
+}
+function preencherFiltrosComparativo(){
+  const cs=document.getElementById('cmp-contrato');if(!cs)return;
+  cs.innerHTML='<option value="todos">Todos os contratos</option>'+CONTRATOS.map(function(c){return '<option value="'+escapeHtml(c.id)+'">Contrato '+escapeHtml(c.numero)+'</option>';}).join('');
+  cs.value=cmpContratoSel;
+  const ys=cmpAnosDisponiveis();if(ys.indexOf(Number(cmpAnoSel))<0)cmpAnoSel=ys.indexOf(2027)>=0?2027:ys[0];
+  const ya=document.getElementById('cmp-ano');ya.innerHTML=ys.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join('');ya.value=String(cmpAnoSel);
+  const cats={};
+  cmpContratosSelecionados().forEach(function(c){const cc=CMP_CACHE[c.id];if(!cc)return;(cc.rubricas||[]).filter(function(r){return r.exercicio===Number(cmpAnoSel);}).forEach(function(r){cats[cmpCategoria(r)]=true;});});
+  const catSel=document.getElementById('cmp-cat'),cur=catSel.value||'__TODAS__';
+  catSel.innerHTML='<option value="__TODAS__">Todas as categorias</option>'+Object.keys(cats).sort().map(function(x){return '<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>';}).join('');
+  catSel.value=Object.prototype.hasOwnProperty.call(cats,cur)||cur==='__TODAS__'?cur:'__TODAS__';
+  const fu=document.getElementById('cmp-ficha-unidade'),old=fu.value;
+  const us=cmpUnidadesSelecionadas();
+  fu.innerHTML=us.map(function(u){return '<option value="'+escapeHtml(u.key)+'">'+escapeHtml(u.nome.split(' (')[0])+' — '+escapeHtml(u.contratoNumero)+'</option>';}).join('');
+  if(us.some(function(u){return u.key===old;}))fu.value=old;
+}
+async function cmpFiltroMudou(){
+  const cs=document.getElementById('cmp-contrato'),ys=document.getElementById('cmp-ano');
+  cmpContratoSel=cs?cs.value:'todos';cmpAnoSel=ys?Number(ys.value):cmpAnoSel;
+  await prepararComparativo(false);
+}
+function cmpRubricasAno(){
+  let out=[];
+  cmpContratosSelecionados().forEach(function(c){
+    const cc=CMP_CACHE[c.id];if(!cc)return;
+    out=out.concat((cc.rubricas||[]).filter(function(r){return Number(r.exercicio)===Number(cmpAnoSel);}));
+  });
+  return out;
+}
+function cmpCategoria(r){
+  if(r.categoria)return r.categoria;
+  const s=(r.rubrica||'').toLowerCase();
+  if(s.indexOf('medicamento')>=0)return 'Medicamentos';
+  if(s.indexOf('laborat')>=0)return 'Laboratório';
+  if(s.indexOf('enferm')>=0||s.indexOf('material médico')>=0)return 'Materiais médicos / enfermagem';
+  if(s.indexOf('oxig')>=0)return 'Oxigênio';
+  if(s.indexOf('limpeza')>=0)return 'Limpeza e conservação';
+  if(s.indexOf('vigil')>=0||s.indexOf('segurança')>=0)return 'Vigilância / segurança';
+  if(s.indexOf('energia')>=0||s.indexOf('força e luz')>=0||s.indexOf('água')>=0||s.indexOf('telefon')>=0)return 'Utilidades públicas';
+  if(s.indexOf('locação')>=0)return 'Locações';
+  if(s.indexOf('manutenção')>=0)return 'Manutenção';
+  if(s.indexOf('gêneros')>=0||s.indexOf('aliment')>=0)return 'Alimentação';
+  if((r.grupo||'').toUpperCase().indexOf('PESSOAL')>=0)return 'Pessoal e assistência';
+  return 'Outros';
+}
+function cmpBucket(r){
+  const g=(r.grupo||'').toUpperCase(),s=(r.rubrica||'').toUpperCase();
+  if(g.indexOf('CUSTOS OPERACIONAIS')>=0)return 'op';
+  if(s.indexOf('SERVIÇOS MÉDICOS')>=0||s.indexOf('SERVICOS MEDICOS')>=0||s.indexOf('HORAS MÉDICAS')>=0||s.indexOf('HORAS MEDICAS')>=0)return 'med';
+  if(g.indexOf('PESSOAL')>=0||s.indexOf('RECURSOS HUMANOS')>=0||s.indexOf('PISO DE ENFERMAGEM')>=0)return 'rh';
+  return 'outro';
+}
+function cmpResumoUnidade(u,rubs){
+  const rs=rubs.filter(function(r){return r.contratoId===u.contratoId&&r.unidadeId===u.uid;});
+  const z={total:0,rh:0,med:0,op:0,outro:0};
+  rs.forEach(function(r){const v=Number(r.total)||0;z.total+=v;z[cmpBucket(r)]+=v;});return z;
+}
+function renderComparativo(){
+  const us=cmpUnidadesSelecionadas(),rubs=cmpRubricasAno();
+  const summaries={};let total=0,op=0;
+  us.forEach(function(u){const s=cmpResumoUnidade(u,rubs);summaries[u.key]=s;total+=s.total;op+=s.op;});
+  const el=function(id,v){const x=document.getElementById(id);if(x)x.textContent=v;};
+  el('cmp-kpi-unidades',us.length);el('cmp-kpi-total',fmtCurto(total));el('cmp-kpi-op',fmtCurto(op));el('cmp-kpi-ano',cmpAnoSel||'—');
+  const ob=document.getElementById('cmp-overview-body');
+  ob.innerHTML=us.length?us.map(function(u){const s=summaries[u.key];return '<tr><td><div class="cmp-unit-name">'+escapeHtml(u.nome)+'</div><div class="cmp-contract">'+escapeHtml(u.tipo||'Serviço')+'</div></td><td>Contrato '+escapeHtml(u.contratoNumero)+'</td><td class="cmp-value"><strong>'+fmtBRL(s.total)+'</strong></td><td class="cmp-value">'+fmtBRL(s.rh)+'</td><td class="cmp-value">'+fmtBRL(s.med)+'</td><td class="cmp-value">'+fmtBRL(s.op)+'</td></tr>';}).join(''):'<tr><td colspan="6">Sem unidades para comparar.</td></tr>';
+  renderComparativoDetalhe(us,rubs);
+  renderComparativoMetas(us);
+  preencherFiltrosComparativo();
+}
+function renderComparativoDetalhe(us,rubs){
+  const cat=document.getElementById('cmp-cat').value||'__TODAS__';
+  const rows={};
+  rubs.forEach(function(r){
+    const ukey=r.contratoId+'::'+r.unidadeId;if(!us.some(function(u){return u.key===ukey;}))return;
+    const c=cmpCategoria(r);
+    if(cat==='__TODAS__'){
+      if(!rows[c])rows[c]={label:c,vals:{},total:0};
+      rows[c].vals[ukey]=(rows[c].vals[ukey]||0)+r.total;rows[c].total+=r.total;
+    }else if(c===cat){
+      const label=(r.codigo?fmtCodigoRubrica(r.codigo)+' — ':'')+(r.rubrica||'Rubrica');
+      if(!rows[label])rows[label]={label:label,vals:{},total:0};
+      rows[label].vals[ukey]=(rows[label].vals[ukey]||0)+r.total;rows[label].total+=r.total;
+    }
+  });
+  document.getElementById('cmp-detail-title').textContent=cat==='__TODAS__'?'Comparativo por categoria':'Rubricas — '+cat;
+  document.getElementById('cmp-detail-head').innerHTML='<tr><th>'+(cat==='__TODAS__'?'Categoria':'Rubrica')+'</th>'+us.map(function(u){return '<th class="cmp-value">'+escapeHtml(u.nome.split(' (')[0])+'</th>';}).join('')+'<th class="cmp-value">Total</th></tr>';
+  const arr=Object.keys(rows).map(function(k){return rows[k];}).sort(function(a,b){return b.total-a.total;});
+  document.getElementById('cmp-detail-body').innerHTML=arr.length?arr.map(function(r){return '<tr><td style="font-weight:600">'+escapeHtml(r.label)+'</td>'+us.map(function(u){const v=r.vals[u.key]||0;return '<td class="cmp-value">'+(v?fmtBRL(v):'—')+'</td>';}).join('')+'<td class="cmp-value"><strong>'+fmtBRL(r.total)+'</strong></td></tr>';}).join(''):'<tr><td colspan="'+(us.length+2)+'" style="padding:18px;color:var(--text2)">Sem valores nesta seleção.</td></tr>';
+}
+function cmpMetaKey(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
+function renderComparativoMetas(us){
+  const grupo=document.getElementById('cmp-meta-grupo').value||'Produção',rows={},disp={};
+  cmpContratosSelecionados().forEach(function(c){
+    const cc=CMP_CACHE[c.id];if(!cc)return;
+    (cc.metas||[]).forEach(function(m){
+      if(String(m.Grupo||'Outro')!==grupo)return;
+      const key=cmpMetaKey(m.Indicador),ukey=c.id+'::'+String(m.EscopoID||'geral');
+      if(!rows[key])rows[key]={label:m.Indicador,vals:{}};
+      rows[key].vals[ukey]=m;
+    });
+  });
+  document.getElementById('cmp-meta-title').textContent='Metas / Indicadores — '+grupo;
+  document.getElementById('cmp-meta-head').innerHTML='<tr><th>Indicador</th>'+us.map(function(u){return '<th>'+escapeHtml(u.nome.split(' (')[0])+'</th>';}).join('')+'</tr>';
+  const arr=Object.keys(rows).map(function(k){return rows[k];});
+  document.getElementById('cmp-meta-body').innerHTML=arr.length?arr.map(function(r){return '<tr><td style="font-weight:600;min-width:240px">'+escapeHtml(r.label)+'</td>'+us.map(function(u){const m=r.vals[u.key];if(!m)return '<td>—</td>';const mensal=m.MetaMensal?'<b>Mês:</b> '+escapeHtml(m.MetaMensal):'';const tri=m.MetaTrimestral?'<br><b>Tri:</b> '+escapeHtml(m.MetaTrimestral):'';const pts=String(m.Pontua).toUpperCase()==='SIM'?'<br><span class="badge grp-prod">'+(Number(m.PontosMax)||0)+' pts</span>':'<br><span class="monitor-badge">Monitoramento</span>';return '<td style="font-size:11px">'+(mensal||tri?mensal+tri:'—')+pts+'</td>';}).join('')+'</tr>';}).join(''):'<tr><td colspan="'+(us.length+1)+'" style="padding:18px;color:var(--text2)">Nenhum indicador deste grupo na seleção.</td></tr>';
+}
+function cmpFichaSelecionada(){
+  const sel=document.getElementById('cmp-ficha-unidade');if(!sel||!sel.value)return null;
+  return cmpUnidadesSelecionadas().find(function(u){return u.key===sel.value;})||null;
+}
+function renderFichaGerencial(){
+  const u=cmpFichaSelecionada(),box=document.getElementById('cmp-ficha');if(!box)return;
+  if(!u){box.innerHTML='<div class="cmp-empty">Selecione uma unidade.</div>';return;}
+  const c=CONTRATOS.find(function(x){return x.id===u.contratoId;}),cc=CMP_CACHE[u.contratoId]||{rubricas:[],metas:[],resp:[]};
+  const rubs=(cc.rubricas||[]).filter(function(r){return r.exercicio===Number(cmpAnoSel)&&r.unidadeId===u.uid;});
+  const s=cmpResumoUnidade(u,rubs),cats={};
+  rubs.filter(function(r){return cmpBucket(r)==='op';}).forEach(function(r){const k=cmpCategoria(r);cats[k]=(cats[k]||0)+r.total;});
+  const top=Object.keys(cats).map(function(k){return [k,cats[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+  const metas=(cc.metas||[]).filter(function(m){return String(m.EscopoID||'geral')===u.uid;});
+  const resp=(cc.resp||[]).filter(function(r){const e=String(r.EscopoID||'geral');return e===u.uid||e==='geral';});
+  const mon=metas.filter(function(m){return String(m.Pontua).toUpperCase()!=='SIM';}).length;
+  box.innerHTML='<div class="cmp-ficha-card"><div class="cmp-ficha-head"><div><div class="cmp-ficha-title">'+escapeHtml(u.nome)+'</div><div class="cmp-ficha-sub">Contrato '+escapeHtml(c.numero)+' · Processo '+escapeHtml(c.processo||'—')+'<br>Vigência: '+fmtDataBR(c.inicio)+' a '+fmtDataBR(c.fim)+' · Exercício da ficha: '+cmpAnoSel+'</div></div><span class="badge grp-prod">'+escapeHtml(u.tipo||'Serviço')+'</span></div>'
+    +'<div class="cmp-mini-grid"><div class="cmp-mini"><b>'+fmtBRL(s.total)+'</b><span>Custo previsto</span></div><div class="cmp-mini"><b>'+fmtBRL(s.rh)+'</b><span>RH / pessoal</span></div><div class="cmp-mini"><b>'+fmtBRL(s.med)+'</b><span>Serviços médicos</span></div><div class="cmp-mini"><b>'+fmtBRL(s.op)+'</b><span>Custos operacionais</span></div></div>'
+    +'<div class="cmp-cols"><div><div class="fsec-title">Principais categorias operacionais</div>'+(top.length?'<ul class="cmp-list">'+top.map(function(x){return '<li><strong>'+escapeHtml(x[0])+':</strong> '+fmtBRL(x[1])+'</li>';}).join('')+'</ul>':'<div class="cmp-muted">Sem custos operacionais cadastrados no exercício.</div>')+'</div>'
+    +'<div><div class="fsec-title">Metas e monitoramento</div><div class="cmp-list"><strong>'+metas.length+'</strong> indicador(es) cadastrados<br><strong>'+mon+'</strong> indicador(es) de monitoramento sem pontuação</div><div class="fsec-title" style="margin-top:12px">Responsabilidades</div><div class="cmp-list"><strong>'+resp.length+'</strong> obrigação(ões) vinculadas ao escopo/contrato</div></div></div></div>';
+}
+function cmpPrintCss(){return 'body{font-family:Arial,sans-serif;color:#111;margin:24px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:18px 0 8px}p{font-size:11px;color:#555}table{width:100%;border-collapse:collapse;font-size:10px;margin:8px 0 16px}th,td{border:1px solid #bbb;padding:6px;vertical-align:top}th{background:#eee;text-align:left}.cmp-value{text-align:right}.score-box{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.score-card{border:1px solid #bbb;padding:8px}.score-num{font-weight:700}.score-lbl{font-size:9px;color:#555}.badge,.monitor-badge{font-size:9px;border:1px solid #999;padding:1px 4px}.cmp-ficha-card{border:0}.cmp-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.cmp-mini{border:1px solid #bbb;padding:8px}.cmp-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cmp-section-title{display:flex;justify-content:space-between}.cmp-muted,.cmp-contract,.cmp-ficha-sub{font-size:9px;color:#555}.no-print{display:none}@page{size:A4 landscape;margin:10mm}';
+}
+function abrirJanelaImpressao(titulo,conteudo,landscape){
+  const w=window.open('','_blank');if(!w){showNotif('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.','err');return;}
+  const c=cmpContratosSelecionados().map(function(x){return x.numero;}).join(', ');
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+escapeHtml(titulo)+'</title><style>'+cmpPrintCss()+(landscape?'':'@page{size:A4 portrait;margin:10mm}')+'</style></head><body><h1>'+escapeHtml(titulo)+'</h1><p>Fundação Hospital Santa Lydia · Contrato(s): '+escapeHtml(c)+' · Exercício: '+cmpAnoSel+' · Gerado em '+new Date().toLocaleString('pt-BR')+'</p>'+conteudo+'</body></html>');
+  w.document.close();w.focus();setTimeout(function(){w.print();},300);
+}
+function imprimirComparativo(){const area=document.getElementById('cmp-print-area');abrirJanelaImpressao('Comparativo Gerencial de Unidades',area?area.innerHTML:'',true);}
+function imprimirFichaGerencial(){const area=document.getElementById('cmp-ficha');const u=cmpFichaSelecionada();abrirJanelaImpressao('Ficha Gerencial — '+(u?u.nome:'Unidade'),area?area.innerHTML:'',false);}
+
 
 // ── Cláusulas e riscos ──
 function renderClausulas(){

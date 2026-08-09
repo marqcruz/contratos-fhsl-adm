@@ -252,6 +252,10 @@ tr:hover td{background:var(--surface2)}
 .copy-btn{position:sticky;float:right;top:0;padding:3px 10px;font-size:11px;border-radius:4px;border:1px solid #45475a;background:#313244;color:#cdd6f4;cursor:pointer;font-family:inherit;margin-bottom:4px}
 .copy-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 /* MISC */
+
+.fl{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.fi{width:100%;padding:8px 10px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;box-sizing:border-box}
+.btn.danger{background:var(--red);color:#fff;border-color:var(--red)}
 .notif-toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:11px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:9999;display:none;max-width:340px}
 .notif-toast.ok{background:var(--green);color:#fff}
 .notif-toast.err{background:var(--red);color:#fff}
@@ -373,11 +377,12 @@ tr.rub-row:hover{background:var(--surface2)}
     <div class="topbar-left"><div class="page-title" id="pg-title">—</div><div class="page-sub" id="pg-sub">—</div></div>
     <div class="topbar-right"><button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema">🌙</button></div>
   </div>
-  <div class="page active" id="page-painel"><div class="wip">🚧 <strong>Painel de acompanhamento.</strong> Dados do plano de trabalho e da planilha de custos, editáveis. A gravação e o upload de PDF serão ativados na próxima etapa.</div><div class="toolbar" style="margin-bottom:1rem">
+  <div class="page active" id="page-painel"><div class="wip">✅ <strong>Contratos com gravação ativa.</strong> Você já pode inserir, editar e excluir contratos. Custos e metas continuam em leitura.</div><div class="toolbar" style="margin-bottom:1rem">
   <label style="font-size:12px;color:var(--text2);font-weight:600">Contrato:</label>
   <select class="ct-sel" id="ct-sel" onchange="selContrato(this.value)"></select>
   <div style="flex:1"></div>
-  <button class="btn" onclick="novoContrato()">➕ Novo contrato</button>
+  <button class="btn" onclick="editarContrato()">✏️ Editar</button>
+  <button class="btn primary" onclick="novoContrato()">➕ Novo contrato</button>
 </div>
 <div class="score-box">
   <div class="score-card"><div class="score-num grp-prod" id="kpi-und">—</div><div class="score-lbl">Unidades no contrato</div></div>
@@ -389,11 +394,12 @@ tr.rub-row:hover{background:var(--surface2)}
   <div class="chart-card"><div class="chart-title">Custo anual por unidade</div><div id="painel-unidades"></div></div>
   <div class="chart-card"><div class="chart-title">Vigência e identificação</div><div id="painel-info" style="font-size:13px;color:var(--text2);line-height:1.9"></div></div>
 </div></div>
-  <div class="page" id="page-contrato"><div class="wip">🚧 <strong>Painel de acompanhamento.</strong> Dados do plano de trabalho e da planilha de custos, editáveis. A gravação e o upload de PDF serão ativados na próxima etapa.</div><div class="toolbar" style="margin-bottom:1rem">
+  <div class="page" id="page-contrato"><div class="wip">✅ <strong>Contratos com gravação ativa.</strong> Você já pode inserir, editar e excluir contratos. Custos e metas continuam em leitura.</div><div class="toolbar" style="margin-bottom:1rem">
   <label style="font-size:12px;color:var(--text2);font-weight:600">Contrato:</label>
   <select class="ct-sel" id="ct-sel" onchange="selContrato(this.value)"></select>
   <div style="flex:1"></div>
-  <button class="btn" onclick="novoContrato()">➕ Novo contrato</button>
+  <button class="btn" onclick="editarContrato()">✏️ Editar</button>
+  <button class="btn primary" onclick="novoContrato()">➕ Novo contrato</button>
 </div>
 <div class="form-card"><div class="form-section">
   <div class="fsec-title">📑 Dados do contrato</div>
@@ -420,7 +426,8 @@ tr.rub-row:hover{background:var(--surface2)}
   <label style="font-size:12px;color:var(--text2);font-weight:600">Contrato:</label>
   <select class="ct-sel" id="ct-sel" onchange="selContrato(this.value)"></select>
   <div style="flex:1"></div>
-  <button class="btn" onclick="novoContrato()">➕ Novo contrato</button>
+  <button class="btn" onclick="editarContrato()">✏️ Editar</button>
+  <button class="btn primary" onclick="novoContrato()">➕ Novo contrato</button>
 </div>
 <div class="unit-pills" id="custos-pills"></div>
 <div class="score-box">
@@ -440,7 +447,8 @@ tr.rub-row:hover{background:var(--surface2)}
   <label style="font-size:12px;color:var(--text2);font-weight:600">Contrato:</label>
   <select class="ct-sel" id="ct-sel" onchange="selContrato(this.value)"></select>
   <div style="flex:1"></div>
-  <button class="btn" onclick="novoContrato()">➕ Novo contrato</button>
+  <button class="btn" onclick="editarContrato()">✏️ Editar</button>
+  <button class="btn primary" onclick="novoContrato()">➕ Novo contrato</button>
 </div>
 <div class="unit-pills" id="metas-pills"></div>
 <div class="score-box">
@@ -465,6 +473,34 @@ Responsabilidade de cada serviço: <span class="badge resp-fund">Fundação</spa
 </div></div>
 </main>
 </div>
+<div class="modal-overlay" id="modal-ct" onclick="if(event.target.id==='modal-ct')fecharModalCt()">
+  <div class="modal" style="max-width:640px">
+    <div class="mhead"><div class="mtitle" id="mct-titulo">Novo contrato</div><button class="mclose" onclick="fecharModalCt()">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="mct-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="grid-column:1/-1"><label class="fl">Número do contrato *</label><input class="fi" id="mct-numero" placeholder="Ex: 010/2027"></div>
+        <div style="grid-column:1/-1"><label class="fl">Processo</label><input class="fi" id="mct-processo" placeholder="Ex: PMRP 2026/000000"></div>
+        <div><label class="fl">Contratante</label><input class="fi" id="mct-contratante"></div>
+        <div><label class="fl">Contratada</label><input class="fi" id="mct-contratada"></div>
+        <div><label class="fl">Início</label><input class="fi" type="date" id="mct-inicio"></div>
+        <div><label class="fl">Fim</label><input class="fi" type="date" id="mct-fim"></div>
+        <div><label class="fl">Meses</label><input class="fi" type="number" id="mct-meses" placeholder="60"></div>
+        <div><label class="fl">Valor global (R$)</label><input class="fi" type="number" step="0.01" id="mct-valor" placeholder="0.00"></div>
+        <div><label class="fl">% Fixo</label><input class="fi" type="number" id="mct-fixo" value="80"></div>
+        <div><label class="fl">% Variável</label><input class="fi" type="number" id="mct-variavel" value="20"></div>
+        <div style="grid-column:1/-1"><label class="fl">Periodicidade de avaliação</label><input class="fi" id="mct-avaliacao" placeholder="Trimestral"></div>
+        <div style="grid-column:1/-1"><label class="fl">Unidades vinculadas</label><div id="mct-unidades" style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;max-height:150px;overflow:auto"></div></div>
+        <div style="grid-column:1/-1"><label class="fl">Observações</label><textarea class="fi" id="mct-obs" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="mfoot" style="display:flex;justify-content:space-between">
+      <button class="btn danger" id="mct-excluir" onclick="excluirContrato()" style="display:none">🗑️ Excluir</button>
+      <div style="display:flex;gap:8px;margin-left:auto"><button class="btn" onclick="fecharModalCt()">Cancelar</button><button class="btn primary" onclick="salvarContrato()">Salvar</button></div>
+    </div>
+  </div>
+</div>
+
 <div class="notif-toast" id="notif"></div>
 <script>
 
@@ -511,7 +547,7 @@ window.addEventListener('DOMContentLoaded', function(){
 });
 
 
-const CONTRATOS = [{"id": "cg_2026_2031", "numero": "__/2026", "processo": "PMRP 2026/036980", "contratante": "Secretaria Municipal da Saúde de Ribeirão Preto", "contratada": "TDN Gestão Operacional", "inicio": "2026-07-01", "fim": "2031-06-30", "meses": 60, "valor": 911722893.12, "unidades": ["upa_leste", "upa_oeste", "upa_norte", "pa_vv", "transporte"], "temCustos": false, "pdf": ""}, {"id": "cg_324_2023", "numero": "324/2023", "processo": "", "contratante": "Secretaria Municipal da Saúde de Ribeirão Preto", "contratada": "TDN Gestão Operacional", "inicio": "2026-01-01", "fim": "2026-12-31", "meses": 12, "valor": 37810921.86, "unidades": ["upa_leste", "upa_oeste", "upa_norte", "pa_vv"], "temCustos": true, "pdf": ""}];
+let CONTRATOS = [{"id": "cg_2026_2031", "numero": "__/2026", "processo": "PMRP 2026/036980", "contratante": "Secretaria Municipal da Saúde de Ribeirão Preto", "contratada": "TDN Gestão Operacional", "inicio": "2026-07-01", "fim": "2031-06-30", "meses": 60, "valor": 911722893.12, "unidades": ["upa_leste", "upa_oeste", "upa_norte", "pa_vv", "transporte"], "temCustos": false, "pdf": ""}, {"id": "cg_324_2023", "numero": "324/2023", "processo": "", "contratante": "Secretaria Municipal da Saúde de Ribeirão Preto", "contratada": "TDN Gestão Operacional", "inicio": "2026-01-01", "fim": "2026-12-31", "meses": 12, "valor": 37810921.86, "unidades": ["upa_leste", "upa_oeste", "upa_norte", "pa_vv"], "temCustos": true, "pdf": ""}];
 const UNIDADES = [{"id": "upa_leste", "nome": "UPA Leste (Dr. Luís Atílio Losi Viana)", "tipo": "UPA", "escala": "padrao"}, {"id": "upa_oeste", "nome": "UPA Oeste (Prof. Dr. João José Carneiro)", "tipo": "UPA", "escala": "padrao"}, {"id": "upa_norte", "nome": "UPA Norte (Nelson Mandela)", "tipo": "UPA", "escala": "padrao"}, {"id": "pa_vv", "nome": "PA UBDS Vila Virgínia", "tipo": "PA", "escala": "padrao"}, {"id": "transporte", "nome": "Serviço de Transporte Inter-Hospitalar", "tipo": "Transporte", "escala": "transporte"}];
 const IND_PADRAO = [["Produção", "Atendimento médico em clínica (% do previsto)", "≥ 75%", "%", 15], ["Produção", "Atendimento médico em pediatria (% do previsto)", "≥ 75%", "%", 15], ["Produção", "Exames laboratoriais realizados (% do previsto)", "≥ 75%", "%", 15], ["Produção", "Exames de radiologia realizados (% do previsto)", "≥ 75%", "%", 15], ["Produção", "Dispensação de medicamentos (% do previsto)", "≥ 75%", "%", 15], ["Desempenho", "Tempo de espera risco AZUL (≤ 240 min)", "≤ 240 min", "min", 15], ["Desempenho", "Tempo de espera risco VERDE (≤ 120 min)", "≤ 120 min", "min", 15], ["Desempenho", "Tempo de espera risco AMARELO (≤ 30 min)", "≤ 30 min", "min", 15], ["Desempenho", "% de transferências (≤ 20%)", "≤ 20%", "%", 15], ["Desempenho", "Tempo de liberação de exames laboratoriais (≤ 60 min)", "≤ 60 min", "min", 15], ["Qualidade", "Usuários insatisfeitos (≤ 30%)", "≤ 30%", "%", 15], ["Qualidade", "Pontualidade na entrega de documentos (100%)", "100%", "%", 15], ["Qualidade", "Reuniões do comitê gestor (3 por trimestre)", "3/tri", "reuniões", 15], ["Qualidade", "Ações de educação permanente (≥ 3 por trimestre)", "≥ 3/tri", "ações", 15], ["Qualidade", "Atas das comissões (≥ 16 por trimestre)", "≥ 16/tri", "atas", 15]];
 const IND_TRANSPORTE = [["Desempenho", "Tempo aguardando transporte (≤ 15 min)", "≤ 15 min", "min", 15], ["Desempenho", "Tempo de acionamento da viatura (≤ 5 min)", "≤ 5 min", "min", 10], ["Desempenho", "Disponibilidade da frota (≥ 95%)", "≥ 95%", "%", 15], ["Desempenho", "Eventos adversos (< 1%)", "< 1%", "%", 15], ["Desempenho", "Indicação adequada do tipo de transporte (≥ 95%)", "≥ 95%", "%", 20]];
@@ -530,14 +566,32 @@ const PAGE_META = {
   servicos:['Matriz de Responsabilidades','Fundação (contratada) x Secretaria (contratante)'],
   clausulas:['Cláusulas & Riscos','Principais cláusulas e riscos para a Fundação']
 };
-let ctSel = CONTRATOS[0].id;
+let ctSel = null;
 let unidadeSel = null;
 let mostrarMeses = false;
 
-function ct(){ return CONTRATOS.find(function(c){return c.id===ctSel;}) || CONTRATOS[0]; }
-function undsDoContrato(){ return UNIDADES.filter(function(u){ return ct().unidades.indexOf(u.id)>=0; }); }
+function ct(){ return CONTRATOS.find(function(c){return c.id===ctSel;}) || CONTRATOS[0] || {unidades:[],valor:0,numero:''}; }
+function undsDoContrato(){ const c=ct(); return UNIDADES.filter(function(u){ return (c.unidades||[]).indexOf(u.id)>=0; }); }
 function fmtBRL(v){ return 'R$ '+(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtCurto(v){ const n=Number(v)||0; return n>=1e6? 'R$ '+(n/1e6).toFixed(2)+' mi' : fmtBRL(n); }
+
+// converte registro do servidor (maiúsculas, Unidades string) -> formato da tela (minúsculas, unidades array)
+function cgDoServidor(r){
+  return {
+    id:r.ID, numero:r.Numero||'', processo:r.Processo||'', contratante:r.Contratante||'', contratada:r.Contratada||'',
+    inicio:r.Inicio||'', fim:r.Fim||'', meses:Number(r.Meses)||0, valor:Number(r.Valor)||0,
+    unidades:String(r.Unidades||'').split(',').map(function(s){return s.trim();}).filter(Boolean),
+    fixoPct:Number(r.FixoPct)||80, variavelPct:Number(r.VariavelPct)||20, avaliacao:r.Avaliacao||'Trimestral',
+    obs:r.Obs||'', pdf:r.PDF||'', temCustos:!!CUSTOS[String(r.Unidades||'').split(',')[0]]
+  };
+}
+async function carregarContratos(){
+  try{
+    const r=await apiFetch('getcg');
+    if(r.ok && r.data){ CONTRATOS = r.data.map(cgDoServidor); }
+  }catch(e){ showNotif('Erro ao carregar contratos.','err'); }
+  if(!ctSel && CONTRATOS.length) ctSel=CONTRATOS[0].id;
+}
 
 function startApp(){
   document.getElementById('login-screen').style.display='none';
@@ -548,8 +602,9 @@ function startApp(){
   document.getElementById('side-avatar').style.background = cores[currentUser.role]||'#1d6aad';
   document.getElementById('side-name').textContent = currentUser.nome;
   document.getElementById('side-role').textContent = ({admin:'Administrador',gestor:'Gestor',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
-  showPage('painel', document.querySelector('[data-page="painel"]'));
+  carregarContratos().then(function(){ showPage('painel', document.querySelector('[data-page="painel"]')); });
 }
+function podeEditar(){ return currentUser && (currentUser.role==='admin'||currentUser.role==='gestor'); }
 function showPage(id, btn){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
@@ -566,21 +621,68 @@ function showPage(id, btn){
 }
 function preencherSeletores(){
   document.querySelectorAll('#ct-sel').forEach(function(sel){
+    if(!CONTRATOS.length){ sel.innerHTML='<option value="">Nenhum contrato — crie um novo</option>'; return; }
     sel.innerHTML = CONTRATOS.map(function(c){
-      return '<option value="'+c.id+'"'+(c.id===ctSel?' selected':'')+'>Contrato '+c.numero+' — '+c.unidades.length+' unidade(s)</option>';
+      return '<option value="'+c.id+'"'+(c.id===ctSel?' selected':'')+'>Contrato '+c.numero+' — '+(c.unidades||[]).length+' unidade(s)</option>';
     }).join('');
   });
 }
 function selContrato(id){ ctSel=id; unidadeSel=null; const at=document.querySelector('.page.active'); if(at) showPage(at.id.replace('page-','')); }
-function novoContrato(){
-  const num = prompt('Número do novo contrato de gestão (ex: 010/2027):');
-  if(!num) return;
-  const novo = { id:'ct_'+Date.now(), numero:num, processo:'', contratante:CONTRATOS[0].contratante,
-    contratada:CONTRATOS[0].contratada, inicio:'', fim:'', meses:12, valor:0,
-    unidades:UNIDADES.map(function(u){return u.id;}), temCustos:false, pdf:'' };
-  CONTRATOS.push(novo); ctSel=novo.id;
-  showNotif('Contrato '+num+' criado. Preencha os dados na aba Contrato.','ok');
-  showPage('contrato', document.querySelector('[data-page="contrato"]'));
+
+function novoContrato(){ abrirModalCt(null); }
+function editarContrato(){ abrirModalCt(ct()); }
+function abrirModalCt(c){
+  if(!podeEditar()){ showNotif('Sem permissão para editar contratos.','err'); return; }
+  const ed=!!c;
+  document.getElementById('mct-titulo').textContent=ed?'Editar contrato':'Novo contrato';
+  document.getElementById('mct-id').value=ed?c.id:'';
+  document.getElementById('mct-numero').value=ed?c.numero:'';
+  document.getElementById('mct-processo').value=ed?c.processo:'';
+  document.getElementById('mct-contratante').value=ed?c.contratante:'Secretaria Municipal da Saúde de Ribeirão Preto';
+  document.getElementById('mct-contratada').value=ed?c.contratada:'TDN Gestão Operacional';
+  document.getElementById('mct-inicio').value=ed?c.inicio:'';
+  document.getElementById('mct-fim').value=ed?c.fim:'';
+  document.getElementById('mct-meses').value=ed?c.meses:'';
+  document.getElementById('mct-valor').value=ed?c.valor:'';
+  document.getElementById('mct-fixo').value=ed?c.fixoPct:80;
+  document.getElementById('mct-variavel').value=ed?c.variavelPct:20;
+  document.getElementById('mct-avaliacao').value=ed?c.avaliacao:'Trimestral';
+  document.getElementById('mct-obs').value=ed?c.obs:'';
+  // unidades como checkboxes
+  document.getElementById('mct-unidades').innerHTML=UNIDADES.map(function(u){
+    const mk=ed && (c.unidades||[]).indexOf(u.id)>=0;
+    return '<label style="display:flex;align-items:center;gap:7px;font-size:13px;padding:3px 0"><input type="checkbox" class="mct-un" value="'+u.id+'"'+(mk?' checked':'')+'> '+u.nome+'</label>';
+  }).join('');
+  document.getElementById('mct-excluir').style.display=ed?'inline-flex':'none';
+  document.getElementById('modal-ct').classList.add('open');
+}
+function fecharModalCt(){ document.getElementById('modal-ct').classList.remove('open'); }
+async function salvarContrato(){
+  const num=document.getElementById('mct-numero').value.trim();
+  if(!num){ showNotif('Informe o número do contrato.','err'); return; }
+  const unids=Array.prototype.map.call(document.querySelectorAll('.mct-un:checked'),function(c){return c.value;});
+  const payload={
+    ID:document.getElementById('mct-id').value||'',
+    Numero:num, Processo:document.getElementById('mct-processo').value.trim(),
+    Contratante:document.getElementById('mct-contratante').value.trim(), Contratada:document.getElementById('mct-contratada').value.trim(),
+    Inicio:document.getElementById('mct-inicio').value, Fim:document.getElementById('mct-fim').value,
+    Meses:document.getElementById('mct-meses').value, Valor:document.getElementById('mct-valor').value,
+    Unidades:unids.join(','), FixoPct:document.getElementById('mct-fixo').value, VariavelPct:document.getElementById('mct-variavel').value,
+    Avaliacao:document.getElementById('mct-avaliacao').value.trim(), Obs:document.getElementById('mct-obs').value.trim(),
+    __actor:{ nome:currentUser.nome, email:currentUser.email }
+  };
+  showNotif('Salvando...','info');
+  const r=await apiFetch('savecg', payload);
+  if(r.ok){ showNotif('Contrato salvo.','ok'); fecharModalCt(); await carregarContratos(); if(r.id) ctSel=r.id; const at=document.querySelector('.page.active'); if(at) showPage(at.id.replace('page-','')); }
+  else showNotif(r.message||'Erro ao salvar.','err');
+}
+async function excluirContrato(){
+  const id=document.getElementById('mct-id').value; if(!id) return;
+  const c=CONTRATOS.find(function(x){return x.id===id;});
+  if(!confirm('Excluir o contrato '+((c&&c.numero)||'')+'? Esta ação não pode ser desfeita.')) return;
+  const r=await apiFetch('deletecg', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  if(r.ok){ showNotif('Contrato excluído.','ok'); fecharModalCt(); ctSel=null; await carregarContratos(); const at=document.querySelector('.page.active'); if(at) showPage(at.id.replace('page-','')); }
+  else showNotif(r.message||'Erro ao excluir.','err');
 }
 function garanteUnidade(precisaCustos){
   const lista = undsDoContrato().filter(function(u){ return precisaCustos ? !!CUSTOS[u.id] : true; });

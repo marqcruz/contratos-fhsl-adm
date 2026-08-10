@@ -386,6 +386,53 @@ tr:hover td{background:var(--surface2)}
 .notif-toast.ok{background:var(--green);color:#fff}
 .notif-toast.err{background:var(--red);color:#fff}
 .notif-toast.info{background:var(--accent);color:#fff}
+
+/* ===== FLUXO SEGURO DE CONFERÊNCIA v2 ===== */
+.conf-alerta-topo{
+  background:var(--red-bg);border:2px solid var(--red);color:var(--red-text);
+  border-radius:12px;padding:13px 15px;margin-bottom:1rem;font-size:13px;
+  font-weight:650;line-height:1.55;box-shadow:var(--shadow)
+}
+.conf-alerta-topo strong{font-weight:800}
+.conf-empresa-flag{
+  display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;
+  background:var(--accent-bg);color:var(--accent-text);border:1px solid var(--accent);
+  font-size:12px;font-weight:700;margin-bottom:1rem
+}
+.conf-empresa-flag .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+.conf-empresa-flag .valor{font-size:13px;font-weight:800}
+.pdf-final-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;
+  justify-content:center;z-index:5000;padding:14px
+}
+.pdf-final-overlay.open{display:flex}
+.pdf-final-modal{
+  width:min(1280px,98vw);height:min(920px,96vh);background:var(--surface);
+  border:1px solid var(--border);border-radius:14px;overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.5)
+}
+.pdf-final-head{
+  padding:10px 14px;border-bottom:1px solid var(--border);display:flex;
+  align-items:center;justify-content:space-between;gap:10px;background:var(--surface)
+}
+.pdf-final-head h3{font-size:15px;margin:0}
+.pdf-final-body{flex:1;min-height:0;background:#525659}
+.pdf-final-body iframe{width:100%;height:100%;border:0}
+.pdf-final-foot{
+  padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface)
+}
+.pdf-final-msg{font-size:12px;color:var(--yellow-text);font-weight:700}
+.pdf-final-msg.ok{color:var(--green-text)}
+.etapas-final{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 4px}
+.etapa-final{
+  padding:4px 9px;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text3);font-size:10px;font-weight:800
+}
+.etapa-final.ok{background:var(--green-bg);color:var(--green-text);border-color:var(--green)}
+.etapa-final.atual{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
+@media(max-width:768px){.pdf-final-overlay{padding:3px}.pdf-final-modal{height:98vh}.pdf-final-foot{align-items:stretch}.pdf-final-foot .acoes{width:100%}}
+
 </style>
 
 </head>
@@ -449,6 +496,14 @@ tr:hover td{background:var(--surface2)}
 
   <!-- NOVA / EDITAR -->
   <div class="page" id="page-nova">
+    <div class="conf-alerta-topo">
+      <strong>⚠️ ATENÇÃO:</strong> esta tela somente poderá ser encerrada após a conferência estar totalmente concluída e o PDF final ter sido compilado.
+      Os PDFs permanecem apenas nesta sessão do navegador. Ao fechar, atualizar, sair desta tela ou concluir a conferência, todos os anexos serão perdidos.
+    </div>
+    <div class="conf-empresa-flag" id="conf-empresa-flag">
+      <span class="lbl">Empresa vinculada</span>
+      <span class="valor" id="conf-empresa-flag-valor">NÃO SELECIONADA</span>
+    </div>
     <div class="form-card">
       <div class="aviso-fin">⚠️ O financeiro só efetua o pagamento com a <strong>nota fiscal carimbada e assinada</strong> pelo gestor do contrato e gerentes/profissional designado, com descrição e valores previamente conferidos.</div>
 
@@ -456,10 +511,10 @@ tr:hover td{background:var(--surface2)}
         <div class="fsec-title">📋 Identificação</div>
         <div class="form-grid">
           <input type="hidden" id="cf-id">
-          <div class="fg"><label>Contrato vinculado *</label><select id="cf-contrato" onchange="contratoMudou()"><option value="">Selecione...</option></select></div>
+          <div class="fg"><label>Empresa / contrato vinculado *</label><select id="cf-contrato" onchange="contratoMudou()"><option value="">Selecione a empresa...</option></select></div>
           <div class="fg"><label>Nº da conferência</label><input type="text" id="cf-numero" placeholder="(automático)" readonly style="opacity:.7"></div>
-          <div class="fg"><label>Empresa contratada</label><input type="text" id="cf-empresa" placeholder="(vem do contrato)"></div>
-          <div class="fg"><label>CNPJ</label><input type="text" id="cf-cnpj" placeholder="(vem do contrato)"></div>
+          <input type="hidden" id="cf-empresa">
+          <div class="fg"><label>CNPJ</label><input type="text" id="cf-cnpj" placeholder="(vem da empresa)" readonly></div>
           <div class="fg"><label>Unidade *</label><select id="cf-unidade"></select></div>
           <div class="fg"><label>Mês de referência *</label><input type="month" id="cf-mesref"></div>
           <div class="fg full"><label>Nota(s) fiscal(is) nº(s)</label><input type="text" id="cf-nf" placeholder="Ex: 1234, 1235"></div>
@@ -488,20 +543,45 @@ tr:hover td{background:var(--surface2)}
         <div style="font-size:12px;color:var(--text2)" id="rs-pdfs">0 PDFs anexados (0 MB)</div>
       </div>
 
-      <div class="aviso-fin" style="margin-top:1rem;background:var(--red-bg);border-color:#fca5a5;color:var(--red-text)">
-        <strong>ATENÇÃO:</strong> esta tela somente poderá ser encerrada após a conferência estar totalmente concluída e o PDF final ter sido compilado. Os PDFs permanecem apenas nesta sessão do navegador. Ao fechar, atualizar, sair desta tela ou concluir a conferência, todos os anexos serão perdidos.
+      <div class="etapas-final">
+        <span class="etapa-final" id="conf-etapa-1">1. CONFERÊNCIA 100%</span>
+        <span class="etapa-final" id="conf-etapa-2">2. PDF COMPILADO</span>
+        <span class="etapa-final" id="conf-etapa-3">3. PDF BAIXADO</span>
+        <span class="etapa-final" id="conf-etapa-4">4. CONCLUIR</span>
       </div>
-
       <div class="toolbar" style="margin-top:1rem;flex-wrap:wrap">
         <button class="btn" onclick="tentarSairConferencia()">Cancelar / sair</button>
         <div style="flex:1"></div>
         <button class="btn" onclick="compilarPDF()" id="btn-compilar">📎 Compilar PDF final</button>
-        <button class="btn primary" onclick="salvarConf('Concluída')" id="btn-concluir">✅ Concluir conferência</button>
+        <button class="btn primary" onclick="salvarConf('Concluída')" id="btn-concluir" disabled>✅ Concluir conferência</button>
       </div>
       <div id="compilar-status" style="font-size:12px;color:var(--text2);margin-top:8px"></div>
     </div>
   </div>
 </main>
+</div>
+
+
+<div class="pdf-final-overlay" id="pdf-final-overlay">
+  <div class="pdf-final-modal">
+    <div class="pdf-final-head">
+      <div>
+        <h3>📄 PDF FINAL COMPILADO</h3>
+        <div style="font-size:11px;color:var(--text3)">Revise o arquivo compilado antes de concluir a conferência.</div>
+      </div>
+      <button class="btn sm" onclick="fecharPreviewPdf()">Voltar à conferência</button>
+    </div>
+    <div class="pdf-final-body">
+      <iframe id="pdf-final-preview" title="Pré-visualização do PDF final"></iframe>
+    </div>
+    <div class="pdf-final-foot">
+      <div class="pdf-final-msg" id="pdf-final-msg">Baixe o PDF final para liberar a conclusão.</div>
+      <div class="acoes">
+        <button class="btn primary" onclick="baixarPdfFinal()" id="btn-baixar-pdf">⬇️ Baixar PDF final</button>
+        <button class="btn success" onclick="salvarConf('Concluída')" id="btn-concluir-modal" disabled>✅ Concluir conferência</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="notif-toast" id="notif" style="display:none"></div>
@@ -554,7 +634,7 @@ async function doLogin(){
 function doLogout(){
   if(conferenciaEmEdicao && !permitindoSaida){
     const v=validarConferenciaCompleta(false);
-    if(!v.ok || !pdfFinalGerado){ showNotif('Conclua toda a conferência e compile o PDF final antes de sair.','err'); return; }
+    if(!v.ok || !pdfFinalGerado || !pdfFinalBaixado){ showNotif('Conclua toda a conferência, compile e baixe o PDF final antes de sair.','err'); return; }
     if(!confirm('Ao sair, todos os PDFs anexados serão perdidos. Confirma?')) return;
   }
   permitindoSaida=true; conferenciaEmEdicao=false; anexos={};
@@ -635,8 +715,67 @@ const MSG_APROVADA = {
 let conferencias=[], unidades=[], contratos=[], editId=null;
 let anexos={}; // { itemKey: [{nome, bytes(Uint8Array), size}] }
 let pdfFinalGerado=false;
+let pdfFinalBaixado=false;
+let pdfFinalBlob=null;
+let pdfFinalUrl='';
 let conferenciaEmEdicao=false;
 let permitindoSaida=false;
+
+function atualizarFlagEmpresa(){
+  const nome=(document.getElementById('cf-empresa')?.value||'').trim();
+  const el=document.getElementById('conf-empresa-flag-valor');
+  if(el) el.textContent=nome||'NÃO SELECIONADA';
+}
+function atualizarEtapasConferencia(){
+  const v=validarConferenciaCompleta(false);
+  const els=[1,2,3,4].map(function(n){return document.getElementById('conf-etapa-'+n);});
+  els.forEach(function(el){ if(el) el.className='etapa-final'; });
+  if(els[0]) els[0].classList.add(v.ok?'ok':'atual');
+  if(els[1] && pdfFinalGerado) els[1].classList.add('ok');
+  if(els[2] && pdfFinalBaixado) els[2].classList.add('ok');
+  if(els[3] && pdfFinalBaixado) els[3].classList.add('atual');
+  const b1=document.getElementById('btn-concluir');
+  const b2=document.getElementById('btn-concluir-modal');
+  if(b1) b1.disabled=!pdfFinalBaixado;
+  if(b2) b2.disabled=!pdfFinalBaixado;
+}
+function invalidarPdfFinal(mensagem){
+  pdfFinalGerado=false;
+  pdfFinalBaixado=false;
+  pdfFinalBlob=null;
+  if(pdfFinalUrl){ try{URL.revokeObjectURL(pdfFinalUrl);}catch(e){} pdfFinalUrl=''; }
+  const prev=document.getElementById('pdf-final-preview'); if(prev) prev.src='about:blank';
+  const msg=document.getElementById('pdf-final-msg');
+  if(msg){ msg.textContent='Baixe o PDF final para liberar a conclusão.'; msg.className='pdf-final-msg'; }
+  const st=document.getElementById('compilar-status');
+  if(st && mensagem) st.textContent=mensagem;
+  atualizarEtapasConferencia();
+}
+function fecharPreviewPdf(){ document.getElementById('pdf-final-overlay')?.classList.remove('open'); }
+function abrirPreviewPdf(){
+  const ov=document.getElementById('pdf-final-overlay');
+  const prev=document.getElementById('pdf-final-preview');
+  if(prev && pdfFinalUrl) prev.src=pdfFinalUrl;
+  if(ov) ov.classList.add('open');
+}
+function baixarPdfFinal(){
+  if(!pdfFinalGerado || !pdfFinalBlob || !pdfFinalUrl){
+    showNotif('Compile o PDF final novamente.','err'); return;
+  }
+  const emp=(document.getElementById('cf-empresa').value.trim()||'empresa')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'_');
+  const mes=document.getElementById('cf-mesref').value||'';
+  const a=document.createElement('a');
+  a.href=pdfFinalUrl; a.download='Conferencia_'+emp+'_'+mes+'.pdf';
+  document.body.appendChild(a); a.click(); a.remove();
+  pdfFinalBaixado=true;
+  const msg=document.getElementById('pdf-final-msg');
+  if(msg){ msg.textContent='Download iniciado. Confira o arquivo salvo e então conclua a conferência.'; msg.className='pdf-final-msg ok'; }
+  const st=document.getElementById('compilar-status');
+  if(st) st.textContent='PDF final compilado e download iniciado. A conclusão está liberada.';
+  atualizarEtapasConferencia();
+}
+
 
 function startApp(){
   document.getElementById('login-screen').style.display='none';
@@ -658,9 +797,7 @@ function instalarMonitoramentoConferencia(){
     const ev=(el.tagName==='SELECT'||el.type==='month')?'change':'input';
     el.addEventListener(ev,function(){
       if(!conferenciaEmEdicao) return;
-      pdfFinalGerado=false;
-      const st=document.getElementById('compilar-status');
-      if(st) st.textContent='Dados alterados. Compile novamente o PDF final.';
+      invalidarPdfFinal('Dados alterados. Compile novamente o PDF final.');
     });
   });
 }
@@ -673,8 +810,8 @@ function normMes(v){ if(!v) return ''; const s=String(v); if(/^\d{4}-\d{2}$/.tes
 function showPage(id, btn){
   if(id!=='nova' && conferenciaEmEdicao && !permitindoSaida){
     const v=validarConferenciaCompleta(false);
-    if(!v.ok || !pdfFinalGerado){
-      showNotif('A conferência somente pode ser encerrada após todos os itens serem concluídos e o PDF final ser compilado.','err');
+    if(!v.ok || !pdfFinalGerado || !pdfFinalBaixado){
+      showNotif('A conferência somente pode ser encerrada após todos os itens serem concluídos e o PDF final ser compilado e baixado.','err');
       return false;
     }
   }
@@ -703,12 +840,19 @@ function preencherUnidades(){
 }
 function preencherContratos(){
   const s=document.getElementById('cf-contrato'); if(!s) return;
-  s.innerHTML='<option value="">Selecione...</option>'+contratos.map(function(c){return '<option value="'+c.id+'">'+esc(c.numero)+(c.empresa?(' — '+esc(c.empresa)):'')+'</option>';}).join('');
+  const opts=contratos.map(function(c){
+    const nome=String(c.empresa||'').trim() || 'EMPRESA NÃO INFORMADA';
+    return '<option value="'+c.id+'">'+esc(nome)+'</option>';
+  }).join('');
+  s.innerHTML='<option value="">Selecione a empresa...</option>'+opts;
 }
 function contratoMudou(){
   const id=document.getElementById('cf-contrato').value;
   const c=contratos.find(function(x){return String(x.id)===String(id);});
-  if(c){ if(c.empresa) document.getElementById('cf-empresa').value=c.empresa; if(c.cnpj) document.getElementById('cf-cnpj').value=c.cnpj; }
+  document.getElementById('cf-empresa').value=c&&c.empresa?c.empresa:'';
+  document.getElementById('cf-cnpj').value=c&&c.cnpj?c.cnpj:'';
+  atualizarFlagEmpresa();
+  if(conferenciaEmEdicao) invalidarPdfFinal('Empresa vinculada alterada. Compile novamente o PDF final.');
 }
 
 // ── Itens (checklist com PDFs) ──
@@ -742,7 +886,7 @@ function anexarPdf(key){
     if(!anexos[key]) anexos[key]=[];
     Array.prototype.forEach.call(inp.files, function(f){
       const reader=new FileReader();
-      reader.onload=function(){ anexos[key].push({ nome:f.name, bytes:new Uint8Array(reader.result), size:f.size }); pdfFinalGerado=false; document.getElementById('compilar-status').textContent='Novo PDF anexado. Compile novamente o PDF final.'; renderAnexos(key); atualizaResumo(); };
+      reader.onload=function(){ anexos[key].push({ nome:f.name, bytes:new Uint8Array(reader.result), size:f.size }); invalidarPdfFinal('Novo PDF anexado. Compile novamente o PDF final.'); renderAnexos(key); atualizaResumo(); };
       reader.readAsArrayBuffer(f);
     });
   };
@@ -753,7 +897,7 @@ function renderAnexos(key){
   const lista=anexos[key]||[];
   cont.innerHTML=lista.map(function(a,idx){ return '<span class="anexo-chip">📄 '+esc(a.nome)+' <b onclick="removerAnexo(\''+key+'\','+idx+')">✕</b></span>'; }).join('');
 }
-function removerAnexo(key, idx){ anexos[key].splice(idx,1); pdfFinalGerado=false; document.getElementById('compilar-status').textContent='PDF removido. Compile novamente o PDF final.'; renderAnexos(key); atualizaResumo(); }
+function removerAnexo(key, idx){ anexos[key].splice(idx,1); invalidarPdfFinal('PDF removido. Compile novamente o PDF final.'); renderAnexos(key); atualizaResumo(); }
 
 function chavesAtivas(){
   const keys=[];
@@ -788,6 +932,8 @@ function atualizaResumo(){
   let nPdf=0, bytes=0;
   chavesAtivas().forEach(function(k){ (anexos[k]||[]).forEach(function(a){ nPdf++; bytes+=a.size; }); });
   document.getElementById('rs-pdfs').textContent=nPdf+' PDFs anexados ('+(bytes/1048576).toFixed(1)+' MB)';
+  atualizarFlagEmpresa();
+  atualizarEtapasConferencia();
 }
 function toggleSocios(){
   const sim=document.getElementById('cf-socios').value==='Sim';
@@ -805,7 +951,7 @@ function toggleSocios(){
       if(sel && sel.value==='na') sel.value='pend';
     });
   }
-  pdfFinalGerado=false;
+  invalidarPdfFinal('Checklist alterado. Compile novamente o PDF final.');
   atualizaResumo();
 }
 function descricaoItemPorChave(key){
@@ -845,17 +991,20 @@ function validarConferenciaCompleta(exibir){
 }
 function tentarSairConferencia(){
   const v=validarConferenciaCompleta(true);
-  if(!v.ok || !pdfFinalGerado) return;
+  if(!v.ok || !pdfFinalGerado || !pdfFinalBaixado){
+    showNotif('Antes de sair, compile e baixe o PDF final.','err'); return;
+  }
   if(!confirm('Ao sair, todos os PDFs anexados serão perdidos. Confirma a saída?')) return;
   permitindoSaida=true; conferenciaEmEdicao=false; anexos={};
   showPage('lista'); permitindoSaida=false;
 }
 
 function novaConf(){
-  editId=null; anexos={}; pdfFinalGerado=false; conferenciaEmEdicao=true;
+  editId=null; anexos={}; invalidarPdfFinal(); conferenciaEmEdicao=true;
   document.getElementById('cf-id').value='';
   ['cf-numero','cf-empresa','cf-cnpj','cf-mesref','cf-nf','cf-obs'].forEach(function(k){document.getElementById(k).value='';});
   document.getElementById('cf-contrato').value=''; document.getElementById('cf-unidade').value='';
+  atualizarFlagEmpresa();
   document.getElementById('cf-socios').value='Não'; toggleSocios();
   document.querySelectorAll('.item-est').forEach(function(s){ s.value='pend'; });
   document.querySelectorAll('.item-anexos').forEach(function(a){ a.innerHTML=''; });
@@ -864,13 +1013,14 @@ function novaConf(){
 }
 function editarConf(id){
   const c=conferencias.find(function(x){return String(x.ID)===String(id);}); if(!c) return;
-  editId=id; anexos={}; pdfFinalGerado=false; conferenciaEmEdicao=true;
+  editId=id; anexos={}; invalidarPdfFinal(); conferenciaEmEdicao=true;
   showPage('nova');
   document.getElementById('cf-id').value=id;
   document.getElementById('cf-numero').value=c.Numero||'';
   document.getElementById('cf-contrato').value=c.ContratoID||'';
   document.getElementById('cf-empresa').value=c.Empresa||'';
   document.getElementById('cf-cnpj').value=c.CNPJ||'';
+  atualizarFlagEmpresa();
   document.getElementById('cf-unidade').value=c.Unidade||'';
   document.getElementById('cf-mesref').value=normMes(c.MesRef);
   document.getElementById('cf-nf').value=c.NotaFiscal||'';
@@ -889,7 +1039,8 @@ async function salvarConf(statusAlvo){
   const validacao=validarConferenciaCompleta(true);
   if(!validacao.ok) return;
   if(!pdfFinalGerado){ showNotif('Compile o PDF final antes de concluir a conferência.','err'); return; }
-  if(!confirm('Ao concluir, todos os PDFs desta sessão serão perdidos. Confirma que o PDF final já foi salvo em local seguro?')) return;
+  if(!pdfFinalBaixado){ showNotif('Baixe o PDF final antes de concluir a conferência.','err'); abrirPreviewPdf(); return; }
+  if(!confirm('Confirma a conclusão? Todos os PDFs desta sessão serão removidos após salvar a conferência.')) return;
   const contrato=document.getElementById('cf-contrato').value;
   const unidade=document.getElementById('cf-unidade').value;
   const mes=document.getElementById('cf-mesref').value;
@@ -901,7 +1052,13 @@ async function salvarConf(statusAlvo){
     __actor:{ nome:currentUser.nome, email:currentUser.email } };
   showNotif('Salvando...','info');
   const r=await apiFetch('saveconferencia', payload);
-  if(r.ok){ showNotif('Conferência concluída.','ok'); editId=null; conferenciaEmEdicao=false; permitindoSaida=true; anexos={}; carregar(); showPage('lista'); permitindoSaida=false; }
+  if(r.ok){
+    showNotif('Conferência concluída.','ok');
+    editId=null; conferenciaEmEdicao=false; permitindoSaida=true; anexos={};
+    if(pdfFinalUrl){ try{URL.revokeObjectURL(pdfFinalUrl);}catch(e){} }
+    pdfFinalUrl=''; pdfFinalBlob=null; pdfFinalGerado=false; pdfFinalBaixado=false;
+    fecharPreviewPdf(); carregar(); showPage('lista'); permitindoSaida=false; atualizarEtapasConferencia();
+  }
   else showNotif(r.message||'Erro ao salvar.','err');
 }
 
@@ -1024,10 +1181,8 @@ async function compilarPDF(){
     const un=document.getElementById('cf-unidade').value;
     const mes=fmtMes(document.getElementById('cf-mesref').value);
     const nf=document.getElementById('cf-nf').value.trim();
-    const contratoSel=document.getElementById('cf-contrato');
-    const contratoTxt=contratoSel.options[contratoSel.selectedIndex]?contratoSel.options[contratoSel.selectedIndex].text:'-';
     const numero=document.getElementById('cf-numero').value||'(gerado ao concluir)';
-    const dados=[['Unidade',un],['Empresa',emp],['CNPJ',cnpj],['Contrato',contratoTxt],['Mes de referencia',mes],['Nota(s) fiscal(is)',nf],['Numero da conferencia',numero],['Profissionais socios',document.getElementById('cf-socios').value]];
+    const dados=[['Unidade',un],['Empresa',emp],['CNPJ',cnpj],['Mes de referencia',mes],['Nota(s) fiscal(is)',nf],['Numero da conferencia',numero],['Profissionais socios',document.getElementById('cf-socios').value]];
     for(let i=0;i<dados.length;i+=2){
       ensureSpace(50);
       const h1=drawLabelValue(dados[i][0],dados[i][1],38,240);
@@ -1090,16 +1245,19 @@ async function compilarPDF(){
       pg.drawText((i+1)+' / '+paginas.length,{x:size.width-70,y:15,size:9,font:font,color:rgb(.4,.4,.4)});
     });
     const bytes=await merged.save();
-    const blob=new Blob([bytes],{type:'application/pdf'});
-    const empArq=(emp||'empresa').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'_');
-    const mesArq=document.getElementById('cf-mesref').value||'';
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Conferencia_'+empArq+'_'+mesArq+'.pdf'; a.click();
-    setTimeout(function(){URL.revokeObjectURL(a.href);},30000);
+    if(pdfFinalUrl){ try{URL.revokeObjectURL(pdfFinalUrl);}catch(e){} }
+    pdfFinalBlob=new Blob([bytes],{type:'application/pdf'});
+    pdfFinalUrl=URL.createObjectURL(pdfFinalBlob);
     pdfFinalGerado=true;
-    st.textContent='PDF final compilado com checklist de capa e '+paginas.length+' página(s). Agora você pode concluir a conferência.';
-    showNotif('PDF final gerado com sucesso.','ok');
+    pdfFinalBaixado=false;
+    st.textContent='PDF final compilado com checklist de capa e '+paginas.length+' página(s). Revise e baixe o arquivo para liberar a conclusão.';
+    const msg=document.getElementById('pdf-final-msg');
+    if(msg){ msg.textContent='Baixe o PDF final para liberar a conclusão.'; msg.className='pdf-final-msg'; }
+    atualizarEtapasConferencia();
+    abrirPreviewPdf();
+    showNotif('PDF final compilado. Revise e baixe o arquivo.','ok');
   }catch(e){
-    pdfFinalGerado=false;
+    invalidarPdfFinal();
     st.textContent='Erro ao compilar: '+e.message;
     showNotif(e.message||'Erro ao compilar PDF.','err');
   }

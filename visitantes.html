@@ -348,6 +348,19 @@ tr:hover td{background:var(--surface2)}
 }
 </style>
 
+
+<style>
+.agendamento-box{
+  grid-column:1/-1;display:none;grid-template-columns:1fr 1fr;gap:10px;
+  padding:11px;border:1px solid var(--accent);background:var(--accent-bg);
+  border-radius:9px
+}
+.agendamento-box.show{display:grid}
+.agendamento-info{grid-column:1/-1;font-size:11px;color:var(--accent-text);font-weight:650}
+.readonly-user{background:var(--surface2)!important;color:var(--text2)!important;font-weight:700}
+@media(max-width:620px){.agendamento-box{grid-template-columns:1fr}}
+</style>
+
 </head>
 <body>
 <div class="login-screen" id="login-screen">
@@ -461,7 +474,7 @@ tr:hover td{background:var(--surface2)}
     </div>
 
     <div class="table-wrap"><table>
-      <thead><tr><th>Entrada</th><th>Saída</th><th>Tipo</th><th>Nome</th><th>Documento</th><th>Empresa</th><th>Local de visita</th><th>Responsável</th><th>Permanência</th></tr></thead>
+      <thead><tr><th>Entrada</th><th>Saída</th><th>Agendado</th><th>Tipo</th><th>Nome</th><th>Documento</th><th>Empresa</th><th>Local de visita</th><th>Resp. setor</th><th>Atendido por</th><th>Motivo</th><th>Permanência</th></tr></thead>
       <tbody id="rel-body"></tbody>
     </table><div class="empty-state" id="rel-empty" style="display:none">Nenhum registro no período selecionado</div></div>
   </div>
@@ -473,7 +486,7 @@ tr:hover td{background:var(--surface2)}
   <div class="modal">
     <div class="mhead"><div class="mtitle" id="form-title">Nova entrada</div><button class="mclose" onclick="closeForm()">✕</button></div>
     <div class="mbody">
-      <div class="section-note">Preencha os dados essenciais. A entrada é registrada com o usuário responsável pelo lançamento.</div>
+      <div class="section-note">Preencha os dados essenciais. O responsável pelo atendimento é identificado pelo usuário logado; informe também quem é o responsável no setor de destino.</div>
       <input type="hidden" id="f-id">
       <div class="form-grid">
         <div class="fg"><label class="req">Tipo de acesso</label><select id="f-tipo" onchange="tipoMudou()"></select></div>
@@ -482,8 +495,15 @@ tr:hover td{background:var(--surface2)}
         <div class="fg"><label>Telefone</label><input type="text" id="f-tel" placeholder="(16) 90000-0000" oninput="mascaraTelefone(this)"></div>
         <div class="fg"><label id="lbl-empresa">Empresa / origem</label><input type="text" id="f-empresa" list="lista-empresas" placeholder="EMPRESA, ÓRGÃO OU ORIGEM" style="text-transform:uppercase" oninput="caixaAlta(this)"></div>
         <div class="fg"><label class="req">Local de visita</label><select id="f-setor"></select></div>
-        <div class="fg"><label class="req">Responsável pelo atendimento</label><input type="text" id="f-responsavel" readonly style="text-transform:uppercase;font-weight:700" title="Definido pelo usuário logado"></div>
-        <div class="fg"><label>Motivo</label><select id="f-motivo"></select></div>
+        <div class="fg"><label class="req">Responsável do setor</label><input type="text" id="f-responsavel-setor" list="lista-responsaveis-setor" placeholder="NOME DE QUEM RECEBERÁ A PESSOA" style="text-transform:uppercase" oninput="caixaAlta(this)"></div>
+        <div class="fg"><label class="req">Responsável pelo atendimento</label><input type="text" id="f-responsavel" readonly class="readonly-user" style="text-transform:uppercase" title="Definido pelo usuário logado"></div>
+        <div class="fg"><label class="req">Tipo de atendimento / motivo</label><select id="f-motivo"></select></div>
+        <div class="fg"><label class="req">Agendado?</label><select id="f-agendado" onchange="toggleAgendamento()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
+        <div class="agendamento-box" id="box-agendamento">
+          <div class="agendamento-info">📅 ATENDIMENTO AGENDADO — informe a data e a hora previstas.</div>
+          <div class="fg"><label class="req">Data agendada</label><input type="date" id="f-agenda-data"></div>
+          <div class="fg"><label class="req">Hora agendada</label><input type="time" id="f-agenda-hora" step="300"></div>
+        </div>
         <div class="fg"><label class="req">Data/hora de entrada</label><input type="datetime-local" id="f-entrada"></div>
         <div class="fg"><label>Veículo</label><select id="f-veiculo" onchange="toggleVeiculo()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
         <div class="fg" id="fg-placa" style="display:none"><label>Placa</label><input type="text" id="f-placa" maxlength="8" placeholder="ABC1D23" style="text-transform:uppercase" oninput="caixaAlta(this)"></div>
@@ -506,6 +526,7 @@ tr:hover td{background:var(--surface2)}
 </div>
 
 <datalist id="lista-empresas"></datalist>
+<datalist id="lista-responsaveis-setor"></datalist>
 <div class="notif-toast" id="notif"></div>
 <div class="loading-overlay" id="loading"><div class="spinner"></div><span id="loading-txt">Carregando...</span></div>
 
@@ -582,7 +603,9 @@ function fillSelect(id,arr,required,first){
 }
 function atualizarSugestoes(){
   const emps=[...new Set(visitantes.map(v=>String(v.Empresa||'').trim().toUpperCase()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
-  document.getElementById('lista-empresas').innerHTML=emps.map(x=>'<option value="'+esc(x)+'"></option>').join('')
+  document.getElementById('lista-empresas').innerHTML=emps.map(x=>'<option value="'+esc(x)+'"></option>').join('');
+  const resp=[...new Set(visitantes.map(v=>String(v.ResponsavelSetor||'').trim().toUpperCase()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  document.getElementById('lista-responsaveis-setor').innerHTML=resp.map(x=>'<option value="'+esc(x)+'"></option>').join('')
 }
 function hojeLocal(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function agoraInput(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
@@ -616,14 +639,14 @@ function renderLista(){
     if(v.Status==='NO PRÉDIO'&&podeRegistrar())ac+=` <button class="btn xs success" onclick="registrarSaida('${v.ID}')">↪ Saída</button>`;
     if(podeRegistrar())ac+=` <button class="btn xs" onclick="openForm('${v.ID}')">✏️</button>`;
     if(podeExcluir())ac+=` <button class="btn xs danger" onclick="excluirRegistro('${v.ID}')">🗑️</button>`;
-    return `<tr class="${v.Status==='NO PRÉDIO'?'presente-row':'saida-row'}"><td>${fmtDT(v.Entrada)}</td><td><span class="tipo-chip ${tipoClass(v.Tipo)}">${esc(v.Tipo)}</span></td><td><strong>${esc(v.Nome)}</strong></td><td>${esc(v.DocumentoTipo||'DOC')} ${esc(v.Documento)}</td><td>${esc(v.Empresa||'—')}</td><td>${esc(v.Setor)}<div style="font-size:10px;color:var(--text3)">${esc(v.Responsavel)}</div></td><td><span class="badge ${v.Status==='NO PRÉDIO'?'status-presente':'status-saiu'}">${v.Status==='NO PRÉDIO'?'🟢 NO PRÉDIO':'SAIU'}</span><div class="duracao">${fmtDur(minutosPermanencia(v))}</div></td><td>${fmtDT(v.Saida)}</td><td style="white-space:nowrap">${ac}</td></tr>`
+    return `<tr class="${v.Status==='NO PRÉDIO'?'presente-row':'saida-row'}"><td>${fmtDT(v.Entrada)}</td><td><span class="tipo-chip ${tipoClass(v.Tipo)}">${esc(v.Tipo)}</span></td><td><strong>${esc(v.Nome)}</strong></td><td>${esc(v.DocumentoTipo||'DOC')} ${esc(v.Documento)}</td><td>${esc(v.Empresa||'—')}</td><td>${esc(v.Setor)}<div style="font-size:10px;color:var(--text3)">${v.ResponsavelSetor?'RESP. SETOR: '+esc(v.ResponsavelSetor)+' · ':''}ATENDIDO POR: ${esc(v.Responsavel)}</div>${String(v.Agendado||'').toUpperCase()==='SIM'?'<div style="font-size:10px;color:var(--accent-text);font-weight:700">📅 AGENDADO '+fmtDT(v.Agendamento)+'</div>':''}</td><td><span class="badge ${v.Status==='NO PRÉDIO'?'status-presente':'status-saiu'}">${v.Status==='NO PRÉDIO'?'🟢 NO PRÉDIO':'SAIU'}</span><div class="duracao">${fmtDur(minutosPermanencia(v))}</div></td><td>${fmtDT(v.Saida)}</td><td style="white-space:nowrap">${ac}</td></tr>`
   }).join('')
 }
 function renderPresentes(){
   const q=document.getElementById('busca-presentes').value.trim().toLowerCase();
   const arr=visitantes.filter(v=>v.Status==='NO PRÉDIO'&&(!q||(`${v.Nome} ${v.Empresa} ${v.Setor} ${v.Responsavel}`.toLowerCase().includes(q))));
   const grid=document.getElementById('presentes-grid');document.getElementById('presentes-empty').style.display=arr.length?'none':'block';
-  grid.innerHTML=arr.map(v=>`<div class="pres-card"><div style="display:flex;justify-content:space-between;gap:8px"><div><div class="pres-name">${esc(v.Nome)}</div><span class="tipo-chip ${tipoClass(v.Tipo)}">${esc(v.Tipo)}</span></div></div><div class="pres-meta"><strong>Entrada:</strong> ${fmtDT(v.Entrada)} · ${fmtDur(minutosPermanencia(v))}<br><strong>Empresa:</strong> ${esc(v.Empresa||'—')}<br><strong>Local:</strong> ${esc(v.Setor)}<br><strong>Responsável:</strong> ${esc(v.Responsavel)}<br><strong>Motivo:</strong> ${esc(v.Motivo||'—')}</div><div class="pres-actions"><button class="btn sm" onclick="verDetalhe('${v.ID}')">Ver</button>${podeRegistrar()?`<button class="btn sm success" onclick="registrarSaida('${v.ID}')">↪ Registrar saída</button>`:''}</div></div>`).join('')
+  grid.innerHTML=arr.map(v=>`<div class="pres-card"><div style="display:flex;justify-content:space-between;gap:8px"><div><div class="pres-name">${esc(v.Nome)}</div><span class="tipo-chip ${tipoClass(v.Tipo)}">${esc(v.Tipo)}</span></div></div><div class="pres-meta"><strong>Entrada:</strong> ${fmtDT(v.Entrada)} · ${fmtDur(minutosPermanencia(v))}<br><strong>Empresa:</strong> ${esc(v.Empresa||'—')}<br><strong>Local:</strong> ${esc(v.Setor)}<br><strong>Responsável do setor:</strong> ${esc(v.ResponsavelSetor||'—')}<br><strong>Atendido por:</strong> ${esc(v.Responsavel)}<br><strong>Agendado:</strong> ${String(v.Agendado||'').toUpperCase()==='SIM'?'SIM · '+fmtDT(v.Agendamento):'NÃO'}<br><strong>Motivo:</strong> ${esc(v.Motivo||'—')}</div><div class="pres-actions"><button class="btn sm" onclick="verDetalhe('${v.ID}')">Ver</button>${podeRegistrar()?`<button class="btn sm success" onclick="registrarSaida('${v.ID}')">↪ Registrar saída</button>`:''}</div></div>`).join('')
 }
 
 function openForm(id){
@@ -634,16 +657,18 @@ function openForm(id){
   if(v){
     setVal('f-tipo',v.Tipo);setVal('f-doc-tipo',['CPF','RG'].includes(String(v.DocumentoTipo||'').toUpperCase())?String(v.DocumentoTipo).toUpperCase():'RG');
     setVal('f-doc',v.Documento);setVal('f-nome',v.Nome);setVal('f-tel',v.Telefone);setVal('f-empresa',v.Empresa);setVal('f-setor',v.Setor);
-    setVal('f-responsavel',String(currentUser.nome||'').toUpperCase());setVal('f-motivo',v.Motivo);setVal('f-entrada',String(v.Entrada||'').slice(0,16));
-    setVal('f-veiculo',v.Veiculo||'NÃO');setVal('f-placa',v.Placa);setVal('f-obs',v.Observacoes)
+    setVal('f-responsavel-setor',v.ResponsavelSetor||'');setVal('f-responsavel',String(currentUser.nome||'').toUpperCase());setVal('f-motivo',v.Motivo);
+    setVal('f-agendado',String(v.Agendado||'NÃO').toUpperCase()==='SIM'?'SIM':'NÃO');
+    const ag=String(v.Agendamento||'');setVal('f-agenda-data',ag.slice(0,10));setVal('f-agenda-hora',ag.length>=16?ag.slice(11,16):'');
+    setVal('f-entrada',String(v.Entrada||'').slice(0,16));setVal('f-veiculo',v.Veiculo||'NÃO');setVal('f-placa',v.Placa);setVal('f-obs',v.Observacoes)
   }else{
     setVal('f-tipo',(config.tipos||[])[0]||'VISITANTE');setVal('f-doc-tipo','CPF');setVal('f-entrada',agoraInput());setVal('f-veiculo','NÃO');
-    setVal('f-responsavel',String(currentUser.nome||'').toUpperCase())
+    setVal('f-agendado','NÃO');setVal('f-responsavel',String(currentUser.nome||'').toUpperCase())
   }
-  documentoTipoMudou();tipoMudou();toggleVeiculo();document.getElementById('modal-form').classList.add('open');setTimeout(()=>document.getElementById('f-doc').focus(),50)
+  documentoTipoMudou();tipoMudou();toggleVeiculo();toggleAgendamento();document.getElementById('modal-form').classList.add('open');setTimeout(()=>document.getElementById('f-doc').focus(),50)
 }
 function closeForm(){document.getElementById('modal-form').classList.remove('open')}
-function limparForm(){['f-id','f-doc','f-nome','f-tel','f-empresa','f-responsavel','f-placa','f-obs'].forEach(id=>setVal(id,''));['f-tipo','f-setor','f-motivo'].forEach(id=>setVal(id,''))}
+function limparForm(){['f-id','f-doc','f-nome','f-tel','f-empresa','f-responsavel-setor','f-responsavel','f-placa','f-obs','f-agenda-data','f-agenda-hora'].forEach(id=>setVal(id,''));['f-tipo','f-setor','f-motivo','f-agendado'].forEach(id=>setVal(id,''))}
 function setVal(id,v){const e=document.getElementById(id);if(e)e.value=v||''}
 function tipoMudou(){
   const t=document.getElementById('f-tipo').value.toUpperCase(),lbl=document.getElementById('lbl-empresa');lbl.className=t.includes('PRESTADOR')?'req':'';
@@ -651,6 +676,11 @@ function tipoMudou(){
 function setorMudou(){}
 function caixaAlta(el){if(el)el.value=String(el.value||'').toUpperCase()}
 function toggleVeiculo(){document.getElementById('fg-placa').style.display=document.getElementById('f-veiculo').value==='SIM'?'flex':'none'}
+function toggleAgendamento(){
+  const sim=document.getElementById('f-agendado').value==='SIM';
+  document.getElementById('box-agendamento').classList.toggle('show',sim);
+  if(!sim){setVal('f-agenda-data','');setVal('f-agenda-hora','')}
+}
 function mascaraTelefone(el){let v=el.value.replace(/\D/g,'').slice(0,11);if(v.length>10)v=v.replace(/^(\d{2})(\d{5})(\d{0,4}).*/,'($1) $2-$3');else if(v.length>6)v=v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/,'($1) $2-$3');else if(v.length>2)v=v.replace(/^(\d{2})(.*)/,'($1) $2');el.value=v}
 function normalDoc(v){return String(v||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase()}
 function cpfValido(v){
@@ -696,14 +726,19 @@ function validarForm(){
     Telefone:document.getElementById('f-tel').value.trim(),
     Empresa:document.getElementById('f-empresa').value.trim().toUpperCase(),
     Setor:document.getElementById('f-setor').value.toUpperCase(),
+    ResponsavelSetor:document.getElementById('f-responsavel-setor').value.trim().toUpperCase(),
     Responsavel:String(currentUser.nome||'').trim().toUpperCase(),
     Motivo:document.getElementById('f-motivo').value.toUpperCase(),
+    Agendado:document.getElementById('f-agendado').value,
+    Agendamento:(document.getElementById('f-agendado').value==='SIM')
+      ? (document.getElementById('f-agenda-data').value+'T'+document.getElementById('f-agenda-hora').value) : '',
     Entrada:document.getElementById('f-entrada').value,
     Veiculo:document.getElementById('f-veiculo').value.toUpperCase(),
     Placa:document.getElementById('f-placa').value.trim().toUpperCase(),
     Observacoes:document.getElementById('f-obs').value.trim().toUpperCase()
   };
-  const falt=[];['Tipo','Documento','Nome','Setor','Responsavel','Entrada'].forEach(k=>{if(!p[k])falt.push(k)});
+  const falt=[];['Tipo','Documento','Nome','Setor','ResponsavelSetor','Responsavel','Motivo','Agendado','Entrada'].forEach(k=>{if(!p[k])falt.push(k)});
+  if(p.Agendado==='SIM'&&!p.Agendamento)falt.push('Data/hora agendada');
   if(p.Tipo.includes('PRESTADOR')&&!p.Empresa)falt.push('Empresa');
   if(falt.length){showNotif('Preencha os campos obrigatórios: '+falt.join(', ')+'.','err');return null}
   if(tipoDoc==='CPF'&&!cpfValido(p.Documento)){showNotif('CPF inválido. Confira o número informado.','err');document.getElementById('f-doc').focus();return null}
@@ -726,8 +761,8 @@ async function excluirRegistro(id){
 
 function verDetalhe(id){
   const v=visitantes.find(x=>String(x.ID)===String(id));if(!v)return;
-  const items=[['Nome',v.Nome],['Tipo',v.Tipo],['Documento',(v.DocumentoTipo||'DOC')+' '+v.Documento],['Telefone',v.Telefone||'—'],['Empresa / origem',v.Empresa||'—'],['Local de visita',v.Setor],['Responsável',v.Responsavel],['Motivo',v.Motivo||'—'],['Entrada',fmtDT(v.Entrada)],['Saída',fmtDT(v.Saida)],['Permanência',fmtDur(minutosPermanencia(v))],['Veículo',v.Veiculo||'NÃO'],['Placa',v.Placa||'—'],['Observações',v.Observacoes||'—'],['Registrado por',v.CriadoPor||'—']];
-  document.getElementById('detalhe-body').innerHTML='<div class="detail-grid">'+items.map((x,i)=>`<div class="detail-item ${i===13?'full':''}"><label>${esc(x[0])}</label><div>${esc(x[1])}</div></div>`).join('')+'</div>';
+  const items=[['Nome',v.Nome],['Tipo',v.Tipo],['Documento',(v.DocumentoTipo||'DOC')+' '+v.Documento],['Telefone',v.Telefone||'—'],['Empresa / origem',v.Empresa||'—'],['Local de visita',v.Setor],['Responsável do setor',v.ResponsavelSetor||'—'],['Responsável pelo atendimento',v.Responsavel],['Tipo de atendimento / motivo',v.Motivo||'—'],['Agendado',String(v.Agendado||'NÃO').toUpperCase()==='SIM'?'SIM — '+fmtDT(v.Agendamento):'NÃO'],['Entrada',fmtDT(v.Entrada)],['Saída',fmtDT(v.Saida)],['Permanência',fmtDur(minutosPermanencia(v))],['Veículo',v.Veiculo||'NÃO'],['Placa',v.Placa||'—'],['Observações',v.Observacoes||'—'],['Registrado por',v.CriadoPor||'—']];
+  document.getElementById('detalhe-body').innerHTML='<div class="detail-grid">'+items.map((x,i)=>`<div class="detail-item ${i===15?'full':''}"><label>${esc(x[0])}</label><div>${esc(x[1])}</div></div>`).join('')+'</div>';
   document.getElementById('modal-detalhe').classList.add('open')
 }
 function fecharDetalhe(){document.getElementById('modal-detalhe').classList.remove('open')}
@@ -749,16 +784,16 @@ function renderRelatorio(arr){
   document.getElementById('rel-total').textContent=arr.length;document.getElementById('rel-visitantes').textContent=vis;document.getElementById('rel-prestadores').textContent=prest;document.getElementById('rel-tempo').textContent=mins.length?fmtDur(med):'—';document.getElementById('rel-abertos').textContent=ab;
   renderBars('bars-setor',contagem(arr,'Setor'));renderBars('bars-empresa',contagem(arr,'Empresa'));
   const tb=document.getElementById('rel-body');document.getElementById('rel-empty').style.display=arr.length?'none':'block';
-  tb.innerHTML=arr.map(v=>`<tr><td>${fmtDT(v.Entrada)}</td><td>${fmtDT(v.Saida)}</td><td>${esc(v.Tipo)}</td><td>${esc(v.Nome)}</td><td>${esc(v.DocumentoTipo||'DOC')} ${esc(v.Documento)}</td><td>${esc(v.Empresa||'—')}</td><td>${esc(v.Setor)}</td><td>${esc(v.Responsavel)}</td><td>${fmtDur(minutosPermanencia(v))}</td></tr>`).join('')
+  tb.innerHTML=arr.map(v=>`<tr><td>${fmtDT(v.Entrada)}</td><td>${fmtDT(v.Saida)}</td><td>${String(v.Agendado||'').toUpperCase()==='SIM'?'SIM · '+fmtDT(v.Agendamento):'NÃO'}</td><td>${esc(v.Tipo)}</td><td>${esc(v.Nome)}</td><td>${esc(v.DocumentoTipo||'DOC')} ${esc(v.Documento)}</td><td>${esc(v.Empresa||'—')}</td><td>${esc(v.Setor)}</td><td>${esc(v.ResponsavelSetor||'—')}</td><td>${esc(v.Responsavel)}</td><td>${esc(v.Motivo||'—')}</td><td>${fmtDur(minutosPermanencia(v))}</td></tr>`).join('')
 }
 function contagem(arr,k){const m={};arr.forEach(v=>{const x=String(v[k]||'NÃO INFORMADO').trim()||'NÃO INFORMADO';m[x]=(m[x]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10)}
 function renderBars(id,rows){const el=document.getElementById(id),mx=rows.length?rows[0][1]:1;el.innerHTML=rows.length?rows.map(r=>`<div class="bar-line"><div class="bar-name" title="${esc(r[0])}">${esc(r[0])}</div><div class="bar-bg"><div class="bar-fill2" style="width:${Math.max(4,r[1]/mx*100)}%"></div></div><strong>${r[1]}</strong></div>`).join(''):'<div class="empty-small">Sem dados</div>'}
 function exportarCSV(){
-  const rows=[['Entrada','Saida','Tipo','Nome','DocumentoTipo','Documento','Telefone','Empresa','LocalVisita','Responsavel','Motivo','Veiculo','Placa','Observacoes','Status']];
+  const rows=[['Entrada','Saida','Agendado','Agendamento','Tipo','Nome','DocumentoTipo','Documento','Telefone','Empresa','LocalVisita','ResponsavelSetor','ResponsavelAtendimento','Motivo','Veiculo','Placa','Observacoes','Status']];
   const tb=[...document.querySelectorAll('#rel-body tr')]; // use filtered relDados by rebuilding from current filters
   const ini=document.getElementById('rel-ini').value,fim=document.getElementById('rel-fim').value,tipo=document.getElementById('rel-tipo').value,setor=document.getElementById('rel-setor').value,emp=document.getElementById('rel-empresa').value.trim().toLowerCase();
   const arr=relDados.filter(v=>(!ini||dataDe(v.Entrada)>=ini)&&(!fim||dataDe(v.Entrada)<=fim)&&(!tipo||v.Tipo===tipo)&&(!setor||v.Setor===setor)&&(!emp||String(v.Empresa||'').toLowerCase().includes(emp)));
-  arr.forEach(v=>rows.push([v.Entrada,v.Saida,v.Tipo,v.Nome,v.DocumentoTipo,v.Documento,v.Telefone,v.Empresa,v.Setor,v.Responsavel,v.Motivo,v.Veiculo,v.Placa,v.Observacoes,v.Status]));
+  arr.forEach(v=>rows.push([v.Entrada,v.Saida,v.Agendado,v.Agendamento,v.Tipo,v.Nome,v.DocumentoTipo,v.Documento,v.Telefone,v.Empresa,v.Setor,v.ResponsavelSetor,v.Responsavel,v.Motivo,v.Veiculo,v.Placa,v.Observacoes,v.Status]));
   const csv=rows.map(r=>r.map(x=>'"'+String(x||'').replace(/"/g,'""')+'"').join(';')).join('\r\n'),blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='visitantes_sede_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)
 }
 </script>

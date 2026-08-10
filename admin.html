@@ -369,6 +369,7 @@ tr:hover td{background:var(--surface2)}
     <button class="nav-item" data-page="unidades" onclick="showPage('unidades',this)">🏥 Unidades de saúde</button>
     <button class="nav-item" data-page="locais" onclick="showPage('locais',this)">🔑 Locais de chaves</button>
     <button class="nav-item" data-page="visitlocais" onclick="showPage('visitlocais',this)">📍 Locais de visita</button>
+    <button class="nav-item" data-page="visitmotivos" onclick="showPage('visitmotivos',this)">🗂️ Motivos de atendimento</button>
     <button class="nav-item" data-page="listascnes" onclick="showPage('listascnes',this)">🏥 Listas CNES</button>
     <button class="nav-item" data-page="auditoria" onclick="showPage('auditoria',this)">🕘 Auditoria</button>
     <button class="nav-item" data-page="config" onclick="showPage('config',this)">⚙️ Configuração da planilha</button>
@@ -444,6 +445,20 @@ tr:hover td{background:var(--surface2)}
       <tbody id="visitlocais-body"></tbody>
     </table><div class="empty-state" id="vloc-empty" style="display:none"><span class="empty-icon">📍</span>Nenhum local de visita cadastrado</div></div>
     <p style="font-size:12px;color:var(--text3);margin-top:8px">Os locais ativos aparecem automaticamente no formulário de Visitantes e Prestadores da Sede Administrativa.</p>
+  </div>
+
+  <!-- MOTIVOS / TIPOS DE ATENDIMENTO -->
+  <div class="page" id="page-visitmotivos">
+    <div class="toolbar">
+      <input type="text" id="busca-vmot" placeholder="🔍 Buscar tipo de atendimento / motivo..." oninput="renderVisitantesMotivos()">
+      <select id="filtro-vmot-status" onchange="renderVisitantesMotivos()"><option value="">Todos</option><option value="ativo">Ativos</option><option value="inativo">Desativados</option></select>
+      <button class="btn primary" onclick="openVMot()">➕ Novo motivo</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tipo de atendimento / motivo</th><th>Situação</th><th></th></tr></thead>
+      <tbody id="visitmotivos-body"></tbody>
+    </table><div class="empty-state" id="vmot-empty" style="display:none"><span class="empty-icon">🗂️</span>Nenhum motivo cadastrado</div></div>
+    <p style="font-size:12px;color:var(--text3);margin-top:8px">Os motivos ativos aparecem automaticamente no formulário de Visitantes e Prestadores. Você pode editar esta lista a qualquer momento.</p>
   </div>
 
   <!-- AUDITORIA -->
@@ -582,6 +597,21 @@ tr:hover td{background:var(--surface2)}
   </div>
 </div>
 
+<!-- MODAL MOTIVO DE ATENDIMENTO -->
+<div class="modal-overlay" id="modal-vmot" onclick="if(event.target.id==='modal-vmot')closeVMot()">
+  <div class="modal" style="max-width:500px">
+    <div class="mhead"><div class="mtitle" id="vmot-title">Novo motivo de atendimento</div><button class="mclose" onclick="closeVMot()">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="vmo-id">
+      <div class="form-grid">
+        <div class="fg full"><label>Tipo de atendimento / motivo *</label><input type="text" id="vmo-nome" placeholder="EX.: EXAME ADMISSIONAL" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="fg full"><label>Situação</label><select id="vmo-ativo"><option value="true">ATIVO</option><option value="false">DESATIVADO</option></select></div>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn" onclick="closeVMot()">Cancelar</button><button class="btn primary" onclick="saveVMot()">Salvar</button></div>
+  </div>
+</div>
+
 <div class="notif-toast" id="notif" style="display:none"></div>
 
 <script>
@@ -632,6 +662,7 @@ const PAGE_META = {
   unidades:['Unidades de saúde','Compartilhadas com Contratos e demais módulos'],
   locais:['Locais de chaves','Onde as chaves ficam guardadas'],
   visitlocais:['Locais de visita','Destinos disponíveis no controle de visitantes da Sede'],
+  visitmotivos:['Motivos de atendimento','Tipos de atendimento disponíveis no controle de visitantes'],
   listascnes:['Listas CNES','Conselhos, vínculos e CBOs do módulo CNES'],
   auditoria:['Auditoria','Registro de ações no sistema']
 };
@@ -642,7 +673,7 @@ const MODULOS_SISTEMA = [
   ['visitantes','🪪 Visitantes'],['chaves','🔑 Chaves'],['limpeza','🧹 Avaliação de Limpeza'],['conferencia','📑 Conferência Documental'],['cnes','🏥 CNES'],['admin','⚙️ Administração']
 ];
 const ROLE_LABEL = { admin:'Administrador', gestor:'Gestor', cadastros:'Gestor de cadastros', visualizador:'Visualizador' };
-let usuarios=[], unidades=[], locais=[], visitantesLocais=[], auditoria=[];
+let usuarios=[], unidades=[], locais=[], visitantesLocais=[], visitantesMotivos=[], auditoria=[];
 let paginaAtual='usuarios';
 
 function startApp(){
@@ -680,39 +711,42 @@ function showPage(id, btn){
   else if(id==='unidades'){ bt.textContent='➕ Nova unidade'; bt.style.display=''; }
   else if(id==='locais'){ bt.textContent='➕ Novo local'; bt.style.display=''; }
   else if(id==='visitlocais'){ bt.textContent='➕ Novo local de visita'; bt.style.display=''; }
+  else if(id==='visitmotivos'){ bt.textContent='➕ Novo motivo'; bt.style.display=''; }
   else { bt.style.display='none'; }
   if(id==='auditoria') carregarAuditoria();
   if(id==='listascnes') carregarListasCnes();
   if(id==='config'){ if(!scriptCodeCache) carregarScript(); verificarDiag(); }
   render();
 }
-function acaoTopo(){ if(paginaAtual==='usuarios')openUser(); else if(paginaAtual==='unidades')openUni(); else if(paginaAtual==='locais')openLoc(); else if(paginaAtual==='visitlocais')openVLoc(); }
+function acaoTopo(){ if(paginaAtual==='usuarios')openUser(); else if(paginaAtual==='unidades')openUni(); else if(paginaAtual==='locais')openLoc(); else if(paginaAtual==='visitlocais')openVLoc(); else if(paginaAtual==='visitmotivos')openVMot(); }
 
 async function carregarTudo(){
   try{
     const r = await apiFetch('getadmin');
     if(r && r.ok && (r.usuarios || r.unidades || r.locais)){
-      usuarios=r.usuarios||[]; unidades=r.unidades||[]; locais=r.locais||[]; visitantesLocais=r.visitantesLocais||[];
+      usuarios=r.usuarios||[]; unidades=r.unidades||[]; locais=r.locais||[]; visitantesLocais=r.visitantesLocais||[]; visitantesMotivos=r.visitantesMotivos||[];
     } else {
       // fallback: rotas individuais (caso getadmin ainda não esteja publicado)
-      const [ru, rn, rl] = await Promise.all([ apiFetch('getusers'), apiFetch('getunits'), apiFetch('getlocais') ]);
+      const [ru, rn, rl, rvl, rvm] = await Promise.all([ apiFetch('getusers'), apiFetch('getunits'), apiFetch('getlocais'), apiFetch('getvisitanteslocais',{__actor:{nome:currentUser.nome,email:currentUser.email}}), apiFetch('getvisitantesmotivos',{__actor:{nome:currentUser.nome,email:currentUser.email}}) ]);
       usuarios = (ru && ru.ok && ru.data) ? ru.data : [];
       unidades = (rn && rn.ok && rn.data) ? rn.data : [];
       locais   = (rl && rl.ok && rl.data) ? rl.data : [];
+      visitantesLocais=(rvl&&rvl.ok&&rvl.data)?rvl.data:[];visitantesMotivos=(rvm&&rvm.ok&&rvm.data)?rvm.data:[];
     }
     render();
   }catch(e){
     // último recurso: tenta rotas individuais
     try{
-      const [ru, rn, rl] = await Promise.all([ apiFetch('getusers'), apiFetch('getunits'), apiFetch('getlocais') ]);
+      const [ru, rn, rl, rvl, rvm] = await Promise.all([ apiFetch('getusers'), apiFetch('getunits'), apiFetch('getlocais'), apiFetch('getvisitanteslocais',{__actor:{nome:currentUser.nome,email:currentUser.email}}), apiFetch('getvisitantesmotivos',{__actor:{nome:currentUser.nome,email:currentUser.email}}) ]);
       usuarios = (ru && ru.ok && ru.data) ? ru.data : [];
       unidades = (rn && rn.ok && rn.data) ? rn.data : [];
       locais   = (rl && rl.ok && rl.data) ? rl.data : [];
+      visitantesLocais=(rvl&&rvl.ok&&rvl.data)?rvl.data:[];visitantesMotivos=(rvm&&rvm.ok&&rvm.data)?rvm.data:[];
       render();
     }catch(e2){ showNotif('Erro ao carregar dados. Verifique a conexão e a publicação do Apps Script.','err'); }
   }
 }
-function render(){ renderUsuarios(); renderUnidades(); renderLocais(); renderVisitantesLocais(); }
+function render(){ renderUsuarios(); renderUnidades(); renderLocais(); renderVisitantesLocais(); renderVisitantesMotivos(); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function ativoBool(v){ return String(v)!=='false' && String(v)!=='FALSE' && v!==false; }
 function badgeAtivo(v){ return ativoBool(v) ? '<span class="badge c-green-b">🟢 Ativo</span>' : '<span class="badge c-red-b">⚫ Desativado</span>'; }
@@ -963,6 +997,54 @@ async function delVLoc(id){
   if(!confirm('Excluir definitivamente o local de visita "'+String((l&&(l.Valor||l.Nome))||'')+'"?')) return;
   const r=await apiFetch('deletevisitantelocal',{id:id,__actor:{nome:currentUser.nome,email:currentUser.email}});
   if(r.ok){ showNotif('Local de visita excluído.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
+}
+
+
+// ── Motivos / tipos de atendimento (Visitantes) ──
+function renderVisitantesMotivos(){
+  const q=(document.getElementById('busca-vmot')?.value||'').toLowerCase();
+  const fs=document.getElementById('filtro-vmot-status')?.value||'';
+  let lista=visitantesMotivos.filter(function(l){
+    if(q && !String(l.Valor||l.Nome||'').toLowerCase().includes(q)) return false;
+    const at=ativoBool(l.Ativo);
+    if(fs==='ativo'&&!at) return false; if(fs==='inativo'&&at) return false;
+    return true;
+  });
+  const empty=document.getElementById('vmot-empty'), body=document.getElementById('visitmotivos-body');
+  if(!empty||!body)return;
+  empty.style.display=lista.length?'none':'block';
+  body.innerHTML=lista.map(function(l){
+    const at=ativoBool(l.Ativo), nome=String(l.Valor||l.Nome||'').toUpperCase();
+    return '<tr'+(at?'':' style="opacity:.55"')+'><td><strong>'+esc(nome)+'</strong></td><td>'+badgeAtivo(at)+'</td>'
+      +'<td style="white-space:nowrap"><button class="btn sm" onclick="openVMot(\''+l.ID+'\')" title="Editar">✏️</button> '
+      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleVMot(\''+l.ID+'\','+(!at)+')" title="'+(at?'Desabilitar':'Reativar')+'">'+(at?'⏸️':'▶️')+'</button>'
+      +(ehAdmin()?' <button class="btn sm danger" onclick="delVMot(\''+l.ID+'\')" title="Excluir definitivamente">🗑️</button>':'')
+      +'</td></tr>';
+  }).join('');
+}
+function openVMot(id){
+  document.getElementById('vmo-id').value=id||'';
+  document.getElementById('vmot-title').textContent=id?'Editar motivo de atendimento':'Novo motivo de atendimento';
+  document.getElementById('vmo-nome').value='';document.getElementById('vmo-ativo').value='true';
+  if(id){const l=visitantesMotivos.find(function(x){return String(x.ID)===String(id)});if(l){document.getElementById('vmo-nome').value=String(l.Valor||l.Nome||'').toUpperCase();document.getElementById('vmo-ativo').value=ativoBool(l.Ativo)?'true':'false'}}
+  document.getElementById('modal-vmot').classList.add('open');setTimeout(function(){document.getElementById('vmo-nome').focus()},50)
+}
+function closeVMot(){document.getElementById('modal-vmot').classList.remove('open')}
+async function saveVMot(){
+  const nome=document.getElementById('vmo-nome').value.trim().toUpperCase();if(!nome){showNotif('Informe o motivo de atendimento.','err');return}
+  const r=await apiFetch('savevisitantemotivo',{ID:document.getElementById('vmo-id').value||'',Valor:nome,Ativo:document.getElementById('vmo-ativo').value==='true',__actor:{nome:currentUser.nome,email:currentUser.email}});
+  if(r.ok){closeVMot();showNotif('Motivo salvo.','ok');carregarTudo()}else showNotif(r.message||'Erro ao salvar.','err')
+}
+async function toggleVMot(id,novo){
+  const l=visitantesMotivos.find(function(x){return String(x.ID)===String(id)});if(!l)return;
+  const r=await apiFetch('savevisitantemotivo',{ID:id,Valor:String(l.Valor||l.Nome||'').toUpperCase(),Ativo:novo,__actor:{nome:currentUser.nome,email:currentUser.email}});
+  if(r.ok){showNotif(novo?'Motivo ativado.':'Motivo desativado.','ok');carregarTudo()}else showNotif(r.message||'Erro.','err')
+}
+async function delVMot(id){
+  const l=visitantesMotivos.find(function(x){return String(x.ID)===String(id)});
+  if(!confirm('Excluir definitivamente o motivo "'+String((l&&(l.Valor||l.Nome))||'')+'"?'))return;
+  const r=await apiFetch('deletevisitantemotivo',{id:id,__actor:{nome:currentUser.nome,email:currentUser.email}});
+  if(r.ok){showNotif('Motivo excluído.','ok');carregarTudo()}else showNotif(r.message||'Erro.','err')
 }
 
 // ── Auditoria ──

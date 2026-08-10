@@ -516,7 +516,7 @@ tr:hover td{background:var(--surface2)}
           <input type="hidden" id="cf-empresa">
           <div class="fg"><label>CNPJ</label><input type="text" id="cf-cnpj" placeholder="(vem da empresa)" readonly></div>
           <div class="fg"><label>Unidade *</label><select id="cf-unidade"></select></div>
-          <div class="fg"><label>Mês de referência *</label><input type="month" id="cf-mesref"></div>
+          <div class="fg"><label>Mês de referência *</label><select id="cf-mesref"><option value="">Selecione a competência...</option></select></div>
           <div class="fg full"><label>Nota(s) fiscal(is) nº(s)</label><input type="text" id="cf-nf" placeholder="Ex: 1234, 1235"></div>
         </div>
       </div>
@@ -794,7 +794,7 @@ function instalarMonitoramentoConferencia(){
   ['cf-contrato','cf-empresa','cf-cnpj','cf-unidade','cf-mesref','cf-nf','cf-obs'].forEach(function(id){
     const el=document.getElementById(id); if(!el || el.dataset.pdfMonitor==='1') return;
     el.dataset.pdfMonitor='1';
-    const ev=(el.tagName==='SELECT'||el.type==='month')?'change':'input';
+    const ev=(el.tagName==='SELECT')?'change':'input';
     el.addEventListener(ev,function(){
       if(!conferenciaEmEdicao) return;
       invalidarPdfFinal('Dados alterados. Compile novamente o PDF final.');
@@ -804,8 +804,33 @@ function instalarMonitoramentoConferencia(){
 function podeEditar(){ return currentUser && (currentUser.role==='admin'||currentUser.role==='gestor'||currentUser.role==='cadastros'); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-function fmtMes(v){ if(!v) return '—'; const s=String(v); let m=s.match(/^(\d{4})-(\d{2})/); if(!m){ const d=new Date(s); if(!isNaN(d.getTime())) return MESES[d.getMonth()]+'/'+d.getFullYear(); return v; } return MESES[parseInt(m[2],10)-1]+'/'+m[1]; }
+function fmtMes(v){ if(!v) return '—'; const s=String(v); let m=s.match(/^(\d{4})-(\d{2})/); if(!m){ const d=new Date(s); if(!isNaN(d.getTime())) return ('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); return v; } return m[2]+'/'+m[1]; }
 function normMes(v){ if(!v) return ''; const s=String(v); if(/^\d{4}-\d{2}$/.test(s)) return s; const d=new Date(s); if(isNaN(d.getTime())) return s.slice(0,7); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
+function preencherCompetencias(valorSelecionado){
+  const s=document.getElementById('cf-mesref'); if(!s) return;
+  const atual=new Date().getFullYear();
+  const inicio=atual-5, fim=atual+6;
+  let opts='<option value="">Selecione a competência...</option>';
+  for(let ano=fim;ano>=inicio;ano--){
+    for(let mes=12;mes>=1;mes--){
+      const mm=('0'+mes).slice(-2), val=ano+'-'+mm;
+      opts+='<option value="'+val+'">'+mm+'/'+ano+'</option>';
+    }
+  }
+  s.innerHTML=opts;
+  if(valorSelecionado){
+    const norm=normMes(valorSelecionado);
+    if(norm && !Array.from(s.options).some(function(o){return o.value===norm;})){
+      const m=norm.match(/^(\\d{4})-(\\d{2})$/);
+      if(m){
+        const op=document.createElement('option'); op.value=norm; op.textContent=m[2]+'/'+m[1];
+        s.appendChild(op);
+      }
+    }
+    s.value=norm;
+  }
+}
+
 
 function showPage(id, btn){
   if(id!=='nova' && conferenciaEmEdicao && !permitindoSaida){
@@ -831,24 +856,53 @@ async function carregar(){
     if(rc.ok) conferencias=rc.data||[];
     if(ra.ok) unidades=(ra.unidades||[]).filter(function(u){ return String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'; });
     if(rk.ok) contratos=rk.data||[];
-    preencherUnidades(); preencherContratos(); renderLista();
+    preencherUnidades(); preencherContratos(); preencherCompetencias(); renderLista();
   }catch(e){ showNotif('Erro ao carregar. Verifique a conexão.','err'); }
 }
 function preencherUnidades(){
   const s=document.getElementById('cf-unidade');
   if(s) s.innerHTML='<option value="">Selecione...</option>'+unidades.map(function(u){return '<option>'+esc(u.Nome)+'</option>';}).join('');
 }
-function preencherContratos(){
+function normalizaEmpresaChave(v){
+  return String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');
+}
+function contratosEmpresasUnicas(){
+  const mapa={}, lista=[];
+  contratos.forEach(function(c){
+    const nome=String(c.empresa||'').trim();
+    if(!nome) return;
+    const k=normalizaEmpresaChave(nome);
+    if(!mapa[k]){
+      mapa[k]=c;
+      lista.push(c);
+    }
+  });
+  return lista.sort(function(a,b){return String(a.empresa||'').localeCompare(String(b.empresa||''),'pt-BR');});
+}
+function contratoPorEmpresa(nome){
+  const k=normalizaEmpresaChave(nome);
+  return contratos.find(function(c){return normalizaEmpresaChave(c.empresa)===k;})||null;
+}
+function preencherContratos(empresaSelecionada){
   const s=document.getElementById('cf-contrato'); if(!s) return;
-  const opts=contratos.map(function(c){
-    const nome=String(c.empresa||'').trim() || 'EMPRESA NÃO INFORMADA';
+  const unicos=contratosEmpresasUnicas();
+  const opts=unicos.map(function(c){
+    const nome=String(c.empresa||'').trim();
     return '<option value="'+c.id+'">'+esc(nome)+'</option>';
   }).join('');
   s.innerHTML='<option value="">Selecione a empresa...</option>'+opts;
+  if(empresaSelecionada){
+    const c=contratoPorEmpresa(empresaSelecionada);
+    if(c){
+      const principal=unicos.find(function(x){return normalizaEmpresaChave(x.empresa)===normalizaEmpresaChave(c.empresa);});
+      if(principal) s.value=principal.id;
+    }
+  }
 }
 function contratoMudou(){
   const id=document.getElementById('cf-contrato').value;
-  const c=contratos.find(function(x){return String(x.id)===String(id);});
+  const unicos=contratosEmpresasUnicas();
+  const c=unicos.find(function(x){return String(x.id)===String(id);});
   document.getElementById('cf-empresa').value=c&&c.empresa?c.empresa:'';
   document.getElementById('cf-cnpj').value=c&&c.cnpj?c.cnpj:'';
   atualizarFlagEmpresa();
@@ -1004,6 +1058,9 @@ function novaConf(){
   document.getElementById('cf-id').value='';
   ['cf-numero','cf-empresa','cf-cnpj','cf-mesref','cf-nf','cf-obs'].forEach(function(k){document.getElementById(k).value='';});
   document.getElementById('cf-contrato').value=''; document.getElementById('cf-unidade').value='';
+  preencherCompetencias();
+  const hoje=new Date(), compAtual=hoje.getFullYear()+'-'+('0'+(hoje.getMonth()+1)).slice(-2);
+  document.getElementById('cf-mesref').value=compAtual;
   atualizarFlagEmpresa();
   document.getElementById('cf-socios').value='Não'; toggleSocios();
   document.querySelectorAll('.item-est').forEach(function(s){ s.value='pend'; });
@@ -1017,12 +1074,12 @@ function editarConf(id){
   showPage('nova');
   document.getElementById('cf-id').value=id;
   document.getElementById('cf-numero').value=c.Numero||'';
-  document.getElementById('cf-contrato').value=c.ContratoID||'';
+  preencherContratos(c.Empresa||'');
   document.getElementById('cf-empresa').value=c.Empresa||'';
   document.getElementById('cf-cnpj').value=c.CNPJ||'';
   atualizarFlagEmpresa();
   document.getElementById('cf-unidade').value=c.Unidade||'';
-  document.getElementById('cf-mesref').value=normMes(c.MesRef);
+  preencherCompetencias(c.MesRef);
   document.getElementById('cf-nf').value=c.NotaFiscal||'';
   document.getElementById('cf-obs').value=c.Observacoes||'';
   document.getElementById('cf-socios').value=c.TemSocios||'Não'; toggleSocios();
@@ -1044,7 +1101,7 @@ async function salvarConf(statusAlvo){
   const contrato=document.getElementById('cf-contrato').value;
   const unidade=document.getElementById('cf-unidade').value;
   const mes=document.getElementById('cf-mesref').value;
-  const c=contratos.find(function(x){return String(x.id)===String(contrato);})||{};
+  const c=contratosEmpresasUnicas().find(function(x){return String(x.id)===String(contrato);})||{};
   const payload={ ID:editId||'', Unidade:unidade, MesRef:mes, ContratoID:contrato, ContratoNum:c.numero||'',
     Empresa:document.getElementById('cf-empresa').value.trim(), CNPJ:document.getElementById('cf-cnpj').value.trim(),
     NotaFiscal:document.getElementById('cf-nf').value.trim(), TemSocios:document.getElementById('cf-socios').value,

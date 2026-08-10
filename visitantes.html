@@ -395,9 +395,6 @@ tr:hover td{background:var(--surface2)}
     <button class="nav-item" data-page="presentes" onclick="showPage('presentes',this)">🟢 No prédio <span class="nav-badge" id="badge-presentes"></span></button>
     <button class="nav-item" data-page="relatorio" onclick="showPage('relatorio',this)">📊 Relatórios</button>
   </div>
-  <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">
-    <div style="font-size:10px;color:var(--text3);line-height:1.5">Controle de entrada e saída de visitantes e prestadores da Sede Administrativa.</div>
-  </div>
 </aside>
 
 <main class="main">
@@ -574,7 +571,11 @@ async function startApp(){
   document.getElementById('side-name').textContent=currentUser.nome;
   document.getElementById('side-role').textContent=({admin:'Administrador',gestor:'Gestor',cadastros:'Gestor de cadastros',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
   document.getElementById('btn-novo-topo').style.display=podeRegistrar()?'inline-flex':'none';
-  iniciarDatasRelatorio();showPage('lista',document.querySelector('[data-page="lista"]'));await carregarTudo()
+  iniciarDatasRelatorio();
+  showPage('lista',document.querySelector('[data-page="lista"]'));
+  // A tela aparece imediatamente; sincronização do banco ocorre sem bloquear a interface.
+  preencherSelecoes();renderTudo();
+  carregarTudo();
 }
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -582,12 +583,17 @@ function showPage(id,btn){
   const m=PAGE_META[id]||['',''];document.getElementById('pg-title').textContent=m[0];document.getElementById('pg-sub').textContent=m[1];
   if(id==='presentes')renderPresentes();if(id==='relatorio')aplicarRelatorio(false)
 }
-async function carregarTudo(){showLoading('Carregando controle de acesso...');try{
-  const [rv,rc]=await Promise.all([apiFetch('getvisitantes',{limit:1500,__actor:actor()}),apiFetch('getvisitantesconfig',{__actor:actor()})]);
-  if(!rv.ok)throw new Error(rv.message||'Erro ao carregar visitantes');visitantes=rv.data||[];
-  if(rc.ok)config=rc.data||config;preencherSelecoes();atualizarSugestoes();renderTudo()
-}catch(e){showNotif(e.message||'Erro ao carregar.','err')}finally{hideLoading()}}
-async function carregarVisitantes(){showLoading('Atualizando...');try{const r=await apiFetch('getvisitantes',{limit:1500,__actor:actor()});if(!r.ok)throw new Error(r.message);visitantes=r.data||[];atualizarSugestoes();renderTudo();showNotif('Atualizado.','ok')}catch(e){showNotif(e.message||'Erro ao atualizar.','err')}finally{hideLoading()}}
+async function carregarTudo(){
+  try{
+    const r=await apiFetch('getvisitantesbootstrap',{limit:800,__actor:actor()});
+    if(!r.ok)throw new Error(r.message||'Erro ao carregar controle de acesso');
+    const d=r.data||{};
+    visitantes=d.visitantes||[];
+    if(d.config)config=d.config;
+    preencherSelecoes();atualizarSugestoes();renderTudo()
+  }catch(e){showNotif(e.message||'Erro ao sincronizar os dados.','err')}
+}
+async function carregarVisitantes(){try{const r=await apiFetch('getvisitantes',{limit:800,__actor:actor()});if(!r.ok)throw new Error(r.message);visitantes=r.data||[];atualizarSugestoes();renderTudo()}catch(e){showNotif(e.message||'Erro ao atualizar.','err')}}
 
 function preencherSelecoes(){
   const locais=(config.locais&&config.locais.length)?config.locais:(config.setores||[]);

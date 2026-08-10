@@ -387,6 +387,17 @@ tr:hover td{background:var(--surface2)}
 .notif-toast.err{background:var(--red);color:#fff}
 .notif-toast.info{background:var(--accent);color:#fff}
 
+
+.pdf-drop-item{
+  margin-top:7px;border:2px dashed var(--border);border-radius:9px;
+  padding:9px 11px;text-align:center;font-size:11px;color:var(--text3);
+  background:var(--surface2);cursor:pointer;transition:.15s
+}
+.pdf-drop-item:hover{border-color:var(--accent);color:var(--accent-text);background:var(--accent-bg)}
+.pdf-drop-item.drag{border-color:var(--accent);background:var(--accent-bg);color:var(--accent-text);transform:scale(1.002)}
+.pdf-drop-item.tem-arquivo{border-color:var(--green);background:var(--green-bg);color:var(--green-text)}
+.pdf-drop-item b{font-weight:800}
+
 /* ===== FLUXO SEGURO DE CONFERÊNCIA v2 ===== */
 .conf-alerta-topo{
   background:var(--red-bg);border:2px solid var(--red);color:var(--red-text);
@@ -930,26 +941,74 @@ function linhaItem(gi, ii, texto){
     +'<div class="item-txt">'+esc(texto)+'</div>'
     +'<div class="item-ctrl">'
     +'<select class="item-est" data-key="'+key+'" onchange="statusItemMudou(this)">'+ops+'</select>'
-    +'<button class="btn sm" type="button" onclick="anexarPdf(\''+key+'\')">📎 PDF</button>'
+    +'</div>'
+    +'<div class="pdf-drop-item" id="drop-'+key+'" '
+    +'onclick="anexarPdf(\''+key+'\')" '
+    +'ondragover="pdfDragOver(event,\''+key+'\')" '
+    +'ondragleave="pdfDragLeave(event,\''+key+'\')" '
+    +'ondrop="pdfDrop(event,\''+key+'\')">'
+    +'<b>📎 Arraste os PDFs aqui</b> ou clique para selecionar'
     +'</div>'
     +'<div class="item-anexos" id="anexos-'+key+'"></div></div>';
 }
 function anexarPdf(key){
-  const inp=document.createElement('input'); inp.type='file'; inp.accept='.pdf'; inp.multiple=true;
-  inp.onchange=function(){
-    if(!anexos[key]) anexos[key]=[];
-    Array.prototype.forEach.call(inp.files, function(f){
-      const reader=new FileReader();
-      reader.onload=function(){ anexos[key].push({ nome:f.name, bytes:new Uint8Array(reader.result), size:f.size }); invalidarPdfFinal('Novo PDF anexado. Compile novamente o PDF final.'); renderAnexos(key); atualizaResumo(); };
-      reader.readAsArrayBuffer(f);
-    });
-  };
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.pdf,application/pdf'; inp.multiple=true;
+  inp.onchange=function(){ adicionarPdfsAoItem(key, inp.files); };
   inp.click();
+}
+function adicionarPdfsAoItem(key, files){
+  const lista=Array.prototype.filter.call(files||[],function(f){
+    return f && (f.type==='application/pdf' || /\.pdf$/i.test(f.name||''));
+  });
+  if(!lista.length){ showNotif('Arraste ou selecione somente arquivos PDF.','err'); return; }
+  if(!anexos[key]) anexos[key]=[];
+  let pendentes=lista.length, falhas=0;
+  lista.forEach(function(f){
+    const reader=new FileReader();
+    reader.onload=function(){
+      anexos[key].push({ nome:f.name, bytes:new Uint8Array(reader.result), size:f.size });
+      pendentes--;
+      if(pendentes===0){
+        invalidarPdfFinal('Novo PDF anexado. Compile novamente o PDF final.');
+        renderAnexos(key); atualizaResumo();
+        showNotif(lista.length===1?'PDF anexado.':lista.length+' PDFs anexados.','ok');
+      }
+    };
+    reader.onerror=function(){
+      falhas++; pendentes--;
+      if(pendentes===0){
+        renderAnexos(key); atualizaResumo();
+        showNotif(falhas?'Alguns arquivos não puderam ser lidos.':'PDFs anexados.','err');
+      }
+    };
+    reader.readAsArrayBuffer(f);
+  });
+}
+function pdfDragOver(ev,key){
+  ev.preventDefault(); ev.stopPropagation();
+  if(ev.dataTransfer) ev.dataTransfer.dropEffect='copy';
+  const el=document.getElementById('drop-'+key); if(el) el.classList.add('drag');
+}
+function pdfDragLeave(ev,key){
+  ev.preventDefault(); ev.stopPropagation();
+  const el=document.getElementById('drop-'+key); if(el) el.classList.remove('drag');
+}
+function pdfDrop(ev,key){
+  ev.preventDefault(); ev.stopPropagation();
+  const el=document.getElementById('drop-'+key); if(el) el.classList.remove('drag');
+  adicionarPdfsAoItem(key, ev.dataTransfer ? ev.dataTransfer.files : []);
 }
 function renderAnexos(key){
   const cont=document.getElementById('anexos-'+key); if(!cont) return;
   const lista=anexos[key]||[];
   cont.innerHTML=lista.map(function(a,idx){ return '<span class="anexo-chip">📄 '+esc(a.nome)+' <b onclick="removerAnexo(\''+key+'\','+idx+')">✕</b></span>'; }).join('');
+  const drop=document.getElementById('drop-'+key);
+  if(drop){
+    drop.classList.toggle('tem-arquivo',lista.length>0);
+    drop.innerHTML=lista.length
+      ? '<b>✅ '+lista.length+' PDF'+(lista.length>1?'s':'')+' anexado'+(lista.length>1?'s':'')+'</b> · arraste mais ou clique para adicionar'
+      : '<b>📎 Arraste os PDFs aqui</b> ou clique para selecionar';
+  }
 }
 function removerAnexo(key, idx){ anexos[key].splice(idx,1); invalidarPdfFinal('PDF removido. Compile novamente o PDF final.'); renderAnexos(key); atualizaResumo(); }
 
@@ -1329,6 +1388,18 @@ function garantirPdfLib(){
 }
 
 // O checklist passou a integrar automaticamente a capa do PDF final.
+
+window.addEventListener('dragover',function(e){
+  const z=e.target && e.target.closest ? e.target.closest('.pdf-drop-item') : null;
+  if(z) e.preventDefault();
+});
+window.addEventListener('drop',function(e){
+  const z=e.target && e.target.closest ? e.target.closest('.pdf-drop-item') : null;
+  if(!z && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length){
+    e.preventDefault();
+    showNotif('Solte o PDF dentro do item correspondente do checklist.','err');
+  }
+});
 
 window.addEventListener('beforeunload', function(e){
   if(conferenciaEmEdicao && !permitindoSaida){

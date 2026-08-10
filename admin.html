@@ -367,7 +367,8 @@ tr:hover td{background:var(--surface2)}
     <div class="nav-label">Gestão</div>
     <button class="nav-item active" data-page="usuarios" onclick="showPage('usuarios',this)">👤 Usuários e permissões</button>
     <button class="nav-item" data-page="unidades" onclick="showPage('unidades',this)">🏥 Unidades de saúde</button>
-    <button class="nav-item" data-page="locais" onclick="showPage('locais',this)">📍 Locais de chaves</button>
+    <button class="nav-item" data-page="locais" onclick="showPage('locais',this)">🔑 Locais de chaves</button>
+    <button class="nav-item" data-page="visitlocais" onclick="showPage('visitlocais',this)">📍 Locais de visita</button>
     <button class="nav-item" data-page="listascnes" onclick="showPage('listascnes',this)">🏥 Listas CNES</button>
     <button class="nav-item" data-page="auditoria" onclick="showPage('auditoria',this)">🕘 Auditoria</button>
     <button class="nav-item" data-page="config" onclick="showPage('config',this)">⚙️ Configuração da planilha</button>
@@ -429,6 +430,20 @@ tr:hover td{background:var(--surface2)}
       <tbody id="locais-body"></tbody>
     </table><div class="empty-state" id="loc-empty" style="display:none"><span class="empty-icon">📍</span>Nenhum local cadastrado</div></div>
     <p style="font-size:12px;color:var(--text3);margin-top:8px">Os locais ativos aparecem no módulo Chaves ao cadastrar ou movimentar uma chave.</p>
+  </div>
+
+  <!-- LOCAIS DE VISITA -->
+  <div class="page" id="page-visitlocais">
+    <div class="toolbar">
+      <input type="text" id="busca-vloc" placeholder="🔍 Buscar local de visita..." oninput="renderVisitantesLocais()">
+      <select id="filtro-vloc-status" onchange="renderVisitantesLocais()"><option value="">Todos</option><option value="ativo">Ativos</option><option value="inativo">Desativados</option></select>
+      <button class="btn primary" onclick="openVLoc()">➕ Novo local de visita</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Local de visita</th><th>Situação</th><th></th></tr></thead>
+      <tbody id="visitlocais-body"></tbody>
+    </table><div class="empty-state" id="vloc-empty" style="display:none"><span class="empty-icon">📍</span>Nenhum local de visita cadastrado</div></div>
+    <p style="font-size:12px;color:var(--text3);margin-top:8px">Os locais ativos aparecem automaticamente no formulário de Visitantes e Prestadores da Sede Administrativa.</p>
   </div>
 
   <!-- AUDITORIA -->
@@ -552,6 +567,21 @@ tr:hover td{background:var(--surface2)}
   </div>
 </div>
 
+<!-- MODAL LOCAL DE VISITA -->
+<div class="modal-overlay" id="modal-vloc" onclick="if(event.target.id==='modal-vloc')closeVLoc()">
+  <div class="modal" style="max-width:440px">
+    <div class="mhead"><div class="mtitle" id="vloc-title">Novo local de visita</div><button class="mclose" onclick="closeVLoc()">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="vlo-id">
+      <div class="form-grid">
+        <div class="fg full"><label>Nome do local *</label><input type="text" id="vlo-nome" placeholder="EX.: DIRETORIA, FINANCEIRO, CONTRATOS" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="fg full"><label>Situação</label><select id="vlo-ativo"><option value="true">ATIVO</option><option value="false">DESATIVADO</option></select></div>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn" onclick="closeVLoc()">Cancelar</button><button class="btn primary" onclick="saveVLoc()">Salvar</button></div>
+  </div>
+</div>
+
 <div class="notif-toast" id="notif" style="display:none"></div>
 
 <script>
@@ -601,6 +631,7 @@ const PAGE_META = {
   usuarios:['Usuários e permissões','Quem acessa o sistema e o que cada um vê'],
   unidades:['Unidades de saúde','Compartilhadas com Contratos e demais módulos'],
   locais:['Locais de chaves','Onde as chaves ficam guardadas'],
+  visitlocais:['Locais de visita','Destinos disponíveis no controle de visitantes da Sede'],
   listascnes:['Listas CNES','Conselhos, vínculos e CBOs do módulo CNES'],
   auditoria:['Auditoria','Registro de ações no sistema']
 };
@@ -611,7 +642,7 @@ const MODULOS_SISTEMA = [
   ['visitantes','🪪 Visitantes'],['chaves','🔑 Chaves'],['limpeza','🧹 Avaliação de Limpeza'],['conferencia','📑 Conferência Documental'],['cnes','🏥 CNES'],['admin','⚙️ Administração']
 ];
 const ROLE_LABEL = { admin:'Administrador', gestor:'Gestor', cadastros:'Gestor de cadastros', visualizador:'Visualizador' };
-let usuarios=[], unidades=[], locais=[], auditoria=[];
+let usuarios=[], unidades=[], locais=[], visitantesLocais=[], auditoria=[];
 let paginaAtual='usuarios';
 
 function startApp(){
@@ -648,19 +679,20 @@ function showPage(id, btn){
   if(id==='usuarios'){ bt.textContent='➕ Novo usuário'; bt.style.display=''; }
   else if(id==='unidades'){ bt.textContent='➕ Nova unidade'; bt.style.display=''; }
   else if(id==='locais'){ bt.textContent='➕ Novo local'; bt.style.display=''; }
+  else if(id==='visitlocais'){ bt.textContent='➕ Novo local de visita'; bt.style.display=''; }
   else { bt.style.display='none'; }
   if(id==='auditoria') carregarAuditoria();
   if(id==='listascnes') carregarListasCnes();
   if(id==='config'){ if(!scriptCodeCache) carregarScript(); verificarDiag(); }
   render();
 }
-function acaoTopo(){ if(paginaAtual==='usuarios')openUser(); else if(paginaAtual==='unidades')openUni(); else if(paginaAtual==='locais')openLoc(); }
+function acaoTopo(){ if(paginaAtual==='usuarios')openUser(); else if(paginaAtual==='unidades')openUni(); else if(paginaAtual==='locais')openLoc(); else if(paginaAtual==='visitlocais')openVLoc(); }
 
 async function carregarTudo(){
   try{
     const r = await apiFetch('getadmin');
     if(r && r.ok && (r.usuarios || r.unidades || r.locais)){
-      usuarios=r.usuarios||[]; unidades=r.unidades||[]; locais=r.locais||[];
+      usuarios=r.usuarios||[]; unidades=r.unidades||[]; locais=r.locais||[]; visitantesLocais=r.visitantesLocais||[];
     } else {
       // fallback: rotas individuais (caso getadmin ainda não esteja publicado)
       const [ru, rn, rl] = await Promise.all([ apiFetch('getusers'), apiFetch('getunits'), apiFetch('getlocais') ]);
@@ -680,7 +712,7 @@ async function carregarTudo(){
     }catch(e2){ showNotif('Erro ao carregar dados. Verifique a conexão e a publicação do Apps Script.','err'); }
   }
 }
-function render(){ renderUsuarios(); renderUnidades(); renderLocais(); }
+function render(){ renderUsuarios(); renderUnidades(); renderLocais(); renderVisitantesLocais(); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function ativoBool(v){ return String(v)!=='false' && String(v)!=='FALSE' && v!==false; }
 function badgeAtivo(v){ return ativoBool(v) ? '<span class="badge c-green-b">🟢 Ativo</span>' : '<span class="badge c-red-b">⚫ Desativado</span>'; }
@@ -875,6 +907,62 @@ async function delLoc(id){
   if(!confirm('Excluir definitivamente o local "'+((l&&l.Nome)||'')+'"? Esta ação não pode ser desfeita.\n\nDica: se quiser apenas tirá-lo de uso, use o botão ⏸️ (desabilitar) em vez de excluir.')) return;
   const r=await apiFetch('deletelocal', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
   if(r.ok){ showNotif('Local excluído.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
+}
+
+
+// ── Locais de visita (Sede Administrativa) ──
+function renderVisitantesLocais(){
+  const q=(document.getElementById('busca-vloc')?.value||'').toLowerCase();
+  const fs=document.getElementById('filtro-vloc-status')?.value||'';
+  let lista=visitantesLocais.filter(function(l){
+    if(q && !String(l.Valor||l.Nome||'').toLowerCase().includes(q)) return false;
+    const at=ativoBool(l.Ativo);
+    if(fs==='ativo'&&!at) return false; if(fs==='inativo'&&at) return false;
+    return true;
+  });
+  const empty=document.getElementById('vloc-empty'), body=document.getElementById('visitlocais-body');
+  if(!empty||!body) return;
+  empty.style.display=lista.length?'none':'block';
+  body.innerHTML=lista.map(function(l){
+    const at=ativoBool(l.Ativo), nome=String(l.Valor||l.Nome||'').toUpperCase();
+    return '<tr'+(at?'':' style="opacity:.55"')+'><td><strong>'+esc(nome)+'</strong></td><td>'+badgeAtivo(at)+'</td>'
+      +'<td style="white-space:nowrap"><button class="btn sm" onclick="openVLoc(\''+l.ID+'\')" title="Editar">✏️</button> '
+      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleVLoc(\''+l.ID+'\','+(!at)+')" title="'+(at?'Desabilitar':'Reativar')+'">'+(at?'⏸️':'▶️')+'</button>'
+      +(ehAdmin()?' <button class="btn sm danger" onclick="delVLoc(\''+l.ID+'\')" title="Excluir definitivamente">🗑️</button>':'')
+      +'</td></tr>';
+  }).join('');
+}
+function openVLoc(id){
+  document.getElementById('vlo-id').value=id||'';
+  document.getElementById('vloc-title').textContent=id?'Editar local de visita':'Novo local de visita';
+  document.getElementById('vlo-nome').value=''; document.getElementById('vlo-ativo').value='true';
+  if(id){
+    const l=visitantesLocais.find(function(x){return String(x.ID)===String(id);});
+    if(l){ document.getElementById('vlo-nome').value=String(l.Valor||l.Nome||'').toUpperCase(); document.getElementById('vlo-ativo').value=ativoBool(l.Ativo)?'true':'false'; }
+  }
+  document.getElementById('modal-vloc').classList.add('open');
+  setTimeout(function(){document.getElementById('vlo-nome').focus();},50);
+}
+function closeVLoc(){ document.getElementById('modal-vloc').classList.remove('open'); }
+async function saveVLoc(){
+  const nome=document.getElementById('vlo-nome').value.trim().toUpperCase();
+  if(!nome){ showNotif('Informe o nome do local de visita.','err'); return; }
+  const payload={ ID:document.getElementById('vlo-id').value||'', Valor:nome,
+    Ativo:(document.getElementById('vlo-ativo').value==='true'), __actor:{ nome:currentUser.nome, email:currentUser.email } };
+  showNotif('Salvando...','info');
+  const r=await apiFetch('savevisitantelocal',payload);
+  if(r.ok){ closeVLoc(); showNotif('Local de visita salvo.','ok'); carregarTudo(); } else showNotif(r.message||'Erro ao salvar.','err');
+}
+async function toggleVLoc(id,novo){
+  const l=visitantesLocais.find(function(x){return String(x.ID)===String(id);}); if(!l) return;
+  const r=await apiFetch('savevisitantelocal',{ID:id,Valor:String(l.Valor||l.Nome||'').toUpperCase(),Ativo:novo,__actor:{nome:currentUser.nome,email:currentUser.email}});
+  if(r.ok){ showNotif(novo?'Local de visita ativado.':'Local de visita desativado.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
+}
+async function delVLoc(id){
+  const l=visitantesLocais.find(function(x){return String(x.ID)===String(id);});
+  if(!confirm('Excluir definitivamente o local de visita "'+String((l&&(l.Valor||l.Nome))||'')+'"?')) return;
+  const r=await apiFetch('deletevisitantelocal',{id:id,__actor:{nome:currentUser.nome,email:currentUser.email}});
+  if(r.ok){ showNotif('Local de visita excluído.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
 }
 
 // ── Auditoria ──

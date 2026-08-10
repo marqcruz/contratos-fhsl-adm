@@ -304,15 +304,59 @@ tr:hover td{background:var(--surface2)}
 .wip{background:var(--yellow-bg);border:1px solid #fde68a;color:var(--yellow-text);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem}
 
 </style>
+
+
+<style>
+/* ===== VISITANTES SEDE — v2 funcional ===== */
+.quick-strip{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.quick-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.quick-num{font-size:24px;font-weight:800;line-height:1}.quick-lbl{font-size:10px;color:var(--text2);margin-top:5px;text-transform:uppercase;letter-spacing:.04em}
+.presente-row td{background:var(--green-bg)!important}.saida-row{opacity:.86}
+.tipo-chip{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800;background:var(--accent-bg);color:var(--accent-text)}
+.tipo-chip.prestador{background:var(--purple-bg);color:var(--purple-text)}
+.tipo-chip.entrega{background:var(--orange-bg);color:var(--orange-text)}
+.status-presente{background:var(--green-bg);color:var(--green-text)}.status-saiu{background:var(--surface2);color:var(--text2)}
+.duracao{font-size:11px;color:var(--text2);font-weight:600}
+.form-note{font-size:11px;color:var(--text3);margin-top:4px}
+.req::after{content:' *';color:var(--red)}
+.section-note{background:var(--accent-bg);color:var(--accent-text);border:1px solid var(--accent);border-radius:9px;padding:9px 11px;font-size:12px;margin-bottom:14px}
+.report-filters{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px}
+.report-grid{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:10px}
+.report-grid .fg{min-width:0}
+.report-bars{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.bar-list{display:flex;flex-direction:column;gap:8px}.bar-line{display:grid;grid-template-columns:140px 1fr 45px;gap:8px;align-items:center;font-size:11px}
+.bar-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text2)}
+.bar-bg{height:8px;border-radius:10px;background:var(--surface2);overflow:hidden}.bar-fill2{height:100%;background:var(--accent);border-radius:10px}
+.presentes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.pres-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--green);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+.pres-name{font-size:15px;font-weight:800}.pres-meta{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.55}
+.pres-actions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.cfg-pill{display:inline-flex;padding:2px 7px;border-radius:999px;font-size:10px;background:var(--surface2);color:var(--text2);font-weight:700}
+.empty-small{text-align:center;padding:28px 16px;color:var(--text3)}
+.modal{max-width:820px}
+#modal-detalhe .modal{max-width:720px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.detail-item{background:var(--surface2);border-radius:8px;padding:9px 11px}.detail-item label{display:block;font-size:9px;text-transform:uppercase;color:var(--text3);font-weight:700}.detail-item div{font-size:13px;font-weight:600;margin-top:2px}
+.detail-item.full{grid-column:1/-1}
+.badge-alerta{background:var(--yellow-bg);color:var(--yellow-text)}
+@media(max-width:1100px){.quick-strip{grid-template-columns:repeat(3,1fr)}.report-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){.quick-strip{grid-template-columns:repeat(2,1fr)}.report-grid{grid-template-columns:1fr}.report-bars{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}.detail-item.full{grid-column:1}.bar-line{grid-template-columns:110px 1fr 38px}}
+@media print{
+  #page-relatorio .report-filters,#page-relatorio .toolbar,.sidebar,.topbar,#fhsl-back-hub,.no-print{display:none!important}
+  #page-relatorio{display:block!important}.main{margin:0!important;padding:0!important}body{background:#fff!important;color:#111!important}
+  .table-wrap,.chart-card,.quick-card{box-shadow:none!important;border-color:#bbb!important}
+  th,td{color:#111!important;border-color:#ddd!important}.report-bars{break-inside:avoid}
+}
+</style>
+
 </head>
 <body>
 <div class="login-screen" id="login-screen">
   <div class="login-box">
     <div class="login-logo">
       <div class="icon">🪪</div>
-      <h1>Visitantes</h1>
-      <p>TDN Gestão Operacional</p>
-      <p style="font-size:11px;color:var(--text3);margin-top:10px">Desenvolvido por Marcos Cruz, com IA</p>
+      <h1>Controle de Acesso</h1>
+      <p>Sede Administrativa</p>
+      <p style="font-size:11px;color:var(--text3);margin-top:10px">Visitantes e prestadores</p>
     </div>
     <div class="login-err" id="login-err"></div>
     <div class="login-field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
@@ -320,11 +364,12 @@ tr:hover td{background:var(--surface2)}
     <button class="login-btn" onclick="doLogin()">Entrar</button>
   </div>
 </div>
+
 <div class="app" id="app" style="display:none">
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-icon">🪪</div>
-    <div><div class="logo-text">Visitantes</div><div class="logo-sub">Sede Administrativa</div></div>
+    <div><div class="logo-text">Controle de Acesso</div><div class="logo-sub">Sede Administrativa</div></div>
   </div>
   <div class="user-card">
     <div class="user-avatar" id="side-avatar">?</div>
@@ -332,13 +377,13 @@ tr:hover td{background:var(--surface2)}
     <button class="user-logout" onclick="doLogout()" title="Sair">⏻</button>
   </div>
   <div class="nav-group">
-    <div class="nav-label">Visitantes</div>
-    <button class="nav-item active" data-page="lista" onclick="showPage('lista',this)">🪪 Visitantes</button>
-    <button class="nav-item" data-page="presentes" onclick="showPage('presentes',this)">🟢 No prédio</button>
-    <button class="nav-item" data-page="relatorio" onclick="showPage('relatorio',this)">🖨️ Relatório</button>
+    <div class="nav-label">Acesso</div>
+    <button class="nav-item active" data-page="lista" onclick="showPage('lista',this)">📋 Registros</button>
+    <button class="nav-item" data-page="presentes" onclick="showPage('presentes',this)">🟢 No prédio <span class="nav-badge" id="badge-presentes"></span></button>
+    <button class="nav-item" data-page="relatorio" onclick="showPage('relatorio',this)">📊 Relatórios</button>
   </div>
   <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">
-    
+    <div style="font-size:10px;color:var(--text3);line-height:1.5">Controle de entrada e saída de visitantes e prestadores da Sede Administrativa.</div>
   </div>
 </aside>
 
@@ -347,137 +392,380 @@ tr:hover td{background:var(--surface2)}
     <div class="topbar-left"><div class="page-title" id="pg-title">—</div><div class="page-sub" id="pg-sub">—</div></div>
     <div class="topbar-right">
       <button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema claro/escuro">🌙</button>
-      <button class="btn primary" onclick="openForm()">➕ Novo registro</button>
+      <button class="btn primary" id="btn-novo-topo" onclick="openForm()">➕ Nova entrada</button>
     </div>
   </div>
-  <div class="page active" id="page-lista"><div class="wip">🚧 <strong>Interface em preparação.</strong> O layout está pronto; a gravação na planilha será ativada na próxima etapa.</div><div class="stats-grid"><div class="stat-card c-green"><div class="stat-num">0</div><div class="stat-label">No prédio agora</div></div><div class="stat-card c-accent"><div class="stat-num">0</div><div class="stat-label">Visitas hoje</div></div><div class="stat-card c-yellow"><div class="stat-num">0</div><div class="stat-label">Crachás em uso</div></div><div class="stat-card "><div class="stat-num">0</div><div class="stat-label">Total no mês</div></div></div><div class="toolbar"><input type="text" placeholder="🔍 Buscar..." oninput=""><button class="btn" onclick="showNotif('Sem registros ainda.','info')">🔄 Atualizar</button></div><div class="table-wrap"><table><thead><tr><th>Data/Hora</th><th>Visitante</th><th>Documento</th><th>Empresa</th><th>Setor / Responsável</th><th>Crachá</th><th>Saída</th><th></th></tr></thead><tbody id="visitantes-body"></tbody></table><div class="empty-state"><span class="empty-icon">🪪</span>Nenhuma visita registrada ainda</div></div></div>
-  <div class="page" id="page-presentes"><div class="wip">🚧 <strong>Interface em preparação.</strong> O layout está pronto; a gravação na planilha será ativada na próxima etapa.</div><div class="toolbar"><input type="text" placeholder="🔍 Buscar..." oninput=""><button class="btn" onclick="showNotif('Sem registros ainda.','info')">🔄 Atualizar</button></div><div class="table-wrap"><table><thead><tr><th>Entrada</th><th>Visitante</th><th>Setor</th><th>Responsável</th><th>Crachá</th><th></th></tr></thead><tbody id="presentes-body"></tbody></table><div class="empty-state"><span class="empty-icon">🟢</span>Ninguém no prédio no momento</div></div></div>
-  <div class="page" id="page-relatorio"><div class="wip">🚧 <strong>Interface em preparação.</strong> O layout está pronto; a gravação na planilha será ativada na próxima etapa.</div><div class="chart-card"><div class="chart-title">Visitas por setor</div><p style="font-size:13px;color:var(--text3)">Os gráficos aparecerão quando houver registros.</p></div></div>
+
+  <div class="page active" id="page-lista">
+    <div class="quick-strip">
+      <div class="quick-card"><div class="quick-num" id="kpi-presentes">0</div><div class="quick-lbl">No prédio agora</div></div>
+      <div class="quick-card"><div class="quick-num" id="kpi-hoje">0</div><div class="quick-lbl">Entradas hoje</div></div>
+      <div class="quick-card"><div class="quick-num" id="kpi-prestadores">0</div><div class="quick-lbl">Prestadores hoje</div></div>
+      <div class="quick-card"><div class="quick-num" id="kpi-saidas">0</div><div class="quick-lbl">Saídas hoje</div></div>
+      <div class="quick-card"><div class="quick-num" id="kpi-mes">0</div><div class="quick-lbl">Registros no mês</div></div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="busca" placeholder="🔍 Nome, documento, empresa, responsável..." oninput="renderLista()">
+      <select id="filtro-tipo" onchange="renderLista()"><option value="">Todos os tipos</option></select>
+      <select id="filtro-status" onchange="renderLista()"><option value="">Todos</option><option value="NO PRÉDIO">No prédio</option><option value="SAIU">Saíram</option></select>
+      <input type="date" id="filtro-data" onchange="renderLista()">
+      <button class="btn" onclick="carregarVisitantes()">🔄 Atualizar</button>
+    </div>
+
+    <div class="table-wrap"><table>
+      <thead><tr><th>Entrada</th><th>Tipo</th><th>Nome</th><th>Documento</th><th>Empresa / Origem</th><th>Local / Responsável</th><th>Status</th><th>Saída</th><th></th></tr></thead>
+      <tbody id="visitantes-body"></tbody>
+    </table><div class="empty-state" id="lista-empty" style="display:none"><span class="empty-icon">🪪</span>Nenhum registro encontrado</div></div>
+  </div>
+
+  <div class="page" id="page-presentes">
+    <div class="section-note">🟢 Pessoas com entrada registrada e sem saída. Use <strong>Registrar saída</strong> para encerrar a permanência.</div>
+    <div class="toolbar">
+      <input type="text" id="busca-presentes" placeholder="🔍 Buscar entre os presentes..." oninput="renderPresentes()">
+      <button class="btn" onclick="carregarVisitantes()">🔄 Atualizar</button>
+    </div>
+    <div class="presentes-grid" id="presentes-grid"></div>
+    <div class="empty-state" id="presentes-empty" style="display:none"><span class="empty-icon">🟢</span>Ninguém no prédio no momento</div>
+  </div>
+
+  <div class="page" id="page-relatorio">
+    <div class="report-filters no-print">
+      <div class="report-grid">
+        <div class="fg"><label>Data inicial</label><input type="date" id="rel-ini"></div>
+        <div class="fg"><label>Data final</label><input type="date" id="rel-fim"></div>
+        <div class="fg"><label>Tipo</label><select id="rel-tipo"><option value="">Todos</option></select></div>
+        <div class="fg"><label>Local de visita</label><select id="rel-setor"><option value="">Todos</option></select></div>
+        <div class="fg"><label>Empresa / origem</label><input type="text" id="rel-empresa" list="lista-empresas" placeholder="Todas"></div>
+      </div>
+      <div class="toolbar" style="margin-top:10px;margin-bottom:0">
+        <button class="btn primary" onclick="aplicarRelatorio()">🔎 Aplicar filtros</button>
+        <button class="btn" onclick="limparRelatorio()">Limpar</button>
+        <div style="flex:1"></div>
+        <button class="btn" onclick="exportarCSV()">⬇️ CSV</button>
+        <button class="btn" onclick="window.print()">🖨️ Imprimir / PDF</button>
+      </div>
+    </div>
+
+    <div class="quick-strip">
+      <div class="quick-card"><div class="quick-num" id="rel-total">0</div><div class="quick-lbl">Registros</div></div>
+      <div class="quick-card"><div class="quick-num" id="rel-visitantes">0</div><div class="quick-lbl">Visitantes</div></div>
+      <div class="quick-card"><div class="quick-num" id="rel-prestadores">0</div><div class="quick-lbl">Prestadores</div></div>
+      <div class="quick-card"><div class="quick-num" id="rel-tempo">—</div><div class="quick-lbl">Permanência média</div></div>
+      <div class="quick-card"><div class="quick-num" id="rel-abertos">0</div><div class="quick-lbl">Sem saída</div></div>
+    </div>
+
+    <div class="report-bars">
+      <div class="chart-card"><div class="chart-title">Registros por local de visita</div><div class="bar-list" id="bars-setor"></div></div>
+      <div class="chart-card"><div class="chart-title">Principais empresas / origens</div><div class="bar-list" id="bars-empresa"></div></div>
+    </div>
+
+    <div class="table-wrap"><table>
+      <thead><tr><th>Entrada</th><th>Saída</th><th>Tipo</th><th>Nome</th><th>Documento</th><th>Empresa</th><th>Local de visita</th><th>Responsável</th><th>Permanência</th></tr></thead>
+      <tbody id="rel-body"></tbody>
+    </table><div class="empty-state" id="rel-empty" style="display:none">Nenhum registro no período selecionado</div></div>
+  </div>
 </main>
 </div>
 
-<!-- MODAL FORMULÁRIO -->
+<!-- FORM -->
 <div class="modal-overlay" id="modal-form" onclick="if(event.target.id==='modal-form')closeForm()">
   <div class="modal">
-    <div class="mhead"><div class="mtitle" id="form-title">Novo registro</div><button class="mclose" onclick="closeForm()">✕</button></div>
+    <div class="mhead"><div class="mtitle" id="form-title">Nova entrada</div><button class="mclose" onclick="closeForm()">✕</button></div>
     <div class="mbody">
+      <div class="section-note">Preencha os dados essenciais. A entrada é registrada com o usuário responsável pelo lançamento.</div>
       <input type="hidden" id="f-id">
       <div class="form-grid">
-        <div class="fg full"><label>Nome completo</label><input type="text" id="f-nome" placeholder="Nome do visitante"></div>
-        <div class="fg"><label>Documento (RG/CPF)</label><input type="text" id="f-doc" placeholder=""></div>
-        <div class="fg"><label>Telefone</label><input type="text" id="f-tel" placeholder="(16) 90000-0000"></div>
-        <div class="fg"><label>Empresa / Origem</label><input type="text" id="f-empresa" placeholder=""></div>
-        <div class="fg"><label>Setor visitado</label><select id="f-setor"><option value="">Selecione...</option><option value="Diretoria">Diretoria</option><option value="RH">RH</option><option value="Financeiro">Financeiro</option><option value="Compras">Compras</option><option value="Contratos">Contratos</option><option value="TI">TI</option><option value="Outro">Outro</option></select></div>
-        <div class="fg"><label>Responsável pelo atendimento</label><input type="text" id="f-responsavel" placeholder=""></div>
-        <div class="fg"><label>Nº do crachá</label><input type="text" id="f-cracha" placeholder=""></div>
-        <div class="fg"><label>Data/hora de entrada</label><input type="datetime-local" id="f-entrada" placeholder=""></div>
-        <div class="fg"><label>Data/hora de saída</label><input type="datetime-local" id="f-saida" placeholder=""></div>
-        <div class="fg full"><label>Motivo da visita</label><textarea id="f-motivo" placeholder=""></textarea></div>
+        <div class="fg"><label class="req">Tipo de acesso</label><select id="f-tipo" onchange="tipoMudou()"></select></div>
+        <div class="fg"><label class="req">Documento</label><div style="display:flex;gap:6px"><select id="f-doc-tipo" style="width:90px" onchange="documentoTipoMudou()"><option value="CPF">CPF</option><option value="RG">RG</option></select><input type="text" id="f-doc" style="flex:1;text-transform:uppercase" placeholder="NÚMERO DO CPF" oninput="formatarDocumento(this)" onblur="buscarVisitanteAnterior()"></div><div class="form-note" id="doc-ajuda">CPF será validado antes do registro.</div></div>
+        <div class="fg full"><label class="req">Nome completo</label><input type="text" id="f-nome" placeholder="NOME DO VISITANTE / PRESTADOR" style="text-transform:uppercase" oninput="caixaAlta(this)"></div>
+        <div class="fg"><label>Telefone</label><input type="text" id="f-tel" placeholder="(16) 90000-0000" oninput="mascaraTelefone(this)"></div>
+        <div class="fg"><label id="lbl-empresa">Empresa / origem</label><input type="text" id="f-empresa" list="lista-empresas" placeholder="EMPRESA, ÓRGÃO OU ORIGEM" style="text-transform:uppercase" oninput="caixaAlta(this)"></div>
+        <div class="fg"><label class="req">Local de visita</label><select id="f-setor"></select></div>
+        <div class="fg"><label class="req">Responsável pelo atendimento</label><input type="text" id="f-responsavel" readonly style="text-transform:uppercase;font-weight:700" title="Definido pelo usuário logado"></div>
+        <div class="fg"><label>Motivo</label><select id="f-motivo"></select></div>
+        <div class="fg"><label class="req">Data/hora de entrada</label><input type="datetime-local" id="f-entrada"></div>
+        <div class="fg"><label>Veículo</label><select id="f-veiculo" onchange="toggleVeiculo()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
+        <div class="fg" id="fg-placa" style="display:none"><label>Placa</label><input type="text" id="f-placa" maxlength="8" placeholder="ABC1D23" style="text-transform:uppercase" oninput="caixaAlta(this)"></div>
+        <div class="fg full"><label>Observações</label><textarea id="f-obs" rows="3" placeholder="INFORMAÇÃO ADICIONAL, AUTORIZAÇÃO, EQUIPAMENTO TRAZIDO, ETC." style="text-transform:uppercase" oninput="caixaAlta(this)"></textarea></div>
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:1.2rem">
         <button class="btn" onclick="closeForm()">Cancelar</button>
-        <button class="btn primary" onclick="saveRegistro()">💾 Salvar</button>
+        <button class="btn primary" id="btn-salvar" onclick="saveRegistro()">✅ Registrar entrada</button>
       </div>
     </div>
   </div>
 </div>
+
+<!-- DETALHE -->
+<div class="modal-overlay" id="modal-detalhe" onclick="if(event.target.id==='modal-detalhe')fecharDetalhe()">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle">Detalhes do registro</div><button class="mclose" onclick="fecharDetalhe()">✕</button></div>
+    <div class="mbody" id="detalhe-body"></div>
+  </div>
+</div>
+
+<datalist id="lista-empresas"></datalist>
 <div class="notif-toast" id="notif"></div>
+<div class="loading-overlay" id="loading"><div class="spinner"></div><span id="loading-txt">Carregando...</span></div>
+
 <script>
-
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
-let currentUser = null;
+let currentUser=null, visitantes=[], config={tipos:[],locais:[],setores:[],motivos:[]}, relDados=[];
 
-async function apiFetch(action, payload){
-  const r = await fetch(SCRIPT_URL+'?action='+action, { method:'POST', body: JSON.stringify(payload||{}) });
-  const t = await r.text();
-  try { return JSON.parse(t); } catch(e){ return { ok:false, message:t }; }
+async function apiFetch(action,payload){
+  const r=await fetch(SCRIPT_URL+'?action='+action,{method:'POST',body:JSON.stringify(payload||{})});
+  const t=await r.text(); try{return JSON.parse(t)}catch(e){return{ok:false,message:t}}
 }
+function actor(){return {nome:currentUser.nome,email:currentUser.email}}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function showLoading(t){document.getElementById('loading-txt').textContent=t||'Carregando...';document.getElementById('loading').classList.add('open')}
+function hideLoading(){document.getElementById('loading').classList.remove('open')}
+function showNotif(msg,type){const el=document.getElementById('notif');el.textContent=msg;el.className='notif-toast '+(type||'ok');el.style.display='block';setTimeout(()=>el.style.display='none',3500)}
+function initials(n){return String(n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
+function themeKey(){return 'fhsl_theme_'+((currentUser&&currentUser.email)||'default')}
+function applyTheme(t){document.body.setAttribute('data-theme',t==='light'?'light':'dark');const b=document.getElementById('theme-btn');if(b)b.textContent=t==='light'?'☀️':'🌙'}
+function toggleTheme(){const cur=document.body.getAttribute('data-theme')==='light'?'light':'dark';const n=cur==='light'?'dark':'light';applyTheme(n);try{localStorage.setItem(themeKey(),n)}catch(e){}}
+function loadUserTheme(){let t='dark';try{t=localStorage.getItem(themeKey())||'dark'}catch(e){}applyTheme(t)}
+function podeRegistrar(){return currentUser&&['admin','gestor','cadastros'].includes(String(currentUser.role||'').toLowerCase())}
+function podeExcluir(){return currentUser&&String(currentUser.role||'').toLowerCase()==='admin'}
+
 async function doLogin(){
-  const email=document.getElementById('login-email').value.trim().toLowerCase();
-  const senha=document.getElementById('login-pass').value;
-  const err=document.getElementById('login-err'); err.style.display='none';
-  if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
-  try{
-    const r=await apiFetch('authuser',{email,senha});
-    if(!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
-    currentUser=r.user;
-  }catch(e){ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; return; }
-  sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
-  startApp();
+  const email=document.getElementById('login-email').value.trim().toLowerCase(),senha=document.getElementById('login-pass').value,err=document.getElementById('login-err');
+  err.style.display='none';if(!email||!senha){err.textContent='Preencha e-mail e senha.';err.style.display='block';return}
+  try{const r=await apiFetch('authuser',{email,senha});if(!r.ok){err.textContent=r.message||'E-mail ou senha incorretos.';err.style.display='block';return}currentUser=r.user}
+  catch(e){err.textContent='Sem conexão com o servidor.';err.style.display='block';return}
+  sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));startApp()
 }
-function doLogout(){
-  sessionStorage.removeItem('fhsl_session'); currentUser=null;
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  const p=document.getElementById('login-pass'); if(p) p.value='';
-}
-function themeKey(){ return 'fhsl_theme_'+((currentUser&&currentUser.email)||'default'); }
-function applyTheme(t){ document.body.setAttribute('data-theme', t==='light'?'light':'dark');
-  const b=document.getElementById('theme-btn'); if(b) b.textContent=t==='light'?'☀️':'🌙'; }
-function toggleTheme(){ const cur=document.body.getAttribute('data-theme')==='light'?'light':'dark';
-  const n=cur==='light'?'dark':'light'; applyTheme(n); try{localStorage.setItem(themeKey(),n);}catch(e){} }
-function loadUserTheme(){ let t='dark'; try{t=localStorage.getItem(themeKey())||'dark';}catch(e){} applyTheme(t); }
-function initials(n){ return String(n||'?').split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase(); }
-function showNotif(msg,type){ const el=document.getElementById('notif'); if(!el) return;
-  el.textContent=msg; el.className='notif-toast '+(type||'ok'); el.style.display='block';
-  setTimeout(function(){ el.style.display='none'; },3500); }
-window.addEventListener('DOMContentLoaded', function(){
-  const s=sessionStorage.getItem('fhsl_session');
-  if(s){ try{ currentUser=JSON.parse(s); startApp(); }catch(e){} }
-});
+function doLogout(){sessionStorage.removeItem('fhsl_session');currentUser=null;document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('login-pass').value=''}
+window.addEventListener('DOMContentLoaded',()=>{const s=sessionStorage.getItem('fhsl_session');if(s){try{currentUser=JSON.parse(s);startApp()}catch(e){}}})
 
-
-const PAGE_META = {
-  lista:['Visitantes','Registro de entrada e saída na sede'],
-  presentes:['No prédio agora','Visitantes que ainda não saíram'],
-  relatorio:['Relatório','Histórico de visitas']
+const PAGE_META={
+ lista:['Controle de Acesso','Entradas e saídas da Sede Administrativa'],
+ presentes:['No prédio agora','Visitantes e prestadores ainda presentes'],
+ relatorio:['Relatórios','Histórico e indicadores de acesso']
 };
-function startApp(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  loadUserTheme();
-  document.getElementById('side-avatar').textContent = initials(currentUser.nome);
-  const cores={admin:'#86198f',gestor:'#1d6aad',visualizador:'#5c5c58'};
-  document.getElementById('side-avatar').style.background = cores[currentUser.role]||'#1d6aad';
-  document.getElementById('side-name').textContent = currentUser.nome;
-  document.getElementById('side-role').textContent =
-    ({admin:'Administrador',gestor:'Gestor',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
-  showPage('lista', document.querySelector('[data-page="lista"]'));
+async function startApp(){
+  document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='flex';loadUserTheme();
+  document.getElementById('side-avatar').textContent=initials(currentUser.nome);
+  const cores={admin:'#86198f',cadastros:'#0f766e',gestor:'#1d6aad',visualizador:'#5c5c58'};
+  document.getElementById('side-avatar').style.background=cores[currentUser.role]||'#1d6aad';
+  document.getElementById('side-name').textContent=currentUser.nome;
+  document.getElementById('side-role').textContent=({admin:'Administrador',gestor:'Gestor',cadastros:'Gestor de cadastros',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
+  document.getElementById('btn-novo-topo').style.display=podeRegistrar()?'inline-flex':'none';
+  iniciarDatasRelatorio();showPage('lista',document.querySelector('[data-page="lista"]'));await carregarTudo()
 }
-function showPage(id, btn){
-  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
-  const pg=document.getElementById('page-'+id); if(pg) pg.classList.add('active');
-  if(btn) btn.classList.add('active');
-  else { const nb=document.querySelector('[data-page="'+id+'"]'); if(nb) nb.classList.add('active'); }
-  const m=PAGE_META[id]||['',''];
-  document.getElementById('pg-title').textContent=m[0];
-  document.getElementById('pg-sub').textContent=m[1];
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id)?.classList.add('active');if(btn)btn.classList.add('active');else document.querySelector('[data-page="'+id+'"]')?.classList.add('active');
+  const m=PAGE_META[id]||['',''];document.getElementById('pg-title').textContent=m[0];document.getElementById('pg-sub').textContent=m[1];
+  if(id==='presentes')renderPresentes();if(id==='relatorio')aplicarRelatorio(false)
 }
+async function carregarTudo(){showLoading('Carregando controle de acesso...');try{
+  const [rv,rc]=await Promise.all([apiFetch('getvisitantes',{limit:1500,__actor:actor()}),apiFetch('getvisitantesconfig',{__actor:actor()})]);
+  if(!rv.ok)throw new Error(rv.message||'Erro ao carregar visitantes');visitantes=rv.data||[];
+  if(rc.ok)config=rc.data||config;preencherSelecoes();atualizarSugestoes();renderTudo()
+}catch(e){showNotif(e.message||'Erro ao carregar.','err')}finally{hideLoading()}}
+async function carregarVisitantes(){showLoading('Atualizando...');try{const r=await apiFetch('getvisitantes',{limit:1500,__actor:actor()});if(!r.ok)throw new Error(r.message);visitantes=r.data||[];atualizarSugestoes();renderTudo();showNotif('Atualizado.','ok')}catch(e){showNotif(e.message||'Erro ao atualizar.','err')}finally{hideLoading()}}
+
+function preencherSelecoes(){
+  const locais=(config.locais&&config.locais.length)?config.locais:(config.setores||[]);
+  fillSelect('f-tipo',config.tipos,true);fillSelect('f-setor',locais,true);fillSelect('f-motivo',config.motivos,false);
+  fillSelect('filtro-tipo',config.tipos,false,'TODOS OS TIPOS');fillSelect('rel-tipo',config.tipos,false,'TODOS');
+  fillSelect('rel-setor',locais,false,'TODOS');
+}
+function fillSelect(id,arr,required,first){
+  const s=document.getElementById(id);if(!s)return;const atual=s.value;
+  let h='<option value="">'+(first||(required?'SELECIONE...':'NÃO INFORMADO'))+'</option>';
+  h+=(arr||[]).map(x=>'<option value="'+esc(String(x).toUpperCase())+'">'+esc(String(x).toUpperCase())+'</option>').join('');
+  s.innerHTML=h;if([...s.options].some(o=>o.value===atual))s.value=atual
+}
+function atualizarSugestoes(){
+  const emps=[...new Set(visitantes.map(v=>String(v.Empresa||'').trim().toUpperCase()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  document.getElementById('lista-empresas').innerHTML=emps.map(x=>'<option value="'+esc(x)+'"></option>').join('')
+}
+function hojeLocal(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function agoraInput(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+function parseLocal(v){if(!v)return null;const d=new Date(String(v).replace(' ','T'));return isNaN(d)?null:d}
+function fmtDT(v){const d=parseLocal(v);return d?d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
+function dataDe(v){return String(v||'').slice(0,10)}
+function mesDe(v){return String(v||'').slice(0,7)}
+function minutosPermanencia(v){
+  const a=parseLocal(v.Entrada),b=parseLocal(v.Saida)||new Date();if(!a)return 0;return Math.max(0,Math.round((b-a)/60000))
+}
+function fmtDur(min){if(!min&&min!==0)return'—';const h=Math.floor(min/60),m=min%60;return h?`${h}h ${m}min`:`${m}min`}
+function tipoClass(t){t=String(t||'').toUpperCase();return t.includes('PRESTADOR')?'prestador':t.includes('ENTREGA')||t.includes('FORNECEDOR')?'entrega':''}
+
+function renderTudo(){renderKPIs();renderLista();renderPresentes();if(document.getElementById('page-relatorio').classList.contains('active'))aplicarRelatorio(false)}
+function renderKPIs(){
+  const hoje=hojeLocal(),mes=hoje.slice(0,7),presentes=visitantes.filter(v=>v.Status==='NO PRÉDIO'),hojeArr=visitantes.filter(v=>dataDe(v.Entrada)===hoje);
+  document.getElementById('kpi-presentes').textContent=presentes.length;document.getElementById('kpi-hoje').textContent=hojeArr.length;
+  document.getElementById('kpi-prestadores').textContent=hojeArr.filter(v=>String(v.Tipo).toUpperCase().includes('PRESTADOR')).length;
+  document.getElementById('kpi-saidas').textContent=hojeArr.filter(v=>v.Status==='SAIU').length;document.getElementById('kpi-mes').textContent=visitantes.filter(v=>mesDe(v.Entrada)===mes).length;
+  const b=document.getElementById('badge-presentes');b.textContent=presentes.length;b.style.display=presentes.length?'inline-block':'none'
+}
+function renderLista(){
+  const q=document.getElementById('busca').value.trim().toLowerCase(),tipo=document.getElementById('filtro-tipo').value,status=document.getElementById('filtro-status').value,data=document.getElementById('filtro-data').value;
+  let arr=visitantes.filter(v=>{
+    if(q&&!(`${v.Nome} ${v.Documento} ${v.Empresa} ${v.Setor} ${v.Responsavel}`.toLowerCase().includes(q)))return false;
+    if(tipo&&v.Tipo!==tipo)return false;if(status&&v.Status!==status)return false;if(data&&dataDe(v.Entrada)!==data)return false;return true
+  });
+  const tb=document.getElementById('visitantes-body');document.getElementById('lista-empty').style.display=arr.length?'none':'block';
+  tb.innerHTML=arr.map(v=>{
+    let ac=`<button class="btn xs" onclick="verDetalhe('${v.ID}')">👁️</button>`;
+    if(v.Status==='NO PRÉDIO'&&podeRegistrar())ac+=` <button class="btn xs success" onclick="registrarSaida('${v.ID}')">↪ Saída</button>`;
+    if(podeRegistrar())ac+=` <button class="btn xs" onclick="openForm('${v.ID}')">✏️</button>`;
+    if(podeExcluir())ac+=` <button class="btn xs danger" onclick="excluirRegistro('${v.ID}')">🗑️</button>`;
+    return `<tr class="${v.Status==='NO PRÉDIO'?'presente-row':'saida-row'}"><td>${fmtDT(v.Entrada)}</td><td><span class="tipo-chip ${tipoClass(v.Tipo)}">${esc(v.Tipo)}</span></td><td><strong>${esc(v.Nome)}</strong></td><td>${esc(v.DocumentoTipo||'DOC')} ${esc(v.Documento)}</td><td>${esc(v.Empresa||'—')}</td><td>${esc(v.Setor)}<div style="font-size:10px;color:var(--text3)">${esc(v.Responsavel)}</div></td><td><span class="badge ${v.Status==='NO PRÉDIO'?'status-presente':'status-saiu'}">${v.Status==='NO PRÉDIO'?'🟢 NO PRÉDIO':'SAIU'}</span><div class="duracao">${fmtDur(minutosPermanencia(v))}</div></td><td>${fmtDT(v.Saida)}</td><td style="white-space:nowrap">${ac}</td></tr>`
+  }).join('')
+}
+function renderPresentes(){
+  const q=document.getElementById('busca-presentes').value.trim().toLowerCase();
+  const arr=visitantes.filter(v=>v.Status==='NO PRÉDIO'&&(!q||(`${v.Nome} ${v.Empresa} ${v.Setor} ${v.Responsavel}`.toLowerCase().includes(q))));
+  const grid=document.getElementById('presentes-grid');document.getElementById('presentes-empty').style.display=arr.length?'none':'block';
+  grid.innerHTML=arr.map(v=>`<div class="pres-card"><div style="display:flex;justify-content:space-between;gap:8px"><div><div class="pres-name">${esc(v.Nome)}</div><span class="tipo-chip ${tipoClass(v.Tipo)}">${esc(v.Tipo)}</span></div></div><div class="pres-meta"><strong>Entrada:</strong> ${fmtDT(v.Entrada)} · ${fmtDur(minutosPermanencia(v))}<br><strong>Empresa:</strong> ${esc(v.Empresa||'—')}<br><strong>Local:</strong> ${esc(v.Setor)}<br><strong>Responsável:</strong> ${esc(v.Responsavel)}<br><strong>Motivo:</strong> ${esc(v.Motivo||'—')}</div><div class="pres-actions"><button class="btn sm" onclick="verDetalhe('${v.ID}')">Ver</button>${podeRegistrar()?`<button class="btn sm success" onclick="registrarSaida('${v.ID}')">↪ Registrar saída</button>`:''}</div></div>`).join('')
+}
+
 function openForm(id){
-  document.getElementById('form-title').textContent = id ? 'Editar registro' : 'Novo registro';
-  document.getElementById('f-id').value = id||'';
-  document.getElementById('modal-form').classList.add('open');
+  if(!podeRegistrar()){showNotif('Seu perfil é somente visualização.','err');return}
+  limparForm();let v=id?visitantes.find(x=>String(x.ID)===String(id)):null;
+  document.getElementById('form-title').textContent=v?'Editar registro':'Nova entrada';document.getElementById('f-id').value=v?v.ID:'';
+  document.getElementById('btn-salvar').textContent=v?'💾 Salvar alterações':'✅ Registrar entrada';
+  if(v){
+    setVal('f-tipo',v.Tipo);setVal('f-doc-tipo',['CPF','RG'].includes(String(v.DocumentoTipo||'').toUpperCase())?String(v.DocumentoTipo).toUpperCase():'RG');
+    setVal('f-doc',v.Documento);setVal('f-nome',v.Nome);setVal('f-tel',v.Telefone);setVal('f-empresa',v.Empresa);setVal('f-setor',v.Setor);
+    setVal('f-responsavel',String(currentUser.nome||'').toUpperCase());setVal('f-motivo',v.Motivo);setVal('f-entrada',String(v.Entrada||'').slice(0,16));
+    setVal('f-veiculo',v.Veiculo||'NÃO');setVal('f-placa',v.Placa);setVal('f-obs',v.Observacoes)
+  }else{
+    setVal('f-tipo',(config.tipos||[])[0]||'VISITANTE');setVal('f-doc-tipo','CPF');setVal('f-entrada',agoraInput());setVal('f-veiculo','NÃO');
+    setVal('f-responsavel',String(currentUser.nome||'').toUpperCase())
+  }
+  documentoTipoMudou();tipoMudou();toggleVeiculo();document.getElementById('modal-form').classList.add('open');setTimeout(()=>document.getElementById('f-doc').focus(),50)
 }
-function closeForm(){ document.getElementById('modal-form').classList.remove('open'); }
-function saveRegistro(){
-  showNotif('Interface pronta — a gravação será ativada na próxima etapa.','info');
-  closeForm();
+function closeForm(){document.getElementById('modal-form').classList.remove('open')}
+function limparForm(){['f-id','f-doc','f-nome','f-tel','f-empresa','f-responsavel','f-placa','f-obs'].forEach(id=>setVal(id,''));['f-tipo','f-setor','f-motivo'].forEach(id=>setVal(id,''))}
+function setVal(id,v){const e=document.getElementById(id);if(e)e.value=v||''}
+function tipoMudou(){
+  const t=document.getElementById('f-tipo').value.toUpperCase(),lbl=document.getElementById('lbl-empresa');lbl.className=t.includes('PRESTADOR')?'req':'';
+}
+function setorMudou(){}
+function caixaAlta(el){if(el)el.value=String(el.value||'').toUpperCase()}
+function toggleVeiculo(){document.getElementById('fg-placa').style.display=document.getElementById('f-veiculo').value==='SIM'?'flex':'none'}
+function mascaraTelefone(el){let v=el.value.replace(/\D/g,'').slice(0,11);if(v.length>10)v=v.replace(/^(\d{2})(\d{5})(\d{0,4}).*/,'($1) $2-$3');else if(v.length>6)v=v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/,'($1) $2-$3');else if(v.length>2)v=v.replace(/^(\d{2})(.*)/,'($1) $2');el.value=v}
+function normalDoc(v){return String(v||'').replace(/[^a-zA-Z0-9]/g,'').toUpperCase()}
+function cpfValido(v){
+  const cpf=String(v||'').replace(/\D/g,'');
+  if(cpf.length!==11||/^(\d)\1{10}$/.test(cpf))return false;
+  let s=0,r;for(let i=0;i<9;i++)s+=Number(cpf[i])*(10-i);r=(s*10)%11;if(r===10)r=0;if(r!==Number(cpf[9]))return false;
+  s=0;for(let i=0;i<10;i++)s+=Number(cpf[i])*(11-i);r=(s*10)%11;if(r===10)r=0;return r===Number(cpf[10])
+}
+function formatarDocumento(el){
+  const tipo=document.getElementById('f-doc-tipo').value;
+  if(tipo==='CPF'){
+    let v=el.value.replace(/\D/g,'').slice(0,11);
+    if(v.length>9)v=v.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/,'$1.$2.$3-$4');
+    else if(v.length>6)v=v.replace(/^(\d{3})(\d{3})(\d{0,3}).*/,'$1.$2.$3');
+    else if(v.length>3)v=v.replace(/^(\d{3})(\d{0,3}).*/,'$1.$2');
+    el.value=v;
+  }else{
+    el.value=String(el.value||'').toUpperCase().replace(/[^0-9A-Z.\/-]/g,'').slice(0,20)
+  }
+}
+function documentoTipoMudou(){
+  const tipo=document.getElementById('f-doc-tipo').value,el=document.getElementById('f-doc'),aj=document.getElementById('doc-ajuda');
+  el.placeholder=tipo==='CPF'?'000.000.000-00':'NÚMERO DO RG';
+  if(aj)aj.textContent=tipo==='CPF'?'CPF SERÁ VALIDADO ANTES DO REGISTRO.':'INFORME O RG DO VISITANTE / PRESTADOR.';
+  formatarDocumento(el)
+}
+function buscarVisitanteAnterior(){
+  const d=normalDoc(document.getElementById('f-doc').value);if(!d||document.getElementById('f-id').value)return;
+  const ativo=visitantes.find(v=>v.Status==='NO PRÉDIO'&&normalDoc(v.Documento)===d);if(ativo){showNotif('Este documento já possui uma entrada em aberto.','err');return}
+  const ant=visitantes.find(v=>normalDoc(v.Documento)===d);if(!ant)return;
+  if(!document.getElementById('f-nome').value)document.getElementById('f-nome').value=ant.Nome||'';
+  if(!document.getElementById('f-tel').value)document.getElementById('f-tel').value=ant.Telefone||'';
+  if(!document.getElementById('f-empresa').value)document.getElementById('f-empresa').value=ant.Empresa||'';
+  showNotif('Dados preenchidos com base na última visita deste documento.','info')
+}
+function validarForm(){
+  const tipoDoc=document.getElementById('f-doc-tipo').value;
+  const p={
+    Tipo:document.getElementById('f-tipo').value.toUpperCase(),
+    DocumentoTipo:tipoDoc,
+    Documento:document.getElementById('f-doc').value.trim().toUpperCase(),
+    Nome:document.getElementById('f-nome').value.trim().toUpperCase(),
+    Telefone:document.getElementById('f-tel').value.trim(),
+    Empresa:document.getElementById('f-empresa').value.trim().toUpperCase(),
+    Setor:document.getElementById('f-setor').value.toUpperCase(),
+    Responsavel:String(currentUser.nome||'').trim().toUpperCase(),
+    Motivo:document.getElementById('f-motivo').value.toUpperCase(),
+    Entrada:document.getElementById('f-entrada').value,
+    Veiculo:document.getElementById('f-veiculo').value.toUpperCase(),
+    Placa:document.getElementById('f-placa').value.trim().toUpperCase(),
+    Observacoes:document.getElementById('f-obs').value.trim().toUpperCase()
+  };
+  const falt=[];['Tipo','Documento','Nome','Setor','Responsavel','Entrada'].forEach(k=>{if(!p[k])falt.push(k)});
+  if(p.Tipo.includes('PRESTADOR')&&!p.Empresa)falt.push('Empresa');
+  if(falt.length){showNotif('Preencha os campos obrigatórios: '+falt.join(', ')+'.','err');return null}
+  if(tipoDoc==='CPF'&&!cpfValido(p.Documento)){showNotif('CPF inválido. Confira o número informado.','err');document.getElementById('f-doc').focus();return null}
+  return p
+}
+async function saveRegistro(){
+  const p=validarForm();if(!p)return;p.ID=document.getElementById('f-id').value;p.__actor=actor();showLoading(p.ID?'Salvando alterações...':'Registrando entrada...');
+  try{const r=await apiFetch('savevisitante',p);if(!r.ok)throw new Error(r.message||'Erro ao salvar');closeForm();showNotif(p.ID?'Registro atualizado.':'Entrada registrada.','ok');await carregarVisitantes()}
+  catch(e){showNotif(e.message,'err')}finally{hideLoading()}
+}
+async function registrarSaida(id){
+  const v=visitantes.find(x=>String(x.ID)===String(id));if(!v)return;
+  if(!confirm(`Registrar saída de ${v.Nome}?`))return;
+  showLoading('Registrando saída...');try{const r=await apiFetch('saidavisitante',{id:id,__actor:actor()});if(!r.ok)throw new Error(r.message);showNotif('Saída registrada.','ok');await carregarVisitantes()}catch(e){showNotif(e.message,'err')}finally{hideLoading()}
+}
+async function excluirRegistro(id){
+  if(!confirm('Excluir definitivamente este registro de acesso?'))return;showLoading('Excluindo...');
+  try{const r=await apiFetch('deletevisitante',{id:id,__actor:actor()});if(!r.ok)throw new Error(r.message);showNotif('Registro excluído.','ok');await carregarVisitantes()}catch(e){showNotif(e.message,'err')}finally{hideLoading()}
 }
 
+function verDetalhe(id){
+  const v=visitantes.find(x=>String(x.ID)===String(id));if(!v)return;
+  const items=[['Nome',v.Nome],['Tipo',v.Tipo],['Documento',(v.DocumentoTipo||'DOC')+' '+v.Documento],['Telefone',v.Telefone||'—'],['Empresa / origem',v.Empresa||'—'],['Local de visita',v.Setor],['Responsável',v.Responsavel],['Motivo',v.Motivo||'—'],['Entrada',fmtDT(v.Entrada)],['Saída',fmtDT(v.Saida)],['Permanência',fmtDur(minutosPermanencia(v))],['Veículo',v.Veiculo||'NÃO'],['Placa',v.Placa||'—'],['Observações',v.Observacoes||'—'],['Registrado por',v.CriadoPor||'—']];
+  document.getElementById('detalhe-body').innerHTML='<div class="detail-grid">'+items.map((x,i)=>`<div class="detail-item ${i===13?'full':''}"><label>${esc(x[0])}</label><div>${esc(x[1])}</div></div>`).join('')+'</div>';
+  document.getElementById('modal-detalhe').classList.add('open')
+}
+function fecharDetalhe(){document.getElementById('modal-detalhe').classList.remove('open')}
 
+function iniciarDatasRelatorio(){
+  const d=new Date(),fim=hojeLocal(),ini=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01';document.getElementById('rel-ini').value=ini;document.getElementById('rel-fim').value=fim
+}
+function limparRelatorio(){iniciarDatasRelatorio();document.getElementById('rel-tipo').value='';document.getElementById('rel-setor').value='';document.getElementById('rel-empresa').value='';aplicarRelatorio()}
+async function aplicarRelatorio(recarregar=true){
+  const ini=document.getElementById('rel-ini').value,fim=document.getElementById('rel-fim').value,tipo=document.getElementById('rel-tipo').value,setor=document.getElementById('rel-setor').value,emp=document.getElementById('rel-empresa').value.trim().toLowerCase();
+  if(recarregar&&ini&&fim){showLoading('Gerando relatório...');try{const r=await apiFetch('getvisitantes',{dataInicio:ini,dataFim:fim,limit:5000,__actor:actor()});if(r.ok)relDados=r.data||[];else throw new Error(r.message)}catch(e){showNotif(e.message,'err');relDados=[]}finally{hideLoading()}}
+  else if(!relDados.length)relDados=visitantes.slice();
+  let arr=relDados.filter(v=>(!tipo||v.Tipo===tipo)&&(!setor||v.Setor===setor)&&(!emp||String(v.Empresa||'').toLowerCase().includes(emp)));
+  renderRelatorio(arr)
+}
+function renderRelatorio(arr){
+  const prest=arr.filter(v=>String(v.Tipo).toUpperCase().includes('PRESTADOR')).length,vis=arr.filter(v=>String(v.Tipo).toUpperCase()==='VISITANTE').length,ab=arr.filter(v=>v.Status==='NO PRÉDIO').length;
+  const mins=arr.filter(v=>v.Saida).map(minutosPermanencia),med=mins.length?Math.round(mins.reduce((a,b)=>a+b,0)/mins.length):0;
+  document.getElementById('rel-total').textContent=arr.length;document.getElementById('rel-visitantes').textContent=vis;document.getElementById('rel-prestadores').textContent=prest;document.getElementById('rel-tempo').textContent=mins.length?fmtDur(med):'—';document.getElementById('rel-abertos').textContent=ab;
+  renderBars('bars-setor',contagem(arr,'Setor'));renderBars('bars-empresa',contagem(arr,'Empresa'));
+  const tb=document.getElementById('rel-body');document.getElementById('rel-empty').style.display=arr.length?'none':'block';
+  tb.innerHTML=arr.map(v=>`<tr><td>${fmtDT(v.Entrada)}</td><td>${fmtDT(v.Saida)}</td><td>${esc(v.Tipo)}</td><td>${esc(v.Nome)}</td><td>${esc(v.DocumentoTipo||'DOC')} ${esc(v.Documento)}</td><td>${esc(v.Empresa||'—')}</td><td>${esc(v.Setor)}</td><td>${esc(v.Responsavel)}</td><td>${fmtDur(minutosPermanencia(v))}</td></tr>`).join('')
+}
+function contagem(arr,k){const m={};arr.forEach(v=>{const x=String(v[k]||'NÃO INFORMADO').trim()||'NÃO INFORMADO';m[x]=(m[x]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10)}
+function renderBars(id,rows){const el=document.getElementById(id),mx=rows.length?rows[0][1]:1;el.innerHTML=rows.length?rows.map(r=>`<div class="bar-line"><div class="bar-name" title="${esc(r[0])}">${esc(r[0])}</div><div class="bar-bg"><div class="bar-fill2" style="width:${Math.max(4,r[1]/mx*100)}%"></div></div><strong>${r[1]}</strong></div>`).join(''):'<div class="empty-small">Sem dados</div>'}
+function exportarCSV(){
+  const rows=[['Entrada','Saida','Tipo','Nome','DocumentoTipo','Documento','Telefone','Empresa','LocalVisita','Responsavel','Motivo','Veiculo','Placa','Observacoes','Status']];
+  const tb=[...document.querySelectorAll('#rel-body tr')]; // use filtered relDados by rebuilding from current filters
+  const ini=document.getElementById('rel-ini').value,fim=document.getElementById('rel-fim').value,tipo=document.getElementById('rel-tipo').value,setor=document.getElementById('rel-setor').value,emp=document.getElementById('rel-empresa').value.trim().toLowerCase();
+  const arr=relDados.filter(v=>(!ini||dataDe(v.Entrada)>=ini)&&(!fim||dataDe(v.Entrada)<=fim)&&(!tipo||v.Tipo===tipo)&&(!setor||v.Setor===setor)&&(!emp||String(v.Empresa||'').toLowerCase().includes(emp)));
+  arr.forEach(v=>rows.push([v.Entrada,v.Saida,v.Tipo,v.Nome,v.DocumentoTipo,v.Documento,v.Telefone,v.Empresa,v.Setor,v.Responsavel,v.Motivo,v.Veiculo,v.Placa,v.Observacoes,v.Status]));
+  const csv=rows.map(r=>r.map(x=>'"'+String(x||'').replace(/"/g,'""')+'"').join(';')).join('\r\n'),blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='visitantes_sede_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)
+}
 </script>
 
-
-<!-- ===== FHSL BACK BUTTON ===== -->
 <a href="index.html" id="fhsl-back-hub" title="Voltar aos módulos"
-   style="position:fixed;bottom:16px;left:16px;z-index:2147483000;display:inline-flex;align-items:center;gap:7px;
-          padding:9px 14px;background:#1d6aad;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-          font-size:13px;font-weight:600;text-decoration:none;border-radius:10px;
-          box-shadow:0 4px 14px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);line-height:1">
-  <span style="font-size:15px">←</span><span>Módulos</span>
+ style="position:fixed;bottom:16px;left:16px;z-index:2147483000;display:inline-flex;align-items:center;gap:7px;padding:9px 14px;background:#1d6aad;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:13px;font-weight:600;text-decoration:none;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);line-height:1">
+ <span style="font-size:15px">←</span><span>Módulos</span>
 </a>
-<!-- ===== /FHSL BACK BUTTON ===== -->
-
 </body>
 </html>

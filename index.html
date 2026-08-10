@@ -287,6 +287,120 @@ tr:hover td{background:var(--surface2)}
 
 
 /* ── HUB ── */
+
+/* ── HUB OTIMIZADO v2 ── */
+.hub-wrap{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-start;padding:1.25rem 1.5rem 2rem
+}
+.hub-shell{width:100%;max-width:1280px;margin:0 auto}
+.hub-top{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  margin-bottom:18px;min-height:48px
+}
+.hub-brand{display:flex;align-items:center;gap:11px}
+.hub-brand-icon{
+  width:42px;height:42px;border-radius:11px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:21px;color:#fff
+}
+.hub-brand h1{font-size:18px;line-height:1.15}
+.hub-brand p{font-size:11px;color:var(--text3);margin-top:2px}
+.hub-topuser{display:flex;align-items:center;gap:8px}
+.hub-user-compact{margin:0;min-width:190px}
+.hub-hero{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:18px;
+  padding:20px 22px;margin-bottom:14px;background:var(--surface);
+  border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow)
+}
+.hub-hero h2{font-size:22px;letter-spacing:-.35px;margin-bottom:3px}
+.hub-hero p{font-size:12px;color:var(--text2)}
+.hub-search-wrap{width:min(430px,100%);position:relative}
+.hub-search{
+  width:100%;padding:11px 38px 11px 13px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);border-radius:10px;font:inherit;
+  outline:none;transition:.15s
+}
+.hub-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+.hub-search-icon{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--text3)}
+.hub-filters{
+  display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:0 0 16px
+}
+.hub-filter{
+  border:1px solid var(--border);background:var(--surface);color:var(--text2);
+  padding:6px 10px;border-radius:20px;font:inherit;font-size:11px;font-weight:700;
+  cursor:pointer;transition:.12s
+}
+.hub-filter:hover{border-color:var(--accent);color:var(--accent-text)}
+.hub-filter.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent-text)}
+.hub-section{margin-top:18px}
+.hub-section-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px
+}
+.hub-section-title{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--text2)}
+.hub-section-sub{font-size:10px;color:var(--text3)}
+.hub-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:100%
+}
+.hub-grid.quick{grid-template-columns:repeat(4,minmax(0,1fr))}
+.hub-card{
+  position:relative;background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:13px 13px 12px;cursor:pointer;transition:.15s;
+  text-decoration:none;color:inherit;display:grid;grid-template-columns:38px minmax(0,1fr);
+  grid-template-rows:auto auto;column-gap:10px;min-height:94px;overflow:hidden
+}
+.hub-card:hover{
+  border-color:var(--accent);transform:translateY(-2px);
+  box-shadow:0 7px 20px rgba(0,0,0,.18);background:var(--surface2)
+}
+.hub-card.hidden-search{display:none!important}
+.hub-ico{
+  grid-row:1/3;width:38px;height:38px;border-radius:9px;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;font-size:20px;margin:0
+}
+.hub-card:hover .hub-ico{background:var(--accent-bg)}
+.hub-card h3{
+  font-size:13px;font-weight:750;margin:0;padding-right:22px;line-height:1.25;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.hub-card p{
+  font-size:10.5px;color:var(--text2);line-height:1.35;margin-top:4px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden
+}
+.hub-tag{display:none}
+.hub-fav{
+  position:absolute;top:8px;right:8px;border:0;background:transparent;color:var(--text3);
+  cursor:pointer;font-size:14px;padding:2px;line-height:1
+}
+.hub-fav:hover,.hub-fav.on{color:var(--yellow)}
+.hub-card.quick-card{border-color:color-mix(in srgb,var(--accent) 30%,var(--border))}
+.hub-category-label{
+  position:absolute;left:13px;bottom:8px;font-size:8px;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.04em;display:none
+}
+.hub-empty{
+  border:1px dashed var(--border);border-radius:12px;padding:28px;text-align:center;
+  color:var(--text3);font-size:12px;display:none
+}
+.hub-footer{
+  margin-top:22px;text-align:center;font-size:10px;color:var(--text3);
+  padding-top:14px;border-top:1px solid var(--border)
+}
+.hub-footer strong{color:var(--text2)}
+@media(max-width:1080px){.hub-grid,.hub-grid.quick{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:780px){
+  .hub-wrap{padding:10px}.hub-shell{max-width:none}
+  .hub-top{align-items:flex-start}.hub-topuser{width:auto}
+  .hub-user-compact{min-width:0}.hub-user-compact .user-role{display:none}
+  .hub-hero{grid-template-columns:1fr;padding:16px}.hub-search-wrap{width:100%}
+  .hub-grid,.hub-grid.quick{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hub-card{min-height:88px}
+}
+@media(max-width:520px){
+  .hub-brand p{display:none}.hub-brand h1{font-size:15px}
+  .hub-grid,.hub-grid.quick{grid-template-columns:1fr}
+  .hub-hero h2{font-size:18px}.hub-filter{font-size:10px;padding:5px 8px}
+}
+
 .hub-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem}
 .hub-header{text-align:center;margin-bottom:2.5rem}
 .hub-header .icon{width:64px;height:64px;background:var(--accent);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px}
@@ -327,37 +441,110 @@ tr:hover td{background:var(--surface2)}
 </div>
 <div id="app" style="display:none">
 <div class="hub-wrap">
-  <div class="hub-topuser" style="position:absolute;top:1rem;right:1.25rem;display:flex;align-items:center;gap:8px">
-    <button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema claro/escuro">🌙</button>
-    <div class="user-card" style="margin:0">
-      <div class="user-avatar" id="side-avatar">?</div>
-      <div style="min-width:0"><div class="user-name" id="side-name">—</div><div class="user-role" id="side-role">—</div></div>
-      <button class="user-logout" onclick="doLogout()" title="Sair">⏻</button>
+  <div class="hub-shell">
+    <div class="hub-top">
+      <div class="hub-brand">
+        <div class="hub-brand-icon">🧭</div>
+        <div>
+          <h1>TDN Gestão Operacional</h1>
+          <p>Fundação Hospital Santa Lydia · TDNGo</p>
+        </div>
+      </div>
+      <div class="hub-topuser">
+        <button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema claro/escuro">🌙</button>
+        <div class="user-card hub-user-compact">
+          <div class="user-avatar" id="side-avatar">?</div>
+          <div style="min-width:0;flex:1"><div class="user-name" id="side-name">—</div><div class="user-role" id="side-role">—</div></div>
+          <button class="user-logout" onclick="doLogout()" title="Sair">⏻</button>
+        </div>
+      </div>
     </div>
+
+    <section class="hub-hero">
+      <div>
+        <h2>Central de módulos</h2>
+        <p>Escolha uma área ou pesquise pelo nome do módulo.</p>
+      </div>
+      <div class="hub-search-wrap">
+        <input class="hub-search" id="hub-search" type="search" autocomplete="off"
+               placeholder="Buscar módulo..." oninput="aplicarFiltroHub()">
+        <span class="hub-search-icon">⌕</span>
+      </div>
+    </section>
+
+    <div class="hub-filters" id="hub-filters">
+      <button class="hub-filter active" data-cat="todos" onclick="selecionarCategoriaHub('todos',this)">Todos</button>
+      <button class="hub-filter" data-cat="gestao" onclick="selecionarCategoriaHub('gestao',this)">📋 Gestão e contratos</button>
+      <button class="hub-filter" data-cat="assistencial" onclick="selecionarCategoriaHub('assistencial',this)">🏥 Assistencial e indicadores</button>
+      <button class="hub-filter" data-cat="operacao" onclick="selecionarCategoriaHub('operacao',this)">🏢 Operação e sede</button>
+      <button class="hub-filter" data-cat="admin" onclick="selecionarCategoriaHub('admin',this)">⚙️ Administração</button>
+    </div>
+
+    <section class="hub-section" id="hub-quick-section" style="display:none">
+      <div class="hub-section-head">
+        <div>
+          <div class="hub-section-title">Acesso rápido</div>
+          <div class="hub-section-sub">Favoritos e módulos mais utilizados neste navegador</div>
+        </div>
+      </div>
+      <div class="hub-grid quick" id="hub-quick-grid"></div>
+    </section>
+
+    <section class="hub-section">
+      <div class="hub-section-head">
+        <div>
+          <div class="hub-section-title" id="hub-section-title">Todos os módulos</div>
+          <div class="hub-section-sub" id="hub-count">—</div>
+        </div>
+      </div>
+      <div class="hub-grid" id="hub-grid">
+        <a class="hub-card" data-mod="contratos" data-cat="gestao" data-search="contratos gestão aditivos vigências fiscais" href="contratos.html">
+          <span class="hub-ico">📋</span><h3>Contratos</h3><p>Contratos, aditivos, vigências e fiscais.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+        <a class="hub-card" data-mod="cg" data-cat="gestao" data-search="contratos de gestão metas pontuação rubricas responsabilidades os oss" href="contratos-gestao.html">
+          <span class="hub-ico">🏛️</span><h3>Contratos de Gestão</h3><p>Metas, pontuação, rubricas e responsabilidades.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+        <a class="hub-card" data-mod="conferencia" data-cat="gestao" data-search="conferência documental pagamento terceirizadas pdf checklist" href="conferencia.html">
+          <span class="hub-ico">📑</span><h3>Conferência Documental</h3><p>Checklist e PDFs para pagamento de terceirizadas.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+        <a class="hub-card" data-mod="limpeza" data-cat="gestao" data-search="avaliação limpeza terceirizados qualidade fatura" href="limpeza.html">
+          <span class="hub-ico">🧹</span><h3>Avaliação de Limpeza</h3><p>Qualidade dos serviços e liberação de fatura.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+
+        <a class="hub-card" data-mod="risco" data-cat="assistencial" data-search="análise classificação de risco hygia desempenho" href="risco.html">
+          <span class="hub-ico">🎯</span><h3>Classificação de Risco</h3><p>Conversor e análise de desempenho do Hygia.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+        <a class="hub-card" data-mod="painel_ubs" data-cat="assistencial" data-search="painel comparativo ubs comparecimento faltosos clínica pediatria" href="painel-ubs.html">
+          <span class="hub-ico">🏥</span><h3>Painel Comparativo UBS</h3><p>Comparecimento e faltosos por unidade.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+        <a class="hub-card" data-mod="painel_upas" data-cat="assistencial" data-search="painel especialidades upas atendimentos" href="painel-upas.html">
+          <span class="hub-ico">📈</span><h3>Especialidades UPAs</h3><p>Atendimentos por especialidade nas UPAs.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+        <a class="hub-card" data-mod="cnes" data-cat="assistencial" data-search="cnes profissionais unidade csv cpf cnpj cadastro" href="cnes.html">
+          <span class="hub-ico">👥</span><h3>CNES</h3><p>Cadastros de profissionais por unidade.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+
+        <a class="hub-card" data-mod="visitantes" data-cat="operacao" data-search="visitantes prestadores sede administrativa acesso" href="visitantes.html">
+          <span class="hub-ico">🪪</span><h3>Visitantes e Prestadores</h3><p>Controle de acesso da Sede Administrativa.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+        <a class="hub-card" data-mod="chaves" data-cat="operacao" data-search="chaves retirada devolução controle" href="chaves.html">
+          <span class="hub-ico">🔑</span><h3>Chaves</h3><p>Retirada e devolução de chaves.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+        <a class="hub-card" data-mod="malotes" data-cat="operacao" data-search="malotes envio recebimento unidades transporte documentos" href="malotes.html">
+          <span class="hub-ico">📦</span><h3>Malotes</h3><p>Envio e recebimento entre unidades.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+
+        <a class="hub-card" data-mod="admin" data-cat="admin" data-search="administração usuários permissões unidades locais" data-role="admin,cadastros" href="admin.html">
+          <span class="hub-ico">⚙️</span><h3>Administração</h3><p>Usuários, permissões, unidades e locais.</p><span class="hub-tag ativo">Disponível</span>
+        </a>
+      </div>
+      <div class="hub-empty" id="hub-empty-hint">Nenhum módulo encontrado para esta seleção.</div>
+    </section>
+
+    <footer class="hub-footer">
+      <strong>TDNGo</strong> · Gestão Operacional · Fundação Hospital Santa Lydia · Ribeirão Preto/SP
+    </footer>
   </div>
-  <div class="hub-header">
-    <div class="icon">🧭</div>
-    <h1>TDN Gestão Operacional</h1>
-    <p>TDNGo — selecione um módulo</p>
-  </div>
-  <div class="hub-grid">
-<a class="hub-card" data-mod="contratos" href="contratos.html"><span class="hub-ico">📋</span><h3>Contratos</h3><p>Gestão de contratos, aditivos, vigências e fiscais.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" data-mod="cg" href="contratos-gestao.html"><span class="hub-ico">🏛️</span><h3>Contratos de Gestão</h3><p>Metas, pontuação, rubricas e responsabilidades (OS/OSS).</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" data-mod="risco" href="risco.html"><span class="hub-ico">🎯</span><h3>Análise de Classificação de Risco</h3><p>Conversor e análise de desempenho da classificação de risco (Hygia).</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" data-mod="painel_ubs" href="painel-ubs.html"><span class="hub-ico">🏥</span><h3>Painel Comparativo UBS</h3><p>Comparecimento e faltosos por unidade — clínica e pediatria.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" data-mod="painel_upas" href="painel-upas.html"><span class="hub-ico">📈</span><h3>Painel de Especialidades UPAs</h3><p>Atendimentos por especialidade nas UPAs.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" data-mod="malotes" href="malotes.html"><span class="hub-ico">📦</span><h3>Malotes</h3><p>Controle de envio e recebimento de malotes entre unidades.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" data-mod="visitantes" href="visitantes.html"><span class="hub-ico">🪪</span><h3>Visitantes</h3><p>Registro de visitantes da sede administrativa.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" data-mod="chaves" href="chaves.html"><span class="hub-ico">🔑</span><h3>Chaves</h3><p>Controle de retirada e devolução de chaves.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" data-mod="limpeza" href="limpeza.html"><span class="hub-ico">🧹</span><h3>Avaliação de Limpeza</h3><p>Qualidade dos serviços terceirizados, pontuação e liberação de fatura.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" data-mod="conferencia" href="conferencia.html"><span class="hub-ico">📑</span><h3>Conferência Documental</h3><p>Checklist de documentos para pagamento de terceirizadas, com compilação de PDF.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" data-mod="cnes" href="cnes.html"><span class="hub-ico">🏥</span><h3>CNES</h3><p>Cadastros de profissionais por unidade, com carga CSV e validação de CPF/CNPJ.</p><span class="hub-tag ativo">Disponível</span></a>
-<a class="hub-card" data-mod="admin" data-role="admin,cadastros" href="admin.html"><span class="hub-ico">⚙️</span><h3>Administração</h3><p>Usuários, permissões, unidades e locais do sistema.</p><span class="hub-tag ativo">Disponível</span></a>
-<div class="hub-card soon" id="hub-empty-hint" style="display:none"><span class="hub-ico">🔒</span><h3>Nenhum módulo liberado</h3><p>Fale com o administrador para liberar seus módulos.</p></div>
-  </div>
-  <footer class="hub-footer">Desenvolvido por Marcos Cruz, com apoio de IA</footer>
-  <div class="hub-foot">Fundação Hospital Santa Lydia · Ribeirão Preto/SP</div>
-</div>
 </div>
 <div class="notif-toast" id="notif"></div>
 <script>
@@ -415,30 +602,125 @@ function startApp(){
   document.getElementById('side-name').textContent = currentUser.nome;
   document.getElementById('side-role').textContent =
     ({admin:'Administrador',gestor:'Gestor',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
+  prepararHub();
   filtrarModulos();
 }
-function filtrarModulos(){
-  const admin = currentUser.role==='admin';
-  // lista de módulos permitidos; vazio/ausente = vê tudo (retrocompatível)
-  let permitidos = null;
-  if(!admin && currentUser.modulos!==undefined && currentUser.modulos!==null && (''+currentUser.modulos).trim()!==''){
-    permitidos = (''+currentUser.modulos).split(',').map(function(x){return x.trim();});
-  }
-  let visiveis = 0;
-  document.querySelectorAll('.hub-card[data-mod]').forEach(function(card){
-    const mod = card.getAttribute('data-mod');
-    // cards com data-role só aparecem para os perfis listados
-    const restrito = card.getAttribute('data-role');
-    if(restrito){
-      const perfis = restrito.split(',').map(function(x){return x.trim();});
-      if(perfis.indexOf(currentUser.role)<0){ card.style.display='none'; return; }
+
+let hubCategoria='todos';
+
+function hubNorm(v){
+  return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function hubStatsKey(){ return 'tdngo_hub_stats_'+((currentUser&&currentUser.email)||'anon'); }
+function hubFavKey(){ return 'tdngo_hub_favs_'+((currentUser&&currentUser.email)||'anon'); }
+function hubLerJson(k,def){ try{ return JSON.parse(localStorage.getItem(k)||'')||def; }catch(e){ return def; } }
+
+function prepararHub(){
+  document.querySelectorAll('#hub-grid .hub-card[data-mod]').forEach(function(card){
+    if(!card.querySelector('.hub-fav')){
+      const b=document.createElement('button');
+      b.type='button'; b.className='hub-fav'; b.title='Favoritar módulo'; b.textContent='☆';
+      b.onclick=function(ev){ ev.preventDefault(); ev.stopPropagation(); alternarFavorito(card.getAttribute('data-mod')); };
+      card.appendChild(b);
     }
-    const ok = admin || !permitidos || permitidos.indexOf(mod)>=0;
-    card.style.display = ok ? '' : 'none';
-    if(ok) visiveis++;
+    if(card.dataset.hubClick!=='1'){
+      card.dataset.hubClick='1';
+      card.addEventListener('click',function(){ registrarUsoModulo(card.getAttribute('data-mod')); });
+    }
   });
-  const hint=document.getElementById('hub-empty-hint');
-  if(hint) hint.style.display = visiveis? 'none' : 'block';
+  atualizarFavoritosVisuais();
+  renderAcessoRapido();
+}
+function registrarUsoModulo(mod){
+  const stats=hubLerJson(hubStatsKey(),{});
+  stats[mod]=(Number(stats[mod])||0)+1;
+  try{ localStorage.setItem(hubStatsKey(),JSON.stringify(stats)); }catch(e){}
+}
+function alternarFavorito(mod){
+  let favs=hubLerJson(hubFavKey(),[]);
+  const i=favs.indexOf(mod);
+  if(i>=0) favs.splice(i,1); else favs.unshift(mod);
+  try{ localStorage.setItem(hubFavKey(),JSON.stringify(favs)); }catch(e){}
+  atualizarFavoritosVisuais(); renderAcessoRapido();
+}
+function atualizarFavoritosVisuais(){
+  const favs=hubLerJson(hubFavKey(),[]);
+  document.querySelectorAll('#hub-grid .hub-card[data-mod]').forEach(function(c){
+    const b=c.querySelector('.hub-fav'); if(!b)return;
+    const on=favs.indexOf(c.getAttribute('data-mod'))>=0;
+    b.classList.toggle('on',on); b.textContent=on?'★':'☆';
+  });
+}
+function renderAcessoRapido(){
+  const grid=document.getElementById('hub-quick-grid'),sec=document.getElementById('hub-quick-section');
+  if(!grid||!sec)return;
+  const favs=hubLerJson(hubFavKey(),[]), stats=hubLerJson(hubStatsKey(),{});
+  const permitidos=Array.from(document.querySelectorAll('#hub-grid .hub-card[data-mod]')).filter(function(c){
+    return c.style.display!=='none';
+  });
+  const mapa={}; permitidos.forEach(function(c){ mapa[c.getAttribute('data-mod')]=c; });
+  const mods=[];
+  favs.forEach(function(m){ if(mapa[m]&&mods.indexOf(m)<0)mods.push(m); });
+  Object.keys(stats).sort(function(a,b){return (stats[b]||0)-(stats[a]||0);}).forEach(function(m){
+    if(mapa[m]&&mods.indexOf(m)<0)mods.push(m);
+  });
+  const top=mods.slice(0,4);
+  if(!top.length){ sec.style.display='none'; grid.innerHTML=''; return; }
+  grid.innerHTML='';
+  top.forEach(function(m){
+    const c=mapa[m].cloneNode(true);
+    c.classList.add('quick-card');
+    const fav=c.querySelector('.hub-fav'); if(fav)fav.remove();
+    c.addEventListener('click',function(){ registrarUsoModulo(m); });
+    grid.appendChild(c);
+  });
+  sec.style.display='';
+}
+function selecionarCategoriaHub(cat,btn){
+  hubCategoria=cat||'todos';
+  document.querySelectorAll('.hub-filter').forEach(function(x){x.classList.remove('active');});
+  if(btn)btn.classList.add('active');
+  aplicarFiltroHub();
+}
+function aplicarFiltroHub(){
+  const q=hubNorm(document.getElementById('hub-search')?.value||'');
+  let n=0;
+  document.querySelectorAll('#hub-grid .hub-card[data-mod]').forEach(function(card){
+    if(card.dataset.permitido==='0'){card.classList.add('hidden-search');return;}
+    const cat=card.getAttribute('data-cat')||'';
+    const texto=hubNorm((card.getAttribute('data-search')||'')+' '+card.textContent);
+    const okCat=hubCategoria==='todos'||cat===hubCategoria;
+    const okQ=!q||texto.indexOf(q)>=0;
+    card.classList.toggle('hidden-search',!(okCat&&okQ));
+    if(okCat&&okQ)n++;
+  });
+  const titulos={todos:'Todos os módulos',gestao:'Gestão e contratos',assistencial:'Assistencial e indicadores',operacao:'Operação e sede',admin:'Administração'};
+  const t=document.getElementById('hub-section-title'); if(t)t.textContent=titulos[hubCategoria]||'Módulos';
+  const c=document.getElementById('hub-count'); if(c)c.textContent=n+' módulo'+(n===1?'':'s')+' disponível'+(n===1?'':'is');
+  const e=document.getElementById('hub-empty-hint'); if(e)e.style.display=n?'none':'block';
+}
+
+function filtrarModulos(){
+  const admin=currentUser.role==='admin';
+  let permitidos=null;
+  if(!admin && currentUser.modulos!==undefined && currentUser.modulos!==null && (''+currentUser.modulos).trim()!==''){
+    permitidos=(''+currentUser.modulos).split(',').map(function(x){return x.trim();});
+  }
+  document.querySelectorAll('#hub-grid .hub-card[data-mod]').forEach(function(card){
+    const mod=card.getAttribute('data-mod');
+    let okRole=true;
+    const restrito=card.getAttribute('data-role');
+    if(restrito){
+      const perfis=restrito.split(',').map(function(x){return x.trim();});
+      okRole=perfis.indexOf(currentUser.role)>=0;
+    }
+    const okModulo=admin || !permitidos || permitidos.indexOf(mod)>=0;
+    const ok=okRole&&okModulo;
+    card.dataset.permitido=ok?'1':'0';
+    card.style.display=ok?'':'none';
+  });
+  aplicarFiltroHub();
+  renderAcessoRapido();
 }
 
 </script>

@@ -2,1135 +2,566 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conferência Documental — TDNGo</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Conferência Individual de Documentos</title>
 <style>
-
-*{box-sizing:border-box;margin:0;padding:0}
-body[data-theme="light"]{
-  --bg:#f4f4f2;--surface:#fff;--surface2:#f0f0ed;--border:#e2e2de;
-  --text:#1a1a18;--text2:#5c5c58;--text3:#9a9a96;
-  --accent:#1d6aad;--accent-bg:#eff6ff;--accent-text:#1558a0;
-  --green:#15803d;--green-bg:#f0fdf4;--green-text:#14693a;
-  --yellow:#a16207;--yellow-bg:#fefce8;--yellow-text:#926008;
-  --red:#b91c1c;--red-bg:#fef2f2;--red-text:#a81818;
-  --purple:#6d28d9;--purple-bg:#f5f3ff;--purple-text:#5b21b6;
-  --orange:#c2410c;--orange-bg:#fff7ed;--orange-text:#9a3412;
-  --shadow:0 1px 3px rgba(0,0,0,.07);
-}
-:root{
-  --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#2a3140;
-  --text:#e6edf3;--text2:#9aa7b8;--text3:#6b7888;
-  --accent:#3b9eff;--accent-bg:#15243a;--accent-text:#79c0ff;
-  --green:#3fb950;--green-bg:#11271a;--green-text:#56d364;
-  --yellow:#d29922;--yellow-bg:#2b2310;--yellow-text:#e3b341;
-  --red:#f85149;--red-bg:#2d1416;--red-text:#ff7b72;
-  --purple:#a371f7;--purple-bg:#21193a;--purple-text:#bc8cff;
-  --orange:#db6d28;--orange-bg:#2c1a0e;--orange-text:#f0883e;
-  --radius:9px;--shadow:0 1px 3px rgba(0,0,0,.4);
-}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
-a{color:var(--accent)}
-/* LOGIN */
-.login-screen{position:fixed;inset:0;background:radial-gradient(circle at 30% 20%,#16314f 0%,#0d1117 60%);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem}
-.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
-.login-logo{text-align:center;margin-bottom:1.75rem}
-.login-logo .icon{width:56px;height:56px;background:var(--accent);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;margin:0 auto 12px}
-.login-logo h1{font-size:20px;font-weight:700;color:var(--text)}
-.login-logo p{font-size:13px;color:var(--text3);margin-top:4px}
-.login-field{margin-bottom:14px}
-.login-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
-.login-field input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--surface2);color:var(--text);transition:.15s}
-.login-field input::placeholder{color:var(--text3)}
-.login-field input:focus{outline:none;border-color:var(--accent);background:var(--bg)}
-.login-err{color:var(--red);font-size:12px;margin-bottom:10px;display:none;background:var(--red-bg);padding:8px 10px;border-radius:6px;border:1px solid #fca5a5}
-.login-btn{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
-.login-btn:hover{background:#2b8ae6}
-.login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;line-height:1.5}
-/* APP */
-.app{display:flex;min-height:100vh}
-.sidebar{width:248px;background:var(--surface);border-right:1px solid var(--border);padding:1.25rem 1rem;flex-shrink:0;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;z-index:100}
-.main{margin-left:248px;padding:2rem;flex:1;min-width:0}
-.logo{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
-.logo-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
-.logo-text{font-size:12px;font-weight:700;line-height:1.25}
-.logo-sub{font-size:10px;color:var(--text3)}
-.user-card{background:var(--surface2);border-radius:8px;padding:9px 11px;margin-bottom:1.1rem;display:flex;align-items:center;gap:9px}
-.user-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
-.user-name{font-size:12px;font-weight:700;line-height:1.2}
-.user-role{font-size:10px;color:var(--text3)}
-.user-logout{margin-left:auto;background:none;border:none;cursor:pointer;font-size:15px;color:var(--text3);padding:2px}
-.user-logout:hover{color:var(--red)}
-.nav-group{margin-bottom:1rem}
-.nav-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;padding:0 8px}
-.nav-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;border:none;background:none;width:100%;text-align:left;font-family:inherit;transition:.12s}
-.nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:var(--accent-bg);color:var(--accent-text);font-weight:600}
-.nav-badge{margin-left:auto;background:var(--red);color:#fff;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;display:none}
-/* TOPBAR */
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
-.topbar-left .page-title{font-size:20px;font-weight:700}
-.topbar-left .page-sub{font-size:13px;color:var(--text2);margin-top:2px}
-.topbar-right{display:flex;align-items:center;gap:8px}
-/* BELL */
-.bell-wrap{position:relative}
-.bell-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative}
-.bell-btn:hover{background:var(--surface2)}
-.bell-dot{position:absolute;top:4px;right:4px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--red);color:#fff;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff}
-.bell-dropdown{position:absolute;right:0;top:42px;width:330px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.14);z-index:500;display:none;max-height:420px;overflow-y:auto}
-.bell-dropdown.open{display:block}
-.bell-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface)}
-.bell-head span{font-size:13px;font-weight:700}
-.bell-clear{font-size:11px;color:var(--accent);cursor:pointer;border:none;background:none;font-family:inherit}
-.notif-item{padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:.12s}
-.notif-item:hover{background:var(--surface2)}
-.notif-item.unread{background:var(--accent-bg)}
-.notif-item:last-child{border-bottom:none}
-.ni-title{font-size:13px;font-weight:600;margin-bottom:2px}
-.ni-sub{font-size:11px;color:var(--text2)}
-.page{display:none}.page.active{display:block}
-/* BTN */
-.btn{padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:.12s;white-space:nowrap}
-.btn:hover{background:var(--surface2)}
-.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-.btn.primary:hover{background:#2b8ae6}
-.btn.danger{background:var(--red-bg);color:var(--red-text);border-color:#fca5a5}
-.btn.success{background:var(--green-bg);color:var(--green-text);border-color:#86efac}
-.btn.sm{padding:5px 10px;font-size:12px}
-.btn.xs{padding:3px 7px;font-size:11px}
-.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
-/* STATS */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1.1rem;box-shadow:var(--shadow)}
-.stat-num{font-size:25px;font-weight:700;line-height:1;letter-spacing:-.5px}
-.stat-label{font-size:11px;color:var(--text2);margin-top:4px}
-.c-green .stat-num{color:var(--green)}.c-yellow .stat-num{color:var(--yellow)}.c-red .stat-num{color:var(--red)}.c-accent .stat-num{color:var(--accent)}.c-purple .stat-num{color:var(--purple)}
-/* TOOLBAR + TABLE */
-.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-.toolbar input,.toolbar select{padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:13px;font-family:inherit}
-.toolbar input{flex:1;min-width:180px}
-.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--accent)}
-.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th{text-align:left;padding:9px 13px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:10px 13px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:13px}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:var(--surface2)}
-.link{color:var(--accent);cursor:pointer;font-weight:600}.link:hover{text-decoration:underline}
-/* BADGES */
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
-.badge.contrato{background:var(--accent-bg);color:var(--accent-text)}
-.badge.aditivo{background:var(--purple-bg);color:var(--purple-text)}
-.badge.vigente{background:var(--green-bg);color:var(--green-text)}
-.badge.aditivo-vig{background:var(--purple-bg);color:var(--purple-text)}
-.badge.substituido{background:var(--surface2);color:var(--text3);text-decoration:line-through}
-.badge.vencendo{background:var(--yellow-bg);color:var(--yellow-text)}
-.badge.vencido,.badge.encerrado{background:var(--red-bg);color:var(--red-text)}
-.badge.negociacao{background:var(--surface2);color:var(--text2)}
-.badge.suspenso{background:var(--orange-bg);color:var(--orange-text)}
-.badge.admin{background:#fdf4ff;color:#86198f}
-.badge.gestor{background:var(--accent-bg);color:var(--accent-text)}
-.badge.visualizador{background:var(--surface2);color:var(--text2)}
-/* FORM */
-.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1rem}
-.form-section{padding:1.4rem;border-bottom:1px solid var(--border)}
-.fsec-title{font-size:13px;font-weight:700;margin-bottom:.9rem;display:flex;align-items:center;gap:8px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
-.form-grid.g3{grid-template-columns:1fr 1fr 1fr}
-.fg{display:flex;flex-direction:column;gap:4px}
-.fg.full{grid-column:1/-1}
-.fg label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
-.fg input,.fg select,.fg textarea{padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;transition:.12s}
-.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--accent);background:var(--bg)}
-.fg textarea{resize:vertical;min-height:72px}
-.fg input[readonly]{background:var(--surface2);color:var(--text2)}
-.form-actions{padding:1.1rem 1.4rem;background:var(--surface2);border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
-/* CNPJ */
-.cnpj-row{display:flex;gap:8px}.cnpj-row input{flex:1}
-.cmsg{font-size:12px;margin-top:4px;display:none}
-.cmsg.ok{color:var(--green);display:block}.cmsg.err{color:var(--red);display:block}
-/* UNITS */
-.units-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
-.units-table th{background:var(--surface2);padding:7px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border)}
-.units-table td{padding:5px 8px;border-bottom:1px solid var(--border)}
-.units-table tr:last-child td{border-bottom:none}
-.units-table input{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:5px;background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit}
-.units-table input:focus{outline:none;border-color:var(--accent);background:var(--bg)}
-/* PDF */
-.pdf-drop{border:2px dashed var(--border);border-radius:var(--radius);padding:1.25rem;text-align:center;cursor:pointer;transition:.2s;background:var(--surface2)}
-.pdf-drop:hover,.pdf-drop.drag{border-color:var(--accent);background:var(--accent-bg)}
-.pdf-drop p{font-size:12px;color:var(--text2);margin-top:5px}
-.pdf-chosen{font-size:12px;color:var(--green);margin-top:8px;font-weight:600;display:none;align-items:center;gap:8px}
-.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:var(--orange-bg);color:var(--orange-text);cursor:pointer}
-/* CALENDAR */
-.cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
-.cal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.cal-title{font-size:15px;font-weight:700;min-width:160px;text-align:center}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
-.cal-dow{padding:8px 4px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);border-bottom:1px solid var(--border);text-transform:uppercase}
-.cal-day{min-height:74px;padding:5px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);font-size:12px;vertical-align:top;overflow:hidden}
-.cal-day:nth-child(7n){border-right:none}
-.cal-day-num{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:3px}
-.cal-day.today .cal-day-num{background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
-.cal-day.other-month{background:var(--surface2)}
-.cal-event{font-size:10px;padding:2px 5px;border-radius:4px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
-.cal-event.vencendo{background:var(--yellow-bg);color:var(--yellow-text)}
-.cal-event.vencido{background:var(--red-bg);color:var(--red-text)}
-.cal-event.vigente{background:var(--green-bg);color:var(--green-text)}
-/* CHARTS */
-.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem}
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;box-shadow:var(--shadow)}
-.chart-card.full{grid-column:1/-1}
-.chart-title{font-size:13px;font-weight:700;margin-bottom:1rem}
-.bar-item{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px}
-.bar-label{width:140px;flex-shrink:0;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar-track{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
-.bar-fill{height:100%;border-radius:4px;background:var(--accent)}
-.bar-val{width:100px;text-align:right;font-weight:600;font-size:11px}
-.month-chart{display:flex;align-items:flex-end;gap:6px;height:180px;padding-top:10px}
-.month-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
-.month-bar{width:100%;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;transition:.3s;position:relative;cursor:pointer}
-.month-bar:hover{background:var(--accent-text)}
-.month-bar.has-venc{background:var(--yellow)}
-.month-lbl{font-size:10px;color:var(--text3);white-space:nowrap}
-.month-val{font-size:9px;color:var(--text2);font-weight:600}
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:1000;padding:1rem}
-.modal-overlay.open{display:flex}
-.modal{background:var(--surface);border-radius:12px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);border:1px solid var(--border)}
-.modal.sm{max-width:440px}
-.modal.lg{max-width:920px;height:90vh;display:flex;flex-direction:column}
-.mhead{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
-.mtitle{font-size:15px;font-weight:700}
-.mclose{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);line-height:1;padding:2px 5px;border-radius:4px}
-.mclose:hover{background:var(--surface2)}
-.mbody{padding:1.4rem}
-/* DETAIL */
-.dsec{margin-bottom:1.3rem}.dsec:last-child{margin-bottom:0}
-.dsec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid var(--border)}
-.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.di label{font-size:10px;color:var(--text3);display:block;margin-bottom:2px}
-.di p{font-size:13px;word-break:break-word}
-.di.full{grid-column:1/-1}
-.hist-list,.aditivos-list{display:flex;flex-direction:column;gap:6px}
-.hist-item{background:var(--surface2);border-radius:6px;padding:8px 12px;border-left:3px solid var(--accent)}
-.hist-item .ht{font-size:12px;font-weight:600}
-.hist-item .hd{font-size:11px;color:var(--text3);margin-top:1px}
-.aditivo-item{background:var(--purple-bg);border:1px solid #ddd6fe;border-radius:6px;padding:9px 13px;font-size:13px;cursor:pointer}
-.aditivo-item:hover{background:#ede9fe}
-.aditivo-item .at{font-weight:700;color:var(--purple-text)}
-/* ALERTS */
-.alert-card{border-radius:var(--radius);padding:12px 15px;margin-bottom:9px;border:1px solid;cursor:pointer;transition:.12s}
-.alert-card:hover{filter:brightness(.97)}
-.alert-card.yellow{background:var(--yellow-bg);border-color:#fde68a;color:var(--yellow-text)}
-.alert-card.red{background:var(--red-bg);border-color:#fca5a5;color:var(--red-text)}
-.alert-title{font-weight:700;font-size:13px;margin-bottom:2px}
-.alert-sub{font-size:12px;opacity:.85}
-/* UNIT CARDS */
-.unit-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.unit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;box-shadow:var(--shadow);cursor:pointer;transition:.12s}
-.unit-card:hover{border-color:var(--accent);box-shadow:0 4px 12px rgba(29,106,173,.1)}
-.unit-card-name{font-size:14px;font-weight:700;margin-bottom:8px}
-.unit-card-val{font-size:18px;font-weight:700;color:var(--accent);margin-bottom:4px}
-.unit-card-sub{font-size:12px;color:var(--text2)}
-/* USERS */
-.user-row{display:grid;grid-template-columns:auto 1fr 1fr auto auto;gap:12px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px}
-.user-row:last-child{border-bottom:none}
-.user-row .uav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
-/* ADV SEARCH */
-.adv-filters{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
-.adv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
-/* SETUP */
-.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;max-width:760px}
-.step{display:flex;gap:14px;margin-bottom:1.4rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
-.step:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.step-n{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.step-title{font-size:13px;font-weight:700;margin-bottom:4px}
-.step-desc{font-size:13px;color:var(--text2);line-height:1.6}
-.code-block{background:#1e1e2e;border-radius:6px;padding:12px;font-family:monospace;font-size:11px;color:#cdd6f4;margin-top:8px;position:relative;max-height:280px;overflow-y:auto;line-height:1.55}
-.copy-btn{position:sticky;float:right;top:0;padding:3px 10px;font-size:11px;border-radius:4px;border:1px solid #45475a;background:#313244;color:#cdd6f4;cursor:pointer;font-family:inherit;margin-bottom:4px}
-.copy-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
-/* MISC */
-.notif-toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:11px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:9999;display:none;max-width:340px}
-.notif-toast.ok{background:var(--green);color:#fff}
-.notif-toast.err{background:var(--red);color:#fff}
-.notif-toast.info{background:var(--accent);color:#fff}
-.loading-overlay{position:fixed;inset:0;background:rgba(13,17,23,.8);display:none;align-items:center;justify-content:center;z-index:2000;font-size:14px;font-weight:600;color:var(--accent);gap:12px}
-.loading-overlay.open{display:flex}
-.spinner{width:20px;height:20px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:3000;padding:1rem}
-.dialog-overlay.open{display:flex}
-.dialog{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-.dialog h3{font-size:15px;font-weight:700;margin-bottom:8px}
-.dialog p{font-size:13px;color:var(--text2);margin-bottom:1.4rem;line-height:1.6}
-.dialog-btns{display:flex;flex-direction:column;gap:8px}
-.empty-state{text-align:center;padding:3.5rem 2rem;color:var(--text2)}
-.empty-icon{font-size:44px;display:block;margin-bottom:10px;opacity:.35}
+:root{--azul:#174b7a;--azul2:#246aa5;--verde:#198754;--amarelo:#b7791f;--vermelho:#c0392b;--cinza:#667085;--borda:#d7dee7;--fundo:#f4f7fa;--texto:#17212b;--branco:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--fundo);color:var(--texto);font-family:Arial,Helvetica,sans-serif;font-size:12px}
+.topo{background:linear-gradient(135deg,var(--azul),var(--azul2));color:#fff;padding:12px 18px}
+.topo-in{max-width:1600px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.topo h1{font-size:17px;margin:0}.topo p{margin:2px 0 0;font-size:10px;opacity:.9}
+.top-flags{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.selo{font-size:10px;border:1px solid rgba(255,255,255,.35);padding:5px 9px;border-radius:20px}
+.selo-empresa{font-weight:800;background:rgba(255,255,255,.12)}
+.alerta-topo{max-width:1600px;margin:10px auto 0;padding:0 10px}
+.alerta-critico{background:#fff3cd;border:2px solid #d9a400;border-left-width:7px;color:#6b5100;border-radius:8px;padding:10px 12px;font-size:11px;font-weight:800;line-height:1.45}
+.alerta-critico strong{color:#8a1c10}
+.container{max-width:1600px;margin:8px auto;padding:0 10px 20px}
+.card{background:#fff;border:1px solid var(--borda);border-radius:9px;margin-bottom:8px;overflow:hidden;box-shadow:0 2px 8px rgba(16,24,40,.05)}
+.card-titulo{padding:7px 10px;border-bottom:1px solid var(--borda);font-weight:700;color:var(--azul);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card-corpo{padding:8px 10px}
+.ident{display:grid;grid-template-columns:2fr 1.2fr .7fr;gap:8px}
+.campo label{display:block;font-size:9px;font-weight:700;color:var(--cinza);margin-bottom:2px}
+.campo input{width:100%;height:28px;padding:4px 7px;border:1px solid var(--borda);border-radius:6px;font-size:11px;text-transform:uppercase}
+.campo input:focus{outline:none;border-color:var(--azul2)}
+.campo input[readonly]{background:#f5f7fa;color:#344054;font-weight:700}
+.acoes{display:flex;gap:6px;flex-wrap:wrap}
+.btn{border:0;border-radius:6px;padding:7px 10px;font-size:10px;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--azul2);color:#fff}.btn-sec{background:#eef2f6;color:#344054}.btn-print{background:var(--verde);color:#fff}
+.btn-warn{background:#fff3cd;color:#7a5700;border:1px solid #e2c35d}
+.btn-danger{background:#feeceb;color:var(--vermelho)}.btn-del{background:#feeceb;color:var(--vermelho);padding:4px 6px}
+.resumo{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kpi{min-width:120px;border:1px solid var(--borda);border-radius:7px;padding:5px 8px;background:#fff}
+.kpi b{font-size:16px;margin-right:5px}.ok b{color:var(--verde)}.pend b{color:var(--vermelho)}.na b{color:var(--amarelo)}.total b{color:var(--azul2)}
+.status{font-weight:700;margin-left:auto}
+.aviso{margin-top:6px;padding:6px 8px;border-radius:6px;background:#fff0ee;color:var(--vermelho);border:1px solid #f4c7c2;font-size:10px;font-weight:700}
+.aviso.ok{background:#eaf7f0;color:var(--verde);border-color:#b8e1ca}
+.tabela-wrap{overflow:auto;max-height:55vh}
+.tabela{width:100%;border-collapse:collapse;min-width:1280px}
+.tabela th{position:sticky;top:0;z-index:2;background:#edf3f8;color:#334155;font-size:9px;text-align:center;padding:4px 3px;border:1px solid var(--borda);white-space:nowrap}
+.tabela td{height:34px;padding:2px 3px;border:1px solid var(--borda);text-align:center;vertical-align:middle;background:#fff}
+.tabela tr.pendente td{background:#fff8f7}.tabela tr:hover td{background:#f8fbfd}
+.num{width:28px;font-weight:800;color:var(--azul)}.nome{min-width:230px;text-align:left!important}
+.nome input{width:100%;height:25px;border:1px solid var(--borda);border-radius:4px;padding:3px 6px;font-size:10px;text-transform:uppercase}
+.data input{width:102px;height:25px;border:1px solid var(--borda);border-radius:4px;padding:2px;font-size:10px}
+.doc-cell{width:68px}.doc-checks{display:flex;justify-content:center;gap:3px}
+.doc-checks label{font-size:8px;display:flex;align-items:center;gap:1px;white-space:nowrap}.doc-checks input{width:12px;height:12px;margin:0}
+.doc-ok{background:#edf9f2!important}.doc-na{background:#fff8e5!important}.doc-pend{background:#fff0ee!important}
+.pend-txt{font-size:9px;font-weight:700;color:var(--vermelho);min-width:58px}.pend-txt.ok{color:var(--verde)}
+.vazio{text-align:center;padding:18px;color:var(--cinza);border:1px dashed var(--borda);border-radius:7px}
+.rodape{display:flex;justify-content:space-between;align-items:center;gap:8px}.nota{font-size:9px;color:var(--cinza);line-height:1.4}
+.upload-zone{border:2px dashed #b8c7d8;border-radius:8px;padding:12px;text-align:center;background:#f8fbfd;cursor:pointer}
+.upload-zone:hover{border-color:var(--azul2);background:#f2f8fc}.upload-zone b{color:var(--azul)}
+.arquivos{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+.arquivo{display:grid;grid-template-columns:28px minmax(220px,1fr) 90px auto;gap:8px;align-items:center;border:1px solid var(--borda);border-radius:6px;padding:5px 7px;background:#fff}
+.arquivo .ordem{font-weight:800;color:var(--azul);text-align:center}.arquivo .nome-arq{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;font-weight:700}
+.arquivo .tam{font-size:9px;color:var(--cinza);text-align:right}.arquivo .mov{display:flex;gap:3px}
+.progresso{display:none;margin-top:8px;padding:8px;border:1px solid #c8d9ea;border-radius:6px;background:#eef6fd;color:#24557d;font-size:10px;font-weight:700}
+.etapa-final{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.etapa-chip{padding:4px 7px;border-radius:20px;font-size:9px;font-weight:800;border:1px solid var(--borda);background:#f5f7fa;color:#667085}
+.etapa-chip.ok{background:#eaf7f0;color:var(--verde);border-color:#b8e1ca}
+.etapa-chip.atual{background:#e8f2fb;color:var(--azul2);border-color:#b9d5ec}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:9999;display:none;align-items:center;justify-content:center;padding:18px}
+.modal.aberto{display:flex}.modal-box{width:min(1280px,98vw);height:min(900px,96vh);background:#fff;border-radius:10px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-head{padding:8px 10px;border-bottom:1px solid var(--borda);display:flex;justify-content:space-between;gap:10px;align-items:center}
+.modal-head h2{font-size:13px;margin:0;color:var(--azul)}.modal-body{flex:1;min-height:0;background:#525659}
+.modal-body iframe{width:100%;height:100%;border:0}.modal-foot{padding:8px 10px;border-top:1px solid var(--borda);display:flex;justify-content:space-between;gap:10px;align-items:center;background:#fff}
+.modal-msg{font-size:10px;color:var(--cinza);font-weight:700}.modal-msg.ok{color:var(--verde)}
+.concluido{display:none;position:fixed;inset:0;z-index:10000;background:#f4f7fa;align-items:center;justify-content:center;padding:20px}
+.concluido.aberto{display:flex}.concluido-box{max-width:600px;background:#fff;border:1px solid var(--borda);border-radius:12px;padding:28px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.12)}
+.concluido-box h2{color:var(--verde);margin:0 0 8px}.concluido-box p{line-height:1.6;color:#475467}
+@media(max-width:800px){.ident{grid-template-columns:1fr}.status{margin-left:0}.tabela-wrap{max-height:none}.arquivo{grid-template-columns:28px 1fr}.arquivo .tam,.arquivo .mov{grid-column:2}.modal{padding:4px}}
 @media print{
-  .sidebar,.topbar,.btn,.modal-overlay,.notif-toast,.loading-overlay,.dialog-overlay,.no-print{display:none!important}
-  .main{margin-left:0!important;padding:0!important}
-  .page:not(.active){display:none!important}
+@page{size:A4 landscape;margin:5mm}
+body{background:#fff;font-size:8px}.no-print,.topo .selo,.alerta-topo,.modal,.concluido{display:none!important}
+.topo{background:#fff!important;color:#000;padding:4px 0;border-bottom:1px solid #000}.topo-in{max-width:none}.topo h1{font-size:13px}
+.container{max-width:none;margin:3px 0;padding:0}.card{box-shadow:none;border-radius:0;margin-bottom:4px}.card-titulo{padding:4px 6px}.card-corpo{padding:4px 6px}
+.ident{grid-template-columns:2fr 1.2fr .7fr}.campo input{border:0;height:18px;padding:0;font-size:8px;font-weight:700}.resumo{gap:4px}.kpi{min-width:90px;padding:2px 4px}.kpi b{font-size:11px}
+.tabela-wrap{overflow:visible;max-height:none}.tabela{min-width:0}.tabela th{position:static;font-size:6.8px;padding:2px 1px}.tabela td{height:22px;padding:1px;font-size:7px}
+.nome{min-width:155px}.nome input,.data input{border:0;height:17px;padding:0;font-size:7px}.data input{width:74px}.doc-cell{width:42px}.doc-checks{gap:1px}.doc-checks label{font-size:6px}.doc-checks input{width:8px;height:8px}
+.pend-txt{font-size:6.5px;min-width:35px}.aviso{font-size:7px;padding:3px 4px}.tabela tr{break-inside:avoid}.rodape{display:none}
 }
-@media(max-width:768px){
-  .sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid var(--border)}
-  .main{margin-left:0;padding:1rem}
-  .app{flex-direction:column}
-  .dgrid,.form-grid,.form-grid.g3,.chart-row{grid-template-columns:1fr}
-  .fg.full{grid-column:1}
-}
-
-
-/* ── HUB ── */
-.hub-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem}
-.hub-header{text-align:center;margin-bottom:2.5rem}
-.hub-header .icon{width:64px;height:64px;background:var(--accent);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px}
-.hub-header h1{font-size:24px;font-weight:700;letter-spacing:-.5px}
-.hub-header p{font-size:14px;color:var(--text2);margin-top:6px}
-.hub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;max-width:820px;width:100%}
-.hub-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem 1.4rem;cursor:pointer;transition:.18s;text-decoration:none;color:inherit;display:block}
-.hub-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.28)}
-.hub-card.soon{opacity:.55;cursor:default}
-.hub-card.soon:hover{transform:none;border-color:var(--border);box-shadow:none}
-.hub-ico{font-size:30px;margin-bottom:10px;display:block}
-.hub-card h3{font-size:15px;font-weight:700;margin-bottom:4px}
-.hub-card p{font-size:12px;color:var(--text2);line-height:1.5}
-.hub-tag{display:inline-block;margin-top:10px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--surface2);color:var(--text3)}
-.hub-tag.ativo{background:var(--green-bg);color:var(--green-text)}
-.hub-foot{margin-top:2.5rem;font-size:12px;color:var(--text3);text-align:center}
-.back-hub{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);text-decoration:none;padding:6px 10px;border-radius:6px;margin-bottom:10px}
-.back-hub:hover{background:var(--surface2);color:var(--text)}
-.wip{background:var(--yellow-bg);border:1px solid #fde68a;color:var(--yellow-text);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem}
-
-
-.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:820px}
-.step{display:flex;gap:14px;margin-bottom:1.4rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
-.step:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.step-n{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.step-title{font-size:13px;font-weight:700;margin-bottom:4px}
-.step-desc{font-size:13px;color:var(--text2);line-height:1.6}
-.step-desc code{background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:12px}
-.code-block{position:relative;margin-top:8px}
-.resultado-box{display:flex;gap:1rem;flex-wrap:wrap;background:var(--surface2);border-radius:12px;padding:1.2rem;margin-top:1rem;border:2px solid var(--border)}
-.resultado-box.ok{border-color:var(--green)}
-.resultado-box.alerta{border-color:var(--red)}
-.res-item{flex:1;min-width:120px;text-align:center}
-.res-item.destaque .res-num{color:var(--accent-text)}
-.res-num{font-size:28px;font-weight:800}
-.res-lbl{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.4}
-.c-blue-b{background:var(--accent-bg);color:var(--accent-text)}
-.pdf-drop{border:2px dashed var(--border);border-radius:12px;padding:1.4rem;text-align:center;cursor:pointer;color:var(--text2)}
-.pdf-drop:hover{border-color:var(--accent);color:var(--text)}
-
-
-#page-nova input[type=text],#page-nova input[type=number],#page-nova input[type=date],#page-nova input[type=time],#page-nova input[type=month],#page-nova select,#page-nova textarea{
-  width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;box-sizing:border-box}
-#page-nova .fg{margin-bottom:14px}
-#page-nova label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
-.form-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem;max-width:900px}
-.form-section{margin-bottom:1.6rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
-.form-section:last-of-type{border-bottom:none}
-.fsec-title{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
-.assin-canvas{border:2px dashed var(--border);border-radius:10px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair;box-shadow:inset 0 0 0 1px rgba(0,0,0,.02)}
-.assin-wrap{background:var(--surface2);border-radius:10px;padding:12px;display:inline-block}
-
-.crit-det{margin-top:4px}
-.crit-det summary{cursor:pointer;font-size:11px;color:var(--accent-text);font-weight:600;list-style:none}
-.crit-det summary::-webkit-details-marker{display:none}
-.crit-box{margin-top:6px;background:var(--surface2);border-radius:8px;padding:8px 10px}
-.crit-linha{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:5px;display:flex;gap:7px;align-items:flex-start}
-.crit-linha:last-child{margin-bottom:0}
-.crit-n{flex-shrink:0;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;color:#fff;font-weight:700;font-size:11px}
-.assin-wrap{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-.assin-canvas{border:1px solid var(--border);border-radius:8px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair}
-.colab-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:10px;flex-wrap:wrap}
-.colab-row input{flex:1;min-width:180px}
-.nota-sel{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
-.aviso-fin{background:var(--yellow-bg,#fff8e6);border:1px solid #ffe08a;color:#8a6d00;padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:1.4rem}
-.form-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem;max-width:920px}
-.form-section{margin-bottom:1.6rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
-.form-section:last-of-type{border-bottom:none}
-.fsec-title{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
-#page-nova input[type=text],#page-nova input[type=month],#page-nova select,#page-nova textarea{width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;box-sizing:border-box}
-#page-nova .fg{margin-bottom:14px}
-#page-nova label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
-.grupo-tit{font-weight:700;font-size:13px;color:var(--accent-text);margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
-.item-row{padding:10px 0;border-bottom:1px solid var(--border)}
-.item-txt{font-size:13px;margin-bottom:6px;line-height:1.4}
-.item-ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.item-est{padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text)}
-.item-anexos{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px}
-.anexo-chip{background:var(--surface2);border-radius:6px;padding:3px 9px;font-size:12px;color:var(--text2)}
-.anexo-chip b{cursor:pointer;color:var(--red-text);margin-left:4px;font-weight:700}
-.resumo-box{display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border-radius:10px;padding:12px 16px;font-size:13px;flex-wrap:wrap;gap:8px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.fg.full{grid-column:1/-1}
 </style>
-<style>
-.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600}
-.c-red-b{background:var(--red-bg);color:var(--red-text)}
-.c-green-b{background:var(--green-bg);color:var(--green-text)}
-.btn.sm{padding:5px 10px;font-size:12px}
-.btn.danger{background:var(--red-bg);color:var(--red-text);border-color:transparent}
-.btn.danger:hover{background:var(--red);color:#fff}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;padding:1rem}
-.modal-overlay.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:560px;max-width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.mhead{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid var(--border)}
-.mtitle{font-size:16px;font-weight:700}
-.mclose{background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer}
-.mbody{padding:1.3rem 1.4rem}
-.mfoot{display:flex;gap:8px;justify-content:flex-end;padding:1rem 1.4rem;border-top:1px solid var(--border)}
-.notif-toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:2000;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-.notif-toast.ok{background:var(--green);color:#fff}
-.notif-toast.err{background:var(--red);color:#fff}
-.notif-toast.info{background:var(--accent);color:#fff}
-</style>
-
 </head>
-
 <body>
-<div class="login-screen" id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">
-      <div class="icon">📑</div>
-      <h1>Conferência Documental</h1>
-      <p>TDN Gestão Operacional</p>
-      <p style="font-size:11px;color:var(--text3);margin-top:10px">Desenvolvido por Marcos Cruz, com IA</p>
+<header class="topo">
+  <div class="topo-in">
+    <div>
+      <h1>CONFERÊNCIA INDIVIDUAL DE DOCUMENTOS</h1>
+      <p>CONTROLE DOCUMENTAL DE COLABORADORES TERCEIRIZADOS</p>
     </div>
-    <div class="login-err" id="login-err"></div>
-    <div class="login-field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="login-field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="top-flags">
+      <div class="selo selo-empresa" id="flag-empresa">EMPRESA: NÃO INFORMADA</div>
+      <div class="selo">SESSÃO LOCAL</div>
+    </div>
+  </div>
+</header>
+
+<div class="alerta-topo">
+  <div class="alerta-critico">
+    <strong>ATENÇÃO:</strong> esta tela somente poderá ser encerrada após a conferência estar totalmente concluída e o PDF final ter sido compilado.
+    Os PDFs permanecem apenas nesta sessão do navegador. Ao fechar, atualizar, sair desta tela ou concluir a conferência, todos os anexos serão perdidos.
   </div>
 </div>
-<div class="app" id="app" style="display:none">
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon">📑</div>
-    <div><div class="logo-text">Conferência Documental</div><div class="logo-sub">Pagamento de terceirizadas</div></div>
-  </div>
-  <div class="user-card">
-    <div class="user-avatar" id="side-avatar">?</div>
-    <div style="min-width:0"><div class="user-name" id="side-name">—</div><div class="user-role" id="side-role">—</div></div>
-    <button class="user-logout" onclick="doLogout()" title="Sair">⏻</button>
-  </div>
-  <div class="nav-group">
-    <div class="nav-label">Conferências</div>
-    <button class="nav-item active" data-page="lista" onclick="showPage('lista',this)">📋 Conferências</button>
-    <button class="nav-item" data-page="nova" onclick="showPage('nova',this)">➕ Nova conferência</button>
-  </div>
-  <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)"></div>
-</aside>
-<main class="main">
-  <div class="topbar">
-    <div class="topbar-left"><div class="page-title" id="pg-title">—</div><div class="page-sub" id="pg-sub">—</div></div>
-    <div class="topbar-right"><button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema claro/escuro">🌙</button></div>
-  </div>
 
-  <!-- LISTA -->
-  <div class="page active" id="page-lista">
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-num" id="kpi-total">0</div><div class="stat-label">Conferências</div></div>
-      <div class="stat-card c-yellow"><div class="stat-num" id="kpi-andamento">0</div><div class="stat-label">Em conferência</div></div>
-      <div class="stat-card c-green"><div class="stat-num" id="kpi-ok">0</div><div class="stat-label">Concluídas</div></div>
-    </div>
-    <div class="toolbar">
-      <input type="text" id="busca-lista" placeholder="🔍 Buscar por nº, empresa, unidade ou mês..." oninput="renderLista()">
-      <select id="filtro-status" onchange="renderLista()"><option value="">Todos</option><option value="Em conferência">Em conferência</option><option value="Concluída">Concluída</option></select>
-      <button class="btn primary" onclick="showPage('nova')">➕ Nova conferência</button>
-    </div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Nº</th><th>Empresa</th><th>Unidade</th><th>Mês ref.</th><th>Progresso</th><th>Status</th><th></th></tr></thead>
-      <tbody id="lista-body"></tbody>
-    </table><div class="empty-state" id="lista-empty" style="display:none"><span class="empty-icon">📑</span>Nenhuma conferência registrada ainda</div></div>
-  </div>
-
-  <!-- NOVA / EDITAR -->
-  <div class="page" id="page-nova">
-    <div class="form-card">
-      <div class="aviso-fin">⚠️ O financeiro só efetua o pagamento com a <strong>nota fiscal carimbada e assinada</strong> pelo gestor do contrato e gerentes/profissional designado, com descrição e valores previamente conferidos.</div>
-
-      <div class="form-section">
-        <div class="fsec-title">📋 Identificação</div>
-        <div class="form-grid">
-          <input type="hidden" id="cf-id">
-          <div class="fg"><label>Contrato vinculado *</label><select id="cf-contrato" onchange="contratoMudou()"><option value="">Selecione...</option></select></div>
-          <div class="fg"><label>Nº da conferência</label><input type="text" id="cf-numero" placeholder="(automático)" readonly style="opacity:.7"></div>
-          <div class="fg"><label>Empresa contratada</label><input type="text" id="cf-empresa" placeholder="(vem do contrato)"></div>
-          <div class="fg"><label>CNPJ</label><input type="text" id="cf-cnpj" placeholder="(vem do contrato)"></div>
-          <div class="fg"><label>Unidade *</label><select id="cf-unidade"></select></div>
-          <div class="fg"><label>Mês de referência *</label><input type="month" id="cf-mesref"></div>
-          <div class="fg full"><label>Nota(s) fiscal(is) nº(s)</label><input type="text" id="cf-nf" placeholder="Ex: 1234, 1235"></div>
-        </div>
-      </div>
-
-      <div class="form-section">
-        <div class="fsec-title">📝 Documentos <span style="font-weight:400;font-size:12px;color:var(--text3)">— marque o status e anexe os PDFs de cada item</span></div>
-        <div id="itens-container"></div>
-      </div>
-
-      <div class="form-section">
-        <div class="fsec-title">👥 Profissionais sócios</div>
-        <div class="fg"><label>A empresa tem, na mão de obra alocada, profissionais sócios?</label>
-          <select id="cf-socios" onchange="toggleSocios()"><option value="Não">Não (guias de sócios dispensadas)</option><option value="Sim">Sim (preencher guias de sócios)</option></select></div>
-        <div id="itens-socios" style="display:none"></div>
-      </div>
-
-      <div class="form-section">
-        <div class="fsec-title">📝 Observações</div>
-        <textarea id="cf-obs" rows="4" placeholder="Observações gerais da conferência..." style="width:100%;padding:11px 13px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;resize:vertical"></textarea>
-      </div>
-
-      <div class="resumo-box" id="resumo-box">
-        <div><strong id="rs-marcados">0</strong> marcados · <strong id="rs-na">0</strong> não se aplica · <strong id="rs-pend" style="color:var(--red-text)">0</strong> pendentes</div>
-        <div style="font-size:12px;color:var(--text2)" id="rs-pdfs">0 PDFs anexados (0 MB)</div>
-      </div>
-
-      <div class="aviso-fin" style="margin-top:1rem;background:var(--red-bg);border-color:#fca5a5;color:var(--red-text)">
-        <strong>ATENÇÃO:</strong> esta tela somente poderá ser encerrada após a conferência estar totalmente concluída e o PDF final ter sido compilado. Os PDFs permanecem apenas nesta sessão do navegador. Ao fechar, atualizar, sair desta tela ou concluir a conferência, todos os anexos serão perdidos.
-      </div>
-
-      <div class="toolbar" style="margin-top:1rem;flex-wrap:wrap">
-        <button class="btn" onclick="tentarSairConferencia()">Cancelar / sair</button>
-        <div style="flex:1"></div>
-        <button class="btn" onclick="compilarPDF()" id="btn-compilar">📎 Compilar PDF final</button>
-        <button class="btn primary" onclick="salvarConf('Concluída')" id="btn-concluir">✅ Concluir conferência</button>
-      </div>
-      <div id="compilar-status" style="font-size:12px;color:var(--text2);margin-top:8px"></div>
+<main class="container">
+<section class="card">
+  <div class="card-titulo">IDENTIFICAÇÃO</div>
+  <div class="card-corpo">
+    <div class="ident">
+      <div class="campo"><label>EMPRESA VINCULADA *</label><input id="empresa" placeholder="NOME DA EMPRESA" oninput="maiusculo(this);dadosAlterados();atualizarTudo()"></div>
+      <div class="campo"><label>UNIDADE *</label><input id="unidade" placeholder="EX.: UPA LESTE" oninput="maiusculo(this);dadosAlterados();atualizarTudo()"></div>
+      <div class="campo"><label>COMPETÊNCIA *</label><input id="competencia" maxlength="7" placeholder="06/2026" oninput="mascaraCompetencia(this);dadosAlterados();atualizarTudo()"></div>
     </div>
   </div>
+</section>
+
+<section class="card">
+  <div class="card-corpo">
+    <div class="resumo">
+      <div class="kpi total"><b id="kpi-colab">0</b>COLABORADORES</div>
+      <div class="kpi ok"><b id="kpi-ok">0</b>CONFERIDOS</div>
+      <div class="kpi na"><b id="kpi-na">0</b>N/A</div>
+      <div class="kpi pend"><b id="kpi-pend">0</b>PENDÊNCIAS</div>
+      <div class="status" id="status-geral">SEM COLABORADORES</div>
+    </div>
+    <div id="aviso-geral" class="aviso" style="display:none"></div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-titulo">
+    <span>COLABORADORES E CHECKLIST</span>
+    <button class="btn btn-primary no-print" onclick="adicionarColaborador()">+ INCLUIR COLABORADOR</button>
+  </div>
+  <div class="card-corpo">
+    <div class="tabela-wrap">
+      <table class="tabela">
+        <thead><tr><th>#</th><th style="text-align:left">COLABORADOR</th><th>ADMISSÃO</th><th>DEMISSÃO</th><th>ESCALA</th><th>RELAÇÃO<br>MENSAL</th><th>SEFIP</th><th>FOLHA<br>PAGTO.</th><th>HOLERITE</th><th>CRÉDITO<br>PM</th><th>VT</th><th>VR/VA</th><th>FGTS</th><th>PEND.</th><th class="no-print"></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div id="vazio" class="vazio">NENHUM COLABORADOR INCLUÍDO.</div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-titulo">
+    <span>PDFs DA CONFERÊNCIA — SOMENTE NESTA SESSÃO</span>
+    <span id="pdf-contagem" style="font-size:9px;color:var(--cinza)">0 arquivo(s)</span>
+  </div>
+  <div class="card-corpo">
+    <input id="pdf-input" type="file" accept="application/pdf,.pdf" multiple hidden onchange="adicionarPdfs(this.files);this.value=''">
+    <div class="upload-zone no-print" onclick="document.getElementById('pdf-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--azul2)'" ondragleave="this.style.borderColor=''" ondrop="receberDrop(event)">
+      <b>+ ADICIONAR PDFs</b><br>
+      <span style="font-size:9px;color:var(--cinza)">Clique ou arraste os arquivos. A ordem abaixo será a ordem do PDF final.</span>
+    </div>
+    <div id="arquivos" class="arquivos"></div>
+    <div id="pdf-vazio" class="vazio" style="margin-top:8px">NENHUM PDF ANEXADO NESTA SESSÃO.</div>
+    <div id="progresso" class="progresso"></div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-titulo">ENCERRAMENTO DA CONFERÊNCIA</div>
+  <div class="card-corpo">
+    <div class="etapa-final" style="margin-bottom:8px">
+      <span class="etapa-chip" id="etapa-1">1. CONFERÊNCIA 100%</span>
+      <span class="etapa-chip" id="etapa-2">2. PDF COMPILADO</span>
+      <span class="etapa-chip" id="etapa-3">3. PDF BAIXADO</span>
+      <span class="etapa-chip" id="etapa-4">4. CONCLUIR</span>
+    </div>
+    <div class="rodape">
+      <div class="nota">
+        MARQUE C = CONFERIDO OU N/A = NÃO SE APLICA. ITEM NÃO MARCADO SERÁ CONSIDERADO PENDENTE.<br>
+        O BOTÃO DE CONCLUSÃO SOMENTE SERÁ LIBERADO APÓS O DOWNLOAD DO PDF FINAL COMPILADO.
+      </div>
+      <div class="acoes no-print">
+        <button class="btn btn-sec" onclick="limparTudo()">LIMPAR SESSÃO</button>
+        <button class="btn btn-print" id="btn-compilar" onclick="compilarPdfFinal()">COMPILAR PDF FINAL</button>
+      </div>
+    </div>
+  </div>
+</section>
 </main>
-</div>
 
-<div class="notif-toast" id="notif" style="display:none"></div>
-
-<!-- MODAL APROVAR -->
-<div class="modal-overlay" id="modal-aprovar" onclick="if(event.target.id==='modal-aprovar')fecharAprovar()">
-  <div class="modal">
-    <div class="mhead"><div class="mtitle">Aprovar conferência</div><button class="mclose" onclick="fecharAprovar()">✕</button></div>
-    <div class="mbody">
-      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Ao aprovar, a conferência é liberada para o criador seguir com o cadastro no SolarBPM e informar o financeiro.</p>
-      <div class="fg"><label>Observação da aprovação (opcional)</label>
-        <textarea id="apr-obs" rows="3" placeholder="Alguma observação..." style="width:100%;padding:11px 13px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;resize:vertical"></textarea></div>
+<div class="modal" id="modal-pdf">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div><h2>PDF FINAL COMPILADO</h2><div style="font-size:9px;color:var(--cinza)">Confira o arquivo antes de concluir.</div></div>
+      <button class="btn btn-sec" onclick="fecharVisualizacao()">VOLTAR À CONFERÊNCIA</button>
     </div>
-    <div class="mfoot"><button class="btn" onclick="fecharAprovar()">Cancelar</button><button class="btn primary" onclick="confirmarAprovacao()">✅ Aprovar</button></div>
+    <div class="modal-body"><iframe id="pdf-preview" title="Visualização do PDF final"></iframe></div>
+    <div class="modal-foot">
+      <div class="modal-msg" id="modal-msg">BAIXE O PDF FINAL PARA LIBERAR A CONCLUSÃO.</div>
+      <div class="acoes">
+        <button class="btn btn-primary" id="btn-download" onclick="baixarPdfFinal()">⬇ BAIXAR PDF FINAL</button>
+        <button class="btn btn-print" id="btn-concluir" onclick="concluirConferencia()" disabled>✓ CONCLUIR CONFERÊNCIA</button>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- MODAL MENSAGEM PÓS-APROVAÇÃO -->
-<div class="modal-overlay" id="modal-msg" onclick="if(event.target.id==='modal-msg')fecharMsg()">
-  <div class="modal">
-    <div class="mhead"><div class="mtitle">✅ Conferência aprovada</div><button class="mclose" onclick="fecharMsg()">✕</button></div>
-    <div class="mbody" id="msg-conteudo"></div>
-    <div class="mfoot"><button class="btn primary" onclick="fecharMsg()">Entendi</button></div>
+<div class="concluido" id="tela-concluida">
+  <div class="concluido-box">
+    <h2>CONFERÊNCIA CONCLUÍDA</h2>
+    <p>O PDF final foi baixado e a sessão foi encerrada. Os anexos temporários foram removidos da memória do navegador.</p>
+    <button class="btn btn-primary" onclick="novaConferencia()">INICIAR NOVA CONFERÊNCIA</button>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script>
+const DOCUMENTOS=['ESCALA','RELAÇÃO MENSAL','SEFIP','FOLHA DE PAGAMENTO','HOLERITE','CRÉDITO PM','VALE-TRANSPORTE','VR / VA','FGTS'];
+let colaboradores=[];
+let pdfsSessao=[];
+let pdfFinalBlob=null;
+let pdfFinalUrl='';
+let pdfFinalBaixado=false;
+let conferenciaConcluida=false;
+let compilando=false;
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
-let currentUser = null;
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function maiusculo(el){el.value=el.value.toUpperCase()}
+function mascaraCompetencia(el){let v=el.value.replace(/\D/g,'').slice(0,6);if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);el.value=v}
+function esc(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function fmtData(v){if(!v)return '—';const p=v.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v}
+function fmtBytes(n){if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(1)+' MB'}
+function nomeSeguro(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,70)||'CONFERENCIA'}
 
-async function apiFetch(action, payload){
-  const r = await fetch(SCRIPT_URL+'?action='+action, { method:'POST', body: JSON.stringify(payload||{}) });
-  const t = await r.text();
-  try { return JSON.parse(t); } catch(e){ return { ok:false, message:t }; }
+function dadosAlterados(){
+  if(conferenciaConcluida)return;
+  invalidarPdfFinal();
 }
-async function doLogin(){
-  const email=document.getElementById('login-email').value.trim().toLowerCase();
-  const senha=document.getElementById('login-pass').value;
-  const err=document.getElementById('login-err'); err.style.display='none';
-  if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
-  try{
-    const r=await apiFetch('authuser',{email,senha});
-    if(!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
-    currentUser=r.user;
-  }catch(e){ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; return; }
-  sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
-  startApp();
+function invalidarPdfFinal(){
+  pdfFinalBaixado=false;
+  if(pdfFinalUrl){URL.revokeObjectURL(pdfFinalUrl);pdfFinalUrl=''}
+  pdfFinalBlob=null;
+  const prev=document.getElementById('pdf-preview');if(prev)prev.src='about:blank';
+  const btn=document.getElementById('btn-concluir');if(btn)btn.disabled=true;
+  const msg=document.getElementById('modal-msg');if(msg){msg.textContent='BAIXE O PDF FINAL PARA LIBERAR A CONCLUSÃO.';msg.className='modal-msg'}
+  atualizarEtapas();
 }
-function doLogout(){
-  if(conferenciaEmEdicao && !permitindoSaida){
-    const v=validarConferenciaCompleta(false);
-    if(!v.ok || !pdfFinalGerado){ showNotif('Conclua toda a conferência e compile o PDF final antes de sair.','err'); return; }
-    if(!confirm('Ao sair, todos os PDFs anexados serão perdidos. Confirma?')) return;
+
+function adicionarColaborador(){
+  colaboradores.push({id:uid(),nome:'',admissao:'',demissao:'',docs:DOCUMENTOS.map(()=>({ok:false,na:false}))});
+  dadosAlterados();renderizar();
+  setTimeout(()=>{const a=document.querySelectorAll('.nome-input');if(a.length)a[a.length-1].focus()},20)
+}
+function removerColaborador(id){
+  if(confirm('REMOVER ESTE COLABORADOR?')){
+    colaboradores=colaboradores.filter(c=>c.id!==id);dadosAlterados();renderizar()
   }
-  permitindoSaida=true; conferenciaEmEdicao=false; anexos={};
-  sessionStorage.removeItem('fhsl_session'); currentUser=null;
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  const p=document.getElementById('login-pass'); if(p) p.value='';
-  permitindoSaida=false;
 }
-function themeKey(){ return 'fhsl_theme_'+((currentUser&&currentUser.email)||'default'); }
-function applyTheme(t){ document.body.setAttribute('data-theme', t==='light'?'light':'dark');
-  const b=document.getElementById('theme-btn'); if(b) b.textContent=t==='light'?'☀️':'🌙'; }
-function toggleTheme(){ const cur=document.body.getAttribute('data-theme')==='light'?'light':'dark';
-  const n=cur==='light'?'dark':'light'; applyTheme(n); try{localStorage.setItem(themeKey(),n);}catch(e){} }
-function loadUserTheme(){ let t='dark'; try{t=localStorage.getItem(themeKey())||'dark';}catch(e){} applyTheme(t); }
-function initials(n){ return String(n||'?').split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase(); }
-function showNotif(msg,type){ const el=document.getElementById('notif'); if(!el) return;
-  el.textContent=msg; el.className='notif-toast '+(type||'ok'); el.style.display='block';
-  setTimeout(function(){ el.style.display='none'; },3500); }
-window.addEventListener('DOMContentLoaded', function(){
-  const s=sessionStorage.getItem('fhsl_session');
-  if(s){ try{ currentUser=JSON.parse(s); startApp(); }catch(e){} }
-});
-const PAGE_META = {
-  lista:['Conferências Documentais','Controle de documentos para pagamento'],
-  nova:['Conferência Documental','Marque os itens e anexe os PDFs']
-};
-// Grupos e itens do roteiro
-const GRUPOS = [
-  { g:'Notas fiscais e lançamentos', itens:[
-    'Nota(s) fiscal(is) carimbada(s) e assinada(s) pelo gestor e gerentes, com descrição e valores conferidos',
-    'Pedido da nota fiscal no SisHosp',
-    'Entrada da nota fiscal no SisHosp',
-    'Relação de colaboradores para validar a conferência de cada item' ]},
-  { g:'Documentos gerais', itens:[
-    'Declaração de Optantes pelo Simples Nacional por NF, assinada pela representante',
-    'Declaração com relação dos profissionais que atuaram em cada unidade, assinada e validada',
-    'Escala da competência',
-    'Relatório da SEFIP da empresa conforme NF, com conferência prévia dos profissionais',
-    'Guia GPS + comprovante de pagamento bancário (DCTFWeb)',
-    'Guia do FGTS + comprovante de pagamento bancário',
-    'Cópia dos cartões de ponto dos funcionários (mês anterior)',
-    'Cópia dos holerites dos funcionários (mês anterior)',
-    'Comprovante de depósito bancário do salário de cada funcionário',
-    'Comprovante assinado de recebimento de cesta básica / vale alimentação / outra espécie',
-    'Comprovante de depósito de FGTS individualizado na conta vinculada',
-    'Novas admissões: contrato de trabalho, ASO admissional e ficha de empregado',
-    'Demissões: TRCT, verbas rescisórias, depósito da rescisão, multa/FGTS e guias de seguro-desemprego' ]},
-  { g:'CNDs atualizadas', itens:[
-    'Certidão Negativa de Débitos Trabalhistas (CNDT)',
-    'Certificado de Regularidade do FGTS (CRF)',
-    'Certidão Negativa do Ministério da Fazenda (CND Federal)',
-    'Certidão Negativa de Tributos Mobiliários (CND Municipal)',
-    'Certidão Negativa de Débitos Inscritos na Dívida Ativa do Estado',
-    'Certidão Negativa de Falência' ]}
-];
-const GRUPO_SOCIOS = { g:'Complemento — mão de obra com sócios', itens:[
-  'Declaração de que o serviço foi prestado por sócio, em profissão regulamentada, sem concurso de empregados (ou consignar na NF)',
-  'Comprovação da forma de distribuição de resultados dos sócios (acordo dos sócios e cumprimento)',
-  'Comprovante de pagamento (holerite) na competência da prestação de serviço' ]};
-
-const ESTADOS = [ {v:'ok',l:'✔️ Marcado'},{v:'na',l:'➖ Não se aplica'},{v:'pend',l:'⏳ Pendente'} ];
-// ===== MENSAGEM E PASSO A PASSO DO SOLAR (edite este texto livremente) =====
-const MSG_APROVADA = {
-  titulo:'Conferência aprovada — prossiga no SolarBPM',
-  intro:'A conferência documental foi aprovada. Você já pode seguir com o cadastro no Sistema SolarBPM e informar o financeiro.',
-  passos:[
-    'Acesse o SolarBPM com seu login.',
-    'Abra o processo de pagamento de terceirizados.',
-    'Preencha os campos conforme o modelo (empresa, CNPJ, unidade, mês de referência e nº da NF).',
-    'Anexe o PDF compilado da conferência.',
-    'Encaminhe ao financeiro seguindo o fluxo padrão.'
-  ],
-  rodape:'Modelo de preenchimento a definir — este texto pode ser editado depois no código.'
-};
-
-
-let conferencias=[], unidades=[], contratos=[], editId=null;
-let anexos={}; // { itemKey: [{nome, bytes(Uint8Array), size}] }
-let pdfFinalGerado=false;
-let conferenciaEmEdicao=false;
-let permitindoSaida=false;
-
-function startApp(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  loadUserTheme();
-  document.getElementById('side-avatar').textContent = initials(currentUser.nome);
-  const cores={admin:'#86198f',cadastros:'#0f766e',gestor:'#1d6aad',visualizador:'#5c5c58'};
-  document.getElementById('side-avatar').style.background = cores[currentUser.role]||'#1d6aad';
-  document.getElementById('side-name').textContent = currentUser.nome;
-  document.getElementById('side-role').textContent = ({admin:'Administrador',gestor:'Gestor',cadastros:'Gestor de cadastros',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
-  montarItens();
-  instalarMonitoramentoConferencia();
-  carregar();
+function atualizarColaborador(id,campo,valor){
+  const c=colaboradores.find(x=>x.id===id);if(!c)return;
+  c[campo]=campo==='nome'?String(valor).toUpperCase():valor;dadosAlterados();atualizarTudo()
 }
-function instalarMonitoramentoConferencia(){
-  ['cf-contrato','cf-empresa','cf-cnpj','cf-unidade','cf-mesref','cf-nf','cf-obs'].forEach(function(id){
-    const el=document.getElementById(id); if(!el || el.dataset.pdfMonitor==='1') return;
-    el.dataset.pdfMonitor='1';
-    const ev=(el.tagName==='SELECT'||el.type==='month')?'change':'input';
-    el.addEventListener(ev,function(){
-      if(!conferenciaEmEdicao) return;
-      pdfFinalGerado=false;
-      const st=document.getElementById('compilar-status');
-      if(st) st.textContent='Dados alterados. Compile novamente o PDF final.';
-    });
-  });
-}
-function podeEditar(){ return currentUser && (currentUser.role==='admin'||currentUser.role==='gestor'||currentUser.role==='cadastros'); }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
-const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-function fmtMes(v){ if(!v) return '—'; const s=String(v); let m=s.match(/^(\d{4})-(\d{2})/); if(!m){ const d=new Date(s); if(!isNaN(d.getTime())) return MESES[d.getMonth()]+'/'+d.getFullYear(); return v; } return MESES[parseInt(m[2],10)-1]+'/'+m[1]; }
-function normMes(v){ if(!v) return ''; const s=String(v); if(/^\d{4}-\d{2}$/.test(s)) return s; const d=new Date(s); if(isNaN(d.getTime())) return s.slice(0,7); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
-
-function showPage(id, btn){
-  if(id!=='nova' && conferenciaEmEdicao && !permitindoSaida){
-    const v=validarConferenciaCompleta(false);
-    if(!v.ok || !pdfFinalGerado){
-      showNotif('A conferência somente pode ser encerrada após todos os itens serem concluídos e o PDF final ser compilado.','err');
-      return false;
-    }
-  }
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-  const pg=document.getElementById('page-'+id); if(pg) pg.classList.add('active');
-  if(btn) btn.classList.add('active'); else { const nb=document.querySelector('[data-page="'+id+'"]'); if(nb) nb.classList.add('active'); }
-  const m=PAGE_META[id]||['','']; document.getElementById('pg-title').textContent=m[0]; document.getElementById('pg-sub').textContent=m[1];
-  if(id==='nova' && !editId && !conferenciaEmEdicao) novaConf();
-  if(id==='lista') renderLista();
-  return true;
+function marcar(id,i,tipo,checked){
+  const c=colaboradores.find(x=>x.id===id);if(!c)return;
+  if(tipo==='ok'){c.docs[i].ok=checked;if(checked)c.docs[i].na=false}
+  else{c.docs[i].na=checked;if(checked)c.docs[i].ok=false}
+  dadosAlterados();renderizar()
 }
 
-async function carregar(){
-  try{
-    const [rc, ra, rk] = await Promise.all([ apiFetch('getconferencia'), apiFetch('getadmin'), apiFetch('getcontratoslist') ]);
-    if(rc.ok) conferencias=rc.data||[];
-    if(ra.ok) unidades=(ra.unidades||[]).filter(function(u){ return String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'; });
-    if(rk.ok) contratos=rk.data||[];
-    preencherUnidades(); preencherContratos(); renderLista();
-  }catch(e){ showNotif('Erro ao carregar. Verifique a conexão.','err'); }
-}
-function preencherUnidades(){
-  const s=document.getElementById('cf-unidade');
-  if(s) s.innerHTML='<option value="">Selecione...</option>'+unidades.map(function(u){return '<option>'+esc(u.Nome)+'</option>';}).join('');
-}
-function preencherContratos(){
-  const s=document.getElementById('cf-contrato'); if(!s) return;
-  s.innerHTML='<option value="">Selecione...</option>'+contratos.map(function(c){return '<option value="'+c.id+'">'+esc(c.numero)+(c.empresa?(' — '+esc(c.empresa)):'')+'</option>';}).join('');
-}
-function contratoMudou(){
-  const id=document.getElementById('cf-contrato').value;
-  const c=contratos.find(function(x){return String(x.id)===String(id);});
-  if(c){ if(c.empresa) document.getElementById('cf-empresa').value=c.empresa; if(c.cnpj) document.getElementById('cf-cnpj').value=c.cnpj; }
-}
-
-// ── Itens (checklist com PDFs) ──
-function itemKey(gi, ii){ return 'g'+gi+'i'+ii; }
-function montarItens(){
-  let html='';
-  GRUPOS.forEach(function(grupo, gi){
-    html+='<div class="grupo-tit">'+esc(grupo.g)+'</div>';
-    grupo.itens.forEach(function(item, ii){ html+=linhaItem(gi, ii, item); });
-  });
-  document.getElementById('itens-container').innerHTML=html;
-  // grupo de sócios (separado)
-  let hs='<div class="grupo-tit">'+esc(GRUPO_SOCIOS.g)+'</div>';
-  GRUPO_SOCIOS.itens.forEach(function(item, ii){ hs+=linhaItem('S', ii, item); });
-  document.getElementById('itens-socios').innerHTML=hs;
-}
-function linhaItem(gi, ii, texto){
-  const key=itemKey(gi,ii);
-  const ops=ESTADOS.map(function(e){return '<option value="'+e.v+'">'+e.l+'</option>';}).join('');
-  return '<div class="item-row" id="row-'+key+'">'
-    +'<div class="item-txt">'+esc(texto)+'</div>'
-    +'<div class="item-ctrl">'
-    +'<select class="item-est" data-key="'+key+'" onchange="statusItemMudou(this)">'+ops+'</select>'
-    +'<button class="btn sm" type="button" onclick="anexarPdf(\''+key+'\')">📎 PDF</button>'
-    +'</div>'
-    +'<div class="item-anexos" id="anexos-'+key+'"></div></div>';
-}
-function anexarPdf(key){
-  const inp=document.createElement('input'); inp.type='file'; inp.accept='.pdf'; inp.multiple=true;
-  inp.onchange=function(){
-    if(!anexos[key]) anexos[key]=[];
-    Array.prototype.forEach.call(inp.files, function(f){
-      const reader=new FileReader();
-      reader.onload=function(){ anexos[key].push({ nome:f.name, bytes:new Uint8Array(reader.result), size:f.size }); pdfFinalGerado=false; document.getElementById('compilar-status').textContent='Novo PDF anexado. Compile novamente o PDF final.'; renderAnexos(key); atualizaResumo(); };
-      reader.readAsArrayBuffer(f);
-    });
-  };
-  inp.click();
-}
-function renderAnexos(key){
-  const cont=document.getElementById('anexos-'+key); if(!cont) return;
-  const lista=anexos[key]||[];
-  cont.innerHTML=lista.map(function(a,idx){ return '<span class="anexo-chip">📄 '+esc(a.nome)+' <b onclick="removerAnexo(\''+key+'\','+idx+')">✕</b></span>'; }).join('');
-}
-function removerAnexo(key, idx){ anexos[key].splice(idx,1); pdfFinalGerado=false; document.getElementById('compilar-status').textContent='PDF removido. Compile novamente o PDF final.'; renderAnexos(key); atualizaResumo(); }
-
-function chavesAtivas(){
-  const keys=[];
-  GRUPOS.forEach(function(g,gi){ g.itens.forEach(function(_,ii){ keys.push(itemKey(gi,ii)); }); });
-  if(document.getElementById('cf-socios').value==='Sim'){
-    GRUPO_SOCIOS.itens.forEach(function(_,ii){ keys.push(itemKey('S',ii)); });
-  }
-  return keys;
-}
-function coletarItens(){
-  const out={};
-  document.querySelectorAll('.item-est').forEach(function(sel){ out[sel.getAttribute('data-key')]=sel.value; });
-  return out;
-}
-function statusItemMudou(sel){
-  const key=sel.getAttribute('data-key');
-  pdfFinalGerado=false;
-  document.getElementById('compilar-status').textContent='Alterações realizadas. Compile novamente o PDF final.';
-  if(sel.value==='na' && anexos[key] && anexos[key].length){
-    if(confirm('Este item possui PDF anexado. Ao marcar “Não se aplica”, o anexo será removido. Continuar?')){
-      delete anexos[key]; renderAnexos(key);
-    }else sel.value='ok';
-  }
-  atualizaResumo();
-}
-function atualizaResumo(){
-  const itens=coletarItens(); let ok=0,na=0,pend=0;
-  chavesAtivas().forEach(function(k){ if(itens[k]==='ok')ok++; else if(itens[k]==='na')na++; else pend++; });
-  document.getElementById('rs-marcados').textContent=ok;
-  document.getElementById('rs-na').textContent=na;
-  document.getElementById('rs-pend').textContent=pend;
-  let nPdf=0, bytes=0;
-  chavesAtivas().forEach(function(k){ (anexos[k]||[]).forEach(function(a){ nPdf++; bytes+=a.size; }); });
-  document.getElementById('rs-pdfs').textContent=nPdf+' PDFs anexados ('+(bytes/1048576).toFixed(1)+' MB)';
-}
-function toggleSocios(){
-  const sim=document.getElementById('cf-socios').value==='Sim';
-  document.getElementById('itens-socios').style.display = sim?'block':'none';
-  if(!sim){
-    GRUPO_SOCIOS.itens.forEach(function(_,ii){
-      const k=itemKey('S',ii), sel=document.querySelector('.item-est[data-key="'+k+'"]');
-      if(sel) sel.value='na';
-      if(anexos[k]) delete anexos[k];
-      renderAnexos(k);
-    });
-  }else{
-    GRUPO_SOCIOS.itens.forEach(function(_,ii){
-      const k=itemKey('S',ii), sel=document.querySelector('.item-est[data-key="'+k+'"]');
-      if(sel && sel.value==='na') sel.value='pend';
-    });
-  }
-  pdfFinalGerado=false;
-  atualizaResumo();
-}
-function descricaoItemPorChave(key){
-  let m=String(key).match(/^g(\d+|S)i(\d+)$/);
-  if(!m) return key;
-  const gi=m[1], ii=parseInt(m[2],10);
-  if(gi==='S') return GRUPO_SOCIOS.itens[ii]||key;
-  return (GRUPOS[parseInt(gi,10)]&&GRUPOS[parseInt(gi,10)].itens[ii])||key;
-}
-function validarIdentificacao(){
-  const faltas=[];
-  if(!document.getElementById('cf-contrato').value) faltas.push('contrato');
-  if(!document.getElementById('cf-empresa').value.trim()) faltas.push('empresa');
-  if(!document.getElementById('cf-cnpj').value.trim()) faltas.push('CNPJ');
-  if(!document.getElementById('cf-unidade').value) faltas.push('unidade');
-  if(!document.getElementById('cf-mesref').value) faltas.push('mês de referência');
-  if(!document.getElementById('cf-nf').value.trim()) faltas.push('nota fiscal');
-  return faltas;
-}
-function validarConferenciaCompleta(exibir){
-  const faltasId=validarIdentificacao();
-  const itens=coletarItens(), pendentes=[], semPdf=[];
-  chavesAtivas().forEach(function(k){
-    const st=itens[k]||'pend';
-    if(st==='pend') pendentes.push(descricaoItemPorChave(k));
-    if(st==='ok' && (!anexos[k] || anexos[k].length===0)) semPdf.push(descricaoItemPorChave(k));
-  });
-  const erros=[];
-  if(faltasId.length) erros.push('Preencha: '+faltasId.join(', ')+'.');
-  if(pendentes.length) erros.push('Existem '+pendentes.length+' item(ns) pendente(s).');
-  if(semPdf.length) erros.push('Existem '+semPdf.length+' item(ns) marcados sem PDF.');
-  if(exibir && erros.length){
-    showNotif(erros.join(' '),'err');
-    document.getElementById('compilar-status').textContent=erros.join(' ');
-  }
-  return {ok:erros.length===0, erros:erros, pendentes:pendentes, semPdf:semPdf};
-}
-function tentarSairConferencia(){
-  const v=validarConferenciaCompleta(true);
-  if(!v.ok || !pdfFinalGerado) return;
-  if(!confirm('Ao sair, todos os PDFs anexados serão perdidos. Confirma a saída?')) return;
-  permitindoSaida=true; conferenciaEmEdicao=false; anexos={};
-  showPage('lista'); permitindoSaida=false;
-}
-
-function novaConf(){
-  editId=null; anexos={}; pdfFinalGerado=false; conferenciaEmEdicao=true;
-  document.getElementById('cf-id').value='';
-  ['cf-numero','cf-empresa','cf-cnpj','cf-mesref','cf-nf','cf-obs'].forEach(function(k){document.getElementById(k).value='';});
-  document.getElementById('cf-contrato').value=''; document.getElementById('cf-unidade').value='';
-  document.getElementById('cf-socios').value='Não'; toggleSocios();
-  document.querySelectorAll('.item-est').forEach(function(s){ s.value='pend'; });
-  document.querySelectorAll('.item-anexos').forEach(function(a){ a.innerHTML=''; });
-  document.getElementById('compilar-status').textContent='';
-  atualizaResumo();
-}
-function editarConf(id){
-  const c=conferencias.find(function(x){return String(x.ID)===String(id);}); if(!c) return;
-  editId=id; anexos={}; pdfFinalGerado=false; conferenciaEmEdicao=true;
-  showPage('nova');
-  document.getElementById('cf-id').value=id;
-  document.getElementById('cf-numero').value=c.Numero||'';
-  document.getElementById('cf-contrato').value=c.ContratoID||'';
-  document.getElementById('cf-empresa').value=c.Empresa||'';
-  document.getElementById('cf-cnpj').value=c.CNPJ||'';
-  document.getElementById('cf-unidade').value=c.Unidade||'';
-  document.getElementById('cf-mesref').value=normMes(c.MesRef);
-  document.getElementById('cf-nf').value=c.NotaFiscal||'';
-  document.getElementById('cf-obs').value=c.Observacoes||'';
-  document.getElementById('cf-socios').value=c.TemSocios||'Não'; toggleSocios();
-  const itens=c.ItensObj||{};
-  document.querySelectorAll('.item-est').forEach(function(s){ const k=s.getAttribute('data-key'); s.value=itens[k]||'pend'; });
-  document.querySelectorAll('.item-anexos').forEach(function(a){ a.innerHTML=''; });
-  document.getElementById('compilar-status').textContent='Os PDFs não ficam salvos — reanexe se for compilar novamente.';
-  atualizaResumo();
-}
-
-async function salvarConf(statusAlvo){
-  if(!podeEditar()){ showNotif('Sem permissão.','err'); return; }
-  if(statusAlvo!=='Concluída'){ showNotif('O salvamento parcial foi desativado. Conclua toda a conferência e compile o PDF final.','err'); return; }
-  const validacao=validarConferenciaCompleta(true);
-  if(!validacao.ok) return;
-  if(!pdfFinalGerado){ showNotif('Compile o PDF final antes de concluir a conferência.','err'); return; }
-  if(!confirm('Ao concluir, todos os PDFs desta sessão serão perdidos. Confirma que o PDF final já foi salvo em local seguro?')) return;
-  const contrato=document.getElementById('cf-contrato').value;
-  const unidade=document.getElementById('cf-unidade').value;
-  const mes=document.getElementById('cf-mesref').value;
-  const c=contratos.find(function(x){return String(x.id)===String(contrato);})||{};
-  const payload={ ID:editId||'', Unidade:unidade, MesRef:mes, ContratoID:contrato, ContratoNum:c.numero||'',
-    Empresa:document.getElementById('cf-empresa').value.trim(), CNPJ:document.getElementById('cf-cnpj').value.trim(),
-    NotaFiscal:document.getElementById('cf-nf').value.trim(), TemSocios:document.getElementById('cf-socios').value,
-    Itens:coletarItens(), Observacoes:document.getElementById('cf-obs').value.trim(), Status:statusAlvo,
-    __actor:{ nome:currentUser.nome, email:currentUser.email } };
-  showNotif('Salvando...','info');
-  const r=await apiFetch('saveconferencia', payload);
-  if(r.ok){ showNotif('Conferência concluída.','ok'); editId=null; conferenciaEmEdicao=false; permitindoSaida=true; anexos={}; carregar(); showPage('lista'); permitindoSaida=false; }
-  else showNotif(r.message||'Erro ao salvar.','err');
-}
-
-// ── Lista ──
-function renderLista(){
-  const q=(document.getElementById('busca-lista')?.value||'').toLowerCase();
-  const fs=document.getElementById('filtro-status')?.value||'';
-  let lista=conferencias.filter(function(c){
-    if(q && !((c.Numero+' '+c.Empresa+' '+c.Unidade+' '+c.MesRef).toLowerCase().includes(q))) return false;
-    if(fs && c.Status!==fs) return false;
-    return true;
-  });
-  const and=conferencias.filter(function(c){return c.Status==='Em conferência';}).length;
-  const ok=conferencias.filter(function(c){return c.Status==='Concluída';}).length;
-  document.getElementById('kpi-total').textContent=conferencias.length;
-  document.getElementById('kpi-andamento').textContent=and;
-  document.getElementById('kpi-ok').textContent=ok;
-  document.getElementById('lista-empty').style.display=lista.length?'none':'block';
-  const badge=function(st){
-    if(st==='Aprovada') return '<span class="badge c-green-b">✅ Aprovada</span>';
-    if(st==='Concluída') return '<span class="badge c-blue-b">✔️ Concluída</span>';
-    return '<span class="badge c-yellow-b">⏳ Em conferência</span>';
-  };
-  document.getElementById('lista-body').innerHTML=lista.map(function(c){
-    const itens=c.ItensObj||{}; let ok=0,tot=0;
-    const keys=[];
-    GRUPOS.forEach(function(g,gi){g.itens.forEach(function(_,ii){keys.push(itemKey(gi,ii));});});
-    if(String(c.TemSocios||'Não')==='Sim') GRUPO_SOCIOS.itens.forEach(function(_,ii){keys.push(itemKey('S',ii));});
-    keys.forEach(function(k){ tot++; if(itens[k]==='ok'||itens[k]==='na') ok++; });
-    const prog=tot?Math.round(ok/tot*100):0;
-    let acoes=(podeEditar()?'<button class="btn sm" onclick="editarConf(\''+c.ID+'\')" title="Editar/ver">✏️</button>':'<button class="btn sm" onclick="editarConf(\''+c.ID+'\')">👁️</button>');
-    // botão aprovar (só quem pode e se ainda não aprovada)
-    if(c.Status!=='Aprovada' && podeAprovar()) acoes+=' <button class="btn sm primary" onclick="abrirAprovar(\''+c.ID+'\')" title="Aprovar">✅</button>';
-    // se aprovada, botão para rever a mensagem do Solar
-    if(c.Status==='Aprovada') acoes+=' <button class="btn sm" onclick="verMsgSolar(\''+c.ID+'\')" title="Ver próximos passos">📄</button>';
-    if(currentUser.role==='admin') acoes+=' <button class="btn sm danger" onclick="delConf(\''+c.ID+'\')">🗑️</button>';
-    return '<tr><td><strong>'+esc(c.Numero)+'</strong></td><td>'+esc(c.Empresa)+'</td><td>'+esc(c.Unidade)+'</td>'
-      +'<td>'+fmtMes(c.MesRef)+'</td><td>'+ok+' concluídos · '+prog+'%</td><td>'+badge(c.Status)+'</td>'
-      +'<td style="white-space:nowrap">'+acoes+'</td></tr>';
+function renderizar(){
+  const tb=document.getElementById('tbody');
+  document.getElementById('vazio').style.display=colaboradores.length?'none':'block';
+  tb.innerHTML=colaboradores.map((c,idx)=>{
+    const pend=c.docs.filter(d=>!d.ok&&!d.na).length;
+    return `<tr class="${pend?'pendente':''}">
+      <td class="num">${idx+1}</td>
+      <td class="nome"><input class="nome-input" value="${esc(c.nome)}" placeholder="NOME COMPLETO" oninput="maiusculo(this);atualizarColaborador('${c.id}','nome',this.value)"></td>
+      <td class="data"><input type="date" value="${c.admissao}" onchange="atualizarColaborador('${c.id}','admissao',this.value)"></td>
+      <td class="data"><input type="date" value="${c.demissao}" onchange="atualizarColaborador('${c.id}','demissao',this.value)"></td>
+      ${c.docs.map((d,i)=>`<td class="doc-cell ${d.ok?'doc-ok':d.na?'doc-na':'doc-pend'}"><div class="doc-checks"><label><input type="checkbox" ${d.ok?'checked':''} onchange="marcar('${c.id}',${i},'ok',this.checked)">C</label><label><input type="checkbox" ${d.na?'checked':''} onchange="marcar('${c.id}',${i},'na',this.checked)">N/A</label></div></td>`).join('')}
+      <td class="pend-txt ${pend?'':'ok'}">${pend||'OK'}</td>
+      <td class="no-print"><button class="btn btn-del" onclick="removerColaborador('${c.id}')">✕</button></td>
+    </tr>`
   }).join('');
-}
-async function delConf(id){
-  if(!confirm('Excluir esta conferência?')) return;
-  const r=await apiFetch('deleteconferencia', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
-  if(r.ok){ showNotif('Excluída.','ok'); carregar(); } else showNotif(r.message||'Erro.','err');
+  atualizarTudo()
 }
 
-
-// ── Aprovação ──
-let aprovandoId=null;
-function podeAprovar(){ return currentUser && (currentUser.role==='admin' || currentUser.aprovaConf===true); }
-function abrirAprovar(id){
-  if(!podeAprovar()){ showNotif('Você não tem permissão para aprovar.','err'); return; }
-  aprovandoId=id; document.getElementById('apr-obs').value='';
-  document.getElementById('modal-aprovar').classList.add('open');
+function atualizarTudo(){
+  let ok=0,na=0,pend=0;
+  colaboradores.forEach(c=>c.docs.forEach(d=>d.ok?ok++:d.na?na++:pend++));
+  document.getElementById('kpi-colab').textContent=colaboradores.length;
+  document.getElementById('kpi-ok').textContent=ok;
+  document.getElementById('kpi-na').textContent=na;
+  document.getElementById('kpi-pend').textContent=pend;
+  const av=document.getElementById('aviso-geral'),st=document.getElementById('status-geral');
+  const empresa=document.getElementById('empresa').value.trim();
+  document.getElementById('flag-empresa').textContent='EMPRESA: '+(empresa||'NÃO INFORMADA');
+  if(!colaboradores.length){
+    av.style.display='none';st.textContent='SEM COLABORADORES';st.style.color='var(--cinza)'
+  }else if(pend){
+    const nomes=colaboradores.filter(c=>c.docs.some(d=>!d.ok&&!d.na)).map(c=>c.nome||'SEM NOME');
+    av.className='aviso';av.style.display='block';av.textContent=`EXISTEM ${pend} PENDÊNCIA(S). COLABORADORES: ${nomes.join(', ')}.`;
+    st.textContent='COM PENDÊNCIAS';st.style.color='var(--vermelho)'
+  }else{
+    av.className='aviso ok';av.style.display='block';av.textContent='CHECKLIST TOTALMENTE CONFERIDO. PRÓXIMA ETAPA: COMPILAR O PDF FINAL.';
+    st.textContent='CHECKLIST CONCLUÍDO';st.style.color='var(--verde)'
+  }
+  atualizarEtapas()
 }
-function fecharAprovar(){ document.getElementById('modal-aprovar').classList.remove('open'); }
-async function confirmarAprovacao(){
-  const obs=document.getElementById('apr-obs').value.trim();
-  showNotif('Aprovando...','info');
-  const r=await apiFetch('aprovarconferencia', { id:aprovandoId, obs:obs, __actor:{ nome:currentUser.nome, email:currentUser.email } });
-  if(r.ok){ fecharAprovar(); showNotif('Conferência aprovada.','ok'); mostrarMsgSolar(); carregar(); }
-  else showNotif(r.message||'Erro ao aprovar.','err');
+
+function conferencia100(){
+  const e=document.getElementById('empresa').value.trim(),u=document.getElementById('unidade').value.trim(),c=document.getElementById('competencia').value.trim();
+  return !!e && !!u && /^(0[1-9]|1[0-2])\/\d{4}$/.test(c) && colaboradores.length>0 &&
+    !colaboradores.some(x=>!x.nome.trim()) &&
+    !colaboradores.some(x=>x.docs.some(d=>!d.ok&&!d.na)) &&
+    pdfsSessao.length>0;
 }
-function mostrarMsgSolar(){
-  const m=MSG_APROVADA;
-  document.getElementById('msg-conteudo').innerHTML =
-    '<div style="background:var(--green-bg);color:var(--green-text);padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px">'+esc(m.intro)+'</div>'
-    +'<div style="font-weight:700;font-size:13px;margin-bottom:8px">'+esc(m.titulo)+'</div>'
-    +'<ol style="font-size:13px;color:var(--text2);line-height:1.7;padding-left:20px">'
-    + m.passos.map(function(p){return '<li>'+esc(p)+'</li>';}).join('')
-    +'</ol>'
-    +'<p style="font-size:11px;color:var(--text3);margin-top:10px">'+esc(m.rodape)+'</p>';
-  document.getElementById('modal-msg').classList.add('open');
+function validarCompleto(){
+  const e=document.getElementById('empresa').value.trim(),u=document.getElementById('unidade').value.trim(),c=document.getElementById('competencia').value.trim();
+  if(!e||!u||!/^(0[1-9]|1[0-2])\/\d{4}$/.test(c)){alert('PREENCHA EMPRESA, UNIDADE E COMPETÊNCIA MM/AAAA.');return false}
+  if(!colaboradores.length){alert('INCLUA PELO MENOS UM COLABORADOR.');return false}
+  if(colaboradores.some(x=>!x.nome.trim())){alert('EXISTE COLABORADOR SEM NOME.');return false}
+  const pend=colaboradores.reduce((s,x)=>s+x.docs.filter(d=>!d.ok&&!d.na).length,0);
+  if(pend){alert(`AINDA EXISTEM ${pend} ITEM(NS) PENDENTE(S). CONCLUA TODO O CHECKLIST ANTES DE COMPILAR.`);return false}
+  if(!pdfsSessao.length){alert('ANEXE PELO MENOS UM PDF ANTES DE COMPILAR O ARQUIVO FINAL.');return false}
+  return true
 }
-function fecharMsg(){ document.getElementById('modal-msg').classList.remove('open'); }
-function verMsgSolar(id){ mostrarMsgSolar(); }
 
-// ── Compilar PDF (merge no navegador via pdf-lib) ──
-async function compilarPDF(){
-  const st=document.getElementById('compilar-status');
-  const validacao=validarConferenciaCompleta(true);
-  if(!validacao.ok) return;
-  st.textContent='Carregando biblioteca de PDF...';
-  try{
-    await garantirPdfLib();
-    const { PDFDocument, StandardFonts, rgb } = PDFLib;
-    const merged = await PDFDocument.create();
-    const font = await merged.embedFont(StandardFonts.Helvetica);
-    const bold = await merged.embedFont(StandardFonts.HelveticaBold);
-
-    function wrapText(text, maxWidth, size, usedFont){
-      const words=String(text||'').split(/\s+/), lines=[]; let line='';
-      words.forEach(function(word){
-        const test=line?line+' '+word:word;
-        if(usedFont.widthOfTextAtSize(test,size)<=maxWidth) line=test;
-        else { if(line) lines.push(line); line=word; }
-      });
-      if(line) lines.push(line);
-      return lines;
-    }
-    function addChecklistPage(){
-      const page=merged.addPage([595.28,841.89]);
-      const W=595.28, margin=38;
-      page.drawRectangle({x:0,y:780,width:W,height:62,color:rgb(0.114,0.416,0.678)});
-      page.drawText('CONFERENCIA DOCUMENTAL', {x:margin,y:814,size:18,font:bold,color:rgb(1,1,1)});
-      page.drawText('Checklist e identificacao da unidade', {x:margin,y:794,size:10,font:font,color:rgb(1,1,1)});
-      return {page:page,y:758};
-    }
-    let cp=addChecklistPage(), page=cp.page, y=cp.y;
-    function ensureSpace(h){ if(y-h<42){ cp=addChecklistPage(); page=cp.page; y=cp.y; } }
-    function drawLabelValue(label,value,x,w){
-      page.drawText(label,{x:x,y:y,size:8,font:bold,color:rgb(.25,.25,.25)});
-      const lines=wrapText(value||'-',w,10,font);
-      lines.forEach(function(line,idx){ page.drawText(line,{x:x,y:y-14-(idx*12),size:10,font:font,color:rgb(.08,.08,.08)}); });
-      return 20+lines.length*12;
-    }
-    const emp=document.getElementById('cf-empresa').value.trim();
-    const cnpj=document.getElementById('cf-cnpj').value.trim();
-    const un=document.getElementById('cf-unidade').value;
-    const mes=fmtMes(document.getElementById('cf-mesref').value);
-    const nf=document.getElementById('cf-nf').value.trim();
-    const contratoSel=document.getElementById('cf-contrato');
-    const contratoTxt=contratoSel.options[contratoSel.selectedIndex]?contratoSel.options[contratoSel.selectedIndex].text:'-';
-    const numero=document.getElementById('cf-numero').value||'(gerado ao concluir)';
-    const dados=[['Unidade',un],['Empresa',emp],['CNPJ',cnpj],['Contrato',contratoTxt],['Mes de referencia',mes],['Nota(s) fiscal(is)',nf],['Numero da conferencia',numero],['Profissionais socios',document.getElementById('cf-socios').value]];
-    for(let i=0;i<dados.length;i+=2){
-      ensureSpace(50);
-      const h1=drawLabelValue(dados[i][0],dados[i][1],38,240);
-      const h2=(dados[i+1]?drawLabelValue(dados[i+1][0],dados[i+1][1],310,240):20);
-      y-=Math.max(h1,h2)+5;
-      page.drawLine({start:{x:38,y:y+6},end:{x:557,y:y+6},thickness:.4,color:rgb(.82,.82,.82)});
-    }
-    y-=8;
-    const itens=coletarItens();
-    function drawGrupo(grupo,gi){
-      ensureSpace(34);
-      page.drawText(grupo.g.toUpperCase(),{x:38,y:y,size:10,font:bold,color:rgb(.114,.416,.678)}); y-=18;
-      grupo.itens.forEach(function(item,ii){
-        const k=(gi==='S')?itemKey('S',ii):itemKey(gi,ii), st=itens[k]||'pend';
-        const status=st==='ok'?'CONFERIDO / PDF ANEXADO':(st==='na'?'NAO SE APLICA':'PENDENTE');
-        const lines=wrapText(item,390,8.5,font); const h=Math.max(28,lines.length*10+8);
-        ensureSpace(h+5);
-        page.drawRectangle({x:38,y:y-h+4,width:519,height:h,color:rgb(.97,.97,.96),borderColor:rgb(.85,.85,.85),borderWidth:.5});
-        lines.forEach(function(line,idx){page.drawText(line,{x:46,y:y-10-(idx*10),size:8.5,font:font,color:rgb(.12,.12,.12)});});
-        page.drawText(status,{x:442,y:y-13,size:7.5,font:bold,color:st==='ok'?rgb(.08,.48,.24):rgb(.35,.35,.35)});
-        y-=h+5;
-      });
-      y-=4;
-    }
-    GRUPOS.forEach(function(g,gi){drawGrupo(g,gi);});
-    if(document.getElementById('cf-socios').value==='Sim') drawGrupo(GRUPO_SOCIOS,'S');
-    const obs=document.getElementById('cf-obs').value.trim();
-    if(obs){
-      ensureSpace(70); page.drawText('OBSERVACOES',{x:38,y:y,size:10,font:bold,color:rgb(.114,.416,.678)}); y-=16;
-      wrapText(obs,510,9,font).forEach(function(line){ ensureSpace(14); page.drawText(line,{x:38,y:y,size:9,font:font,color:rgb(.12,.12,.12)}); y-=12; });
-    }
-    ensureSpace(58);
-    y-=20;
-    page.drawLine({start:{x:55,y:y},end:{x:255,y:y},thickness:.7,color:rgb(.25,.25,.25)});
-    page.drawLine({start:{x:340,y:y},end:{x:540,y:y},thickness:.7,color:rgb(.25,.25,.25)});
-    page.drawText('Coordenador Administrativo',{x:82,y:y-14,size:8,font:font,color:rgb(.25,.25,.25)});
-    page.drawText('Gerencia / profissional designado',{x:365,y:y-14,size:8,font:font,color:rgb(.25,.25,.25)});
-    page.drawText('Emitido em '+new Date().toLocaleString('pt-BR'),{x:38,y:24,size:7.5,font:font,color:rgb(.45,.45,.45)});
-
-    let ordem=[];
-    GRUPOS.forEach(function(g,gi){ g.itens.forEach(function(_,ii){ const k=itemKey(gi,ii); if((coletarItens()[k]||'pend')==='ok') ordem.push({key:k,grupo:g.g}); }); });
-    if(document.getElementById('cf-socios').value==='Sim') GRUPO_SOCIOS.itens.forEach(function(_,ii){ const k=itemKey('S',ii); if((coletarItens()[k]||'pend')==='ok') ordem.push({key:k,grupo:GRUPO_SOCIOS.g}); });
-    let total=0; ordem.forEach(function(o){ total+=(anexos[o.key]||[]).length; });
-    let feitos=0;
-    for(const o of ordem){
-      for(const a of anexos[o.key]){
-        st.textContent='Juntando '+(feitos+1)+' de '+total+': '+a.nome;
-        let src;
-        try{ src=await PDFDocument.load(a.bytes,{ignoreEncryption:true}); }
-        catch(e){ throw new Error('O arquivo "'+a.nome+'" está protegido, inválido ou não pôde ser lido. Nenhum PDF final foi gerado.'); }
-        const pages=await merged.copyPages(src,src.getPageIndices());
-        pages.forEach(function(pg){merged.addPage(pg);});
-        feitos++;
-        await new Promise(function(r){setTimeout(r,10);});
-      }
-    }
-    const paginas=merged.getPages();
-    paginas.forEach(function(pg,i){
-      const size=pg.getSize();
-      pg.drawText((i+1)+' / '+paginas.length,{x:size.width-70,y:15,size:9,font:font,color:rgb(.4,.4,.4)});
-    });
-    const bytes=await merged.save();
-    const blob=new Blob([bytes],{type:'application/pdf'});
-    const empArq=(emp||'empresa').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'_');
-    const mesArq=document.getElementById('cf-mesref').value||'';
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Conferencia_'+empArq+'_'+mesArq+'.pdf'; a.click();
-    setTimeout(function(){URL.revokeObjectURL(a.href);},30000);
-    pdfFinalGerado=true;
-    st.textContent='PDF final compilado com checklist de capa e '+paginas.length+' página(s). Agora você pode concluir a conferência.';
-    showNotif('PDF final gerado com sucesso.','ok');
-  }catch(e){
-    pdfFinalGerado=false;
-    st.textContent='Erro ao compilar: '+e.message;
-    showNotif(e.message||'Erro ao compilar PDF.','err');
+function receberDrop(ev){
+  ev.preventDefault();ev.currentTarget.style.borderColor='';
+  adicionarPdfs(ev.dataTransfer.files)
+}
+async function adicionarPdfs(files){
+  const lista=[...files].filter(f=>f.type==='application/pdf'||/\.pdf$/i.test(f.name));
+  if(!lista.length){alert('SELECIONE ARQUIVOS PDF.');return}
+  const totalAtual=pdfsSessao.reduce((s,x)=>s+x.file.size,0),novo=lista.reduce((s,x)=>s+x.size,0);
+  if(totalAtual+novo>150*1024*1024){alert('POR SEGURANÇA, A SESSÃO ESTÁ LIMITADA A 150 MB DE PDFs. DIVIDA A CONFERÊNCIA OU REDUZA OS ARQUIVOS.');return}
+  for(const file of lista){
+    pdfsSessao.push({id:uid(),file})
+  }
+  dadosAlterados();renderPdfs()
+}
+function renderPdfs(){
+  const box=document.getElementById('arquivos'),vazio=document.getElementById('pdf-vazio');
+  document.getElementById('pdf-contagem').textContent=pdfsSessao.length+' arquivo(s)';
+  vazio.style.display=pdfsSessao.length?'none':'block';
+  box.innerHTML=pdfsSessao.map((x,i)=>`<div class="arquivo">
+    <div class="ordem">${i+1}</div>
+    <div class="nome-arq" title="${esc(x.file.name)}">${esc(x.file.name)}</div>
+    <div class="tam">${fmtBytes(x.file.size)}</div>
+    <div class="mov no-print">
+      <button class="btn btn-sec" onclick="moverPdf(${i},-1)" ${i===0?'disabled':''}>↑</button>
+      <button class="btn btn-sec" onclick="moverPdf(${i},1)" ${i===pdfsSessao.length-1?'disabled':''}>↓</button>
+      <button class="btn btn-danger" onclick="removerPdf('${x.id}')">REMOVER</button>
+    </div>
+  </div>`).join('');
+  atualizarEtapas()
+}
+function moverPdf(i,dir){
+  const j=i+dir;if(j<0||j>=pdfsSessao.length)return;
+  [pdfsSessao[i],pdfsSessao[j]]=[pdfsSessao[j],pdfsSessao[i]];
+  dadosAlterados();renderPdfs()
+}
+function removerPdf(id){
+  if(confirm('REMOVER ESTE PDF DA SESSÃO?')){
+    pdfsSessao=pdfsSessao.filter(x=>x.id!==id);dadosAlterados();renderPdfs()
   }
 }
-function garantirPdfLib(){
-  return new Promise(function(resolve, reject){
-    if(window.PDFLib) return resolve();
-    const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
-    s.onload=resolve; s.onerror=function(){ reject(new Error('Não foi possível carregar a biblioteca de PDF (verifique a internet).')); };
-    document.head.appendChild(s);
-  });
+
+function atualizarEtapas(){
+  const e1=document.getElementById('etapa-1'),e2=document.getElementById('etapa-2'),e3=document.getElementById('etapa-3'),e4=document.getElementById('etapa-4');
+  [e1,e2,e3,e4].forEach(x=>x.className='etapa-chip');
+  if(conferencia100())e1.classList.add('ok'); else e1.classList.add('atual');
+  if(pdfFinalBlob)e2.classList.add('ok');
+  if(pdfFinalBaixado)e3.classList.add('ok');
+  if(conferenciaConcluida)e4.classList.add('ok');
+  else if(pdfFinalBaixado)e4.classList.add('atual');
 }
 
-// O checklist passou a integrar automaticamente a capa do PDF final.
+function pdfSetStatus(txt){
+  const p=document.getElementById('progresso');p.style.display='block';p.textContent=txt
+}
+function desenharTextoQuebrado(page,text,x,y,maxWidth,font,size,lineHeight,color){
+  const words=String(text||'').split(/\s+/),lines=[];let line='';
+  for(const word of words){
+    const test=line?line+' '+word:word;
+    if(font.widthOfTextAtSize(test,size)>maxWidth && line){lines.push(line);line=word}else line=test
+  }
+  if(line)lines.push(line);
+  for(const ln of lines){page.drawText(ln,{x,y,size,font,color});y-=lineHeight}
+  return y
+}
+async function criarCapaPdf(PDFDocument,StandardFonts,rgb){
+  const doc=await PDFDocument.create();
+  const font=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
+  const empresa=document.getElementById('empresa').value.trim();
+  const unidade=document.getElementById('unidade').value.trim();
+  const competencia=document.getElementById('competencia').value.trim();
 
-window.addEventListener('beforeunload', function(e){
-  if(conferenciaEmEdicao && !permitindoSaida){
-    e.preventDefault(); e.returnValue='';
+  let page=doc.addPage([842,595]);let y=560;
+  page.drawText('CONFERÊNCIA INDIVIDUAL DE DOCUMENTOS',{x:30,y,size:16,font:bold,color:rgb(.08,.25,.43)});
+  page.drawText('CONTROLE DOCUMENTAL DE COLABORADORES TERCEIRIZADOS',{x:30,y:y-18,size:8,font,color:rgb(.35,.4,.46)});
+  y-=48;
+  page.drawText('EMPRESA:',{x:30,y,size:8,font:bold});page.drawText(empresa,{x:88,y,size:9,font:bold});
+  page.drawText('UNIDADE:',{x:380,y,size:8,font:bold});page.drawText(unidade,{x:430,y,size:9,font:bold});
+  page.drawText('COMPETÊNCIA:',{x:650,y,size:8,font:bold});page.drawText(competencia,{x:720,y,size:9,font:bold});
+  y-=22;
+  page.drawLine({start:{x:30,y},end:{x:812,y},thickness:1,color:rgb(.75,.8,.85)});y-=18;
+
+  const cols=[30,50,240,302,364,416,466,516,566,616,666,716,766];
+  const heads=['#','COLABORADOR','ADM.','DEM.','ESC','REL','SEFIP','FOLHA','HOL.','CR.PM','VT','VR/VA','FGTS'];
+  heads.forEach((h,i)=>page.drawText(h,{x:cols[i]+2,y,size:6.5,font:bold,color:rgb(.18,.25,.32)}));
+  y-=12;page.drawLine({start:{x:30,y},end:{x:812,y},thickness:.7,color:rgb(.65,.7,.75)});y-=10;
+
+  for(let idx=0;idx<colaboradores.length;idx++){
+    if(y<55){
+      page=doc.addPage([842,595]);y=560;
+      heads.forEach((h,i)=>page.drawText(h,{x:cols[i]+2,y,size:6.5,font:bold}));y-=20
+    }
+    const c=colaboradores[idx];
+    const vals=[String(idx+1),c.nome,fmtData(c.admissao),fmtData(c.demissao),...c.docs.map(d=>d.ok?'C':'N/A')];
+    vals.forEach((v,i)=>{
+      const max=i===1?180:45,txt=String(v||'—');
+      let shown=txt;
+      while(font.widthOfTextAtSize(shown,6.2)>max && shown.length>3)shown=shown.slice(0,-1);
+      if(shown!==txt)shown=shown.slice(0,-1)+'…';
+      page.drawText(shown,{x:cols[i]+2,y,size:6.2,font})
+    });
+    y-=13;page.drawLine({start:{x:30,y:y+4},end:{x:812,y:y+4},thickness:.3,color:rgb(.86,.88,.9)})
+  }
+
+  y-=8;
+  page.drawText('ANEXOS COMPILADOS:',{x:30,y,size:7.5,font:bold});y-=12;
+  pdfsSessao.forEach((x,i)=>{
+    if(y<35){page=doc.addPage([842,595]);y=560}
+    y=desenharTextoQuebrado(page,(i+1)+'. '+x.file.name,40,y,760,font,6.5,9,rgb(.2,.25,.3))
+  });
+  return doc
+}
+
+async function compilarPdfFinal(){
+  if(compilando)return;
+  if(!validarCompleto())return;
+  if(!window.PDFLib){alert('A BIBLIOTECA DE PDF NÃO FOI CARREGADA. VERIFIQUE A CONEXÃO COM A INTERNET E TENTE NOVAMENTE.');return}
+  compilando=true;document.getElementById('btn-compilar').disabled=true;
+  try{
+    const {PDFDocument,StandardFonts,rgb}=PDFLib;
+    pdfSetStatus('CRIANDO CAPA E RESUMO DA CONFERÊNCIA...');
+    const capa=await criarCapaPdf(PDFDocument,StandardFonts,rgb);
+    const finalDoc=await PDFDocument.create();
+    let paginas=await finalDoc.copyPages(capa,capa.getPageIndices());paginas.forEach(p=>finalDoc.addPage(p));
+
+    for(let i=0;i<pdfsSessao.length;i++){
+      pdfSetStatus(`VALIDANDO E COMPILANDO PDF ${i+1} DE ${pdfsSessao.length}: ${pdfsSessao[i].file.name}`);
+      const bytes=await pdfsSessao[i].file.arrayBuffer();
+      let src;
+      try{src=await PDFDocument.load(bytes,{ignoreEncryption:true})}
+      catch(err){throw new Error(`Não foi possível ler "${pdfsSessao[i].file.name}". Verifique se o PDF está íntegro e sem proteção que impeça a compilação.`)}
+      const pags=await finalDoc.copyPages(src,src.getPageIndices());pags.forEach(p=>finalDoc.addPage(p))
+    }
+    pdfSetStatus('FINALIZANDO PDF...');
+    const bytes=await finalDoc.save({useObjectStreams:true});
+    invalidarPdfFinal();
+    pdfFinalBlob=new Blob([bytes],{type:'application/pdf'});
+    pdfFinalUrl=URL.createObjectURL(pdfFinalBlob);
+    document.getElementById('pdf-preview').src=pdfFinalUrl;
+    document.getElementById('modal-pdf').classList.add('aberto');
+    document.getElementById('progresso').style.display='none';
+    atualizarEtapas()
+  }catch(err){
+    document.getElementById('progresso').style.display='none';
+    alert('ERRO AO COMPILAR O PDF FINAL:\n\n'+(err&&err.message?err.message:String(err)))
+  }finally{
+    compilando=false;document.getElementById('btn-compilar').disabled=false
+  }
+}
+
+function baixarPdfFinal(){
+  if(!pdfFinalBlob||!pdfFinalUrl){alert('COMPILE O PDF FINAL NOVAMENTE.');return}
+  const a=document.createElement('a');
+  const empresa=nomeSeguro(document.getElementById('empresa').value);
+  const unidade=nomeSeguro(document.getElementById('unidade').value);
+  const comp=nomeSeguro(document.getElementById('competencia').value.replace('/','-'));
+  a.href=pdfFinalUrl;a.download=`CONFERENCIA_${empresa}_${unidade}_${comp}.pdf`;
+  document.body.appendChild(a);a.click();a.remove();
+  pdfFinalBaixado=true;
+  document.getElementById('btn-concluir').disabled=false;
+  const msg=document.getElementById('modal-msg');msg.textContent='DOWNLOAD INICIADO. CONFIRA O ARQUIVO E, EM SEGUIDA, CONCLUA A CONFERÊNCIA.';msg.className='modal-msg ok';
+  atualizarEtapas()
+}
+
+function fecharVisualizacao(){
+  document.getElementById('modal-pdf').classList.remove('aberto')
+}
+function concluirConferencia(){
+  if(!pdfFinalBlob){alert('O PDF FINAL NÃO ESTÁ DISPONÍVEL. COMPILE NOVAMENTE.');return}
+  if(!pdfFinalBaixado){alert('BAIXE O PDF FINAL ANTES DE CONCLUIR A CONFERÊNCIA.');return}
+  if(!confirm('CONFIRMA A CONCLUSÃO DA CONFERÊNCIA?\n\nApós concluir, todos os PDFs anexados nesta sessão serão removidos da memória do navegador.'))return;
+  conferenciaConcluida=true;
+  const resumo={
+    empresa:document.getElementById('empresa').value.trim(),
+    unidade:document.getElementById('unidade').value.trim(),
+    competencia:document.getElementById('competencia').value.trim(),
+    colaboradores:colaboradores.length,
+    concluidaEm:new Date().toISOString()
+  };
+  try{window.parent&&window.parent!==window&&window.parent.postMessage({type:'CONFERENCIA_DOCUMENTAL_CONCLUIDA',resumo},'*')}catch(e){}
+  document.getElementById('modal-pdf').classList.remove('aberto');
+  limparMemoriaPdfs();
+  atualizarEtapas();
+  document.getElementById('tela-concluida').classList.add('aberto')
+}
+
+function limparMemoriaPdfs(){
+  pdfsSessao=[];
+  if(pdfFinalUrl){URL.revokeObjectURL(pdfFinalUrl);pdfFinalUrl=''}
+  pdfFinalBlob=null;pdfFinalBaixado=false;
+  const prev=document.getElementById('pdf-preview');if(prev)prev.src='about:blank';
+  renderPdfs()
+}
+function limparTudo(){
+  if(confirm('LIMPAR TODOS OS DADOS E PDFs DESTA SESSÃO?')){
+    colaboradores=[];['empresa','unidade','competencia'].forEach(id=>document.getElementById(id).value='');
+    conferenciaConcluida=false;limparMemoriaPdfs();renderizar()
+  }
+}
+function novaConferencia(){
+  conferenciaConcluida=false;colaboradores=[];['empresa','unidade','competencia'].forEach(id=>document.getElementById(id).value='');
+  limparMemoriaPdfs();document.getElementById('tela-concluida').classList.remove('aberto');renderizar();
+  aplicarEmpresaVinculada()
+}
+function aplicarEmpresaVinculada(){
+  const p=new URLSearchParams(location.search);
+  const empresa=p.get('empresa')||p.get('empresaNome')||p.get('contratada')||'';
+  if(empresa){
+    const el=document.getElementById('empresa');el.value=String(empresa).toUpperCase();
+    el.readOnly=true;el.title='Empresa recebida do contrato vinculado';
+  }
+  atualizarTudo()
+}
+
+function definirEmpresaVinculada(nome){
+  if(!nome)return;
+  const el=document.getElementById('empresa');
+  el.value=String(nome).toUpperCase();
+  el.readOnly=true;
+  el.title='Empresa recebida do contrato vinculado';
+  dadosAlterados();atualizarTudo()
+}
+window.addEventListener('message',function(ev){
+  const d=ev.data||{};
+  if(d.type==='CONFERENCIA_EMPRESA_VINCULADA' && d.empresa){
+    definirEmpresaVinculada(d.empresa)
   }
 });
+window.addEventListener('beforeunload',function(e){
+  if(conferenciaConcluida)return;
+  if(colaboradores.length||pdfsSessao.length||document.getElementById('empresa').value.trim()){
+    e.preventDefault();e.returnValue=''
+  }
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&document.getElementById('modal-pdf').classList.contains('aberto'))fecharVisualizacao()
+});
 
+renderPdfs();renderizar();aplicarEmpresaVinculada();
 </script>
-
-<!-- ===== FHSL BACK BUTTON ===== -->
-<a href="index.html" id="fhsl-back-hub" title="Voltar aos módulos"
-   style="position:fixed;bottom:16px;left:16px;z-index:2147483000;display:inline-flex;align-items:center;gap:7px;
-          padding:9px 14px;background:#1d6aad;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-          font-size:13px;font-weight:600;text-decoration:none;border-radius:10px;
-          box-shadow:0 4px 14px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);line-height:1">
-  <span style="font-size:15px">←</span><span>Módulos</span>
-</a>
-<!-- ===== /FHSL BACK BUTTON ===== -->
 </body>
 </html>

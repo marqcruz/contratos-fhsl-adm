@@ -348,6 +348,19 @@ tr:hover td{background:var(--surface2)}
 .colab-row input{flex:1;min-width:180px}
 .nota-sel{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
 </style>
+
+<style>
+.picker-wrap{position:relative;display:flex;align-items:center}
+.picker-wrap input{padding-right:42px!important}
+.picker-btn{
+  position:absolute;right:5px;top:50%;transform:translateY(-50%);
+  width:32px;height:32px;border:0;border-radius:7px;background:var(--surface);
+  color:var(--accent-text);cursor:pointer;font-size:15px;display:flex;
+  align-items:center;justify-content:center
+}
+.picker-btn:hover{background:var(--accent-bg)}
+#av-contrato,#av-mesref{cursor:pointer}
+</style>
 <style>
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600}
 .c-red-b{background:var(--red-bg);color:var(--red-text)}
@@ -438,13 +451,13 @@ tr:hover td{background:var(--surface2)}
         <div class="form-grid">
           <input type="hidden" id="av-id">
           <div class="fg"><label>Unidade / prédio *</label><select id="av-unidade"></select></div>
-          <div class="fg"><label>Contrato vinculado</label><select id="av-contrato" onchange="contratoMudou()"><option value="">Selecione...</option></select></div>
-          <div class="fg"><label>Empresa terceirizada</label><input type="text" id="av-empresa" placeholder="(vem do contrato ou digite)"></div>
+          <div class="fg"><label>Empresa / contrato vinculado</label><select id="av-contrato" onchange="contratoMudou()"><option value="">Selecione a empresa...</option></select></div>
+          <input type="hidden" id="av-empresa">
           <div class="fg"><label>Nº da avaliação</label><input type="text" id="av-numero" placeholder="(automático)" readonly style="opacity:.7"></div>
-          <div class="fg"><label>Mês de referência *</label><input type="month" id="av-mesref"></div>
-          <div class="fg"><label>Data da avaliação</label><input type="date" id="av-data"></div>
-          <div class="fg"><label>Início</label><input type="time" id="av-inicio"></div>
-          <div class="fg"><label>Término</label><input type="time" id="av-fim"></div>
+          <div class="fg"><label>Mês de referência *</label><select id="av-mesref"><option value="">Selecione a competência...</option></select></div>
+          <div class="fg"><label>Data da avaliação</label><div class="picker-wrap"><input type="date" id="av-data"><button class="picker-btn" type="button" onclick="abrirPicker('av-data')" title="Selecionar data">📅</button></div></div>
+          <div class="fg"><label>Início</label><div class="picker-wrap"><input type="time" id="av-inicio" step="300"><button class="picker-btn" type="button" onclick="abrirPicker('av-inicio')" title="Selecionar horário">🕒</button></div></div>
+          <div class="fg"><label>Término</label><div class="picker-wrap"><input type="time" id="av-fim" step="300"><button class="picker-btn" type="button" onclick="abrirPicker('av-fim')" title="Selecionar horário">🕒</button></div></div>
         </div>
       </div>
 
@@ -671,9 +684,42 @@ function normMes(v){ // para input type=month -> YYYY-MM
   return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
 }
 const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-function fmtMes(v){ // exibição amigável: "junho/2026"
+function fmtMes(v){ // exibição padronizada: "06/2026"
   const s=normMes(v); if(!/^\d{4}-\d{2}$/.test(s)) return v||'—';
-  const p=s.split('-'); return MESES[parseInt(p[1],10)-1]+'/'+p[0];
+  const p=s.split('-'); return p[1]+'/'+p[0];
+}
+function preencherCompetencias(valorSelecionado){
+  const s=document.getElementById('av-mesref'); if(!s) return;
+  const atual=new Date().getFullYear(), inicio=atual-5, fim=atual+6;
+  let opts='<option value="">Selecione a competência...</option>';
+  for(let ano=fim;ano>=inicio;ano--){
+    for(let mes=12;mes>=1;mes--){
+      const mm=('0'+mes).slice(-2), val=ano+'-'+mm;
+      opts+='<option value="'+val+'">'+mm+'/'+ano+'</option>';
+    }
+  }
+  s.innerHTML=opts;
+  if(valorSelecionado){
+    const norm=normMes(valorSelecionado);
+    if(norm && !Array.from(s.options).some(function(o){return o.value===norm;})){
+      const m=norm.match(/^(\d{4})-(\d{2})$/);
+      if(m){
+        const op=document.createElement('option'); op.value=norm; op.textContent=m[2]+'/'+m[1];
+        s.appendChild(op);
+      }
+    }
+    s.value=norm;
+  }
+}
+function abrirPicker(id){
+  const el=document.getElementById(id); if(!el) return;
+  try{ if(typeof el.showPicker==='function') el.showPicker(); else el.focus(); }
+  catch(e){ el.focus(); }
+}
+function horaAtual5(){
+  const d=new Date(), m=Math.round(d.getMinutes()/5)*5;
+  if(m===60){ d.setHours(d.getHours()+1); d.setMinutes(0); } else d.setMinutes(m);
+  return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
 }
 function fmtData(v){ // exibição "01/06/2026"
   const s=normData(v); if(!/^\d{4}-\d{2}-\d{2}$/.test(s)) return v||'—';
@@ -697,7 +743,7 @@ async function carregar(){
     if(rl.ok) avaliacoes=rl.data||[];
     if(ra.ok){ unidades=(ra.unidades||[]).filter(function(u){ return String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'; }); }
     if(rc.ok) contratos=rc.data||[];
-    preencherUnidades(); preencherContratos(); montarLocais();
+    preencherUnidades(); preencherContratos(); preencherCompetencias(); montarLocais();
     renderLista();
   }catch(e){ showNotif('Erro ao carregar. Verifique a conexão.','err'); }
 }
@@ -705,14 +751,41 @@ function preencherUnidades(){
   const s=document.getElementById('av-unidade');
   if(s) s.innerHTML='<option value="">Selecione...</option>'+unidades.map(function(u){return '<option>'+esc(u.Nome)+'</option>';}).join('');
 }
-function preencherContratos(){
+function normalizaEmpresaChave(v){
+  return String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');
+}
+function contratosEmpresasUnicas(){
+  const mapa={}, lista=[];
+  contratos.forEach(function(c){
+    const nome=String(c.empresa||'').trim();
+    if(!nome) return;
+    const k=normalizaEmpresaChave(nome);
+    if(!mapa[k]){ mapa[k]=c; lista.push(c); }
+  });
+  return lista.sort(function(a,b){return String(a.empresa||'').localeCompare(String(b.empresa||''),'pt-BR');});
+}
+function contratoPorEmpresa(nome){
+  const k=normalizaEmpresaChave(nome);
+  return contratos.find(function(c){return normalizaEmpresaChave(c.empresa)===k;})||null;
+}
+function preencherContratos(empresaSelecionada){
   const s=document.getElementById('av-contrato'); if(!s) return;
-  s.innerHTML='<option value="">Selecione...</option>'+contratos.map(function(c){return '<option value="'+c.id+'">'+esc(c.numero)+(c.empresa?(' — '+esc(c.empresa)):'')+'</option>';}).join('');
+  const unicos=contratosEmpresasUnicas();
+  s.innerHTML='<option value="">Selecione a empresa...</option>'+unicos.map(function(c){
+    return '<option value="'+c.id+'">'+esc(String(c.empresa||'').trim())+'</option>';
+  }).join('');
+  if(empresaSelecionada){
+    const c=contratoPorEmpresa(empresaSelecionada);
+    if(c){
+      const principal=unicos.find(function(x){return normalizaEmpresaChave(x.empresa)===normalizaEmpresaChave(c.empresa);});
+      if(principal) s.value=principal.id;
+    }
+  }
 }
 function contratoMudou(){
   const id=document.getElementById('av-contrato').value;
-  const c=contratos.find(function(x){return String(x.id)===String(id);});
-  if(c && c.empresa) document.getElementById('av-empresa').value=c.empresa;
+  const c=contratosEmpresasUnicas().find(function(x){return String(x.id)===String(id);});
+  document.getElementById('av-empresa').value=c&&c.empresa?c.empresa:'';
 }
 function montarLocais(marcados){
   const cont=document.getElementById('locais-check');
@@ -786,7 +859,12 @@ function recalcular(){
 function novaAval(){
   editId=null;
   document.getElementById('av-id').value='';
-  ['av-numero','av-mesref','av-data','av-inicio','av-fim','av-media','av-contratado'].forEach(function(k){document.getElementById(k).value='';});
+  ['av-numero','av-fim','av-media','av-contratado'].forEach(function(k){document.getElementById(k).value='';});
+  preencherCompetencias();
+  const hoje=new Date(), compAtual=hoje.getFullYear()+'-'+('0'+(hoje.getMonth()+1)).slice(-2);
+  document.getElementById('av-mesref').value=compAtual;
+  document.getElementById('av-data').value=hoje.getFullYear()+'-'+('0'+(hoje.getMonth()+1)).slice(-2)+'-'+('0'+hoje.getDate()).slice(-2);
+  document.getElementById('av-inicio').value=horaAtual5();
   document.getElementById('av-unidade').value='';
   document.querySelectorAll('.nota-sel').forEach(function(s){ s.value='0'; });
   initPad('canvas-avaliador'); limparAssinatura('avaliador');
@@ -802,7 +880,7 @@ function editarAval(id){
   document.getElementById('av-id').value=id;
   document.getElementById('av-numero').value=a.Numero||'';
   document.getElementById('av-unidade').value=a.Unidade||'';
-  document.getElementById('av-mesref').value=normMes(a.MesRef);
+  preencherCompetencias(a.MesRef);
   document.getElementById('av-data').value=normData(a.DataAval);
   document.getElementById('av-inicio').value=a.HoraInicio||'';
   document.getElementById('av-fim').value=a.HoraFim||'';
@@ -813,7 +891,7 @@ function editarAval(id){
     const sel=document.querySelector('.nota-sel[data-mod="'+mod.id+'"][data-idx="'+idx+'"]');
     if(sel) sel.value = (notas[mod.id] && notas[mod.id][idx]!=null) ? notas[mod.id][idx] : 0;
   }); });
-  document.getElementById('av-contrato').value=a.ContratoID||'';
+  preencherContratos(a.Empresa||'');
   document.getElementById('av-empresa').value=a.Empresa||'';
   document.getElementById('av-obs').value=a.Observacoes||'';
   montarLocais(a.LocaisArr||[]);
@@ -892,7 +970,7 @@ async function salvarAval(statusAlvo){
     AreaAvaliada:coletarLocais().join(', '), Notas:notas,
     MediaDiaria:document.getElementById('av-media').value, ContingenteContratado:document.getElementById('av-contratado').value,
     AvaliadorAssin:assinaturaData('canvas-avaliador'), Colaboradores:coletarColaboradores(),
-    ContratoID:document.getElementById('av-contrato').value, ContratoNum:(contratos.find(function(x){return String(x.id)===String(document.getElementById('av-contrato').value);})||{}).numero||'',
+    ContratoID:document.getElementById('av-contrato').value, ContratoNum:(contratosEmpresasUnicas().find(function(x){return String(x.id)===String(document.getElementById('av-contrato').value);})||{}).numero||'',
     Empresa:document.getElementById('av-empresa').value.trim(), LocaisAvaliados:coletarLocais(), Observacoes:document.getElementById('av-obs').value.trim(),
     Status:statusAlvo, __actor:{ nome:currentUser.nome, email:currentUser.email } };
   showNotif('Salvando...','info');

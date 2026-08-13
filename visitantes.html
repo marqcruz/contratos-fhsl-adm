@@ -628,12 +628,15 @@ function atualizarSugestoes(){
 }
 function hojeLocal(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function agoraInput(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
-function parseLocal(v){if(!v)return null;const d=new Date(String(v).replace(' ','T'));return isNaN(d)?null:d}
-function fmtDT(v){const d=parseLocal(v);return d?d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
+function parseLocal(v){if(!v)return null;const s=String(v).trim();const d=new Date(s.includes('T')?s:s.replace(' ','T'));return isNaN(d)?null:d}
+function fmtDT(v){const d=parseLocal(v);return d?d.toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
 function dataDe(v){return String(v||'').slice(0,10)}
 function mesDe(v){return String(v||'').slice(0,7)}
 function minutosPermanencia(v){
-  const a=parseLocal(v.Entrada),b=parseLocal(v.Saida)||new Date();if(!a)return 0;return Math.max(0,Math.round((b-a)/60000))
+  const a=parseLocal(v.Entrada),b=parseLocal(v.SaidaEm||v.Saida)||(v.Status==='NO PRÉDIO'?new Date():null);
+  if(!a||!b)return 0;
+  const min=Math.round((b-a)/60000);
+  return min<0?0:min
 }
 function fmtDur(min){if(!min&&min!==0)return'—';const h=Math.floor(min/60),m=min%60;return h?`${h}h ${m}min`:`${m}min`}
 function tipoClass(t){t=String(t||'').toUpperCase();return t.includes('PRESTADOR')?'prestador':t.includes('ENTREGA')||t.includes('FORNECEDOR')?'entrega':''}
@@ -658,7 +661,7 @@ function renderLista(){
     if(v.Status==='NO PRÉDIO'&&podeRegistrar())ac+=` <button class="btn xs success" onclick="registrarSaida('${v.ID}')">↪ Saída</button>`;
     if(podeRegistrar())ac+=` <button class="btn xs" onclick="openForm('${v.ID}')">✏️</button>`;
     if(podeExcluir())ac+=` <button class="btn xs danger" onclick="excluirRegistro('${v.ID}')">🗑️</button>`;
-    return `<tr class="${v.Status==='NO PRÉDIO'?'presente-row':'saida-row'}"><td>${fmtDT(v.Entrada)}</td><td><span class="tipo-chip ${tipoClass(v.Tipo)}">${esc(v.Tipo)}</span></td><td><strong>${esc(v.Nome)}</strong></td><td>${esc(v.DocumentoTipo||'DOC')} ${esc(v.Documento)}</td><td>${esc(v.Empresa||'—')}</td><td>${esc(v.Setor)}<div style="font-size:10px;color:var(--text3)">${v.ResponsavelSetor?'RESP. SETOR: '+esc(v.ResponsavelSetor)+' · ':''}ATENDIDO POR: ${esc(v.Responsavel)}</div>${String(v.Agendado||'').toUpperCase()==='SIM'?'<div style="font-size:10px;color:var(--accent-text);font-weight:700">📅 AGENDADO '+fmtDT(v.Agendamento)+'</div>':''}</td><td><span class="badge ${v.Status==='NO PRÉDIO'?'status-presente':'status-saiu'}">${v.Status==='NO PRÉDIO'?'🟢 NO PRÉDIO':'SAIU'}</span><div class="duracao">${fmtDur(minutosPermanencia(v))}</div></td><td>${fmtDT(v.Saida)}</td><td style="white-space:nowrap">${ac}</td></tr>`
+    return `<tr class="${v.Status==='NO PRÉDIO'?'presente-row':'saida-row'}"><td>${fmtDT(v.Entrada)}</td><td><span class="tipo-chip ${tipoClass(v.Tipo)}">${esc(v.Tipo)}</span></td><td><strong>${esc(v.Nome)}</strong></td><td>${esc(v.DocumentoTipo||'DOC')} ${esc(v.Documento)}</td><td>${esc(v.Empresa||'—')}</td><td>${esc(v.Setor)}<div style="font-size:10px;color:var(--text3)">${v.ResponsavelSetor?'RESP. SETOR: '+esc(v.ResponsavelSetor)+' · ':''}ATENDIDO POR: ${esc(v.Responsavel)}</div>${String(v.Agendado||'').toUpperCase()==='SIM'?'<div style="font-size:10px;color:var(--accent-text);font-weight:700">📅 AGENDADO '+fmtDT(v.Agendamento)+'</div>':''}</td><td><span class="badge ${v.Status==='NO PRÉDIO'?'status-presente':'status-saiu'}">${v.Status==='NO PRÉDIO'?'🟢 NO PRÉDIO':'SAIU'}</span><div class="duracao">${fmtDur(minutosPermanencia(v))}</div></td><td>${fmtDT(v.SaidaEm||v.Saida)}</td><td style="white-space:nowrap">${ac}</td></tr>`
   }).join('')
 }
 function renderPresentes(){
@@ -780,7 +783,7 @@ async function excluirRegistro(id){
 
 function verDetalhe(id){
   const v=visitantes.find(x=>String(x.ID)===String(id));if(!v)return;
-  const items=[['Nome',v.Nome],['Tipo',v.Tipo],['Documento',(v.DocumentoTipo||'DOC')+' '+v.Documento],['Telefone',v.Telefone||'—'],['Empresa / origem',v.Empresa||'—'],['Local de visita',v.Setor],['Responsável do setor',v.ResponsavelSetor||'—'],['Responsável pelo atendimento',v.Responsavel],['Tipo de atendimento / motivo',v.Motivo||'—'],['Agendado',String(v.Agendado||'NÃO').toUpperCase()==='SIM'?'SIM — '+fmtDT(v.Agendamento):'NÃO'],['Entrada',fmtDT(v.Entrada)],['Saída',fmtDT(v.Saida)],['Permanência',fmtDur(minutosPermanencia(v))],['Veículo',v.Veiculo||'NÃO'],['Placa',v.Placa||'—'],['Observações',v.Observacoes||'—'],['Registrado por',v.CriadoPor||'—']];
+  const items=[['Nome',v.Nome],['Tipo',v.Tipo],['Documento',(v.DocumentoTipo||'DOC')+' '+v.Documento],['Telefone',v.Telefone||'—'],['Empresa / origem',v.Empresa||'—'],['Local de visita',v.Setor],['Responsável do setor',v.ResponsavelSetor||'—'],['Responsável pelo atendimento',v.Responsavel],['Tipo de atendimento / motivo',v.Motivo||'—'],['Agendado',String(v.Agendado||'NÃO').toUpperCase()==='SIM'?'SIM — '+fmtDT(v.Agendamento):'NÃO'],['Entrada',fmtDT(v.Entrada)],['Saída',fmtDT(v.SaidaEm||v.Saida)],['Permanência',fmtDur(minutosPermanencia(v))],['Veículo',v.Veiculo||'NÃO'],['Placa',v.Placa||'—'],['Observações',v.Observacoes||'—'],['Registrado por',v.CriadoPor||'—']];
   document.getElementById('detalhe-body').innerHTML='<div class="detail-grid">'+items.map((x,i)=>`<div class="detail-item ${i===15?'full':''}"><label>${esc(x[0])}</label><div>${esc(x[1])}</div></div>`).join('')+'</div>';
   document.getElementById('modal-detalhe').classList.add('open')
 }
@@ -799,11 +802,11 @@ async function aplicarRelatorio(recarregar=true){
 }
 function renderRelatorio(arr){
   const prest=arr.filter(v=>String(v.Tipo).toUpperCase().includes('PRESTADOR')).length,vis=arr.filter(v=>String(v.Tipo).toUpperCase()==='VISITANTE').length,ab=arr.filter(v=>v.Status==='NO PRÉDIO').length;
-  const mins=arr.filter(v=>v.Saida).map(minutosPermanencia),med=mins.length?Math.round(mins.reduce((a,b)=>a+b,0)/mins.length):0;
+  const mins=arr.filter(v=>v.SaidaEm||v.Saida).map(minutosPermanencia),med=mins.length?Math.round(mins.reduce((a,b)=>a+b,0)/mins.length):0;
   document.getElementById('rel-total').textContent=arr.length;document.getElementById('rel-visitantes').textContent=vis;document.getElementById('rel-prestadores').textContent=prest;document.getElementById('rel-tempo').textContent=mins.length?fmtDur(med):'—';document.getElementById('rel-abertos').textContent=ab;
   renderBars('bars-setor',contagem(arr,'Setor'));renderBars('bars-empresa',contagem(arr,'Empresa'));
   const tb=document.getElementById('rel-body');document.getElementById('rel-empty').style.display=arr.length?'none':'block';
-  tb.innerHTML=arr.map(v=>`<tr><td>${fmtDT(v.Entrada)}</td><td>${fmtDT(v.Saida)}</td><td>${String(v.Agendado||'').toUpperCase()==='SIM'?'SIM · '+fmtDT(v.Agendamento):'NÃO'}</td><td>${esc(v.Tipo)}</td><td>${esc(v.Nome)}</td><td>${esc(v.DocumentoTipo||'DOC')} ${esc(v.Documento)}</td><td>${esc(v.Empresa||'—')}</td><td>${esc(v.Setor)}</td><td>${esc(v.ResponsavelSetor||'—')}</td><td>${esc(v.Responsavel)}</td><td>${esc(v.Motivo||'—')}</td><td>${fmtDur(minutosPermanencia(v))}</td></tr>`).join('')
+  tb.innerHTML=arr.map(v=>`<tr><td>${fmtDT(v.Entrada)}</td><td>${fmtDT(v.SaidaEm||v.Saida)}</td><td>${String(v.Agendado||'').toUpperCase()==='SIM'?'SIM · '+fmtDT(v.Agendamento):'NÃO'}</td><td>${esc(v.Tipo)}</td><td>${esc(v.Nome)}</td><td>${esc(v.DocumentoTipo||'DOC')} ${esc(v.Documento)}</td><td>${esc(v.Empresa||'—')}</td><td>${esc(v.Setor)}</td><td>${esc(v.ResponsavelSetor||'—')}</td><td>${esc(v.Responsavel)}</td><td>${esc(v.Motivo||'—')}</td><td>${fmtDur(minutosPermanencia(v))}</td></tr>`).join('')
 }
 function contagem(arr,k){const m={};arr.forEach(v=>{const x=String(v[k]||'NÃO INFORMADO').trim()||'NÃO INFORMADO';m[x]=(m[x]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10)}
 function renderBars(id,rows){const el=document.getElementById(id),mx=rows.length?rows[0][1]:1;el.innerHTML=rows.length?rows.map(r=>`<div class="bar-line"><div class="bar-name" title="${esc(r[0])}">${esc(r[0])}</div><div class="bar-bg"><div class="bar-fill2" style="width:${Math.max(4,r[1]/mx*100)}%"></div></div><strong>${r[1]}</strong></div>`).join(''):'<div class="empty-small">Sem dados</div>'}
@@ -812,7 +815,7 @@ function exportarCSV(){
   const tb=[...document.querySelectorAll('#rel-body tr')]; // use filtered relDados by rebuilding from current filters
   const ini=document.getElementById('rel-ini').value,fim=document.getElementById('rel-fim').value,tipo=document.getElementById('rel-tipo').value,setor=document.getElementById('rel-setor').value,emp=document.getElementById('rel-empresa').value.trim().toLowerCase();
   const arr=relDados.filter(v=>(!ini||dataDe(v.Entrada)>=ini)&&(!fim||dataDe(v.Entrada)<=fim)&&(!tipo||v.Tipo===tipo)&&(!setor||v.Setor===setor)&&(!emp||String(v.Empresa||'').toLowerCase().includes(emp)));
-  arr.forEach(v=>rows.push([v.Entrada,v.Saida,v.Agendado,v.Agendamento,v.Tipo,v.Nome,v.DocumentoTipo,v.Documento,v.Telefone,v.Empresa,v.Setor,v.ResponsavelSetor,v.Responsavel,v.Motivo,v.Veiculo,v.Placa,v.Observacoes,v.Status]));
+  arr.forEach(v=>rows.push([v.Entrada,(v.SaidaEm||v.Saida),v.Agendado,v.Agendamento,v.Tipo,v.Nome,v.DocumentoTipo,v.Documento,v.Telefone,v.Empresa,v.Setor,v.ResponsavelSetor,v.Responsavel,v.Motivo,v.Veiculo,v.Placa,v.Observacoes,v.Status]));
   const csv=rows.map(r=>r.map(x=>'"'+String(x||'').replace(/"/g,'""')+'"').join(';')).join('\r\n'),blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='visitantes_sede_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)
 }
 </script>

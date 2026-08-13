@@ -303,6 +303,13 @@ tr:hover td{background:var(--surface2)}
 .back-hub:hover{background:var(--surface2);color:var(--text)}
 .wip{background:var(--yellow-bg);border:1px solid #fde68a;color:var(--yellow-text);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem}
 
+
+.pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding:10px 2px}
+.pagination-info{font-size:12px;color:var(--text2)}
+.pagination-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pagination-actions select{min-width:78px}
+.pagination-actions .btn[disabled]{opacity:.45;cursor:not-allowed}
+.page-indicator{font-size:12px;color:var(--text2);padding:0 4px}
 </style>
 
 
@@ -416,17 +423,34 @@ tr:hover td{background:var(--surface2)}
     </div>
 
     <div class="toolbar">
-      <input type="text" id="busca" placeholder="🔍 Nome, documento, empresa, responsável..." oninput="renderLista()">
-      <select id="filtro-tipo" onchange="renderLista()"><option value="">Todos os tipos</option></select>
-      <select id="filtro-status" onchange="renderLista()"><option value="">Todos</option><option value="NO PRÉDIO">No prédio</option><option value="SAIU">Saíram</option></select>
-      <input type="date" id="filtro-data" onchange="renderLista()">
+      <input type="text" id="busca" placeholder="🔍 Nome completo, documento, empresa, responsável..." oninput="renderLista(true)">
+      <select id="filtro-tipo" onchange="renderLista(true)"><option value="">Todos os tipos</option></select>
+      <select id="filtro-status" onchange="renderLista(true)"><option value="">Todos</option><option value="NO PRÉDIO">No prédio</option><option value="SAIU">Saíram</option></select>
+      <input type="date" id="filtro-data" onchange="renderLista(true)">
       <button class="btn" onclick="carregarVisitantes()">🔄 Atualizar</button>
     </div>
 
     <div class="table-wrap"><table>
-      <thead><tr><th>Entrada</th><th>Tipo</th><th>Nome</th><th>Documento</th><th>Empresa / Origem</th><th>Local / Responsável</th><th>Status</th><th>Saída</th><th></th></tr></thead>
+      <thead><tr><th>Entrada</th><th>Tipo</th><th>Nome completo</th><th>Documento</th><th>Empresa / Origem</th><th>Local / Responsável</th><th>Status</th><th>Saída</th><th></th></tr></thead>
       <tbody id="visitantes-body"></tbody>
     </table><div class="empty-state" id="lista-empty" style="display:none"><span class="empty-icon">🪪</span>Nenhum registro encontrado</div></div>
+    <div class="pagination" id="lista-paginacao">
+      <div class="pagination-info" id="lista-paginacao-info">0 registros</div>
+      <div class="pagination-actions">
+        <span class="pagination-info">Exibir</span>
+        <select id="lista-por-pagina" onchange="alterarPorPagina(this.value)">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+        <button class="btn sm" id="lista-primeira" onclick="mudarPaginaLista(1)">«</button>
+        <button class="btn sm" id="lista-anterior" onclick="mudarPaginaLista(listaPagina-1)">‹ Anterior</button>
+        <span class="page-indicator" id="lista-pagina-indicador">Página 1 de 1</span>
+        <button class="btn sm" id="lista-proxima" onclick="mudarPaginaLista(listaPagina+1)">Próxima ›</button>
+        <button class="btn sm" id="lista-ultima" onclick="mudarPaginaLista(listaTotalPaginas)">»</button>
+      </div>
+    </div>
   </div>
 
   <div class="page" id="page-presentes">
@@ -471,7 +495,7 @@ tr:hover td{background:var(--surface2)}
     </div>
 
     <div class="table-wrap"><table>
-      <thead><tr><th>Entrada</th><th>Saída</th><th>Agendado</th><th>Tipo</th><th>Nome</th><th>Documento</th><th>Empresa</th><th>Local de visita</th><th>Resp. setor</th><th>Atendido por</th><th>Motivo</th><th>Permanência</th></tr></thead>
+      <thead><tr><th>Entrada</th><th>Saída</th><th>Agendado</th><th>Tipo</th><th>Nome completo</th><th>Documento</th><th>Empresa</th><th>Local de visita</th><th>Resp. setor</th><th>Atendido por</th><th>Motivo</th><th>Permanência</th></tr></thead>
       <tbody id="rel-body"></tbody>
     </table><div class="empty-state" id="rel-empty" style="display:none">Nenhum registro no período selecionado</div></div>
   </div>
@@ -531,6 +555,7 @@ tr:hover td{background:var(--surface2)}
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
 const VISITANTES_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-visitantes-api';
 let currentUser=null, visitantes=[], config={tipos:[],locais:[],setores:[],motivos:[]}, relDados=[];
+let listaPagina=1, listaPorPagina=20, listaTotalPaginas=1;
 
 async function apiFetch(action,payload){
   const r=await fetch(SCRIPT_URL+'?action='+action,{method:'POST',body:JSON.stringify(payload||{})});
@@ -649,20 +674,54 @@ function renderKPIs(){
   document.getElementById('kpi-saidas').textContent=hojeArr.filter(v=>v.Status==='SAIU').length;document.getElementById('kpi-mes').textContent=visitantes.filter(v=>mesDe(v.Entrada)===mes).length;
   const b=document.getElementById('badge-presentes');b.textContent=presentes.length;b.style.display=presentes.length?'inline-block':'none'
 }
-function renderLista(){
+function renderLista(resetPagina){
+  if(resetPagina)listaPagina=1;
   const q=document.getElementById('busca').value.trim().toLowerCase(),tipo=document.getElementById('filtro-tipo').value,status=document.getElementById('filtro-status').value,data=document.getElementById('filtro-data').value;
   let arr=visitantes.filter(v=>{
     if(q&&!(`${v.Nome} ${v.Documento} ${v.Empresa} ${v.Setor} ${v.Responsavel}`.toLowerCase().includes(q)))return false;
     if(tipo&&v.Tipo!==tipo)return false;if(status&&v.Status!==status)return false;if(data&&dataDe(v.Entrada)!==data)return false;return true
   });
-  const tb=document.getElementById('visitantes-body');document.getElementById('lista-empty').style.display=arr.length?'none':'block';
-  tb.innerHTML=arr.map(v=>{
+
+  listaTotalPaginas=Math.max(1,Math.ceil(arr.length/listaPorPagina));
+  if(listaPagina>listaTotalPaginas)listaPagina=listaTotalPaginas;
+  if(listaPagina<1)listaPagina=1;
+
+  const inicio=(listaPagina-1)*listaPorPagina;
+  const fim=Math.min(inicio+listaPorPagina,arr.length);
+  const pagina=arr.slice(inicio,fim);
+
+  const tb=document.getElementById('visitantes-body');
+  document.getElementById('lista-empty').style.display=arr.length?'none':'block';
+  tb.innerHTML=pagina.map(v=>{
     let ac=`<button class="btn xs" onclick="verDetalhe('${v.ID}')">👁️</button>`;
     if(v.Status==='NO PRÉDIO'&&podeRegistrar())ac+=` <button class="btn xs success" onclick="registrarSaida('${v.ID}')">↪ Saída</button>`;
     if(podeRegistrar())ac+=` <button class="btn xs" onclick="openForm('${v.ID}')">✏️</button>`;
     if(podeExcluir())ac+=` <button class="btn xs danger" onclick="excluirRegistro('${v.ID}')">🗑️</button>`;
     return `<tr class="${v.Status==='NO PRÉDIO'?'presente-row':'saida-row'}"><td>${fmtDT(v.Entrada)}</td><td><span class="tipo-chip ${tipoClass(v.Tipo)}">${esc(v.Tipo)}</span></td><td><strong>${esc(v.Nome)}</strong></td><td>${esc(v.DocumentoTipo||'DOC')} ${esc(v.Documento)}</td><td>${esc(v.Empresa||'—')}</td><td>${esc(v.Setor)}<div style="font-size:10px;color:var(--text3)">${v.ResponsavelSetor?'RESP. SETOR: '+esc(v.ResponsavelSetor)+' · ':''}ATENDIDO POR: ${esc(v.Responsavel)}</div>${String(v.Agendado||'').toUpperCase()==='SIM'?'<div style="font-size:10px;color:var(--accent-text);font-weight:700">📅 AGENDADO '+fmtDT(v.Agendamento)+'</div>':''}</td><td><span class="badge ${v.Status==='NO PRÉDIO'?'status-presente':'status-saiu'}">${v.Status==='NO PRÉDIO'?'🟢 NO PRÉDIO':'SAIU'}</span><div class="duracao">${fmtDur(minutosPermanencia(v))}</div></td><td>${fmtDT(v.SaidaEm||v.Saida)}</td><td style="white-space:nowrap">${ac}</td></tr>`
-  }).join('')
+  }).join('');
+
+  const info=document.getElementById('lista-paginacao-info');
+  const ind=document.getElementById('lista-pagina-indicador');
+  if(info)info.textContent=arr.length
+    ? `Exibindo ${inicio+1}–${fim} de ${arr.length} registro${arr.length===1?'':'s'}`
+    : '0 registros';
+  if(ind)ind.textContent=`Página ${listaPagina} de ${listaTotalPaginas}`;
+
+  ['lista-primeira','lista-anterior'].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=listaPagina<=1});
+  ['lista-proxima','lista-ultima'].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=listaPagina>=listaTotalPaginas});
+}
+function mudarPaginaLista(pagina){
+  const p=Math.max(1,Math.min(Number(pagina)||1,listaTotalPaginas));
+  if(p===listaPagina)return;
+  listaPagina=p;
+  renderLista(false);
+  const tabela=document.querySelector('#page-lista .table-wrap');
+  if(tabela)tabela.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function alterarPorPagina(valor){
+  listaPorPagina=Math.max(1,Number(valor)||20);
+  listaPagina=1;
+  renderLista(false);
 }
 function renderPresentes(){
   const q=document.getElementById('busca-presentes').value.trim().toLowerCase();
@@ -783,7 +842,7 @@ async function excluirRegistro(id){
 
 function verDetalhe(id){
   const v=visitantes.find(x=>String(x.ID)===String(id));if(!v)return;
-  const items=[['Nome',v.Nome],['Tipo',v.Tipo],['Documento',(v.DocumentoTipo||'DOC')+' '+v.Documento],['Telefone',v.Telefone||'—'],['Empresa / origem',v.Empresa||'—'],['Local de visita',v.Setor],['Responsável do setor',v.ResponsavelSetor||'—'],['Responsável pelo atendimento',v.Responsavel],['Tipo de atendimento / motivo',v.Motivo||'—'],['Agendado',String(v.Agendado||'NÃO').toUpperCase()==='SIM'?'SIM — '+fmtDT(v.Agendamento):'NÃO'],['Entrada',fmtDT(v.Entrada)],['Saída',fmtDT(v.SaidaEm||v.Saida)],['Permanência',fmtDur(minutosPermanencia(v))],['Veículo',v.Veiculo||'NÃO'],['Placa',v.Placa||'—'],['Observações',v.Observacoes||'—'],['Registrado por',v.CriadoPor||'—']];
+  const items=[['Nome completo',v.Nome],['Tipo',v.Tipo],['Documento',(v.DocumentoTipo||'DOC')+' '+v.Documento],['Telefone',v.Telefone||'—'],['Empresa / origem',v.Empresa||'—'],['Local de visita',v.Setor],['Responsável do setor',v.ResponsavelSetor||'—'],['Responsável pelo atendimento',v.Responsavel],['Tipo de atendimento / motivo',v.Motivo||'—'],['Agendado',String(v.Agendado||'NÃO').toUpperCase()==='SIM'?'SIM — '+fmtDT(v.Agendamento):'NÃO'],['Entrada',fmtDT(v.Entrada)],['Saída',fmtDT(v.SaidaEm||v.Saida)],['Permanência',fmtDur(minutosPermanencia(v))],['Veículo',v.Veiculo||'NÃO'],['Placa',v.Placa||'—'],['Observações',v.Observacoes||'—'],['Registrado por',v.CriadoPor||'—']];
   document.getElementById('detalhe-body').innerHTML='<div class="detail-grid">'+items.map((x,i)=>`<div class="detail-item ${i===15?'full':''}"><label>${esc(x[0])}</label><div>${esc(x[1])}</div></div>`).join('')+'</div>';
   document.getElementById('modal-detalhe').classList.add('open')
 }
@@ -811,7 +870,7 @@ function renderRelatorio(arr){
 function contagem(arr,k){const m={};arr.forEach(v=>{const x=String(v[k]||'NÃO INFORMADO').trim()||'NÃO INFORMADO';m[x]=(m[x]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10)}
 function renderBars(id,rows){const el=document.getElementById(id),mx=rows.length?rows[0][1]:1;el.innerHTML=rows.length?rows.map(r=>`<div class="bar-line"><div class="bar-name" title="${esc(r[0])}">${esc(r[0])}</div><div class="bar-bg"><div class="bar-fill2" style="width:${Math.max(4,r[1]/mx*100)}%"></div></div><strong>${r[1]}</strong></div>`).join(''):'<div class="empty-small">Sem dados</div>'}
 function exportarCSV(){
-  const rows=[['Entrada','Saida','Agendado','Agendamento','Tipo','Nome','DocumentoTipo','Documento','Telefone','Empresa','LocalVisita','ResponsavelSetor','ResponsavelAtendimento','Motivo','Veiculo','Placa','Observacoes','Status']];
+  const rows=[['Entrada','Saida','Agendado','Agendamento','Tipo','Nome completo','DocumentoTipo','Documento','Telefone','Empresa','LocalVisita','ResponsavelSetor','ResponsavelAtendimento','Motivo','Veiculo','Placa','Observacoes','Status']];
   const tb=[...document.querySelectorAll('#rel-body tr')]; // use filtered relDados by rebuilding from current filters
   const ini=document.getElementById('rel-ini').value,fim=document.getElementById('rel-fim').value,tipo=document.getElementById('rel-tipo').value,setor=document.getElementById('rel-setor').value,emp=document.getElementById('rel-empresa').value.trim().toLowerCase();
   const arr=relDados.filter(v=>(!ini||dataDe(v.Entrada)>=ini)&&(!fim||dataDe(v.Entrada)<=fim)&&(!tipo||v.Tipo===tipo)&&(!setor||v.Setor===setor)&&(!emp||String(v.Empresa||'').toLowerCase().includes(emp)));

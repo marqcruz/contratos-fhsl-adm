@@ -573,6 +573,7 @@ td.nowrap{white-space:nowrap}
 <script>
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
+const CNES_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-cnes-api';
 let currentUser = null;
 
 async function apiFetch(action, payload){
@@ -580,16 +581,30 @@ async function apiFetch(action, payload){
   const t = await r.text();
   try { return JSON.parse(t); } catch(e){ return { ok:false, message:t }; }
 }
+
+async function cnesApi(action, payload, autenticado=true){
+  const headers={'Content-Type':'application/json'};
+  if(autenticado && currentUser && currentUser.cnesToken) headers.Authorization='Bearer '+currentUser.cnesToken;
+  const r=await fetch(CNES_API_URL,{method:'POST',headers,body:JSON.stringify(Object.assign({action},payload||{}))});
+  const t=await r.text();
+  let j; try{j=JSON.parse(t)}catch(e){j={ok:false,message:t}}
+  if(r.status===401 && autenticado){
+    try{sessionStorage.removeItem('fhsl_session')}catch(e){}
+    if(currentUser) delete currentUser.cnesToken;
+  }
+  return j;
+}
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim().toLowerCase();
   const senha=document.getElementById('login-pass').value;
   const err=document.getElementById('login-err'); err.style.display='none';
   if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
   try{
-    const r=await apiFetch('authuser',{email,senha});
+    const r=await cnesApi('login',{email,senha},false);
     if(!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
-    currentUser=r.user;
-  }catch(e){ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; return; }
+    currentUser=r.user||{};
+    currentUser.cnesToken=r.token;
+  }catch(e){ err.textContent='Sem conexão com o banco CNES.'; err.style.display='block'; return; }
   sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
   startApp();
 }
@@ -611,7 +626,13 @@ function showNotif(msg,type){ const el=document.getElementById('notif'); if(!el)
   setTimeout(function(){ el.style.display='none'; },3500); }
 window.addEventListener('DOMContentLoaded', function(){
   const s=sessionStorage.getItem('fhsl_session');
-  if(s){ try{ currentUser=JSON.parse(s); startApp(); }catch(e){} }
+  if(s){
+    try{
+      currentUser=JSON.parse(s);
+      if(currentUser && currentUser.cnesToken) startApp();
+      else currentUser=null;
+    }catch(e){ currentUser=null; }
+  }
 });
 // Lista de CBOs comuns em saúde (código + descrição). Ajuste conforme sua base.
 let CBOS = [
@@ -751,12 +772,14 @@ function tipoMudou(){
 // ── Unidades (menu lateral) ──
 async function carregarUnidades(){
   try{
-    const ra=await apiFetch('getadmin');
-    if(ra.ok) unidades=(ra.unidades||[]).filter(function(u){ return String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'; });
-    // TODO trava: por ora todas as unidades aparecem. Depois, filtrar por permissão do usuário.
+    const ra=await cnesApi('bootstrap');
+    if(ra.ok){
+      unidades=(ra.unidades||[]).filter(function(u){ return String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'; });
+      tipos=ra.tipos||tipos;
+    } else throw new Error(ra.message||'Erro');
     unidadesPermitidas = unidades.slice();
     montarNavUnidades();
-  }catch(e){ showNotif('Erro ao carregar unidades.','err'); }
+  }catch(e){ showNotif(e.message||'Erro ao carregar unidades.','err'); }
 }
 function montarNavUnidades(){
   const cont=document.getElementById('nav-unidades');
@@ -780,7 +803,7 @@ async function carregar(){
   if(!unidadeAtual) return;
   showNotif('Carregando...','info');
   try{
-    const r=await apiFetch('getcnes&unidade='+encodeURIComponent(unidadeAtual));
+    const r=await cnesApi('list',{unidade:unidadeAtual});
     if(r.ok){ cadastros=r.data||[]; tipos=r.tipos||{}; montarFiltroComp(); renderTabela(); hideNotif(); }
     else showNotif(r.message||'Erro.','err');
   }catch(e){ showNotif('Erro ao carregar cadastros.','err'); }
@@ -895,7 +918,7 @@ function renderPaginacao(total, totalPag, ini, mostrados){
 }
 function irPagina(p){ pagina=p; renderTabela(); document.querySelector('.table-wrap').scrollTop=0; }
 async function toggleCadCnes(id, novoValor){
-  const r=await apiFetch('togglecnes', { id:id, valor:novoValor, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  const r=await cnesApi('toggle', { id:id, valor:novoValor });
   if(r.ok){
     const c=cadastros.find(function(x){return String(x.ID)===String(id);});
     if(c){ c.CadastradoCNES=novoValor?'true':''; c.AtualizadoEm=(new Date()).toLocaleString('pt-BR'); }
@@ -985,7 +1008,7 @@ async function salvarCadastro(){
     DataSaida:document.getElementById('cd-datasaida').value, Status:document.getElementById('cd-status').value,
     CadastradoCNES:document.getElementById('cd-cnes').checked, Obs:document.getElementById('cd-obs').value.trim(), __actor:{ nome:currentUser.nome, email:currentUser.email } };
   showNotif('Salvando...','info');
-  const r=await apiFetch('savecnes', payload);
+  const r=await cnesApi('save', {payload:payload});
   if(r.ok){
     if(r.statusAjustado) showNotif('Cadastro salvo e marcado como '+r.statusAjustado+'.','ok');
     else showNotif('Cadastro salvo.','ok');
@@ -999,7 +1022,7 @@ async function delCad(id){
   if(!confirm('Excluir o cadastro de "'+((c&&c.Nome)||'')+'"?')) return;
   showNotif('Excluindo, aguarde...','info');
   try{
-    const r=await apiFetch('deletecnes', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+    const r=await cnesApi('delete', { id:id });
     if(r.ok){ showNotif('Cadastro excluído com sucesso.','ok'); await carregar(); }
     else showNotif(r.message||'Erro ao excluir.','err');
   }catch(e){ showNotif('Erro de conexão ao excluir.','err'); }
@@ -1029,7 +1052,7 @@ async function excluirSelecionados(){
   btn.disabled=true; btn.innerHTML='⏳ Excluindo '+ids.length+'...';
   showNotif('Excluindo '+ids.length+' cadastro(s), aguarde...','info');
   try{
-    const r=await apiFetch('deletecnesbatch', { ids:ids, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+    const r=await cnesApi('deletebatch', { ids:ids });
     btn.disabled=false; btn.innerHTML=txtOrig;
     if(r.ok){ showNotif('✅ '+r.removidos+' cadastro(s) excluído(s) com sucesso.','ok'); limparSelecao(); await carregar(); }
     else showNotif(r.message||'Erro ao excluir.','err');
@@ -1234,7 +1257,7 @@ async function confirmarImport(){
   try{
     for(let i=0;i<total;i+=LOTE){
       const lote=importPend.slice(i, i+LOTE);
-      const r=await apiFetch('importcnes', { unidade:unidadeAtual, linhas:lote, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+      const r=await cnesApi('import', { unidade:unidadeAtual, linhas:lote });
       if(r.ok){ importados+=r.importados||lote.length; if(r.marcados) marcados=marcados.concat(r.marcados); if(r.duplicados) duplicados=duplicados.concat(r.duplicados); }
       else { showNotif('Erro no lote: '+(r.message||''),'err'); break; }
       const feito=Math.min(i+LOTE, total);

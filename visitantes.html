@@ -529,11 +529,21 @@ tr:hover td{background:var(--surface2)}
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
+const VISITANTES_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-visitantes-api';
 let currentUser=null, visitantes=[], config={tipos:[],locais:[],setores:[],motivos:[]}, relDados=[];
 
 async function apiFetch(action,payload){
   const r=await fetch(SCRIPT_URL+'?action='+action,{method:'POST',body:JSON.stringify(payload||{})});
   const t=await r.text(); try{return JSON.parse(t)}catch(e){return{ok:false,message:t}}
+}
+
+async function visitantesApi(action,payload,autenticado=true){
+  const headers={'Content-Type':'application/json'};
+  if(autenticado&&currentUser&&currentUser.tdngoToken)headers.Authorization='Bearer '+currentUser.tdngoToken;
+  const r=await fetch(VISITANTES_API_URL,{method:'POST',headers,body:JSON.stringify(Object.assign({action},payload||{}))});
+  const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){j={ok:false,message:t}}
+  if(r.status===401&&autenticado){try{sessionStorage.removeItem('fhsl_session')}catch(e){}}
+  return j
 }
 function actor(){return {nome:currentUser.nome,email:currentUser.email}}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
@@ -551,12 +561,15 @@ function podeExcluir(){return currentUser&&String(currentUser.role||'').toLowerC
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim().toLowerCase(),senha=document.getElementById('login-pass').value,err=document.getElementById('login-err');
   err.style.display='none';if(!email||!senha){err.textContent='Preencha e-mail e senha.';err.style.display='block';return}
-  try{const r=await apiFetch('authuser',{email,senha});if(!r.ok){err.textContent=r.message||'E-mail ou senha incorretos.';err.style.display='block';return}currentUser=r.user}
-  catch(e){err.textContent='Sem conexão com o servidor.';err.style.display='block';return}
+  try{
+    const r=await visitantesApi('login',{email,senha},false);
+    if(!r.ok){err.textContent=r.message||'E-mail ou senha incorretos.';err.style.display='block';return}
+    currentUser=r.user||{};currentUser.tdngoToken=r.token
+  }catch(e){err.textContent='Sem conexão com o banco TDNGo.';err.style.display='block';return}
   sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));startApp()
 }
 function doLogout(){sessionStorage.removeItem('fhsl_session');currentUser=null;document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('login-pass').value=''}
-window.addEventListener('DOMContentLoaded',()=>{const s=sessionStorage.getItem('fhsl_session');if(s){try{currentUser=JSON.parse(s);startApp()}catch(e){}}})
+window.addEventListener('DOMContentLoaded',()=>{const s=sessionStorage.getItem('fhsl_session');if(s){try{currentUser=JSON.parse(s);if(currentUser&&currentUser.tdngoToken)startApp();else currentUser=null}catch(e){currentUser=null}}})
 
 const PAGE_META={
  lista:['Controle de Acesso','Entradas e saídas da Sede Administrativa'],
@@ -585,7 +598,7 @@ function showPage(id,btn){
 }
 async function carregarTudo(){
   try{
-    const r=await apiFetch('getvisitantesbootstrap',{limit:800,__actor:actor()});
+    const r=await visitantesApi('bootstrap',{limit:800});
     if(!r.ok)throw new Error(r.message||'Erro ao carregar controle de acesso');
     const d=r.data||{};
     visitantes=d.visitantes||[];
@@ -593,7 +606,7 @@ async function carregarTudo(){
     preencherSelecoes();atualizarSugestoes();renderTudo()
   }catch(e){showNotif(e.message||'Erro ao sincronizar os dados.','err')}
 }
-async function carregarVisitantes(){try{const r=await apiFetch('getvisitantes',{limit:800,__actor:actor()});if(!r.ok)throw new Error(r.message);visitantes=r.data||[];atualizarSugestoes();renderTudo()}catch(e){showNotif(e.message||'Erro ao atualizar.','err')}}
+async function carregarVisitantes(){try{const r=await visitantesApi('list',{limit:800});if(!r.ok)throw new Error(r.message);visitantes=r.data||[];atualizarSugestoes();renderTudo()}catch(e){showNotif(e.message||'Erro ao atualizar.','err')}}
 
 function preencherSelecoes(){
   const locais=(config.locais&&config.locais.length)?config.locais:(config.setores||[]);
@@ -752,17 +765,17 @@ function validarForm(){
 }
 async function saveRegistro(){
   const p=validarForm();if(!p)return;p.ID=document.getElementById('f-id').value;p.__actor=actor();showLoading(p.ID?'Salvando alterações...':'Registrando entrada...');
-  try{const r=await apiFetch('savevisitante',p);if(!r.ok)throw new Error(r.message||'Erro ao salvar');closeForm();showNotif(p.ID?'Registro atualizado.':'Entrada registrada.','ok');await carregarVisitantes()}
+  try{const r=await visitantesApi('save',{payload:p});if(!r.ok)throw new Error(r.message||'Erro ao salvar');closeForm();showNotif(p.ID?'Registro atualizado.':'Entrada registrada.','ok');await carregarVisitantes()}
   catch(e){showNotif(e.message,'err')}finally{hideLoading()}
 }
 async function registrarSaida(id){
   const v=visitantes.find(x=>String(x.ID)===String(id));if(!v)return;
   if(!confirm(`Registrar saída de ${v.Nome}?`))return;
-  showLoading('Registrando saída...');try{const r=await apiFetch('saidavisitante',{id:id,__actor:actor()});if(!r.ok)throw new Error(r.message);showNotif('Saída registrada.','ok');await carregarVisitantes()}catch(e){showNotif(e.message,'err')}finally{hideLoading()}
+  showLoading('Registrando saída...');try{const r=await visitantesApi('saida',{id:id});if(!r.ok)throw new Error(r.message);showNotif('Saída registrada.','ok');await carregarVisitantes()}catch(e){showNotif(e.message,'err')}finally{hideLoading()}
 }
 async function excluirRegistro(id){
   if(!confirm('Excluir definitivamente este registro de acesso?'))return;showLoading('Excluindo...');
-  try{const r=await apiFetch('deletevisitante',{id:id,__actor:actor()});if(!r.ok)throw new Error(r.message);showNotif('Registro excluído.','ok');await carregarVisitantes()}catch(e){showNotif(e.message,'err')}finally{hideLoading()}
+  try{const r=await visitantesApi('delete',{id:id});if(!r.ok)throw new Error(r.message);showNotif('Registro excluído.','ok');await carregarVisitantes()}catch(e){showNotif(e.message,'err')}finally{hideLoading()}
 }
 
 function verDetalhe(id){
@@ -779,7 +792,7 @@ function iniciarDatasRelatorio(){
 function limparRelatorio(){iniciarDatasRelatorio();document.getElementById('rel-tipo').value='';document.getElementById('rel-setor').value='';document.getElementById('rel-empresa').value='';aplicarRelatorio()}
 async function aplicarRelatorio(recarregar=true){
   const ini=document.getElementById('rel-ini').value,fim=document.getElementById('rel-fim').value,tipo=document.getElementById('rel-tipo').value,setor=document.getElementById('rel-setor').value,emp=document.getElementById('rel-empresa').value.trim().toLowerCase();
-  if(recarregar&&ini&&fim){showLoading('Gerando relatório...');try{const r=await apiFetch('getvisitantes',{dataInicio:ini,dataFim:fim,limit:5000,__actor:actor()});if(r.ok)relDados=r.data||[];else throw new Error(r.message)}catch(e){showNotif(e.message,'err');relDados=[]}finally{hideLoading()}}
+  if(recarregar&&ini&&fim){showLoading('Gerando relatório...');try{const r=await visitantesApi('list',{dataInicio:ini,dataFim:fim,limit:5000});if(r.ok)relDados=r.data||[];else throw new Error(r.message)}catch(e){showNotif(e.message,'err');relDados=[]}finally{hideLoading()}}
   else if(!relDados.length)relDados=visitantes.slice();
   let arr=relDados.filter(v=>(!tipo||v.Tipo===tipo)&&(!setor||v.Setor===setor)&&(!emp||String(v.Empresa||'').toLowerCase().includes(emp)));
   renderRelatorio(arr)

@@ -712,6 +712,7 @@ tr:hover td{background:var(--surface2)}
 // CONFIGURAÇÃO FIXA
 // ═══════════════════════════════════════════════════════════════════
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
+const CONTRATOS_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-contratos-api';
 
 let contracts = [];
 let users = [];
@@ -1172,7 +1173,13 @@ window.addEventListener('DOMContentLoaded', function(){
   const pg = document.getElementById('page-novo');
   if (pg) pg.addEventListener('input', function(){ window.formDirty = true; });
   const sess = sessionStorage.getItem('fhsl_session');
-  if (sess) { try { currentUser = JSON.parse(sess); startApp(); } catch(e){} }
+  if (sess) {
+    try {
+      currentUser = JSON.parse(sess);
+      if (currentUser && currentUser.tdngoToken) startApp();
+      else currentUser = null;
+    } catch(e){ currentUser=null; }
+  }
 });
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1185,10 +1192,30 @@ async function apiFetch(action, payload) {
   try { return JSON.parse(t); } catch(e) { return { ok:false, message:t }; }
 }
 
+async function contratosApi(action, payload, autenticado){
+  if (autenticado === undefined) autenticado = true;
+  const headers = {'Content-Type':'application/json'};
+  if (autenticado && currentUser && currentUser.tdngoToken) headers.Authorization = 'Bearer '+currentUser.tdngoToken;
+  const r = await fetch(CONTRATOS_API_URL, {
+    method:'POST',
+    headers:headers,
+    body:JSON.stringify(Object.assign({action:action}, payload||{}))
+  });
+  const t = await r.text();
+  let j;
+  try { j=JSON.parse(t); } catch(e) { j={ok:false,message:t}; }
+  if (r.status===401 && autenticado){
+    try { sessionStorage.removeItem('fhsl_session'); } catch(e){}
+  }
+  return j;
+}
+
 async function checkConnection() {
   const el = document.getElementById('conn-status');
-  try { const r = await apiFetch('ping'); if (r.ok){ el.textContent='● Conectado ao Sheets'; el.style.color='var(--green)'; return true; } }
-  catch(e){}
+  try {
+    const r = await contratosApi('ping',{});
+    if (r.ok){ el.textContent='● Conectado ao Supabase'; el.style.color='var(--green)'; return true; }
+  } catch(e){}
   el.textContent='● Offline (cache local)'; el.style.color='var(--red)'; return false;
 }
 
@@ -1204,21 +1231,21 @@ async function doLogin(){
   const err = document.getElementById('login-err');
   err.style.display = 'none';
   if (!email || !senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
-  let user = null;
   try {
-    const r = await apiFetch('authuser', { email, senha });
-    if (r.ok) user = r.user;
-    else { err.textContent = r.message || 'E-mail ou senha incorretos.'; err.style.display='block'; return; }
+    const r = await contratosApi('login', { email:email, senha:senha }, false);
+    if (!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
+    currentUser = r.user || {};
+    currentUser.tdngoToken = r.token;
   } catch(e) {
-    err.textContent = 'Sem conexão com o servidor. Tente novamente em instantes.'; err.style.display='block'; return;
+    err.textContent = 'Sem conexão com o banco TDNGo. Tente novamente em instantes.';
+    err.style.display='block'; return;
   }
-  currentUser = user;
-  sessionStorage.setItem('fhsl_session', JSON.stringify(user));
+  sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
   startApp();
 }
 
 function doLogout(){
-  if (currentUser){ try { apiFetch('logevent', { actor:{ nome:currentUser.nome, email:currentUser.email }, acao:'Logout', detalhe:'Saída do sistema', alvo:currentUser.id }); } catch(e){} }
+  if (currentUser){ try { contratosApi('logevent', { acao:'Logout', detalhe:'Saída do sistema', alvo:currentUser.id||'' }); } catch(e){} }
   sessionStorage.removeItem('fhsl_session');
   currentUser = null;
   document.getElementById('app').style.display = 'none';
@@ -1255,14 +1282,14 @@ async function loadAll(){ await Promise.all([ loadUnits(), loadContracts(), load
 async function loadUnits(){
   const FALLBACK = ['Hospital Santa Lydia','UPA Norte','UPA Sul','UPA Leste','UBS Central','CAPS','SAMU','Administração / Sede'];
   try {
-    const r = await apiFetch('getunits');
+    const r = await contratosApi('units',{});
     if (r.ok && r.data){ unitList = r.data.map(function(u){ return {
       id:String(u.ID||u.id), nome:u.Nome||u.nome,
-      tipo:u.Tipo||'', cep:u.CEP||'', logradouro:u.Logradouro||'', numero:u.Numero||'',
-      bairro:u.Bairro||'', cidade:u.Cidade||'', uf:u.UF||'',
-      lat:parseFloat(u.Lat)||null, lng:parseFloat(u.Lng)||null,
-      telefone:u.Telefone||'', responsavel:u.Responsavel||'',
-      ativo:String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'
+      tipo:u.Tipo||u.tipo||'', cep:u.CEP||u.cep||'', logradouro:u.Logradouro||u.logradouro||'', numero:u.Numero||u.numero||'',
+      bairro:u.Bairro||u.bairro||'', cidade:u.Cidade||u.cidade||'', uf:u.UF||u.uf||'',
+      lat:parseFloat(u.Lat||u.lat)||null, lng:parseFloat(u.Lng||u.lng)||null,
+      telefone:u.Telefone||u.telefone||'', responsavel:u.Responsavel||u.responsavel||'',
+      ativo:String(u.Ativo!==undefined?u.Ativo:u.ativo)!=='false'&&String(u.Ativo!==undefined?u.Ativo:u.ativo)!=='FALSE'
     }; }).filter(function(u){ return u.nome; }); }
   } catch(e){}
   if (!unitList.length) unitList = FALLBACK.map(function(n,i){ return { id:'f'+i, nome:n, ativo:true }; });
@@ -1327,8 +1354,8 @@ function newContract(btn){ clearForm(); showPage('novo', btn || document.querySe
 async function loadContracts(){
   showLoading('Carregando contratos...');
   try {
-    const r = await apiFetch('getall');
-    if (r.ok){ contracts = r.data.map(normalize); localStorage.setItem('fhsl_local', JSON.stringify(contracts)); }
+    const r = await contratosApi('list',{});
+    if (r.ok){ contracts = (r.data||[]).map(normalize); localStorage.setItem('fhsl_local', JSON.stringify(contracts)); }
     else showNotif('Erro: '+r.message,'err');
   } catch(e){
     contracts = JSON.parse(localStorage.getItem('fhsl_local')||'[]').map(normalize);
@@ -1476,12 +1503,12 @@ async function submitForm(e){
   });
 
   try {
-    const payloadC = toPayload(contract); payloadC.__actor = { nome:currentUser.nome, email:currentUser.email };
-    const r = await apiFetch('save', payloadC);
+    const payloadC = toPayload(contract);
+    const r = await contratosApi('save', {payload:payloadC});
     if (r.ok){
       if (!contract.id) contract.id = String(r.id);
       upsertLocal(contract);
-      showNotif('✓ Contrato salvo no Google Sheets!','ok');
+      showNotif('✓ Contrato salvo no Supabase!','ok');
       clearForm();
       showPage('lista', document.querySelector('[data-page="lista"]'));
     } else showNotif('Erro ao salvar: '+r.message,'err');
@@ -1690,7 +1717,7 @@ async function batchSaveAll(){
     let pdfUrl = '';
     try { const up = await apiFetch('uploadpdf', { base64:r.b64, nome:r.name }); if (up.ok && up.url) pdfUrl = up.url; } catch(e){}
     const c = batchToContract(r.dados, r.name, pdfUrl);
-    try { const res = await apiFetch('save', c); if (res.ok){ if(!c.ID) c.ID=String(res.id); salvos++; } } catch(e){}
+    try { const res = await contratosApi('save', {payload:c}); if (res.ok){ if(!c.ID) c.ID=String(res.id); salvos++; } } catch(e){}
   }
   hideLoading();
   document.getElementById('batch-save-all').disabled = false;
@@ -1804,7 +1831,7 @@ async function saveNewUnit(){
   if (unitNames().some(function(n){ return n.toLowerCase()===nome.toLowerCase(); })){ showNotif('Essa unidade já existe','info'); closeDialog('dialog-unit'); return; }
   showLoading('Cadastrando unidade...');
   try {
-    const r = await apiFetch('saveunit', { Nome:nome, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+    const r = await contratosApi('saveunit', { Nome:nome, __actor:{ nome:currentUser.nome, email:currentUser.email } });
     if (!r.ok){ showNotif('Erro: '+r.message,'err'); hideLoading(); return; }
   } catch(e){ showNotif('Sem conexão para cadastrar unidade','err'); hideLoading(); return; }
   await loadUnits();
@@ -1839,7 +1866,7 @@ async function renameUnit(id){
   if (novo===null) return;
   const nome = novo.trim(); if (!nome){ showNotif('Nome vazio','err'); return; }
   showLoading('Renomeando...');
-  try { const r = await apiFetch('saveunit', { ID:id, Nome:nome, __actor:{ nome:currentUser.nome, email:currentUser.email } }); if(!r.ok){ showNotif('Erro: '+r.message,'err'); hideLoading(); return; } }
+  try { const r = await contratosApi('saveunit', { ID:id, Nome:nome, __actor:{ nome:currentUser.nome, email:currentUser.email } }); if(!r.ok){ showNotif('Erro: '+r.message,'err'); hideLoading(); return; } }
   catch(e){ showNotif('Sem conexão','err'); hideLoading(); return; }
   await loadUnits(); renderManageUnits(); refreshUnitSelects(); showNotif('✓ Unidade renomeada','ok'); hideLoading();
 }
@@ -1847,7 +1874,7 @@ async function removeUnit(id, nome, n){
   if (n>0){ if (!confirm('A unidade "'+nome+'" está em '+n+' contrato(s). Remover da lista padrão não altera esses contratos, apenas tira o nome das próximas seleções. Continuar?')) return; }
   else if (!confirm('Remover "'+nome+'" da lista?')) return;
   showLoading('Removendo...');
-  try { await apiFetch('deleteunit', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } }); } catch(e){}
+  try { await contratosApi('deleteunit', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } }); } catch(e){}
   await loadUnits(); renderManageUnits(); refreshUnitSelects(); showNotif('✓ Unidade removida da lista','ok'); hideLoading();
 }
 
@@ -2001,7 +2028,7 @@ async function saveUnitForm(){
   }
   showLoading('Salvando unidade...');
   try {
-    const r = await apiFetch('saveunit', payload);
+    const r = await contratosApi('saveunit', payload);
     if (!r.ok){ showNotif('Erro: '+r.message,'err'); hideLoading(); return; }
   } catch(e){ showNotif('Sem conexão para salvar','err'); hideLoading(); return; }
   await loadUnits();
@@ -2015,7 +2042,7 @@ async function removeUnitCad(id, nome, n){
   if (n>0){ if (!confirm('A unidade "'+nome+'" está em '+n+' contrato(s). Remover não altera esses contratos, apenas tira o nome das próximas seleções. Continuar?')) return; }
   else if (!confirm('Remover a unidade "'+nome+'"?')) return;
   showLoading('Removendo...');
-  try { await apiFetch('deleteunit', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } }); } catch(e){}
+  try { await contratosApi('deleteunit', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } }); } catch(e){}
   await loadUnits(); renderCadUnidades(); refreshUnitSelects();
   showNotif('✓ Unidade removida','ok'); hideLoading();
 }
@@ -2034,7 +2061,7 @@ async function geocodeAll(){
       const arr = await r.json();
       if (arr && arr.length){
         const lat = parseFloat(arr[0].lat), lng = parseFloat(arr[0].lon);
-        await apiFetch('saveunit', { ID:u.id, Nome:u.nome, Lat:lat, Lng:lng, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+        await contratosApi('saveunit', { ID:u.id, Nome:u.nome, Lat:lat, Lng:lng, __actor:{ nome:currentUser.nome, email:currentUser.email } });
         ok++;
       }
     } catch(e){}
@@ -2455,12 +2482,12 @@ async function deleteFromModal(){
   if (currentUser.role !== 'admin'){ showNotif('Apenas administradores podem excluir.','err'); return; }
   if (!confirm('Confirma a exclusão definitiva deste contrato?')) return;
   const id = currentDetailId;
-  showLoading('Excluindo da planilha...');
+  showLoading('Excluindo do Supabase...');
   closeModal();
   try {
-    const r = await apiFetch('delete', { id: id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+    const r = await contratosApi('delete', { id:id });
     if (!r.ok){ showNotif('Erro ao excluir: '+r.message,'err'); hideLoading(); return; }
-  } catch(e){ showNotif('Sem conexão — não foi possível excluir na planilha','err'); hideLoading(); return; }
+  } catch(e){ showNotif('Sem conexão — não foi possível excluir no Supabase','err'); hideLoading(); return; }
   contracts = contracts.filter(function(c){ return c.id !== id; });
   localStorage.setItem('fhsl_local', JSON.stringify(contracts));
   refreshAll();
@@ -2858,7 +2885,7 @@ async function deleteUserRow(id){
 // ═══════════════════════════════════════════════════════════════════
 async function loadLog(){
   showLoading('Carregando auditoria...');
-  try { const r = await apiFetch('getlog'); if (r.ok) auditLog = r.data || []; }
+  try { const r = await contratosApi('getlog',{}); if (r.ok) auditLog = r.data || []; }
   catch(e){ auditLog = []; showNotif('Sem conexão para carregar auditoria','info'); }
   renderAuditoria();
   hideLoading();
@@ -2924,7 +2951,7 @@ function exportCSV(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+cols.join(';')+'\n'+rows.join('\n')],{type:'text/csv'}));
   a.download='contratos_fhsl_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
-  if (currentUser){ try { apiFetch('logevent', { actor:{ nome:currentUser.nome, email:currentUser.email }, acao:'Exportou CSV', detalhe:contracts.length+' contratos', alvo:'' }); } catch(e){} }
+  if (currentUser){ try { contratosApi('logevent', { acao:'Exportou CSV', detalhe:contracts.length+' contratos', alvo:'' }); } catch(e){} }
   showNotif('✓ CSV exportado','ok');
 }
 

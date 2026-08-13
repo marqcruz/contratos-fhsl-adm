@@ -622,6 +622,7 @@ tr:hover td{background:var(--surface2)}
 <script>
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
+const OPERACIONAL_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-operacional-api';
 let currentUser = null;
 
 async function apiFetch(action, payload){
@@ -629,15 +630,22 @@ async function apiFetch(action, payload){
   const t = await r.text();
   try { return JSON.parse(t); } catch(e){ return { ok:false, message:t }; }
 }
+async function operacionalApi(action,payload,autenticado){
+  if(autenticado===undefined) autenticado=true;
+  const h={'Content-Type':'application/json'};
+  if(autenticado&&currentUser&&currentUser.tdngoToken) h.Authorization='Bearer '+currentUser.tdngoToken;
+  const r=await fetch(OPERACIONAL_API_URL,{method:'POST',headers:h,body:JSON.stringify(Object.assign({action:action,module:'conferencia'},payload||{}))});
+  const t=await r.text(); try{return JSON.parse(t)}catch(e){return{ok:false,message:t}}
+}
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim().toLowerCase();
   const senha=document.getElementById('login-pass').value;
   const err=document.getElementById('login-err'); err.style.display='none';
   if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
   try{
-    const r=await apiFetch('authuser',{email,senha});
+    const r=await operacionalApi('login',{email:email,senha:senha},false);
     if(!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
-    currentUser=r.user;
+    currentUser=r.user; currentUser.tdngoToken=r.token;
   }catch(e){ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; return; }
   sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
   startApp();
@@ -667,7 +675,7 @@ function showNotif(msg,type){ const el=document.getElementById('notif'); if(!el)
   setTimeout(function(){ el.style.display='none'; },3500); }
 window.addEventListener('DOMContentLoaded', function(){
   const s=sessionStorage.getItem('fhsl_session');
-  if(s){ try{ currentUser=JSON.parse(s); startApp(); }catch(e){} }
+  if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&currentUser.tdngoToken) startApp(); else currentUser=null; }catch(e){currentUser=null;} }
 });
 const PAGE_META = {
   lista:['Conferências Documentais','Controle de documentos para pagamento'],
@@ -863,10 +871,12 @@ function showPage(id, btn){
 
 async function carregar(){
   try{
-    const [rc, ra, rk] = await Promise.all([ apiFetch('getconferencia'), apiFetch('getadmin'), apiFetch('getcontratoslist') ]);
-    if(rc.ok) conferencias=rc.data||[];
-    if(ra.ok) unidades=(ra.unidades||[]).filter(function(u){ return String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'; });
-    if(rk.ok) contratos=rk.data||[];
+    const rc = await operacionalApi('bootstrap',{});
+    if(rc.ok){
+      conferencias=rc.data||[];
+      unidades=(rc.unidades||[]).filter(function(u){ return String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'; });
+      contratos=rc.contratos||[];
+    }
     preencherUnidades(); preencherContratos(); preencherCompetencias(); renderLista();
   }catch(e){ showNotif('Erro ao carregar. Verifique a conexão.','err'); }
 }
@@ -1167,7 +1177,7 @@ async function salvarConf(statusAlvo){
     Itens:coletarItens(), Observacoes:document.getElementById('cf-obs').value.trim(), Status:statusAlvo,
     __actor:{ nome:currentUser.nome, email:currentUser.email } };
   showNotif('Salvando...','info');
-  const r=await apiFetch('saveconferencia', payload);
+  const r=await operacionalApi('save_conferencia',{payload:payload});
   if(r.ok){
     showNotif('Conferência concluída.','ok');
     editId=null; conferenciaEmEdicao=false; permitindoSaida=true; anexos={};
@@ -1218,7 +1228,7 @@ function renderLista(){
 }
 async function delConf(id){
   if(!confirm('Excluir esta conferência?')) return;
-  const r=await apiFetch('deleteconferencia', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  const r=await operacionalApi('delete_conferencia',{id:id});
   if(r.ok){ showNotif('Excluída.','ok'); carregar(); } else showNotif(r.message||'Erro.','err');
 }
 
@@ -1235,7 +1245,7 @@ function fecharAprovar(){ document.getElementById('modal-aprovar').classList.rem
 async function confirmarAprovacao(){
   const obs=document.getElementById('apr-obs').value.trim();
   showNotif('Aprovando...','info');
-  const r=await apiFetch('aprovarconferencia', { id:aprovandoId, obs:obs, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+  const r=await operacionalApi('approve_conferencia',{id:aprovandoId,obs:obs});
   if(r.ok){ fecharAprovar(); showNotif('Conferência aprovada.','ok'); mostrarMsgSolar(); carregar(); }
   else showNotif(r.message||'Erro ao aprovar.','err');
 }

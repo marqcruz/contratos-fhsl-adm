@@ -91,7 +91,7 @@ th{font-size:11px;text-transform:uppercase;color:#9a9a96;letter-spacing:.04em}
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
+const OPERACIONAL_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-operacional-api';
 const MODULOS=[
   {id:'A',nome:'Módulo A — Equipamentos, Produtos e Técnica',itens:['Carro de limpeza','Produtos de limpeza','Técnicas de limpeza']},
   {id:'B',nome:'Módulo B — Qualidade dos Profissionais',itens:['Uniformidade da equipe','Apresentação / Uniformização','EPI']},
@@ -114,7 +114,7 @@ async function consultar(){
   if(cod.length<4){ erro('Digite o código de acesso.'); return; }
   q('codigo').disabled=true;
   try{
-    const r=await fetch(SCRIPT_URL+'?action=getlimpezacodigo&codigo='+encodeURIComponent(cod));
+    const r=await fetch(OPERACIONAL_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'limpeza_codigo',codigo:cod})});
     const d=await r.json();
     if(!d.ok){ erro(d.message||'Código inválido.'); q('codigo').disabled=false; return; }
     codigoAtual=cod;
@@ -177,7 +177,7 @@ async function registrarCiencia(){
   const assin=q('ci-canvas').toDataURL('image/png');
   const obs=(q('ci-obs').value||'').trim();
   try{
-    const r=await fetch(SCRIPT_URL+'?action=cienlimpeza',{method:'POST',body:JSON.stringify({codigo:codigoAtual,nome:nome,doc:doc,assin:assin,obs:obs})});
+    const r=await fetch(OPERACIONAL_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'limpeza_ciencia',codigo:codigoAtual,nome:nome,doc:doc,assin:assin,obs:obs})});
     const d=await r.json();
     if(d.ok){
       q('bloco-ciencia').classList.add('hidden');

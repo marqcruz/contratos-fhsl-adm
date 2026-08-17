@@ -554,6 +554,7 @@ tr:hover td{background:var(--surface2)}
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
 const VISITANTES_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-visitantes-api';
+const TDNGO_AUTH_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api';
 let currentUser=null, visitantes=[], config={tipos:[],locais:[],setores:[],motivos:[]}, relDados=[];
 let listaPagina=1, listaPorPagina=20, listaTotalPaginas=1;
 
@@ -570,6 +571,11 @@ async function visitantesApi(action,payload,autenticado=true){
   if(r.status===401&&autenticado){try{sessionStorage.removeItem('fhsl_session')}catch(e){}}
   return j
 }
+async function tdngoAuthLogin(email,senha){
+  const r=await fetch(TDNGO_AUTH_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',email,senha})});
+  const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){j={ok:false,message:t||'Falha na autenticação central.'}}return j;
+}
+
 function actor(){return {nome:currentUser.nome,email:currentUser.email}}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function showLoading(t){document.getElementById('loading-txt').textContent=t||'Carregando...';document.getElementById('loading').classList.add('open')}
@@ -584,17 +590,28 @@ function podeRegistrar(){return currentUser&&['admin','gestor','cadastros'].incl
 function podeExcluir(){return currentUser&&String(currentUser.role||'').toLowerCase()==='admin'}
 
 async function doLogin(){
-  const email=document.getElementById('login-email').value.trim().toLowerCase(),senha=document.getElementById('login-pass').value,err=document.getElementById('login-err');
-  err.style.display='none';if(!email||!senha){err.textContent='Preencha e-mail e senha.';err.style.display='block';return}
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const senha=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-err');err.style.display='none';
+  if(!email||!senha){err.textContent='Preencha e-mail e senha.';err.style.display='block';return}
   try{
-    const r=await visitantesApi('login',{email,senha},false);
+    const r=await tdngoAuthLogin(email,senha);
     if(!r.ok){err.textContent=r.message||'E-mail ou senha incorretos.';err.style.display='block';return}
-    currentUser=r.user||{};currentUser.tdngoToken=r.token
-  }catch(e){err.textContent='Sem conexão com o banco TDNGo.';err.style.display='block';return}
-  sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));startApp()
+    currentUser=r.user||{};
+    if(r.token&&!currentUser.tdngoToken)currentUser.tdngoToken=r.token;
+  }catch(e){err.textContent='Sem conexão com o servidor de autenticação.';err.style.display='block';return}
+  sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));
+  startApp()
 }
 function doLogout(){sessionStorage.removeItem('fhsl_session');currentUser=null;document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('login-pass').value=''}
-window.addEventListener('DOMContentLoaded',()=>{const s=sessionStorage.getItem('fhsl_session');if(s){try{currentUser=JSON.parse(s);if(currentUser&&currentUser.tdngoToken)startApp();else currentUser=null}catch(e){currentUser=null}}})
+window.addEventListener('DOMContentLoaded',()=>{
+  const s=sessionStorage.getItem('fhsl_session');if(!s)return;
+  try{
+    currentUser=JSON.parse(s);
+    if(currentUser&&currentUser.tdngoToken){startApp();return}
+    sessionStorage.removeItem('fhsl_session');currentUser=null;window.location.href='index.html';
+  }catch(e){sessionStorage.removeItem('fhsl_session');currentUser=null}
+})
 
 const PAGE_META={
  lista:['Controle de Acesso','Entradas e saídas da Sede Administrativa'],

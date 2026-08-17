@@ -550,6 +550,7 @@ tr:hover td{background:var(--surface2)}
 <script>
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
+const TDNGO_AUTH_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api';
 let currentUser = null;
 
 async function apiFetch(action, payload){
@@ -557,17 +558,23 @@ async function apiFetch(action, payload){
   const t = await r.text();
   try { return JSON.parse(t); } catch(e){ return { ok:false, message:t }; }
 }
+async function tdngoAuthLogin(email, senha){
+  const r=await fetch(TDNGO_AUTH_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',email,senha})});
+  const t=await r.text();try{return JSON.parse(t)}catch(e){return{ok:false,message:t||'Falha na autenticação central.'}}
+}
+
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim().toLowerCase();
   const senha=document.getElementById('login-pass').value;
-  const err=document.getElementById('login-err'); err.style.display='none';
-  if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
+  const err=document.getElementById('login-err');err.style.display='none';
+  if(!email||!senha){err.textContent='Preencha e-mail e senha.';err.style.display='block';return;}
   try{
-    const r=await apiFetch('authuser',{email,senha});
-    if(!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
-    currentUser=r.user;
-  }catch(e){ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; return; }
-  sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
+    const r=await tdngoAuthLogin(email,senha);
+    if(!r.ok){err.textContent=r.message||'E-mail ou senha incorretos.';err.style.display='block';return;}
+    currentUser=r.user||{};
+    if(r.token&&!currentUser.tdngoToken)currentUser.tdngoToken=r.token;
+  }catch(e){err.textContent='Sem conexão com o servidor de autenticação.';err.style.display='block';return;}
+  sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));
   startApp();
 }
 function doLogout(){

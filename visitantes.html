@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Visitantes — TDNGo</title>
+<title>Visitantes — TDNGo v1.5</title>
 
 <style>
 
@@ -525,7 +525,7 @@ tr:hover td{background:var(--surface2)}
           <div class="fg"><label class="req">Data agendada</label><input type="date" id="f-agenda-data"></div>
           <div class="fg"><label class="req">Hora agendada</label><input type="time" id="f-agenda-hora" step="300"></div>
         </div>
-        <div class="fg"><label class="req">Data/hora de entrada</label><input type="datetime-local" id="f-entrada"></div>
+        <div class="fg"><label class="req">Data/hora de entrada</label><input type="datetime-local" id="f-entrada"><div class="hint">HORÁRIO DE BRASÍLIA / SÃO PAULO</div></div>
         <div class="fg"><label>Veículo</label><select id="f-veiculo" onchange="toggleVeiculo()"><option value="NÃO">NÃO</option><option value="SIM">SIM</option></select></div>
         <div class="fg" id="fg-placa" style="display:none"><label>Placa</label><input type="text" id="f-placa" maxlength="8" placeholder="ABC1D23" style="text-transform:uppercase" oninput="caixaAlta(this)"></div>
         <div class="fg full"><label>Observações</label><textarea id="f-obs" rows="3" placeholder="INFORMAÇÃO ADICIONAL, AUTORIZAÇÃO, EQUIPAMENTO TRAZIDO, ETC." style="text-transform:uppercase" oninput="caixaAlta(this)"></textarea></div>
@@ -668,8 +668,28 @@ function atualizarSugestoes(){
   const resp=[...new Set(visitantes.map(v=>String(v.ResponsavelSetor||'').trim().toUpperCase()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
   document.getElementById('lista-responsaveis-setor').innerHTML=resp.map(x=>'<option value="'+esc(x)+'"></option>').join('')
 }
-function hojeLocal(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function agoraInput(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+const TZ_SAO_PAULO='America/Sao_Paulo';
+
+function partesSP(v){
+  const d=v instanceof Date?v:new Date(v);
+  if(isNaN(d.getTime()))return null;
+  const p={};
+  new Intl.DateTimeFormat('en-US',{
+    timeZone:TZ_SAO_PAULO,
+    year:'numeric',month:'2-digit',day:'2-digit',
+    hour:'2-digit',minute:'2-digit',second:'2-digit',
+    hourCycle:'h23'
+  }).formatToParts(d).forEach(x=>{if(x.type!=='literal')p[x.type]=x.value});
+  return p;
+}
+function hojeLocal(){
+  const p=partesSP(new Date());
+  return p?`${p.year}-${p.month}-${p.day}`:'';
+}
+function agoraInput(){
+  const p=partesSP(new Date());
+  return p?`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`:'';
+}
 function comFusoSaoPaulo(v){
   const s=String(v||'').trim();
   if(!s)return'';
@@ -678,20 +698,35 @@ function comFusoSaoPaulo(v){
 }
 function paraInputLocal(v){
   if(!v)return'';
-  const d=new Date(v);
-  if(isNaN(d))return String(v).slice(0,16);
-  d.setMinutes(d.getMinutes()-d.getTimezoneOffset());
-  return d.toISOString().slice(0,16);
+  const p=partesSP(v);
+  return p?`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`:'';
 }
-function parseLocal(v){if(!v)return null;const s=String(v).trim();const d=new Date(s.includes('T')?s:s.replace(' ','T'));return isNaN(d)?null:d}
-function fmtDT(v){const d=parseLocal(v);return d?d.toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
-function dataDe(v){return String(v||'').slice(0,10)}
-function mesDe(v){return String(v||'').slice(0,7)}
+function parseLocal(v){
+  if(!v)return null;
+  const s=String(v).trim();
+  const d=new Date(/[zZ]$|[+-]\d\d:\d\d$/.test(s)?s:comFusoSaoPaulo(s));
+  return isNaN(d.getTime())?null:d;
+}
+function fmtDT(v){
+  const d=parseLocal(v);
+  return d?d.toLocaleString('pt-BR',{
+    timeZone:TZ_SAO_PAULO,
+    day:'2-digit',month:'2-digit',year:'numeric',
+    hour:'2-digit',minute:'2-digit'
+  }):'—';
+}
+function dataDe(v){
+  const p=partesSP(v);
+  return p?`${p.year}-${p.month}-${p.day}`:'';
+}
+function mesDe(v){
+  const d=dataDe(v);
+  return d?d.slice(0,7):'';
+}
 function minutosPermanencia(v){
-  const a=parseLocal(v.Entrada),b=parseLocal(v.SaidaEm||v.Saida)||(v.Status==='NO PRÉDIO'?new Date():null);
-  if(!a||!b)return 0;
-  const min=Math.round((b-a)/60000);
-  return min<0?0:min
+  const a=parseLocal(v.Entrada),b=parseLocal(v.Saida)||new Date();
+  if(!a)return 0;
+  return Math.max(0,Math.round((b-a)/60000))
 }
 function fmtDur(min){if(!min&&min!==0)return'—';const h=Math.floor(min/60),m=min%60;return h?`${h}h ${m}min`:`${m}min`}
 function tipoClass(t){t=String(t||'').toUpperCase();return t.includes('PRESTADOR')?'prestador':t.includes('ENTREGA')||t.includes('FORNECEDOR')?'entrega':''}
@@ -853,6 +888,10 @@ function validarForm(){
   if(p.Tipo.includes('PRESTADOR')&&!p.Empresa)falt.push('Empresa');
   if(falt.length){showNotif('Preencha os campos obrigatórios: '+falt.join(', ')+'.','err');return null}
   if(tipoDoc==='CPF'&&!cpfValido(p.Documento)){showNotif('CPF inválido. Confira o número informado.','err');document.getElementById('f-doc').focus();return null}
+  const entradaDate=parseLocal(p.Entrada);
+  if(!entradaDate){showNotif('Data/hora de entrada inválida.','err');document.getElementById('f-entrada').focus();return null}
+  if(entradaDate.getTime()>Date.now()+5*60*1000){showNotif('A entrada não pode estar no futuro. Confira data e hora.','err');document.getElementById('f-entrada').focus();return null}
+  if(p.Agendado==='SIM'&&!parseLocal(p.Agendamento)){showNotif('Data/hora do agendamento inválida.','err');return null}
   return p
 }
 async function saveRegistro(){

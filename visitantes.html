@@ -653,6 +653,19 @@ function atualizarSugestoes(){
 }
 function hojeLocal(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function agoraInput(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+function comFusoSaoPaulo(v){
+  const s=String(v||'').trim();
+  if(!s)return'';
+  if(/[zZ]$|[+-]\d\d:\d\d$/.test(s))return s;
+  return s+'-03:00';
+}
+function paraInputLocal(v){
+  if(!v)return'';
+  const d=new Date(v);
+  if(isNaN(d))return String(v).slice(0,16);
+  d.setMinutes(d.getMinutes()-d.getTimezoneOffset());
+  return d.toISOString().slice(0,16);
+}
 function parseLocal(v){if(!v)return null;const s=String(v).trim();const d=new Date(s.includes('T')?s:s.replace(' ','T'));return isNaN(d)?null:d}
 function fmtDT(v){const d=parseLocal(v);return d?d.toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
 function dataDe(v){return String(v||'').slice(0,10)}
@@ -740,8 +753,8 @@ function openForm(id){
     setVal('f-doc',v.Documento);setVal('f-nome',v.Nome);setVal('f-tel',v.Telefone);setVal('f-empresa',v.Empresa);setVal('f-setor',v.Setor);
     setVal('f-responsavel-setor',v.ResponsavelSetor||'');setVal('f-responsavel',String(currentUser.nome||'').toUpperCase());setVal('f-motivo',v.Motivo);
     setVal('f-agendado',String(v.Agendado||'NÃO').toUpperCase()==='SIM'?'SIM':'NÃO');
-    const ag=String(v.Agendamento||'');setVal('f-agenda-data',ag.slice(0,10));setVal('f-agenda-hora',ag.length>=16?ag.slice(11,16):'');
-    setVal('f-entrada',String(v.Entrada||'').slice(0,16));setVal('f-veiculo',v.Veiculo||'NÃO');setVal('f-placa',v.Placa);setVal('f-obs',v.Observacoes)
+    const ag=paraInputLocal(v.Agendamento);setVal('f-agenda-data',ag.slice(0,10));setVal('f-agenda-hora',ag.length>=16?ag.slice(11,16):'');
+    setVal('f-entrada',paraInputLocal(v.Entrada));setVal('f-veiculo',v.Veiculo||'NÃO');setVal('f-placa',v.Placa);setVal('f-obs',v.Observacoes)
   }else{
     setVal('f-tipo',(config.tipos||[])[0]||'VISITANTE');setVal('f-doc-tipo','CPF');setVal('f-entrada',agoraInput());setVal('f-veiculo','NÃO');
     setVal('f-agendado','NÃO');setVal('f-responsavel',String(currentUser.nome||'').toUpperCase())
@@ -812,8 +825,8 @@ function validarForm(){
     Motivo:document.getElementById('f-motivo').value.toUpperCase(),
     Agendado:document.getElementById('f-agendado').value,
     Agendamento:(document.getElementById('f-agendado').value==='SIM')
-      ? (document.getElementById('f-agenda-data').value+'T'+document.getElementById('f-agenda-hora').value) : '',
-    Entrada:document.getElementById('f-entrada').value,
+      ? comFusoSaoPaulo(document.getElementById('f-agenda-data').value+'T'+document.getElementById('f-agenda-hora').value) : '',
+    Entrada:comFusoSaoPaulo(document.getElementById('f-entrada').value),
     Veiculo:document.getElementById('f-veiculo').value.toUpperCase(),
     Placa:document.getElementById('f-placa').value.trim().toUpperCase(),
     Observacoes:document.getElementById('f-obs').value.trim().toUpperCase()

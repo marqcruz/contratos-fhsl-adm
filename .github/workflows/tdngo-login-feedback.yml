@@ -1,0 +1,42 @@
+name: TDNGo login feedback
+on:
+  push:
+    branches: [layout_gpt]
+    paths: ['.tdngo-trigger-login.txt']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: layout_gpt
+      - name: Ajustar login
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('.login-btn:hover{background:#2b8ae6}', '''.login-btn:hover{background:#2b8ae6}\n.login-btn:disabled{opacity:.75;cursor:wait}\n.login-btn.busy{position:relative}\n.login-btn.busy::before{content:\'\';display:inline-block;width:13px;height:13px;margin-right:8px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;vertical-align:-2px;animation:loginSpin .7s linear infinite}\n.login-status{font-size:11px;text-align:center;color:var(--text2);min-height:17px;margin-top:9px}\n.login-status.ok{color:var(--green)}\n@keyframes loginSpin{to{transform:rotate(360deg)}}''',1)
+          s=s.replace('<button class="login-btn" onclick="doLogin()">Entrar</button>', '<button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button><div class="login-status" id="login-status"></div>',1)
+          old='''async function tdngoAuthLogin(email, senha){\n  const r=await fetch(TDNGO_AUTH_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',email,senha})});\n  const t=await r.text();try{return JSON.parse(t)}catch(e){return{ok:false,message:t||'Falha na autenticação central.'}}\n}\n\nasync function doLogin(){\n  const email=document.getElementById('login-email').value.trim().toLowerCase();\n  const senha=document.getElementById('login-pass').value;\n  const err=document.getElementById('login-err');err.style.display='none';\n  if(!email||!senha){err.textContent='Preencha e-mail e senha.';err.style.display='block';return;}\n  try{\n    const r=await tdngoAuthLogin(email,senha);\n    if(!r.ok){err.textContent=r.message||'E-mail ou senha incorretos.';err.style.display='block';return;}\n    currentUser=r.user||{};\n    if(r.token&&!currentUser.tdngoToken)currentUser.tdngoToken=r.token;\n  }catch(e){err.textContent='Sem conexão com o servidor de autenticação.';err.style.display='block';return;}\n  sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));\n  startApp();\n}'''
+          new='''let loginEmAndamento=false;\nasync function tdngoAuthLogin(email, senha){\n  const controller=new AbortController();\n  const timer=setTimeout(function(){controller.abort();},15000);\n  try{\n    const r=await fetch(TDNGO_AUTH_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',email,senha}),signal:controller.signal});\n    const t=await r.text();try{return JSON.parse(t)}catch(e){return{ok:false,message:t||'Falha na autenticação central.'}}\n  }finally{clearTimeout(timer)}\n}\nfunction loginVisual(estado,texto){\n  const btn=document.getElementById('login-btn'),st=document.getElementById('login-status');\n  if(btn){btn.disabled=estado==='busy';btn.classList.toggle('busy',estado==='busy');btn.textContent=estado==='busy'?'Entrando...':'Entrar';}\n  if(st){st.textContent=texto||'';st.className='login-status'+(estado==='ok'?' ok':'');}\n}\nasync function doLogin(){\n  if(loginEmAndamento)return;\n  const email=document.getElementById('login-email').value.trim().toLowerCase();\n  const senha=document.getElementById('login-pass').value;\n  const err=document.getElementById('login-err');err.style.display='none';\n  const st=document.getElementById('login-status');if(st)st.textContent='';\n  if(!email||!senha){err.textContent='Preencha e-mail e senha.';err.style.display='block';return;}\n  loginEmAndamento=true;loginVisual('busy','Validando seu acesso...');\n  try{\n    const r=await tdngoAuthLogin(email,senha);\n    if(!r.ok){err.textContent=r.message||'E-mail ou senha incorretos.';err.style.display='block';loginVisual('idle','');return;}\n    currentUser=r.user||{};if(r.token&&!currentUser.tdngoToken)currentUser.tdngoToken=r.token;\n    sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));\n    loginVisual('ok','Login realizado. Carregando módulos...');\n    requestAnimationFrame(function(){setTimeout(function(){startApp();loginVisual('idle','');},80);});\n  }catch(e){\n    err.textContent=(e&&e.name==='AbortError')?'O login demorou mais de 15 segundos. Tente novamente.':'Sem conexão com o servidor de autenticação.';\n    err.style.display='block';loginVisual('idle','');\n  }finally{loginEmAndamento=false;}\n}'''
+          if old not in s: raise SystemExit('Bloco de login não localizado')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+          node --check <(python - <<'PY'
+          from bs4 import BeautifulSoup
+          s=BeautifulSoup(open('index.html',encoding='utf-8').read(),'html.parser')
+          print('\n'.join(x.get_text() for x in s.find_all('script') if not x.get('src')))
+          PY
+          )
+      - name: Commit
+        run: |
+          git config user.name "TDNGo Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git commit -m "TDNGo: melhora resposta visual e timeout do login" || exit 0
+          git push origin layout_gpt

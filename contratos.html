@@ -6,7 +6,7 @@
 <title>Contratos — TDNGo</title>
 <style>
 html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
-#loading{min-height:100vh;display:grid;place-items:center;font-size:14px}
+#loading{min-height:100vh;display:grid;place-items:center;font-size:14px;padding:20px;text-align:center}
 </style>
 </head>
 <body>
@@ -14,14 +14,9 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
 <script>
 (async()=>{
   try{
-    const paths=[
-      '.tdngo/contratos/part1.txt',
-      '.tdngo/contratos/part2.txt',
-      '.tdngo/contratos/part3.txt',
-      '.tdngo/contratos/part4.txt',
-      '.tdngo/contratos/part5.txt'
-    ];
-    const chunks=await Promise.all(paths.map(p=>fetch(p,{cache:'no-store'}).then(r=>{
+    const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/layout_gpt/.tdngo/contratos/';
+    const paths=['part1.txt','part2.txt','part3.txt','part4.txt','part5.txt'];
+    const chunks=await Promise.all(paths.map(p=>fetch(base+p,{cache:'no-store'}).then(r=>{
       if(!r.ok) throw new Error(p+' HTTP '+r.status);
       return r.text();
     })));

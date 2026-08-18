@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TDN Gestão Operacional — TDNGo</title>
+<title>TDNGo — Gestão Operacional Integrada</title>
 
 <style>
 
@@ -364,7 +364,7 @@ tr:hover td{background:var(--surface2)}
 }
 .hub-card p{
   font-size:10.5px;color:var(--text2);line-height:1.35;margin-top:4px;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden
+  display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden
 }
 .hub-tag{display:none}
 .hub-fav{
@@ -510,10 +510,7 @@ tr:hover td{background:var(--surface2)}
         <a class="hub-card" data-mod="limpeza" data-cat="gestao" data-search="avaliação limpeza terceirizados qualidade fatura" href="limpeza.html">
           <span class="hub-ico">🧹</span><h3>Avaliação de Limpeza</h3><p>Qualidade dos serviços e liberação de fatura.</p><span class="hub-tag ativo">Disponível</span>
         </a>
-
-        <a class="hub-card" data-mod="risco" data-cat="assistencial" data-search="análise classificação de risco hygia desempenho" href="risco.html">
-          <span class="hub-ico">🎯</span><h3>Classificação de Risco</h3><p>Conversor e análise de desempenho do Hygia.</p><span class="hub-tag ativo">Disponível</span>
-        </a>
+        <a class="hub-card" data-mod="indicadores" data-cat="assistencial" data-search="indicadores metas qualidade risco classificação hygia saúde digital laboratório evidências upas" href="indicadores.html"><span class="hub-ico">📊</span><h3>Indicadores</h3><p>Central de indicadores, evidências, risco e metas das UPAs.</p><span class="hub-tag ativo">4 ferramentas</span></a>
         <a class="hub-card" data-mod="painel_ubs" data-cat="assistencial" data-search="painel comparativo ubs comparecimento faltosos clínica pediatria" href="painel-ubs.html">
           <span class="hub-ico">🏥</span><h3>Painel Comparativo UBS</h3><p>Comparecimento e faltosos por unidade.</p><span class="hub-tag ativo">Disponível</span>
         </a>
@@ -724,7 +721,8 @@ function filtrarModulos(){
       const perfis=restrito.split(',').map(function(x){return x.trim();});
       okRole=perfis.indexOf(currentUser.role)>=0;
     }
-    const okModulo=admin || !permitidos || permitidos.indexOf(mod)>=0;
+    const okModulo=admin || !permitidos || permitidos.indexOf(mod)>=0 ||
+      (mod==='indicadores' && (permitidos.indexOf('risco')>=0 || permitidos.indexOf('notas_indicadores')>=0 || permitidos.indexOf('indicador_laboratorial')>=0 || permitidos.indexOf('indicadores_upas')>=0));
     const ok=okRole&&okModulo;
     card.dataset.permitido=ok?'1':'0';
     card.style.display=ok?'':'none';

@@ -23,7 +23,9 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px;borde
 @media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}.grid2,.grid3{grid-template-columns:1fr}}@media(max-width:760px){.side{display:none}.main{margin:0;width:100%;padding:10px}.cards{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:1fr}}
 @media print{.side,.top,.filters,.btn{display:none!important}.main{margin:0;width:100%;padding:0}.page{display:block!important}.card,.panel{break-inside:avoid}}
 </style>
-</head>
+<style id="tdngo-standard-nav-style">
+.tdngo-home{position:fixed;left:14px;bottom:14px;z-index:2147483600;display:inline-flex;align-items:center;gap:9px;min-height:40px;padding:7px 12px 7px 8px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(18,24,32,.94);color:#fff!important;text-decoration:none!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);backdrop-filter:blur(10px);transition:.15s}
+.tdngo-home:hover{transform:translateY(-2px);border-color:#58a6ff;background:#15243a}.tdngo-home .tdngo-home-ico{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;background:#1d6aad;font-size:14px;font-weight:800;flex:none}.tdngo-home .tdngo-home-copy{display:flex;flex-direction:column;line-height:1.05}.tdngo-home b{font-size:12px}.tdngo-home small{font-size:9px;color:#aab6c5;margin-top:3px}@media(max-width:560px){.tdngo-home{padding:7px;bottom:10px;left:10px}.tdngo-home .tdngo-home-copy{display:none}}@media print{.tdngo-home{display:none!important}}</style></head>
 <body>
 <div class="loading" id="loading">Carregando Segurança Institucional...</div>
 <div class="toast" id="toast"></div>
@@ -37,7 +39,7 @@ table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px;borde
  <button class="nav" onclick="showPage('analise',this)">📈 Análise</button>
  <div class="nl">Configuração</div>
  <button class="nav" id="nav-config" onclick="showPage('config',this)">⚙️ Pesos do indicador</button>
- <div style="position:absolute;left:12px;right:12px;bottom:16px"><a class="btn" href="index.html" style="display:block;text-decoration:none;text-align:center">← Voltar ao TDNGo</a></div>
+ 
 </aside>
 <main class="main">
  <div class="top"><div><div class="title" id="page-title">Painel geral</div><div class="sub" id="page-sub">Visão consolidada das ocorrências de segurança</div></div><div class="actions"><div class="user" id="user-info"></div><button class="btn" onclick="toggleTheme()">◐ Tema</button><button class="btn" onclick="window.print()">🖨 Imprimir</button><button class="btn primary" id="btn-new" onclick="openForm()">➕ Nova ocorrência</button></div></div>
@@ -99,4 +101,4 @@ async function reload(){const r=await api('bootstrap');ocorrencias=r.data.ocorre
 async function init(){const s=sessao();if(!s?.tdngoToken){location.href='index.html';return}document.body.setAttribute('data-theme',localStorage.getItem('seg_theme')||'dark');try{const r=await api('bootstrap');ocorrencias=r.data.ocorrencias||[];unidades=r.data.unidades||[];pesos=r.data.pesos||pesos;currentUser=r.data.user||s;$('user-info').innerHTML=`${esc(currentUser.nome||'')}<br>${esc(currentUser.role||'')}`;$('btn-new').style.display=podeEditar()?'':'none';$('nav-config').style.display=currentUser.role==='admin'?'':'none';populate();renderAll()}catch(e){toast(e.message,'err')}finally{$('loading').style.display='none'}}
 init();
 </script>
-</body></html>
+<a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo"><span class="tdngo-home-ico">⌂</span><span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span></a></body></html>

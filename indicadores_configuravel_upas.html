@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indicadores e Metas UPAs — TDNGo</title>
+<style>
+:root {
+    --primary-color: #0f172a;
+    --accent-color: #2563eb;
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --border-color: #cbd5e1;
+    --text-color: #1e293b;
+    --text-muted: #64748b;
+    --success-bg: #ecfdf5;
+    --success-border: #a7f3d0;
+}
+* { box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 24px;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+.container {
+    max-width: 1250px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+    padding: 28px;
+}
+.action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: #f1f5f9;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+}
+.action-bar-info { font-size: .82rem; color: #475569; font-weight: 600; }
+.action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+button {
+    border: 0;
+    border-radius: 6px;
+    padding: 9px 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+}
+.btn-secondary { background: #e2e8f0; color: #0f172a; }
+.btn-primary { background: var(--accent-color); color: #fff; }
+.doc-header { border-bottom: 2px solid var(--primary-color); padding-bottom: 12px; margin-bottom: 16px; }
+.doc-header h1 { margin: 0 0 4px; font-size: 1.35rem; text-transform: uppercase; }
+.doc-header p { margin: 0; font-size: .82rem; color: var(--text-muted); }
+.sel-bar {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+.sel-field { display: flex; flex-direction: column; min-width: 170px; }
+.sel-field.sel-grow { flex: 1; min-width: 300px; }
+.sel-field label { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .35px; color: #64748b; margin-bottom: 5px; }
+.sel-field select, .sel-field input {
+    padding: 9px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: .88rem;
+    background: white;
+    color: #1e293b;
+}
+.sel-field select:focus, .sel-field input:focus { outline: 2px solid #bfdbfe; border-color: #2563eb; }
+.sel-end { font-size: .75rem; color: #64748b; margin-top: 5px; min-height: 1em; }
+
+.sel-print { display: none; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .78rem; text-align: left; }
+th {
+    background: #0f172a !important;
+    color: #fff !important;
+    padding: 7px 5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: .67rem;
+    border: 1px solid #0f172a;
+    text-align: center;
+}
+td { padding: 5px 6px; border: 1px solid #cbd5e1; vertical-align: middle; }
+tr:nth-child(even) { background: #f8fafc !important; }
+.text-center { text-align: center; }
+.category-cell {
+    font-weight: 800;
+    text-align: center;
+    background: #e2e8f0 !important;
+    text-transform: uppercase;
+    font-size: .7rem;
+    width: 92px;
+}
+.param-cell { font-size: .69rem; color: #475569; line-height: 1.25; }
+.period-badge {
+    display: inline-block;
+    margin-top: 3px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #64748b;
+    font-size: .62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.badge-monit { background: #e2e8f0; color: #475569; padding: 2px 5px; border-radius: 4px; font-size: .68rem; font-weight: 700; }
+input.metric-input {
+    width: 86px;
+    padding: 5px 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    text-align: center;
+    font-size: .78rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+input.metric-input:focus { outline: 2px solid #bfdbfe; border-color: #2563eb; }
+.res-display {
+    font-weight: 800;
+    color: #1e40af;
+    background: #eff6ff !important;
+    padding: 3px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    min-width: 34px;
+    text-align: center;
+    border: 1px solid #bfdbfe;
+}
+.disabled-cell { background: #f1f5f9 !important; color: #94a3b8; text-align: center; font-weight: 600; }
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+.summary-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    padding: 9px 12px;
+}
+.summary-card.highlight { background: var(--success-bg); border-color: var(--success-border); }
+.summary-title { font-size: .66rem; font-weight: 800; color: #475569; text-transform: uppercase; }
+.summary-value { font-size: 1.15rem; font-weight: 900; color: #1e40af; margin-top: 3px; }
+.summary-card.highlight .summary-value { color: #065f46; }
+.footer-note { font-size: .68rem; color: #64748b; margin-top: 8px; line-height: 1.35; }
+.signatures { display: none; margin-top: 34px; justify-content: space-around; text-align: center; }
+.sig-block { width: 220px; border-top: 1px solid #0f172a; padding-top: 4px; font-size: .72rem; font-weight: 600; }
+.empty-state { padding: 28px; text-align: center; color: #64748b; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; }
+
+@media (max-width: 900px) {
+    body { padding: 10px; }
+    .container { padding: 14px; }
+    .summary-grid { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
+}
+
+@media print {
+    @page { size: A4 landscape; margin: 7mm; }
+    html, body { background: #fff !important; padding: 0 !important; margin: 0 !important; color: #000 !important; }
+    .container { max-width: 100% !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; }
+    .action-bar, .sel-bar { display: none !important; }
+    .sel-print { display: block !important; font-size: .72rem; margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid #999; }
+    .doc-header { margin-bottom: 7px; padding-bottom: 5px; }
+    .doc-header h1 { font-size: 1rem; }
+    .doc-header p { font-size: .66rem; }
+    .table-wrap { overflow: visible; }
+    table { font-size: .61rem; }
+    th { padding: 3px 2px !important; font-size: .56rem; }
+    td { padding: 2px 3px !important; }
+    input.metric-input { border: 0 !important; background: transparent !important; width: 62px !important; padding: 0 !important; font-size: .62rem !important; }
+    .period-badge { font-size: .5rem; padding: 0 3px; }
+    .res-display { font-size: .6rem; padding: 1px 3px; color: #000 !important; border-color: #94a3b8 !important; }
+    .summary-grid { grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 7px; }
+    .summary-card { padding: 5px 7px; border-color: #000 !important; }
+    .summary-title { font-size: .52rem; }
+    .summary-value { font-size: .85rem; color: #000 !important; }
+    .footer-note { font-size: .5rem; margin-top: 4px; }
+    .signatures { display: flex !important; }
+}
+</style>
+<style id="tdngo-standard-nav-style">
+.tdngo-home{position:fixed;left:14px;bottom:14px;z-index:2147483600;display:inline-flex;align-items:center;gap:9px;min-height:40px;padding:7px 12px 7px 8px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(18,24,32,.94);color:#fff!important;text-decoration:none!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);backdrop-filter:blur(10px);transition:.15s}
+.tdngo-home:hover{transform:translateY(-2px);border-color:#58a6ff;background:#15243a}.tdngo-home .tdngo-home-ico{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;background:#1d6aad;font-size:14px;font-weight:800;flex:none}.tdngo-home .tdngo-home-copy{display:flex;flex-direction:column;line-height:1.05}.tdngo-home b{font-size:12px}.tdngo-home small{font-size:9px;color:#aab6c5;margin-top:3px}@media(max-width:560px){.tdngo-home{padding:7px;bottom:10px;left:10px}.tdngo-home .tdngo-home-copy{display:none}}@media print{.tdngo-home{display:none!important}}</style></head>
+<body><script id="tdngo-indicadores-gate">(function(){let u=null;try{u=JSON.parse(sessionStorage.getItem('fhsl_session')||'null')}catch(e){}if(!u){location.replace('index.html');return}if(String(u.role||'').toLowerCase()==='admin')return;const raw=u.modulos;if(raw===undefined||raw===null||String(raw).trim()==='')return;const m=Array.isArray(raw)?raw.map(String):String(raw).split(',').map(x=>x.trim());if(!(m.includes('indicadores')||m.includes('risco')))location.replace('index.html')})();</script>
+<div class="container">
+    <div class="action-bar">
+        <div class="action-bar-info">Painel configurável por unidade. As metas e indicadores são ajustados automaticamente conforme o Plano de Trabalho selecionado.</div>
+        <div class="action-buttons">
+            <button type="button" class="btn-secondary" onclick="limparFormulario()">Limpar</button>
+            <button type="button" class="btn-primary" onclick="window.print()">Imprimir / Guardar em PDF</button>
+        </div>
+    </div>
+
+    <div class="doc-header">
+        <h1>Acompanhamento de Indicadores e Metas</h1>
+        <p>Relatório de Avaliação do Desempenho e Qualidade Operacional — UPAs / UBDS</p>
+    </div>
+
+    <div class="sel-bar">
+        <div class="sel-field sel-grow">
+            <label for="sel-upa">Unidade</label>
+            <select id="sel-upa" onchange="trocarUnidade()">
+                <option value="">Selecione a unidade...</option>
+                <option value="norte">UPA Norte "Dr. Nelson Mandela"</option>
+                <option value="leste">UPA Leste "Dr. Luis Atílio Losi Viana"</option>
+                <option value="oeste">UPA Oeste "Prof. Dr. João José Carneiro"</option>
+                <option value="vila">UBDS Vila Virgínia "Dr. Marco Antônio Sahão"</option>
+                <option value="ribeirao">UPA Ribeirão Verde "Luciana Ap. Cândido dos Santos"</option>
+            </select>
+            <div class="sel-end" id="sel-end"></div>
+        </div>
+        <div class="sel-field">
+            <label for="sel-comp">Competência</label>
+            <input type="text" id="sel-comp" placeholder="MM/AAAA" maxlength="7" inputmode="numeric" oninput="formatComp(this)">
+        </div>
+        <div class="sel-field">
+            <label for="sel-periodo">Meta de produção</label>
+            <select id="sel-periodo" onchange="trocarPeriodo()">
+                <option value="mensal">Mensal</option>
+                <option value="trimestral">Trimestral</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="sel-print" id="sel-print"></div>
+
+    <div id="empty-state" class="empty-state">Selecione uma unidade para exibir os indicadores.</div>
+    <div id="painel" style="display:none;">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:90px;">Tipo</th>
+                        <th style="width:32px;">Nº</th>
+                        <th>Indicador</th>
+                        <th style="width:92px;">Meta</th>
+                        <th style="width:240px;">Parâmetro de pontuação</th>
+                        <th style="width:105px;">Realizado</th>
+                        <th style="width:50px;">Máx</th>
+                        <th style="width:60px;">Resultado</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-indicadores"></tbody>
+            </table>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card"><div class="summary-title">Produção</div><div class="summary-value" id="sum-producao">0 / 75</div></div>
+            <div class="summary-card"><div class="summary-title">Desempenho</div><div class="summary-value" id="sum-desempenho">0 / 75</div></div>
+            <div class="summary-card"><div class="summary-title">Qualidade</div><div class="summary-value" id="sum-qualidade">0 / 75</div></div>
+            <div class="summary-card"><div class="summary-title">Pontuação total</div><div class="summary-value" id="sum-total">0 / 225</div></div>
+            <div class="summary-card highlight"><div class="summary-title">Faixa da parcela variável</div><div class="summary-value" id="sum-repasse">0%</div></div>
+        </div>
+        <div class="footer-note">
+            A faixa de parcela variável é apresentada conforme a pontuação total contratual (0–225). Indicadores de qualidade possuem periodicidades próprias: pontualidade e satisfação são mensais; Comitê Gestor, Educação Permanente e Comissões são trimestrais.
+        </div>
+    </div>
+
+    <div class="signatures">
+        <div class="sig-block">Responsável pelo Preenchimento</div>
+        <div class="sig-block">Coordenação / Validação</div>
+    </div>
+</div>
+
+<script>
+const UNIDADES = {
+    norte: {
+        nome: 'UPA Norte "Dr. Nelson Mandela"',
+        endereco: 'Av. Euclydes Figueiredo, 295 — Adelino Simioni — 14071-140',
+        fonte: 'Plano de Trabalho – Outras UPAs, páginas 32 a 36',
+        odontologia: false,
+        producao: {
+            mensal: { clinica:10000, pediatria:3500, laboratorio:12000, radiologia:2000, medicamentos:9000 },
+            trimestral: { clinica:30000, pediatria:10500, laboratorio:36000, radiologia:6000, medicamentos:27000 }
+        }
+    },
+    leste: {
+        nome: 'UPA Leste "Dr. Luis Atílio Losi Viana"',
+        endereco: 'Av. Treze de Maio, 353 — Jd. Paulistano — 14090-270',
+        fonte: 'Plano de Trabalho – Outras UPAs, páginas 32 a 36',
+        odontologia: true,
+        producao: {
+            mensal: { clinica:10000, pediatria:3500, laboratorio:12000, radiologia:2650, medicamentos:9000 },
+            trimestral: { clinica:30000, pediatria:10500, laboratorio:36000, radiologia:7950, medicamentos:27000 }
+        }
+    },
+    oeste: {
+        nome: 'UPA Oeste "Prof. Dr. João José Carneiro"',
+        endereco: 'R. Teresina, 678 — Vila Maria Luíza — 14055-380',
+        fonte: 'Plano de Trabalho – Outras UPAs, páginas 32 a 36',
+        odontologia: true,
+        producao: {
+            mensal: { clinica:10000, pediatria:3500, laboratorio:10500, radiologia:2000, medicamentos:9000 },
+            trimestral: { clinica:30000, pediatria:10500, laboratorio:31500, radiologia:6000, medicamentos:27000 }
+        }
+    },
+    vila: {
+        nome: 'UBDS Vila Virgínia "Dr. Marco Antônio Sahão"',
+        endereco: 'R. Franco da Rocha, 1270 — Vila Virgínia — 14030-470',
+        fonte: 'Plano de Trabalho – Outras UPAs, páginas 32 a 36',
+        odontologia: false,
+        producao: {
+            mensal: { clinica:9000, pediatria:4400, laboratorio:9000, radiologia:1900, medicamentos:9000 },
+            trimestral: { clinica:27000, pediatria:13200, laboratorio:27000, radiologia:5700, medicamentos:27000 }
+        }
+    },
+    ribeirao: {
+        nome: 'UPA Ribeirão Verde "Luciana Ap. Cândido dos Santos"',
+        endereco: 'Estr. Antônia Mugnatto Marincek, 555 — Cond. Copacabana — 14078-405',
+        fonte: 'Contrato de Gestão nº 50/2026 – UPA Ribeirão Verde, páginas 22 a 25',
+        odontologia: false,
+        producao: {
+            mensal: { clinica:9000, pediatria:3500, laboratorio:9000, radiologia:1900, medicamentos:9000 },
+            // Mantido exatamente conforme a página 23 do Plano de Trabalho: pediatria trimestral = 13.200.
+            trimestral: { clinica:27000, pediatria:13200, laboratorio:27000, radiologia:5700, medicamentos:27000 }
+        }
+    }
+};
+
+const MONITORAMENTO_BASE = [
+    { id:'mon-acolhimento', nome:'Acolhimento com classificação de risco (03.01.06.011-8)' },
+    { id:'mon-medico', nome:'Atendimento médico em unidade de pronto atendimento (03.01.06.009-6)' },
+    { id:'mon-observacao', nome:'Atendimento de urgência com observação até 24 horas (03.01.06.002-9)' },
+    { id:'mon-enfermeiro', nome:'Atendimentos Enfermeiro' },
+    { id:'mon-procedimentos', nome:'Procedimentos de enfermagem, incluindo eletrocardiografia (Técnicos de Enfermagem e Enfermeiros)' },
+    { id:'mon-vacinacao', nome:'Vacinação de emergência' }
+];
+
+const PRODUCAO = [
+    { id:'prod-clinica', chave:'clinica', nome:'Atendimento médico – clínica' },
+    { id:'prod-pediatria', chave:'pediatria', nome:'Atendimento médico – pediatria' },
+    { id:'prod-laboratorio', chave:'laboratorio', nome:'Exames laboratoriais' },
+    { id:'prod-radiologia', chave:'radiologia', nome:'Exames de radiologia' },
+    { id:'prod-medicamentos', chave:'medicamentos', nome:'Dispensação de medicamentos aos pacientes atendidos' }
+];
+
+const DESEMPENHO = [
+    { id:'des-azul', nome:'Usuários classificados como risco azul atendidos em ≤ 240 min', meta:'100%', parametro:'≥80%: 10 | ≥70% e <80%: 7 | ≥60% e <70%: 5 | <60%: 0', max:10, tipo:'risco', unidade:'%' },
+    { id:'des-verde', nome:'Usuários classificados como risco verde atendidos em ≤ 120 min', meta:'100%', parametro:'≥80%: 10 | ≥70% e <80%: 7 | ≥60% e <70%: 5 | <60%: 0', max:10, tipo:'risco', unidade:'%' },
+    { id:'des-amarelo', nome:'Usuários classificados como risco amarelo atendidos em ≤ 30 min', meta:'100%', parametro:'≥80%: 10 | ≥70% e <80%: 7 | ≥60% e <70%: 5 | <60%: 0', max:10, tipo:'risco', unidade:'%' },
+    { id:'des-transferencia', nome:'Transferência de usuários para outros serviços da rede de urgência e emergência', meta:'≤20%', parametro:'≤20%: 15 | >20%: 0', max:15, tipo:'transferencia', unidade:'%' },
+    { id:'des-laboratorio', nome:'Tempo médio para liberação de resultados de exames laboratoriais', meta:'≤60 min', parametro:'≤60 min: 15 | >60 min: 0', max:15, tipo:'tempo', unidade:'min' },
+    { id:'des-radiologia', nome:'Tempo de espera para realização de exames radiológicos de urgência', meta:'≤60 min', parametro:'≤60 min: 15 | >60 min: 0', max:15, tipo:'tempo', unidade:'min' }
+];
+
+const QUALIDADE = [
+    { id:'qua-insatisfeitos', nome:'Usuários insatisfeitos (ruim/péssimo)', meta:'≤30%', parametro:'≤30%: 15 | >30% e ≤40%: 10 | >40%: 0', max:15, tipo:'insatisfeitos', unidade:'%', verificacao:'Mensal' },
+    { id:'qua-documentos', nome:'Pontualidade na entrega de documentos', meta:'100%', parametro:'100%: 15 | ≥80% e <100%: 10 | <80%: 0', max:15, tipo:'documentos', unidade:'%', verificacao:'Mensal' },
+    { id:'qua-comite', nome:'Funcionamento do Comitê Gestor', meta:'3 reuniões', parametro:'3 reuniões: 15 | abaixo da meta: 0', max:15, tipo:'comite', unidade:'', verificacao:'Trimestral' },
+    { id:'qua-educacao', nome:'Educação Permanente', meta:'≥3 ações', parametro:'≥3 ações: 15 | abaixo da meta: 0', max:15, tipo:'educacao', unidade:'', verificacao:'Trimestral' },
+    { id:'qua-comissoes', nome:'Comissões atuantes', meta:'≥16 atas', parametro:'≥16 atas: 15 | abaixo da meta: 0', max:15, tipo:'comissoes', unidade:'', verificacao:'Trimestral' }
+];
+
+let unidadeAtual = '';
+let periodoAtual = 'mensal';
+const estado = {};
+
+function fmtNumero(n) { return Number(n).toLocaleString('pt-BR'); }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+
+function chaveEstado() { return unidadeAtual ? `${unidadeAtual}:${periodoAtual}` : ''; }
+function salvarEstadoAtual() {
+    if (!unidadeAtual) return;
+    const chave = chaveEstado();
+    estado[chave] = {};
+    document.querySelectorAll('[data-input-id]').forEach(el => { estado[chave][el.dataset.inputId] = el.value; });
+}
+function restaurarEstado() {
+    const dados = estado[chaveEstado()] || {};
+    document.querySelectorAll('[data-input-id]').forEach(el => {
+        if (Object.prototype.hasOwnProperty.call(dados, el.dataset.inputId)) el.value = dados[el.dataset.inputId];
+    });
+}
+
+function trocarUnidade() {
+    salvarEstadoAtual();
+    unidadeAtual = document.getElementById('sel-upa').value;
+    const unidade = UNIDADES[unidadeAtual];
+    document.getElementById('sel-end').textContent = unidade ? unidade.endereco : '';
+    renderizar();
+    atualizarCabecalhoImpressao();
+}
+
+function trocarPeriodo() {
+    salvarEstadoAtual();
+    periodoAtual = document.getElementById('sel-periodo').value;
+    renderizar();
+    atualizarCabecalhoImpressao();
+}
+
+function formatComp(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 6);
+    if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+    el.value = v;
+    atualizarCabecalhoImpressao();
+}
+
+function atualizarCabecalhoImpressao() {
+    const unidade = UNIDADES[unidadeAtual];
+    const comp = document.getElementById('sel-comp').value || '';
+    const periodo = document.getElementById('sel-periodo').selectedOptions[0]?.textContent || '';
+    const box = document.getElementById('sel-print');
+    if (!unidade) { box.innerHTML = ''; return; }
+    box.innerHTML = `<strong>Unidade:</strong> ${esc(unidade.nome)}<br><span>${esc(unidade.endereco)}</span>` +
+        (comp ? `<br><strong>Competência:</strong> ${esc(comp)}` : '') +
+        `<br><strong>Meta de produção:</strong> ${esc(periodo)} | <strong>Base:</strong> ${esc(unidade.fonte)}`;
+}
+
+function renderizar() {
+    const painel = document.getElementById('painel');
+    const empty = document.getElementById('empty-state');
+    const tbody = document.getElementById('tbody-indicadores');
+    if (!unidadeAtual) {
+        painel.style.display = 'none';
+        empty.style.display = 'block';
+        tbody.innerHTML = '';
+        return;
+    }
+    painel.style.display = 'block';
+    empty.style.display = 'none';
+    const unidade = UNIDADES[unidadeAtual];
+    const metas = unidade.producao[periodoAtual];
+
+    const monitoramento = [...MONITORAMENTO_BASE];
+    if (unidade.odontologia) monitoramento.push({ id:'mon-odontologia', nome:'Atendimentos realizados pelo Cirurgião Dentista' });
+
+    const linhas = [];
+    monitoramento.forEach((item, idx) => {
+        linhas.push(`<tr>
+            ${idx === 0 ? `<td rowspan="${monitoramento.length}" class="category-cell">Monitoramento</td>` : ''}
+            <td class="text-center">${idx+1}</td>
+            <td>${esc(item.nome)}<div class="period-badge">Mensal</div></td>
+            <td class="text-center"><span class="badge-monit">Monitoramento</span></td>
+            <td class="text-center">—</td>
+            <td class="text-center"><input class="metric-input" type="number" min="0" step="1" data-input-id="${item.id}" oninput="entradaAlterada()"></td>
+            <td class="text-center">—</td>
+            <td class="disabled-cell">—</td>
+        </tr>`);
+    });
+
+    PRODUCAO.forEach((item, idx) => {
+        const meta = metas[item.chave];
+        linhas.push(`<tr>
+            ${idx === 0 ? `<td rowspan="${PRODUCAO.length}" class="category-cell">Produção</td>` : ''}
+            <td class="text-center">${idx+1}</td>
+            <td>${esc(item.nome)}<div class="period-badge">${periodoAtual === 'mensal' ? 'Mensal' : 'Trimestral'}</div></td>
+            <td class="text-center">${fmtNumero(meta)}</td>
+            <td class="param-cell">≥75%: 15 | ≥60% e &lt;75%: 10 | &lt;60%: 0</td>
+            <td class="text-center"><input class="metric-input" type="number" min="0" step="1" data-input-id="${item.id}" data-score-type="producao" data-meta="${meta}" oninput="entradaAlterada()"></td>
+            <td class="text-center">15</td>
+            <td class="text-center"><span id="res-${item.id}" class="res-display">—</span></td>
+        </tr>`);
+    });
+
+    DESEMPENHO.forEach((item, idx) => {
+        linhas.push(`<tr>
+            ${idx === 0 ? `<td rowspan="${DESEMPENHO.length}" class="category-cell">Desempenho</td>` : ''}
+            <td class="text-center">${idx+1}</td>
+            <td>${esc(item.nome)}<div class="period-badge">Mensal</div></td>
+            <td class="text-center">${esc(item.meta)}</td>
+            <td class="param-cell">${item.parametro}</td>
+            <td class="text-center"><input class="metric-input" type="number" min="0" ${item.unidade === '%' ? 'max="100" step="0.01"' : 'step="0.01"'} data-input-id="${item.id}" data-score-type="${item.tipo}" oninput="entradaAlterada()"> ${esc(item.unidade)}</td>
+            <td class="text-center">${item.max}</td>
+            <td class="text-center"><span id="res-${item.id}" class="res-display">—</span></td>
+        </tr>`);
+    });
+
+    QUALIDADE.forEach((item, idx) => {
+        linhas.push(`<tr>
+            ${idx === 0 ? `<td rowspan="${QUALIDADE.length}" class="category-cell">Qualidade</td>` : ''}
+            <td class="text-center">${idx+1}</td>
+            <td>${esc(item.nome)}<div class="period-badge">${esc(item.verificacao)}</div></td>
+            <td class="text-center">${esc(item.meta)}</td>
+            <td class="param-cell">${item.parametro}</td>
+            <td class="text-center"><input class="metric-input" type="number" min="0" ${item.unidade === '%' ? 'max="100" step="0.01"' : 'step="1"'} data-input-id="${item.id}" data-score-type="${item.tipo}" oninput="entradaAlterada()"> ${esc(item.unidade)}</td>
+            <td class="text-center">${item.max}</td>
+            <td class="text-center"><span id="res-${item.id}" class="res-display">—</span></td>
+        </tr>`);
+    });
+
+    tbody.innerHTML = linhas.join('');
+    restaurarEstado();
+    calcular();
+}
+
+function entradaAlterada() {
+    salvarEstadoAtual();
+    calcular();
+}
+
+function pontuar(tipo, valor, meta) {
+    if (Number.isNaN(valor)) return null;
+    switch (tipo) {
+        case 'producao': {
+            const pct = meta > 0 ? (valor / meta) * 100 : 0;
+            if (pct >= 75) return 15;
+            if (pct >= 60) return 10;
+            return 0;
+        }
+        case 'risco':
+            if (valor >= 80) return 10;
+            if (valor >= 70) return 7;
+            if (valor >= 60) return 5;
+            return 0;
+        case 'transferencia': return valor <= 20 ? 15 : 0;
+        case 'tempo': return valor <= 60 ? 15 : 0;
+        case 'insatisfeitos':
+            if (valor <= 30) return 15;
+            if (valor <= 40) return 10;
+            return 0;
+        case 'documentos':
+            if (valor >= 100) return 15;
+            if (valor >= 80) return 10;
+            return 0;
+        case 'comite': return valor >= 3 ? 15 : 0;
+        case 'educacao': return valor >= 3 ? 15 : 0;
+        case 'comissoes': return valor >= 16 ? 15 : 0;
+        default: return null;
+    }
+}
+
+function calcular() {
+    if (!unidadeAtual) return;
+    let producao = 0, desempenho = 0, qualidade = 0;
+    document.querySelectorAll('[data-score-type]').forEach(el => {
+        const raw = el.value.trim();
+        const valor = raw === '' ? NaN : parseFloat(raw);
+        const tipo = el.dataset.scoreType;
+        const meta = parseFloat(el.dataset.meta || '0');
+        const pts = pontuar(tipo, valor, meta);
+        const res = document.getElementById(`res-${el.dataset.inputId}`);
+        if (res) res.textContent = pts === null ? '—' : pts;
+        if (pts === null) return;
+        if (tipo === 'producao') producao += pts;
+        else if (['risco','transferencia','tempo'].includes(tipo)) desempenho += pts;
+        else qualidade += pts;
+    });
+    const total = producao + desempenho + qualidade;
+    document.getElementById('sum-producao').textContent = `${producao} / 75`;
+    document.getElementById('sum-desempenho').textContent = `${desempenho} / 75`;
+    document.getElementById('sum-qualidade').textContent = `${qualidade} / 75`;
+    document.getElementById('sum-total').textContent = `${total} / 225`;
+    document.getElementById('sum-repasse').textContent = `${faixaRepasse(total)}%`;
+}
+
+function faixaRepasse(total) {
+    if (total >= 196) return 100;
+    if (total >= 180) return 80;
+    if (total >= 135) return 60;
+    if (total >= 114) return 50;
+    if (total >= 90) return 40;
+    if (total >= 45) return 20;
+    return 0;
+}
+
+function limparFormulario() {
+    if (!unidadeAtual) return;
+    const chave = chaveEstado();
+    estado[chave] = {};
+    document.querySelectorAll('[data-input-id]').forEach(el => el.value = '');
+    calcular();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    periodoAtual = document.getElementById('sel-periodo').value;
+    atualizarCabecalhoImpressao();
+});
+</script>
+<a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo"><span class="tdngo-home-ico">⌂</span><span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span></a></body>
+</html>

@@ -1,0 +1,19 @@
+TDNGo PADRONIZADO v1
+
+- Novo módulo indicadores.html com:
+  • Classificação de Risco
+  • Notas dos Indicadores / IQ1
+  • Indicador Laboratorial
+  • Indicadores Configuráveis UPAs
+- index.html com card único Indicadores e retrocompatibilidade da permissão antiga "risco".
+- admin.html com permissão central "Indicadores", módulos reorganizados e remoção do atalho legado Configuração da planilha.
+- contratos.html com navegação administrativa limpa: removidos Usuários, Cadastro de Unidades, Administração e Configurar Sheets; Auditoria mantida.
+- Todas as páginas receberam o mesmo botão TDNGo / Voltar aos módulos.
+- Botões antigos de retorno foram removidos quando identificados.
+- O botão de navegação não aparece na impressão.
+- Indicadores standalone agora usam a sessão fhsl_session.
+- Risco aceita a nova permissão "indicadores" e mantém "risco" por compatibilidade.
+- APIs, Supabase, Apps Script e regras de cálculo foram preservados.
+
+PUBLICAÇÃO:
+Envie/substitua os arquivos deste pacote no mesmo diretório do GitHub Pages, mantendo os nomes.

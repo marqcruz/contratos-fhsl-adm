@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Indicador Laboratorial — TDNGo</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#0d1117;--card:#161b22;--card2:#1c2230;--border:#30363d;
+  --txt:#e6edf3;--muted:#8b949e;--blue:#2f81f7;--blue2:#58a6ff;
+  --green:#238636;--red:#da3633;--yellow:#d29922;
+}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:Calibri,'Segoe UI',Arial,sans-serif}
+.app{display:grid;grid-template-columns:340px 1fr;min-height:100vh}
+.side{background:#11161d;border-right:1px solid var(--border);padding:20px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;gap:10px;align-items:center;margin-bottom:20px}
+.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1f6feb,#58a6ff);display:grid;place-items:center;font-weight:900}
+.brand h1{font-size:16px;margin:0}.brand p{font-size:11px;color:var(--muted);margin:2px 0 0}
+.drop{border:1.5px dashed #536174;border-radius:12px;padding:18px;text-align:center;background:#0d131a;transition:.2s}
+.drop:hover,.drop.drag{border-color:var(--blue2);background:#111d2c}
+.drop-icon{font-size:28px;line-height:1;margin-bottom:8px}
+.drop b{display:block;font-size:13px;margin-bottom:5px}
+.drop span{display:block;font-size:11px;color:var(--muted);margin-bottom:12px}
+.file-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #3a4656;background:#21262d;color:#e6edf3;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer}
+.file-btn:hover{background:#30363d;border-color:#536174}
+.file-name{margin-top:9px;font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.status{font-size:11px;margin-top:9px;padding:8px 10px;border-radius:8px;background:#0d131a;color:var(--muted);display:none}
+.status.ok{display:block;color:#7ee787;border:1px solid #265d38}.status.err{display:block;color:#ff7b72;border:1px solid #7d2d2a}
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:20px 0 8px}
+.field{margin-bottom:9px}.field label{display:block;font-size:10px;color:var(--muted);margin-bottom:4px}
+.field input,.field select{width:100%;background:#0d1117;color:var(--txt);border:1px solid var(--border);border-radius:7px;padding:8px 9px;font-size:12px;outline:none}
+.field input:focus,.field select:focus{border-color:var(--blue)}
+.field input[readonly]{background:#161b22;color:#c9d1d9;border-color:#30363d;cursor:not-allowed}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.actions{display:grid;gap:8px;margin-top:16px}
+button{border:0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer;font-size:12px}
+.primary{background:var(--blue);color:white}.primary:hover{background:#388bfd}
+.secondary{background:#21262d;color:var(--txt);border:1px solid var(--border)}
+.secondary:hover{background:#30363d}
+.main{padding:22px;overflow:auto}
+.toolbar{max-width:1320px;margin:0 auto 12px;display:flex;justify-content:space-between;align-items:center}
+.toolbar h2{font-size:15px;margin:0}.toolbar span{font-size:11px;color:var(--muted)}
+.report-shell{max-width:1380px;margin:auto;background:#d7d7d7;padding:10px;border-radius:8px;box-shadow:0 10px 35px rgba(0,0,0,.28)}
+#report{background:#fff;color:#111;width:100%;min-height:730px;padding:10px 12px 16px;font-family:Calibri,'Segoe UI',Arial,sans-serif}
+.report-title{
+  font-family:Calibri,'Segoe UI',Arial,sans-serif;
+  font-size:20px;font-weight:700;text-align:center;
+  border:0.8px solid #333;border-bottom:0;
+  padding:4px 6px 5px;line-height:1.05;
+}
+table{border-collapse:collapse;border-spacing:0;width:100%}
+.report-table{
+  font-family:Calibri,'Segoe UI',Arial,sans-serif;
+  font-size:11px;table-layout:fixed;border:1px solid #333
+}
+.report-table th,.report-table td{
+  border:0.8px solid #3b3b3b;
+  padding:2px 4px;
+  line-height:1.08;
+  height:19px;
+  vertical-align:middle
+}
+.report-table th{
+  background:#5B9BD5;color:#fff;text-align:center;
+  font-weight:700;font-size:11px
+}
+.report-table td{text-align:center;font-weight:400}
+.report-table td:first-child{text-align:left}
+.report-table tr.na td{background:#FFF2CC}
+.report-table tr.total td{background:#5B9BD5;color:#fff;font-weight:700}
+.report-table tr.avg td{font-weight:700;background:#fff}
+.report-table tr.avg-green td{background:#00B050;color:#fff;font-weight:700}
+.notes{
+  font-family:Calibri,'Segoe UI',Arial,sans-serif;
+  font-size:11px;line-height:1.45;margin-top:18px
+}
+.notes b{font-weight:700}
+.empty{height:590px;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#999;text-align:center}
+.empty strong{font-size:18px;color:#666}.empty span{font-size:12px;margin-top:5px}
+.pill{display:inline-block;border:1px solid #c8c8c8;border-radius:12px;padding:2px 7px;font-size:10px;margin-left:7px;color:#666}
+@media(max-width:980px){.app{grid-template-columns:1fr}.side{position:relative;height:auto}.main{padding:10px}.report-shell{border-radius:0;padding:3px}}
+@media print{
+ *{
+   -webkit-print-color-adjust:exact!important;
+   print-color-adjust:exact!important;
+ }
+ html,body{
+   background:#fff!important;
+   margin:0!important;
+   padding:0!important;
+ }
+ .side,.toolbar{display:none!important}
+ .app{display:block!important}
+ .main{padding:0!important;margin:0!important}
+ .report-shell{
+   padding:0!important;
+   margin:0!important;
+   box-shadow:none!important;
+   max-width:none!important;
+   background:#fff!important;
+   border-radius:0!important
+ }
+ #report{
+   padding:3mm 4mm!important;
+   margin:0!important;
+   width:auto!important;
+   min-height:auto!important;
+   font-family:Calibri,'Segoe UI',Arial,sans-serif!important
+ }
+ .report-title{
+   font-size:16pt!important;
+   border:0.5pt solid #333!important;
+   border-bottom:0!important;
+   padding:2.5pt 4pt!important
+ }
+ .report-table{
+   font-size:8.5pt!important;
+   border-collapse:collapse!important;
+   border-spacing:0!important;
+   border:0.5pt solid #333!important
+ }
+ .report-table th,
+ .report-table td{
+   border:0.5pt solid #333!important;
+   height:14pt!important;
+   padding:1pt 2.5pt!important;
+   line-height:1.05!important
+ }
+ .report-table th{
+   background:#5B9BD5!important;
+   color:#fff!important
+ }
+ .report-table tr.na td{
+   background:#FFF2CC!important
+ }
+ .report-table tr.total td{
+   background:#5B9BD5!important;
+   color:#fff!important
+ }
+ .report-table tr.avg-green td{
+   background:#00B050!important;
+   color:#fff!important
+ }
+ .notes{
+   font-size:8.5pt!important;
+   line-height:1.3!important;
+   margin-top:9pt!important
+ }
+ @page{
+   size:A4 landscape;
+   margin:4mm;
+ }
+}
+</style>
+<style id="tdngo-standard-nav-style">
+.tdngo-home{position:fixed;left:14px;bottom:14px;z-index:2147483600;display:inline-flex;align-items:center;gap:9px;min-height:40px;padding:7px 12px 7px 8px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(18,24,32,.94);color:#fff!important;text-decoration:none!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);backdrop-filter:blur(10px);transition:.15s}
+.tdngo-home:hover{transform:translateY(-2px);border-color:#58a6ff;background:#15243a}.tdngo-home .tdngo-home-ico{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;background:#1d6aad;font-size:14px;font-weight:800;flex:none}.tdngo-home .tdngo-home-copy{display:flex;flex-direction:column;line-height:1.05}.tdngo-home b{font-size:12px}.tdngo-home small{font-size:9px;color:#aab6c5;margin-top:3px}@media(max-width:560px){.tdngo-home{padding:7px;bottom:10px;left:10px}.tdngo-home .tdngo-home-copy{display:none}}@media print{.tdngo-home{display:none!important}}</style></head>
+<body><script id="tdngo-indicadores-gate">(function(){let u=null;try{u=JSON.parse(sessionStorage.getItem('fhsl_session')||'null')}catch(e){}if(!u){location.replace('index.html');return}if(String(u.role||'').toLowerCase()==='admin')return;const raw=u.modulos;if(raw===undefined||raw===null||String(raw).trim()==='')return;const m=Array.isArray(raw)?raw.map(String):String(raw).split(',').map(x=>x.trim());if(!(m.includes('indicadores')||m.includes('risco')))location.replace('index.html')})();</script>
+<div class="app">
+<aside class="side">
+  <div class="brand"><div class="logo">ID</div><div><h1>Indicador Laboratorial</h1><p>TDNGo · Gerador automático</p></div></div>
+
+  <div class="drop" id="drop">
+    <div class="drop-icon">📊</div>
+    <b>Arraste a planilha Excel aqui</b>
+    <span>Compatível com planilhas mensais e planilhas com vários períodos</span>
+    <button type="button" class="file-btn" id="btn-file">📁 Selecionar Excel</button>
+    <div class="file-name" id="file-name">Nenhum arquivo selecionado</div>
+  </div>
+  <input type="file" id="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+  <div class="status" id="status"></div>
+
+  <div class="section-title">Dados identificados</div>
+  <div class="field"><label>Unidade</label>
+    <select id="unidade">
+      <option value="">SELECIONE...</option>
+      <option value="UPA LESTE">UPA LESTE</option>
+      <option value="UPA OESTE">UPA OESTE</option>
+      <option value="UPA RIBEIRÃO VERDE">UPA RIBEIRÃO VERDE</option>
+      <option value="UPA NORTE">UPA NORTE</option>
+      <option value="UBDS VILA VIRGÍNIA">UBDS VILA VIRGÍNIA</option>
+    </select>
+  </div>
+  <div class="grid2">
+    <div class="field"><label>Início</label><input id="periodoIni" type="date"></div>
+    <div class="field"><label>Fim</label><input id="periodoFim" type="date"></div>
+  </div>
+  <div class="field"><label>Período da planilha</label><select id="periodoSelect"><option value="">Carregue uma planilha</option></select></div>
+
+  <div class="section-title">Configuração do indicador</div>
+  <div class="grid2">
+    <div class="field"><label>Meta mensal</label><input id="meta" type="number" value="9000"></div>
+    <div class="field"><label>Limite padrão (min)</label><input id="limite" type="number" value="60"></div>
+  </div>
+  <div class="field"><label>Fonte</label><input id="fonte" value="SISTEMA HYGIA E LABORLIS"></div>
+  <div class="field"><label>Responsável relatório</label><input id="respRel" value="TATIANA DE PAULA LOURO TOSO (BIOMÉDICA COORDENADORA)" readonly></div>
+  <div class="field"><label>Responsável validação</label><input id="respVal" value="MARCOS DE SOUSA DA CRUZ (COORDENADOR GERAL ADMINISTRATIVO)"></div>
+  <div class="field"><label>Observação</label><input id="obs" value="-" readonly></div>
+
+  <div class="actions">
+    <button class="primary" onclick="gerarPDFNativo()">⬇ Gerar PDF / Imprimir</button>
+    <button class="secondary" onclick="gerarPDFImagem()">PDF alternativo (imagem)</button>
+    <button class="secondary" onclick="limparTudo()">🧹 Limpar tudo</button>
+    <div style="font-size:10px;color:var(--muted);line-height:1.35">
+      Para melhor qualidade, use o botão azul e escolha <b>Salvar como PDF</b> na janela de impressão.
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="toolbar"><div><h2>Prévia do indicador</h2><span>O relatório é recalculado automaticamente após a leitura da planilha.</span></div><span id="periodBadge"></span></div>
+  <div class="report-shell">
+    <section id="report">
+      <div class="empty" id="empty"><strong>Carregue a planilha de produção</strong><span>O sistema localizará automaticamente o período mais recente, quantidades e tempos médios.</span></div>
+      <div id="reportContent" style="display:none"></div>
+    </section>
+  </div>
+</main>
+</div>
+
+<script>
+const EXAMES = [
+ {out:'HEMOGRAMA', keys:['HEMOGRAMA'], comp:true, limit:true},
+ {out:'AMILASE', keys:['AMILASE'], comp:true, limit:true},
+ {out:'TGO', keys:['TGO'], comp:true, limit:true},
+ {out:'TGP', keys:['TGP'], comp:true, limit:true},
+ {out:'BILIRRUBINAS TOTAL E DIRETA', keys:['BILIRRUBINAS TOTAL E DIRETA'], comp:true, limit:true},
+ {out:'URÉIA', keys:['UREIA','URÉIA'], comp:true, limit:true},
+ {out:'CREATININA', keys:['CREATININA'], comp:true, limit:true},
+ {out:'CPK', keys:['CPK'], comp:true, limit:true},
+ {out:'CKMB', keys:['CKMB'], comp:true, limit:true},
+ {out:'SÓDIO', keys:['SODIO','SÓDIO'], comp:true, limit:true},
+ {out:'POTÁSSIO', keys:['POTASSIO','POTÁSSIO'], comp:true, limit:true},
+ {out:'GLICOSE', keys:['GLICOSE'], comp:true, limit:true},
+ {out:'TAP **', keys:['TAP **','TAP'], comp:false, showQty:true},
+ {out:'TROPONINA', keys:['TROPONINA'], comp:true, limit:false},
+ {out:'URINA ROTINA', keys:['URINA ROTINA'], comp:true, limit:true},
+ {out:'UROCULTURA **', keys:['UROCULTURA ** (URO)','UROCULTURA **','UROCULTURA'], comp:false, na:true},
+ {out:'ANTIBIOGRAMA PARA UROCULTURA ** (ABURO)', keys:['ANTIBIOGRAMA PARA UROCULTURA ** (ABURO)','ANTIBIOGRAMA PARA UROCULTURA'], comp:false, na:true},
+ {out:'HEMOCULTURA ** (HEMO)', keys:['HEMOCULTURA ** (HEMO)','HEMOCULTURA 1ªAM','HEMOCULTURA 1AAM','HEMOCULTURA 1ª AM','HEMOCULTURA 1A AM'], comp:false, na:true},
+ {out:'1ª PARCIAL HEMOCULTURA 1ª AM ** (1PHC)', keys:['1ª PARCIAL HEMOCULTURA 1ª AM ** (1PHC)','1A PARCIAL HEMOCULTURA 1A AM'], comp:false, na:true},
+ {out:'1ª PARCIAL HEMOCULTURA 2ª AM **', keys:['1ª PARCIAL HEMOCULTURA 2ª AM **','1A PARCIAL HEMOCULTURA 2A AM'], comp:false, na:true},
+ {out:'ANTIBIOGRAMA HEMOCULTURA 1ª AM ** (AHCU)', keys:['ANTIBIOGRAMA HEMOCULTURA 1ª AM ** (AHCU)','ANTIBIOGRAMA HEMOCULTURA 1A AM','ANTIBIOGRAMA HEM 1ªAM','ANTIBIOGRAMA HEM 1AAM','ANTIBIOGRAMA HEM 1ª AM'], comp:false, na:true},
+ {out:'ANTIBIOGRAMA HEMOCULTURA 2ª AM **', keys:['ANTIBIOGRAMA HEMOCULTURA 2ª AM **','ANTIBIOGRAMA HEMOCULTURA 2A AM','ANTIBIOGRAMA HEM 2ªAM','ANTIBIOGRAMA HEM 2AAM','ANTIBIOGRAMA HEM 2ª AM'], comp:false, na:true},
+ {out:'HEMOCULTURA 2ª AMOSTRA', keys:['HEMOCULTURA 2ª AMOSTRA **','HEMOCULTURA 2ª AMOSTRA','HEMOCULTURA 2ªAM','HEMOCULTURA 2AAM','HEMOCULTURA 2ª AM','HEMOCULTURA 2A AM'], comp:false, na:true},
+ {out:'PESQUISA PARA BAAR (BKP)', keys:['PESQUISA PARA BAAR (BKP)','PESQUISA PARA BAAR'], comp:false, na:true}
+];
+
+let matriz=[], periodos=[], selecionado=null;
+
+const $=id=>document.getElementById(id);
+function norm(v){
+ return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toUpperCase();
+}
+function esc(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function parseDataBR(s){
+ const m=String(s||'').match(/(\d{2})\/(\d{2})\/(\d{4})/g);
+ if(!m||!m.length)return null;
+ const p=m[m.length-1].split('/');
+ return new Date(+p[2],+p[1]-1,+p[0]);
+}
+function isoDate(d){return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:''}
+function brDate(v){if(!v)return'';const p=v.split('-');return `${p[2]}/${p[1]}/${p[0]}`}
+function parsePeriodo(txt){
+ const all=String(txt||'').match(/(\d{2}\/\d{2}\/\d{4})/g)||[];
+ if(all.length<2)return null;
+ const conv=x=>{const p=x.split('/');return new Date(+p[2],+p[1]-1,+p[0])};
+ return {label:String(txt).trim(),ini:conv(all[0]),fim:conv(all[1])}
+}
+function secondsFromTime(v){
+ if(v===null||v===undefined||v===''||norm(v)==='N/A')return null;
+ if(typeof v==='number'){
+   if(v===0)return null;
+   return Math.round(v*86400);
+ }
+ const s=norm(v).toLowerCase();
+ if(!s||s==='0')return null;
+ let sec=0, found=false, m;
+ m=s.match(/(\d+)\s*DIAS?/i); if(m){sec+=+m[1]*86400;found=true}
+ m=s.match(/(\d+)\s*H/i); if(m){sec+=+m[1]*3600;found=true}
+ m=s.match(/(\d+)\s*M/i); if(m){sec+=+m[1]*60;found=true}
+ m=s.match(/(\d+)\s*S/i); if(m){sec+=+m[1];found=true}
+ if(!found && /^\d{1,2}:\d{2}(:\d{2})?$/.test(String(v).trim())){
+   const p=String(v).trim().split(':').map(Number);return p.length===3?p[0]*3600+p[1]*60+p[2]:p[0]*60+p[1]
+ }
+ return found?sec:null
+}
+function hms(sec){
+ if(sec===null||sec===undefined||!isFinite(sec))return'N/A';
+ sec=Math.round(sec); const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;
+ return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+}
+function numero(v){const n=Number(v);return Number.isFinite(n)?n:0}
+
+const fileInput=$('file'),drop=$('drop'),btnFile=$('btn-file'),fileName=$('file-name');
+
+btnFile.addEventListener('click',e=>{
+  e.preventDefault();e.stopPropagation();
+  fileInput.click();
+});
+drop.addEventListener('click',e=>{
+  if(e.target===btnFile)return;
+  fileInput.click();
+});
+fileInput.addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];
+  if(f)lerArquivo(f);
+});
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{
+  e.preventDefault();e.stopPropagation();drop.classList.add('drag')
+}));
+['dragleave','dragend'].forEach(ev=>drop.addEventListener(ev,e=>{
+  e.preventDefault();e.stopPropagation();drop.classList.remove('drag')
+}));
+drop.addEventListener('drop',e=>{
+  e.preventDefault();e.stopPropagation();drop.classList.remove('drag');
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f)lerArquivo(f);
+});
+$('periodoSelect').addEventListener('change',()=>{selecionado=periodos[+$('periodoSelect').value]||periodos[0];sincronizarPeriodo();render()});
+['unidade','periodoIni','periodoFim','meta','limite','fonte','respRel','respVal','obs'].forEach(id=>$(id).addEventListener('input',render));
+
+async function lerArquivo(file){
+ if(!file)return;
+ const nome=String(file.name||'');
+ const ext=nome.split('.').pop().toLowerCase();
+ if(!['xlsx','xls'].includes(ext)){
+   $('status').className='status err';
+   $('status').textContent='Selecione um arquivo Excel .XLSX ou .XLS.';
+   return;
+ }
+ if(fileName)fileName.textContent=nome;
+ $('status').className='status';
+ $('status').style.display='block';
+ $('status').textContent='Lendo planilha...';
+ try{
+  if(typeof XLSX==='undefined')throw new Error('Biblioteca de leitura do Excel não carregou. Atualize a página e tente novamente.');
+  const data=await file.arrayBuffer();
+  const wb=XLSX.read(data,{type:'array',cellDates:false});
+  if(!wb.SheetNames||!wb.SheetNames.length)throw new Error('A planilha não possui abas legíveis.');
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  matriz=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+  if(!matriz.length)throw new Error('A primeira aba está vazia.');
+  detectar(nome);
+  $('status').className='status ok';
+  $('status').style.display='block';
+  const tipoLayout=periodos.length>1?'formato histórico / múltiplos períodos':'formato mensal / período único';
+  $('status').textContent=`✓ ${nome} — ${matriz.length} linhas lidas · ${tipoLayout}`;
+ }catch(e){
+  console.error(e);
+  matriz=[];
+  $('status').className='status err';
+  $('status').style.display='block';
+  $('status').textContent='Erro ao ler a planilha: '+e.message;
+ }
+}
+function detectar(){
+ const titulo=norm(matriz?.[0]?.[0]);
+ const un=titulo.replace(/^ANALISE DE TEMPO ENTRE PROCESSOS\s*/,'').replace(/\s+/g,' ').trim();
+ const unNorm=norm(un);
+ const mapa=[
+   ['UPA LESTE','UPA LESTE'],
+   ['UPA OESTE','UPA OESTE'],
+   ['UPA RIBEIRAO VERDE','UPA RIBEIRÃO VERDE'],
+   ['UPA NORTE','UPA NORTE'],
+   ['UBDS VILA VIRGINIA','UBDS VILA VIRGÍNIA'],
+   ['VILA VIRGINIA','UBDS VILA VIRGÍNIA'],
+   ['VILA BIRGINIA','UBDS VILA VIRGÍNIA']
+ ];
+ const achou=mapa.find(x=>unNorm.includes(norm(x[0])));
+ if(achou)$('unidade').value=achou[1];
+
+ periodos=[];
+ const vistos=new Set();
+
+ // Procura qualquer célula das primeiras linhas que contenha duas datas.
+ // Isso cobre:
+ // 1) formato mensal compacto: B2 = "01/05/2026 ... à 31/05/2026"
+ // 2) formato histórico: C2/H2/... = "período de 01/06/2026 ... à 30/06/2026"
+ for(let r=0;r<Math.min(6,matriz.length);r++){
+   (matriz[r]||[]).forEach((v,c)=>{
+     const p=parsePeriodo(v);
+     if(!p)return;
+
+     // Descobre a coluna de quantidade e a coluna do tempo médio.
+     // Normalmente a célula do período fica sobre QTD EXAMES.
+     let qtdCol=c, tempoCol=c+1;
+
+     // Verifica cabeçalhos próximos para não depender de uma posição fixa.
+     for(let rr=r+1;rr<=Math.min(r+3,matriz.length-1);rr++){
+       const linha=matriz[rr]||[];
+       for(let cc=Math.max(0,c-1);cc<=Math.min(linha.length-1,c+3);cc++){
+         const h=norm(linha[cc]);
+         if(h.includes('QTD EXAMES'))qtdCol=cc;
+       }
+     }
+     for(let rr=r+1;rr<=Math.min(r+3,matriz.length-1);rr++){
+       const linha=matriz[rr]||[];
+       for(let cc=qtdCol;cc<=Math.min(linha.length-1,qtdCol+3);cc++){
+         const h=norm(linha[cc]);
+         if(h.includes('MEDIA TEMPO') || (h.includes('TEMPO')&&h.includes('ASSINATURA'))){
+           tempoCol=cc;break;
+         }
+       }
+     }
+
+     const chave=isoDate(p.ini)+'|'+isoDate(p.fim)+'|'+qtdCol+'|'+tempoCol;
+     if(!vistos.has(chave)){
+       vistos.add(chave);
+       periodos.push({...p,col:qtdCol,tempoCol,origemCol:c});
+     }
+   });
+ }
+
+ periodos.sort((a,b)=>a.fim-b.fim);
+ selecionado=periodos[periodos.length-1]||null;
+
+ const sel=$('periodoSelect');
+ if(periodos.length){
+   sel.innerHTML=periodos.map((p,i)=>`<option value="${i}" ${p===selecionado?'selected':''}>${brDate(isoDate(p.ini))} a ${brDate(isoDate(p.fim))}</option>`).join('');
+ }else{
+   sel.innerHTML='<option value="">Período não identificado</option>';
+ }
+
+ if(selecionado){
+   sincronizarPeriodo();
+   $('status').className='status ok';
+ }else{
+   $('status').className='status err';
+   $('status').style.display='block';
+   $('status').textContent='A planilha foi lida, mas não foi possível identificar automaticamente o período.';
+ }
+ render()
+}
+function sincronizarPeriodo(){
+ if(!selecionado)return;
+ $('periodoIni').value=isoDate(selecionado.ini);$('periodoFim').value=isoDate(selecionado.fim);
+ $('periodBadge').textContent=`Período selecionado: ${brDate(isoDate(selecionado.ini))} a ${brDate(isoDate(selecionado.fim))}`
+}
+function localizarLinha(cfg){
+ const aliases=(cfg.keys||[]).map(norm);
+ const normalizaExame=v=>norm(v)
+   .replace(/\*\*/g,'')
+   .replace(/[()]/g,' ')
+   .replace(/\s+/g,' ')
+   .trim();
+
+ const aliasesLimpas=aliases.map(normalizaExame);
+
+ // Primeiro tenta correspondência exata.
+ for(let r=3;r<matriz.length;r++){
+   const x=norm(matriz[r]?.[0]);
+   const xl=normalizaExame(x);
+   if(aliases.some(k=>x===k) || aliasesLimpas.some(k=>xl===k))return matriz[r];
+ }
+
+ // Depois aceita começo do texto para pequenas variações de descrição.
+ for(let r=3;r<matriz.length;r++){
+   const xl=normalizaExame(matriz[r]?.[0]);
+   if(aliasesLimpas.some(k=>k.length>=5 && (xl.startsWith(k)||k.startsWith(xl))))return matriz[r];
+ }
+ return null
+}
+function render(){
+ if(!matriz.length||!selecionado){$('empty').style.display='flex';$('reportContent').style.display='none';return}
+ const qtdCol=selecionado.col, tempoCol=(selecionado.tempoCol??(selecionado.col+1));
+ let somaTodos=0,somaExc=0,tempos=[];
+ const rows=EXAMES.map(cfg=>{
+   const row=localizarLinha(cfg);
+   const qtdRaw=row?row[qtdCol]:0, tempoRaw=row?row[tempoCol]:null;
+   const qtd=numero(qtdRaw), sec=secondsFromTime(tempoRaw);
+   let qtdTxt='-',tempoTxt='N/A',cls='';
+   if(cfg.comp){
+      qtdTxt=String(qtd);tempoTxt=hms(sec);somaTodos+=qtd;somaExc+=qtd;if(sec!==null)tempos.push(sec);
+   }else if(cfg.showQty){
+      qtdTxt=String(qtd);tempoTxt='N/A';somaTodos+=qtd;cls='na';
+   }else{
+      qtdTxt='-';tempoTxt='N/A';cls='na';
+   }
+   return {cfg,qtdTxt,tempoTxt,cls}
+ });
+ const media=tempos.length?Math.round(tempos.reduce((a,b)=>a+b,0)/tempos.length):0;
+ const meta=numero($('meta').value)||0;
+ const variacao=meta?(somaExc/meta*100):0;
+ const unidade=$('unidade').value.trim().toUpperCase();
+ const ini=$('periodoIni').value,fim=$('periodoFim').value;
+ const limite=numero($('limite').value)||60;
+
+ const body=rows.map(x=>`<tr class="${x.cls}">
+   <td>${esc(x.cfg.out)}</td><td>${x.qtdTxt}</td><td>-</td><td>${x.tempoTxt}</td><td>-</td><td>R$ 0,00</td><td>${x.cfg.comp&&x.cfg.limit?limite+' MINUTOS':'-'}</td>
+ </tr>`).join('');
+
+ $('reportContent').innerHTML=`
+  <div class="report-title">${esc(unidade)} - TEMPO MÉDIO PARA LIBERAÇÃO DE EXAMES LABORATORIAIS</div>
+  <table class="report-table">
+   <colgroup><col style="width:29%"><col style="width:15%"><col style="width:15%"><col style="width:10%"><col style="width:12%"><col style="width:11%"><col style="width:8%"></colgroup>
+   <thead><tr><th>NOME DO EXAME</th><th>QUANTIDADE REALIZADA</th><th>QUANTIDADE ESTIMADA</th><th>TEMPO MÉDIO</th><th>VALOR CONTRATO</th><th>TOTAL REALIZADO</th><th>LIMITE</th></tr></thead>
+   <tbody>
+    ${body}
+    <tr class="total"><td>TODOS OS EXAMES</td><td>${somaTodos}</td><td>0</td><td>${hms(media)}</td><td></td><td>R$ 0,00</td><td></td></tr>
+    <tr class="total"><td>TOTAL EXCETO **</td><td>${somaExc}</td><td>0</td><td>${hms(media)}</td><td></td><td>R$ 0,00</td><td></td></tr>
+    <tr class="avg"><td>MÉDIA GERAL</td><td colspan="2">-</td><td></td><td colspan="3"></td></tr>
+    <tr class="avg-green"><td>MÉDIA EXCLUÍDO NÃO COMPUTÁVEIS **</td><td colspan="3">${hms(media)}</td><td colspan="3"></td></tr>
+   </tbody>
+  </table>
+  <div class="notes">
+   <div><b>UNIDADE:</b> ${esc(unidade)}</div>
+   <div><b>PERÍODO AVALIADO:</b> ${brDate(ini)} ATÉ ${brDate(fim)}</div>
+   <div><b>FONTE:</b> ${esc($('fonte').value.toUpperCase())}</div>
+   <div><b>RESPONSÁVEL RELATÓRIO:</b> ${esc($('respRel').value.toUpperCase())}</div>
+   <div><b>RESPONSÁVEL VALIDAÇÃO:</b> ${esc($('respVal').value.toUpperCase())}</div>
+   <div><b>OBSERVAÇÃO:</b> ${esc($('obs').value.toUpperCase())}</div>
+   <div><b>META MENSAL:</b> ${meta} EXAMES</div>
+   <div><b>VARIAÇÃO PRODUZIDA:</b> ${variacao.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+  </div>`;
+ $('empty').style.display='none';$('reportContent').style.display='block'
+}
+function limparTudo(){
+ matriz=[];periodos=[];selecionado=null;
+ if($('file'))$('file').value='';
+ if($('file-name'))$('file-name').textContent='Nenhum arquivo selecionado';
+ if($('status')){$('status').className='status';$('status').style.display='none';$('status').textContent='';}
+ $('unidade').value='';
+ $('periodoIni').value='';$('periodoFim').value='';
+ $('periodoSelect').innerHTML='<option value="">Carregue uma planilha</option>';
+ $('meta').value='9000';$('limite').value='60';$('fonte').value='SISTEMA HYGIA E LABORLIS';
+ $('respRel').value='TATIANA DE PAULA LOURO TOSO (BIOMÉDICA COORDENADORA)';
+ $('obs').value='-';
+ $('periodBadge').textContent='';
+ $('empty').style.display='flex';
+ $('reportContent').style.display='none';
+ $('reportContent').innerHTML='';
+}
+function gerarPDFNativo(){
+ if(!matriz.length){
+   alert('Carregue uma planilha primeiro.');
+   return;
+ }
+ // A impressão nativa do navegador preserva texto e bordas vetoriais,
+ // evitando o engrossamento provocado por html2canvas.
+ document.body.classList.add('modo-impressao');
+ setTimeout(()=>{
+   window.print();
+   setTimeout(()=>document.body.classList.remove('modo-impressao'),300);
+ },50);
+}
+
+async function gerarPDFImagem(){
+ if(!matriz.length){alert('Carregue uma planilha primeiro.');return}
+ const el=$('report');
+ const unidade=norm($('unidade').value).replace(/\s+/g,'_');
+ const ini=$('periodoIni').value.slice(0,7).replace('-','.');
+ const opt={
+  margin:[3.5,4,3.5,4],
+  filename:`ID5_${unidade}_${ini}.pdf`,
+  image:{type:'jpeg',quality:1},
+  html2canvas:{
+    scale:3,
+    useCORS:true,
+    backgroundColor:'#ffffff',
+    letterRendering:true,
+    logging:false
+  },
+  jsPDF:{unit:'mm',format:'a4',orientation:'landscape',compress:true},
+  pagebreak:{mode:['avoid-all','css','legacy']}
+ };
+ try{
+  if(window.html2pdf){await html2pdf().set(opt).from(el).save()}
+  else{window.print()}
+ }catch(e){console.error(e);window.print()}
+}
+</script>
+<a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo"><span class="tdngo-home-ico">⌂</span><span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span></a></body>
+</html>

@@ -378,7 +378,9 @@ tr.rub-row:hover{background:var(--surface2)}
 }
 
 </style>
-</head>
+<style id="tdngo-standard-nav-style">
+.tdngo-home{position:fixed;left:14px;bottom:14px;z-index:2147483600;display:inline-flex;align-items:center;gap:9px;min-height:40px;padding:7px 12px 7px 8px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(18,24,32,.94);color:#fff!important;text-decoration:none!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);backdrop-filter:blur(10px);transition:.15s}
+.tdngo-home:hover{transform:translateY(-2px);border-color:#58a6ff;background:#15243a}.tdngo-home .tdngo-home-ico{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;background:#1d6aad;font-size:14px;font-weight:800;flex:none}.tdngo-home .tdngo-home-copy{display:flex;flex-direction:column;line-height:1.05}.tdngo-home b{font-size:12px}.tdngo-home small{font-size:9px;color:#aab6c5;margin-top:3px}@media(max-width:560px){.tdngo-home{padding:7px;bottom:10px;left:10px}.tdngo-home .tdngo-home-copy{display:none}}@media print{.tdngo-home{display:none!important}}</style></head>
 <body>
 <div class="login-screen" id="login-screen">
   <div class="login-box">
@@ -1176,7 +1178,7 @@ function cmpPrintCss(){return 'body{font-family:Arial,sans-serif;color:#111;marg
 function abrirJanelaImpressao(titulo,conteudo,landscape){
   const w=window.open('','_blank');if(!w){showNotif('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.','err');return;}
   const c=cmpContratosSelecionados().map(function(x){return x.numero;}).join(', ');
-  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+escapeHtml(titulo)+'</title><style>'+cmpPrintCss()+(landscape?'':'@page{size:A4 portrait;margin:10mm}')+'</style></head><body><h1>'+escapeHtml(titulo)+'</h1><p>Fundação Hospital Santa Lydia · Contrato(s): '+escapeHtml(c)+' · Exercício: '+cmpAnoSel+' · Gerado em '+new Date().toLocaleString('pt-BR')+'</p>'+conteudo+'</body></html>');
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+escapeHtml(titulo)+'</title><style>'+cmpPrintCss()+(landscape?'':'@page{size:A4 portrait;margin:10mm}')+'</style></head><body><h1>'+escapeHtml(titulo)+'</h1><p>Fundação Hospital Santa Lydia · Contrato(s): '+escapeHtml(c)+' · Exercício: '+cmpAnoSel+' · Gerado em '+new Date().toLocaleString('pt-BR')+'</p>'+conteudo+'<a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo"><span class="tdngo-home-ico">⌂</span><span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span></a></body></html>');
   w.document.close();w.focus();setTimeout(function(){w.print();},300);
 }
 function imprimirComparativo(){const area=document.getElementById('cmp-print-area');abrirJanelaImpressao('Comparativo Gerencial de Unidades',area?area.innerHTML:'',true);}
@@ -1213,13 +1215,6 @@ function pdfChosen(input){
 
 
 <!-- ===== FHSL BACK BUTTON ===== -->
-<a href="index.html" id="fhsl-back-hub" title="Voltar aos módulos"
-   style="position:fixed;bottom:16px;left:16px;z-index:2147483000;display:inline-flex;align-items:center;gap:7px;
-          padding:9px 14px;background:#1d6aad;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-          font-size:13px;font-weight:600;text-decoration:none;border-radius:10px;
-          box-shadow:0 4px 14px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);line-height:1">
-  <span style="font-size:15px">←</span><span>Módulos</span>
-</a>
 <!-- ===== /FHSL BACK BUTTON ===== -->
 
 </body>

@@ -1,0 +1,35 @@
+name: Rebuild Contratos HTML
+on:
+  push:
+    branches: [layout_gpt]
+    paths:
+      - 'rebuild-contratos.trigger'
+permissions:
+  contents: write
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: layout_gpt
+      - name: Reconstruir HTML direto
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .tdngo/contratos/part1.txt .tdngo/contratos/part2.txt .tdngo/contratos/part3.txt .tdngo/contratos/part4.txt .tdngo/contratos/part5.txt \
+            | tr -d '\r\n\t ' \
+            | base64 -d \
+            | gzip -dc \
+            > contratos.html
+          test -s contratos.html
+          grep -qi '<!DOCTYPE html' contratos.html || grep -qi '<!doctype html' contratos.html
+          grep -qi '</html>' contratos.html
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name 'TDNGo Automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add contratos.html
+          git commit -m 'TDNGo: restaurar Contratos como HTML direto' || exit 0
+          git push origin layout_gpt

@@ -367,10 +367,7 @@ tr:hover td{background:var(--surface2)}
     <div class="nav-label">Gestão</div>
     <button class="nav-item active" data-page="usuarios" onclick="showPage('usuarios',this)">👤 Usuários e permissões</button>
     <button class="nav-item" data-page="unidades" onclick="showPage('unidades',this)">🏥 Unidades de saúde</button>
-    <button class="nav-item" data-page="locais" onclick="showPage('locais',this)">🔑 Locais de chaves</button>
-    <button class="nav-item" data-page="visitlocais" onclick="showPage('visitlocais',this)">📍 Locais de visita</button>
-    <button class="nav-item" data-page="visitmotivos" onclick="showPage('visitmotivos',this)">🗂️ Motivos de atendimento</button>
-    <button class="nav-item" data-page="malotesconfig" onclick="showPage('malotesconfig',this)">📦 Config. de Malotes</button>
+    <button class="nav-item" data-page="locais" onclick="showPage('locais',this)">📍 Locais de chaves</button>
     <button class="nav-item" data-page="listascnes" onclick="showPage('listascnes',this)">🏥 Listas CNES</button>
     <button class="nav-item" data-page="auditoria" onclick="showPage('auditoria',this)">🕘 Auditoria</button>
     <button class="nav-item" data-page="config" onclick="showPage('config',this)">⚙️ Configuração da planilha</button>
@@ -432,64 +429,6 @@ tr:hover td{background:var(--surface2)}
       <tbody id="locais-body"></tbody>
     </table><div class="empty-state" id="loc-empty" style="display:none"><span class="empty-icon">📍</span>Nenhum local cadastrado</div></div>
     <p style="font-size:12px;color:var(--text3);margin-top:8px">Os locais ativos aparecem no módulo Chaves ao cadastrar ou movimentar uma chave.</p>
-  </div>
-
-  <!-- LOCAIS DE VISITA -->
-  <div class="page" id="page-visitlocais">
-    <div class="toolbar">
-      <input type="text" id="busca-vloc" placeholder="🔍 Buscar local de visita..." oninput="renderVisitantesLocais()">
-      <select id="filtro-vloc-status" onchange="renderVisitantesLocais()"><option value="">Todos</option><option value="ativo">Ativos</option><option value="inativo">Desativados</option></select>
-      <button class="btn primary" onclick="openVLoc()">➕ Novo local de visita</button>
-    </div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Local de visita</th><th>Situação</th><th></th></tr></thead>
-      <tbody id="visitlocais-body"></tbody>
-    </table><div class="empty-state" id="vloc-empty" style="display:none"><span class="empty-icon">📍</span>Nenhum local de visita cadastrado</div></div>
-    <p style="font-size:12px;color:var(--text3);margin-top:8px">Os locais ativos aparecem automaticamente no formulário de Visitantes e Prestadores da Sede Administrativa.</p>
-  </div>
-
-  <!-- MOTIVOS / TIPOS DE ATENDIMENTO -->
-  <div class="page" id="page-visitmotivos">
-    <div class="toolbar">
-      <input type="text" id="busca-vmot" placeholder="🔍 Buscar tipo de atendimento / motivo..." oninput="renderVisitantesMotivos()">
-      <select id="filtro-vmot-status" onchange="renderVisitantesMotivos()"><option value="">Todos</option><option value="ativo">Ativos</option><option value="inativo">Desativados</option></select>
-      <button class="btn primary" onclick="openVMot()">➕ Novo motivo</button>
-    </div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Tipo de atendimento / motivo</th><th>Situação</th><th></th></tr></thead>
-      <tbody id="visitmotivos-body"></tbody>
-    </table><div class="empty-state" id="vmot-empty" style="display:none"><span class="empty-icon">🗂️</span>Nenhum motivo cadastrado</div></div>
-    <p style="font-size:12px;color:var(--text3);margin-top:8px">Os motivos ativos aparecem automaticamente no formulário de Visitantes e Prestadores. Você pode editar esta lista a qualquer momento.</p>
-  </div>
-
-  <!-- CONFIGURAÇÕES DE MALOTES -->
-  <div class="page" id="page-malotesconfig">
-    <div class="stats-grid">
-      <div class="stat-card c-accent"><div class="stat-num" id="mcfg-vol">0</div><div class="stat-label">Tipos de volume</div></div>
-      <div class="stat-card c-green"><div class="stat-num" id="mcfg-cat">0</div><div class="stat-label">Categorias</div></div>
-      <div class="stat-card c-yellow"><div class="stat-num" id="mcfg-sla">0</div><div class="stat-label">Níveis de SLA</div></div>
-      <div class="stat-card c-purple"><div class="stat-num" id="mcfg-oco">0</div><div class="stat-label">Ocorrências</div></div>
-    </div>
-    <div class="toolbar">
-      <input type="text" id="busca-mcfg" placeholder="🔍 Buscar configuração..." oninput="renderMalotesConfig()">
-      <select id="filtro-mcfg-tipo" onchange="renderMalotesConfig()">
-        <option value="">Todos os grupos</option>
-        <option value="TRANSPORTADORA">Transportadora</option>
-        <option value="TIPO_VOLUME">Tipos de volume</option>
-        <option value="CATEGORIA">Categorias de conteúdo</option>
-        <option value="OCORRENCIA">Tipos de ocorrência</option>
-        <option value="SLA">Prioridades / SLA</option>
-        <option value="TURNO">Turnos de rota</option>
-        <option value="JANELA_COLETA">Janelas de coleta</option>
-      </select>
-      <select id="filtro-mcfg-status" onchange="renderMalotesConfig()"><option value="">Todos</option><option value="ativo">Ativos</option><option value="inativo">Desativados</option></select>
-      <button class="btn primary" onclick="openMcfg()">➕ Nova configuração</button>
-    </div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Grupo</th><th>Valor</th><th>Parâmetro 1</th><th>Parâmetro 2</th><th>Situação</th><th></th></tr></thead>
-      <tbody id="mcfg-body"></tbody>
-    </table><div class="empty-state" id="mcfg-empty" style="display:none"><span class="empty-icon">📦</span>Nenhuma configuração encontrada</div></div>
-    <p style="font-size:12px;color:var(--text3);margin-top:8px">Todas estas listas alimentam o módulo Malotes. Alterações passam a valer nos novos registros sem necessidade de editar código.</p>
   </div>
 
   <!-- AUDITORIA -->
@@ -555,13 +494,11 @@ tr:hover td{background:var(--surface2)}
         <div class="fg full"><label>Senha</label><input type="password" id="us-senha" placeholder="Mínimo 6 caracteres"></div>
         <div class="fg"><label>Perfil *</label><select id="us-role" onchange="toggleModulosBox()">
           <option value="visualizador">Visualizador (só leitura)</option>
-          <option value="transportadora">Transportadora (somente Malotes)</option>
           <option value="gestor">Gestor (edita, não exclui)</option>
           <option value="cadastros">Gestor de cadastros (Admin)</option>
           <option value="admin">Administrador (acesso total)</option>
         </select></div>
         <div class="fg"><label>Situação</label><select id="us-ativo"><option value="true">Ativo</option><option value="false">Desativado</option></select></div>
-        <div class="fg full"><label>Unidade vinculada</label><select id="us-unidade"><option value="">SEM VÍNCULO / ACESSO GERAL</option></select><div style="font-size:11px;color:var(--text3);margin-top:4px">No módulo Malotes, a unidade vinculada é usada para pré-preencher origem e limitar recebimentos. Transportadora deve ficar sem unidade.</div></div>
       </div>
       <div class="fg" id="us-modulos-box" style="margin-top:12px">
         <label>Módulos que este usuário pode acessar</label>
@@ -615,57 +552,6 @@ tr:hover td{background:var(--surface2)}
   </div>
 </div>
 
-<!-- MODAL LOCAL DE VISITA -->
-<div class="modal-overlay" id="modal-vloc" onclick="if(event.target.id==='modal-vloc')closeVLoc()">
-  <div class="modal" style="max-width:440px">
-    <div class="mhead"><div class="mtitle" id="vloc-title">Novo local de visita</div><button class="mclose" onclick="closeVLoc()">✕</button></div>
-    <div class="mbody">
-      <input type="hidden" id="vlo-id">
-      <div class="form-grid">
-        <div class="fg full"><label>Nome do local *</label><input type="text" id="vlo-nome" placeholder="EX.: DIRETORIA, FINANCEIRO, CONTRATOS" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
-        <div class="fg full"><label>Situação</label><select id="vlo-ativo"><option value="true">ATIVO</option><option value="false">DESATIVADO</option></select></div>
-      </div>
-    </div>
-    <div class="mfoot"><button class="btn" onclick="closeVLoc()">Cancelar</button><button class="btn primary" onclick="saveVLoc()">Salvar</button></div>
-  </div>
-</div>
-
-<!-- MODAL MOTIVO DE ATENDIMENTO -->
-<div class="modal-overlay" id="modal-vmot" onclick="if(event.target.id==='modal-vmot')closeVMot()">
-  <div class="modal" style="max-width:500px">
-    <div class="mhead"><div class="mtitle" id="vmot-title">Novo motivo de atendimento</div><button class="mclose" onclick="closeVMot()">✕</button></div>
-    <div class="mbody">
-      <input type="hidden" id="vmo-id">
-      <div class="form-grid">
-        <div class="fg full"><label>Tipo de atendimento / motivo *</label><input type="text" id="vmo-nome" placeholder="EX.: EXAME ADMISSIONAL" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
-        <div class="fg full"><label>Situação</label><select id="vmo-ativo"><option value="true">ATIVO</option><option value="false">DESATIVADO</option></select></div>
-      </div>
-    </div>
-    <div class="mfoot"><button class="btn" onclick="closeVMot()">Cancelar</button><button class="btn primary" onclick="saveVMot()">Salvar</button></div>
-  </div>
-</div>
-
-<!-- MODAL CONFIG MALOTES -->
-<div class="modal-overlay" id="modal-mcfg" onclick="if(event.target.id==='modal-mcfg')closeMcfg()">
-  <div class="modal" style="max-width:560px">
-    <div class="mhead"><div class="mtitle" id="mcfg-title">Nova configuração</div><button class="mclose" onclick="closeMcfg()">✕</button></div>
-    <div class="mbody">
-      <input type="hidden" id="mc-id">
-      <div class="form-grid">
-        <div class="fg"><label>Grupo *</label><select id="mc-tipo" onchange="mcfgTipoMudou()">
-          <option value="TRANSPORTADORA">TRANSPORTADORA</option><option value="TIPO_VOLUME">TIPO DE VOLUME</option><option value="CATEGORIA">CATEGORIA</option><option value="OCORRENCIA">OCORRÊNCIA</option><option value="SLA">SLA / PRIORIDADE</option><option value="TURNO">TURNO</option><option value="JANELA_COLETA">JANELA DE COLETA</option>
-        </select></div>
-        <div class="fg"><label>Situação</label><select id="mc-ativo"><option value="true">ATIVO</option><option value="false">DESATIVADO</option></select></div>
-        <div class="fg full"><label id="mc-lbl-valor">Valor *</label><input id="mc-valor" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
-        <div class="fg" id="mc-extra1-wrap"><label id="mc-lbl-extra1">Parâmetro 1</label><input id="mc-extra1" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
-        <div class="fg" id="mc-extra2-wrap"><label id="mc-lbl-extra2">Parâmetro 2</label><input id="mc-extra2" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
-      </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:10px" id="mc-help"></div>
-    </div>
-    <div class="mfoot"><button class="btn" onclick="closeMcfg()">Cancelar</button><button class="btn primary" onclick="saveMcfg()">Salvar</button></div>
-  </div>
-</div>
-
 <div class="notif-toast" id="notif" style="display:none"></div>
 
 <script>
@@ -715,9 +601,6 @@ const PAGE_META = {
   usuarios:['Usuários e permissões','Quem acessa o sistema e o que cada um vê'],
   unidades:['Unidades de saúde','Compartilhadas com Contratos e demais módulos'],
   locais:['Locais de chaves','Onde as chaves ficam guardadas'],
-  visitlocais:['Locais de visita','Destinos disponíveis no controle de visitantes da Sede'],
-  visitmotivos:['Motivos de atendimento','Tipos de atendimento disponíveis no controle de visitantes'],
-  malotesconfig:['Configurações de Malotes','Transportadora, volumes, conteúdo, ocorrências, SLA e janelas de coleta'],
   listascnes:['Listas CNES','Conselhos, vínculos e CBOs do módulo CNES'],
   auditoria:['Auditoria','Registro de ações no sistema']
 };
@@ -725,10 +608,10 @@ const MODULOS_SISTEMA = [
   ['contratos','📋 Contratos'],['cg','🏛️ Contratos de Gestão'],
   ['risco','🎯 Classificação de Risco'],['painel_ubs','🏥 Painel UBS'],
   ['painel_upas','📈 Especialidades UPAs'],['malotes','📦 Malotes'],
-  ['visitantes','🪪 Visitantes'],['chaves','🔑 Chaves'],['limpeza','🧹 Avaliação de Limpeza'],['conferencia','📑 Conferência Documental'],['cnes','🏥 CNES'],['admin','⚙️ Administração']
+  ['visitantes','🪪 Visitantes'],['seguranca','🛡️ Segurança Institucional'],['chaves','🔑 Chaves'],['limpeza','🧹 Avaliação de Limpeza'],['conferencia','📑 Conferência Documental'],['cnes','🏥 CNES'],['admin','⚙️ Administração']
 ];
-const ROLE_LABEL = { admin:'Administrador', gestor:'Gestor', cadastros:'Gestor de cadastros', visualizador:'Visualizador', transportadora:'Transportadora' };
-let usuarios=[], unidades=[], locais=[], visitantesLocais=[], visitantesMotivos=[], malotesConfig=[], auditoria=[];
+const ROLE_LABEL = { admin:'Administrador', gestor:'Gestor', cadastros:'Gestor de cadastros', visualizador:'Visualizador' };
+let usuarios=[], unidades=[], locais=[], auditoria=[];
 let paginaAtual='usuarios';
 
 function startApp(){
@@ -765,48 +648,39 @@ function showPage(id, btn){
   if(id==='usuarios'){ bt.textContent='➕ Novo usuário'; bt.style.display=''; }
   else if(id==='unidades'){ bt.textContent='➕ Nova unidade'; bt.style.display=''; }
   else if(id==='locais'){ bt.textContent='➕ Novo local'; bt.style.display=''; }
-  else if(id==='visitlocais'){ bt.textContent='➕ Novo local de visita'; bt.style.display=''; }
-  else if(id==='visitmotivos'){ bt.textContent='➕ Novo motivo'; bt.style.display=''; }
-  else if(id==='malotesconfig'){ bt.textContent='➕ Nova configuração'; bt.style.display=''; }
   else { bt.style.display='none'; }
   if(id==='auditoria') carregarAuditoria();
   if(id==='listascnes') carregarListasCnes();
   if(id==='config'){ if(!scriptCodeCache) carregarScript(); verificarDiag(); }
   render();
 }
-function acaoTopo(){ if(paginaAtual==='usuarios')openUser(); else if(paginaAtual==='unidades')openUni(); else if(paginaAtual==='locais')openLoc(); else if(paginaAtual==='visitlocais')openVLoc(); else if(paginaAtual==='visitmotivos')openVMot(); else if(paginaAtual==='malotesconfig')openMcfg(); }
+function acaoTopo(){ if(paginaAtual==='usuarios')openUser(); else if(paginaAtual==='unidades')openUni(); else if(paginaAtual==='locais')openLoc(); }
 
 async function carregarTudo(){
   try{
     const r = await apiFetch('getadmin');
     if(r && r.ok && (r.usuarios || r.unidades || r.locais)){
-      usuarios=r.usuarios||[]; unidades=r.unidades||[]; locais=r.locais||[]; visitantesLocais=r.visitantesLocais||[]; visitantesMotivos=r.visitantesMotivos||[]; malotesConfig=r.malotesConfig||[];
+      usuarios=r.usuarios||[]; unidades=r.unidades||[]; locais=r.locais||[];
     } else {
       // fallback: rotas individuais (caso getadmin ainda não esteja publicado)
-      const [ru, rn, rl, rvl, rvm, rmc] = await Promise.all([ apiFetch('getusers'), apiFetch('getunits'), apiFetch('getlocais'), apiFetch('getvisitanteslocais',{__actor:{nome:currentUser.nome,email:currentUser.email}}), apiFetch('getvisitantesmotivos',{__actor:{nome:currentUser.nome,email:currentUser.email}}), apiFetch('getmaloteconfigadmin',{__actor:{nome:currentUser.nome,email:currentUser.email}}) ]);
+      const [ru, rn, rl] = await Promise.all([ apiFetch('getusers'), apiFetch('getunits'), apiFetch('getlocais') ]);
       usuarios = (ru && ru.ok && ru.data) ? ru.data : [];
       unidades = (rn && rn.ok && rn.data) ? rn.data : [];
       locais   = (rl && rl.ok && rl.data) ? rl.data : [];
-      visitantesLocais=(rvl&&rvl.ok&&rvl.data)?rvl.data:[];visitantesMotivos=(rvm&&rvm.ok&&rvm.data)?rvm.data:[];malotesConfig=(rmc&&rmc.ok&&rmc.data)?rmc.data:[];
     }
-    try{
-      const rm=await apiFetch('getmaloteconfigadmin',{__actor:{nome:currentUser.nome,email:currentUser.email}});
-      if(rm&&rm.ok)malotesConfig=rm.data||[];
-    }catch(_e){}
     render();
   }catch(e){
     // último recurso: tenta rotas individuais
     try{
-      const [ru, rn, rl, rvl, rvm, rmc] = await Promise.all([ apiFetch('getusers'), apiFetch('getunits'), apiFetch('getlocais'), apiFetch('getvisitanteslocais',{__actor:{nome:currentUser.nome,email:currentUser.email}}), apiFetch('getvisitantesmotivos',{__actor:{nome:currentUser.nome,email:currentUser.email}}), apiFetch('getmaloteconfigadmin',{__actor:{nome:currentUser.nome,email:currentUser.email}}) ]);
+      const [ru, rn, rl] = await Promise.all([ apiFetch('getusers'), apiFetch('getunits'), apiFetch('getlocais') ]);
       usuarios = (ru && ru.ok && ru.data) ? ru.data : [];
       unidades = (rn && rn.ok && rn.data) ? rn.data : [];
       locais   = (rl && rl.ok && rl.data) ? rl.data : [];
-      visitantesLocais=(rvl&&rvl.ok&&rvl.data)?rvl.data:[];visitantesMotivos=(rvm&&rvm.ok&&rvm.data)?rvm.data:[];malotesConfig=(rmc&&rmc.ok&&rmc.data)?rmc.data:[];
       render();
     }catch(e2){ showNotif('Erro ao carregar dados. Verifique a conexão e a publicação do Apps Script.','err'); }
   }
 }
-function render(){ renderUsuarios(); renderUnidades(); renderLocais(); renderVisitantesLocais(); renderVisitantesMotivos(); renderMalotesConfig(); preencherUnidadesUsuarios(); }
+function render(){ renderUsuarios(); renderUnidades(); renderLocais(); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function ativoBool(v){ return String(v)!=='false' && String(v)!=='FALSE' && v!==false; }
 function badgeAtivo(v){ return ativoBool(v) ? '<span class="badge c-green-b">🟢 Ativo</span>' : '<span class="badge c-red-b">⚫ Desativado</span>'; }
@@ -849,18 +723,16 @@ function montarModulos(marcados){
   }).join('');
 }
 function toggleModulosBox(){
-  const role=document.getElementById('us-role').value, admin=role==='admin', transp=role==='transportadora';
-  document.getElementById('us-modulos-box').style.display=(admin||transp)?'none':'block';
+  const admin=document.getElementById('us-role').value==='admin';
+  document.getElementById('us-modulos-box').style.display=admin?'none':'block';
   document.getElementById('us-modulos-admin').style.display=admin?'block':'none';
-  if(transp){document.getElementById('us-unidade').value='';document.getElementById('us-unidade').disabled=true}
-  else document.getElementById('us-unidade').disabled=false;
 }
 function openUser(id){
   document.getElementById('us-id').value=id||'';
   document.getElementById('user-title').textContent=id?'Editar usuário':'Novo usuário';
   document.getElementById('us-nome').value=''; document.getElementById('us-email').value='';
   document.getElementById('us-senha').value=''; document.getElementById('us-role').value='visualizador';
-  document.getElementById('us-ativo').value='true'; document.getElementById('us-unidade').value='';
+  document.getElementById('us-ativo').value='true';
   document.getElementById('us-aprovaconf').checked=false;
   let mods='';
   if(id){ const u=usuarios.find(function(x){return String(x.ID||x.id)===String(id);});
@@ -868,7 +740,6 @@ function openUser(id){
       document.getElementById('us-email').value=u.Email||u.email||'';
       document.getElementById('us-role').value=u.Role||u.role||'visualizador';
       document.getElementById('us-ativo').value=ativoBool(u.Ativo!==undefined?u.Ativo:u.ativo)?'true':'false';
-      document.getElementById('us-unidade').value=u.Unidade||u.unidade||'';
       document.getElementById('us-senha').placeholder='(deixe em branco para manter)';
       document.getElementById('us-aprovaconf').checked=(String(u.AprovaConf||u.aprovaConf)==='true'||u.AprovaConf===true);
       mods=u.Modulos||u.modulos||''; }
@@ -887,10 +758,9 @@ async function saveUser(){
   const id=document.getElementById('us-id').value;
   if(!id && senha.length<6){ showNotif('Senha de no mínimo 6 caracteres.','err'); return; }
   let modulos='';
-  if(role==='transportadora') modulos='malotes';
-  else if(role!=='admin'){ const cks=document.querySelectorAll('.us-mod-ck:checked');
+  if(role!=='admin'){ const cks=document.querySelectorAll('.us-mod-ck:checked');
     modulos=Array.prototype.map.call(cks,function(c){return c.value;}).join(','); }
-  const payload={ ID:id||'', Nome:nome, Email:email, Senha:senha, Role:role, Unidade:document.getElementById('us-unidade').value, Ativo:(ativo==='true'), Modulos:modulos, AprovaConf:document.getElementById('us-aprovaconf').checked,
+  const payload={ ID:id||'', Nome:nome, Email:email, Senha:senha, Role:role, Ativo:(ativo==='true'), Modulos:modulos, AprovaConf:document.getElementById('us-aprovaconf').checked,
     __actor:{ nome:currentUser.nome, email:currentUser.email } };
   showNotif('Salvando...','info');
   const r=await apiFetch('saveuser', payload);
@@ -899,7 +769,7 @@ async function saveUser(){
 async function toggleUser(id,novo){
   const u=usuarios.find(function(x){return String(x.ID||x.id)===String(id);}); if(!u) return;
   const r=await apiFetch('saveuser', { ID:id, Nome:u.Nome||u.nome, Email:u.Email||u.email, Role:u.Role||u.role,
-    Modulos:(u.Modulos||u.modulos||''), Unidade:(u.Unidade||u.unidade||''), AprovaConf:(String(u.AprovaConf||u.aprovaConf)==='true'||u.AprovaConf===true), Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } });
+    Modulos:(u.Modulos||u.modulos||''), AprovaConf:(String(u.AprovaConf||u.aprovaConf)==='true'||u.AprovaConf===true), Ativo:novo, __actor:{ nome:currentUser.nome, email:currentUser.email } });
   if(r.ok){ showNotif(novo?'Usuário ativado.':'Usuário desativado.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
 }
 async function delUser(id){
@@ -1006,146 +876,6 @@ async function delLoc(id){
   const r=await apiFetch('deletelocal', { id:id, __actor:{ nome:currentUser.nome, email:currentUser.email } });
   if(r.ok){ showNotif('Local excluído.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
 }
-
-
-// ── Locais de visita (Sede Administrativa) ──
-function renderVisitantesLocais(){
-  const q=(document.getElementById('busca-vloc')?.value||'').toLowerCase();
-  const fs=document.getElementById('filtro-vloc-status')?.value||'';
-  let lista=visitantesLocais.filter(function(l){
-    if(q && !String(l.Valor||l.Nome||'').toLowerCase().includes(q)) return false;
-    const at=ativoBool(l.Ativo);
-    if(fs==='ativo'&&!at) return false; if(fs==='inativo'&&at) return false;
-    return true;
-  });
-  const empty=document.getElementById('vloc-empty'), body=document.getElementById('visitlocais-body');
-  if(!empty||!body) return;
-  empty.style.display=lista.length?'none':'block';
-  body.innerHTML=lista.map(function(l){
-    const at=ativoBool(l.Ativo), nome=String(l.Valor||l.Nome||'').toUpperCase();
-    return '<tr'+(at?'':' style="opacity:.55"')+'><td><strong>'+esc(nome)+'</strong></td><td>'+badgeAtivo(at)+'</td>'
-      +'<td style="white-space:nowrap"><button class="btn sm" onclick="openVLoc(\''+l.ID+'\')" title="Editar">✏️</button> '
-      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleVLoc(\''+l.ID+'\','+(!at)+')" title="'+(at?'Desabilitar':'Reativar')+'">'+(at?'⏸️':'▶️')+'</button>'
-      +(ehAdmin()?' <button class="btn sm danger" onclick="delVLoc(\''+l.ID+'\')" title="Excluir definitivamente">🗑️</button>':'')
-      +'</td></tr>';
-  }).join('');
-}
-function openVLoc(id){
-  document.getElementById('vlo-id').value=id||'';
-  document.getElementById('vloc-title').textContent=id?'Editar local de visita':'Novo local de visita';
-  document.getElementById('vlo-nome').value=''; document.getElementById('vlo-ativo').value='true';
-  if(id){
-    const l=visitantesLocais.find(function(x){return String(x.ID)===String(id);});
-    if(l){ document.getElementById('vlo-nome').value=String(l.Valor||l.Nome||'').toUpperCase(); document.getElementById('vlo-ativo').value=ativoBool(l.Ativo)?'true':'false'; }
-  }
-  document.getElementById('modal-vloc').classList.add('open');
-  setTimeout(function(){document.getElementById('vlo-nome').focus();},50);
-}
-function closeVLoc(){ document.getElementById('modal-vloc').classList.remove('open'); }
-async function saveVLoc(){
-  const nome=document.getElementById('vlo-nome').value.trim().toUpperCase();
-  if(!nome){ showNotif('Informe o nome do local de visita.','err'); return; }
-  const payload={ ID:document.getElementById('vlo-id').value||'', Valor:nome,
-    Ativo:(document.getElementById('vlo-ativo').value==='true'), __actor:{ nome:currentUser.nome, email:currentUser.email } };
-  showNotif('Salvando...','info');
-  const r=await apiFetch('savevisitantelocal',payload);
-  if(r.ok){ closeVLoc(); showNotif('Local de visita salvo.','ok'); carregarTudo(); } else showNotif(r.message||'Erro ao salvar.','err');
-}
-async function toggleVLoc(id,novo){
-  const l=visitantesLocais.find(function(x){return String(x.ID)===String(id);}); if(!l) return;
-  const r=await apiFetch('savevisitantelocal',{ID:id,Valor:String(l.Valor||l.Nome||'').toUpperCase(),Ativo:novo,__actor:{nome:currentUser.nome,email:currentUser.email}});
-  if(r.ok){ showNotif(novo?'Local de visita ativado.':'Local de visita desativado.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
-}
-async function delVLoc(id){
-  const l=visitantesLocais.find(function(x){return String(x.ID)===String(id);});
-  if(!confirm('Excluir definitivamente o local de visita "'+String((l&&(l.Valor||l.Nome))||'')+'"?')) return;
-  const r=await apiFetch('deletevisitantelocal',{id:id,__actor:{nome:currentUser.nome,email:currentUser.email}});
-  if(r.ok){ showNotif('Local de visita excluído.','ok'); carregarTudo(); } else showNotif(r.message||'Erro.','err');
-}
-
-
-// ── Motivos / tipos de atendimento (Visitantes) ──
-function renderVisitantesMotivos(){
-  const q=(document.getElementById('busca-vmot')?.value||'').toLowerCase();
-  const fs=document.getElementById('filtro-vmot-status')?.value||'';
-  let lista=visitantesMotivos.filter(function(l){
-    if(q && !String(l.Valor||l.Nome||'').toLowerCase().includes(q)) return false;
-    const at=ativoBool(l.Ativo);
-    if(fs==='ativo'&&!at) return false; if(fs==='inativo'&&at) return false;
-    return true;
-  });
-  const empty=document.getElementById('vmot-empty'), body=document.getElementById('visitmotivos-body');
-  if(!empty||!body)return;
-  empty.style.display=lista.length?'none':'block';
-  body.innerHTML=lista.map(function(l){
-    const at=ativoBool(l.Ativo), nome=String(l.Valor||l.Nome||'').toUpperCase();
-    return '<tr'+(at?'':' style="opacity:.55"')+'><td><strong>'+esc(nome)+'</strong></td><td>'+badgeAtivo(at)+'</td>'
-      +'<td style="white-space:nowrap"><button class="btn sm" onclick="openVMot(\''+l.ID+'\')" title="Editar">✏️</button> '
-      +'<button class="btn sm '+(at?'':'primary')+'" onclick="toggleVMot(\''+l.ID+'\','+(!at)+')" title="'+(at?'Desabilitar':'Reativar')+'">'+(at?'⏸️':'▶️')+'</button>'
-      +(ehAdmin()?' <button class="btn sm danger" onclick="delVMot(\''+l.ID+'\')" title="Excluir definitivamente">🗑️</button>':'')
-      +'</td></tr>';
-  }).join('');
-}
-function openVMot(id){
-  document.getElementById('vmo-id').value=id||'';
-  document.getElementById('vmot-title').textContent=id?'Editar motivo de atendimento':'Novo motivo de atendimento';
-  document.getElementById('vmo-nome').value='';document.getElementById('vmo-ativo').value='true';
-  if(id){const l=visitantesMotivos.find(function(x){return String(x.ID)===String(id)});if(l){document.getElementById('vmo-nome').value=String(l.Valor||l.Nome||'').toUpperCase();document.getElementById('vmo-ativo').value=ativoBool(l.Ativo)?'true':'false'}}
-  document.getElementById('modal-vmot').classList.add('open');setTimeout(function(){document.getElementById('vmo-nome').focus()},50)
-}
-function closeVMot(){document.getElementById('modal-vmot').classList.remove('open')}
-async function saveVMot(){
-  const nome=document.getElementById('vmo-nome').value.trim().toUpperCase();if(!nome){showNotif('Informe o motivo de atendimento.','err');return}
-  const r=await apiFetch('savevisitantemotivo',{ID:document.getElementById('vmo-id').value||'',Valor:nome,Ativo:document.getElementById('vmo-ativo').value==='true',__actor:{nome:currentUser.nome,email:currentUser.email}});
-  if(r.ok){closeVMot();showNotif('Motivo salvo.','ok');carregarTudo()}else showNotif(r.message||'Erro ao salvar.','err')
-}
-async function toggleVMot(id,novo){
-  const l=visitantesMotivos.find(function(x){return String(x.ID)===String(id)});if(!l)return;
-  const r=await apiFetch('savevisitantemotivo',{ID:id,Valor:String(l.Valor||l.Nome||'').toUpperCase(),Ativo:novo,__actor:{nome:currentUser.nome,email:currentUser.email}});
-  if(r.ok){showNotif(novo?'Motivo ativado.':'Motivo desativado.','ok');carregarTudo()}else showNotif(r.message||'Erro.','err')
-}
-async function delVMot(id){
-  const l=visitantesMotivos.find(function(x){return String(x.ID)===String(id)});
-  if(!confirm('Excluir definitivamente o motivo "'+String((l&&(l.Valor||l.Nome))||'')+'"?'))return;
-  const r=await apiFetch('deletevisitantemotivo',{id:id,__actor:{nome:currentUser.nome,email:currentUser.email}});
-  if(r.ok){showNotif('Motivo excluído.','ok');carregarTudo()}else showNotif(r.message||'Erro.','err')
-}
-
-
-// ── Configurações de Malotes ──
-const MCFG_LABEL={TRANSPORTADORA:'Transportadora',TIPO_VOLUME:'Tipo de volume',CATEGORIA:'Categoria',OCORRENCIA:'Ocorrência',SLA:'SLA / prioridade',TURNO:'Turno',JANELA_COLETA:'Janela de coleta'};
-function preencherUnidadesUsuarios(){
-  const s=document.getElementById('us-unidade');if(!s)return;const old=s.value;
-  const arr=unidades.filter(function(u){return ativoBool(u.Ativo);}).map(function(u){return u.Nome||'';}).filter(Boolean).sort(function(a,b){return a.localeCompare(b,'pt-BR')});
-  s.innerHTML='<option value="">SEM VÍNCULO / ACESSO GERAL</option>'+arr.map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>';}).join('');
-  if(Array.from(s.options).some(function(o){return o.value===old;}))s.value=old;
-}
-function renderMalotesConfig(){
-  const q=(document.getElementById('busca-mcfg')?.value||'').toLowerCase(),tp=document.getElementById('filtro-mcfg-tipo')?.value||'',fs=document.getElementById('filtro-mcfg-status')?.value||'';
-  let a=malotesConfig.filter(function(x){const at=ativoBool(x.Ativo);return(!q||String((x.Tipo||'')+' '+(x.Valor||'')+' '+(x.Extra1||'')+' '+(x.Extra2||'')).toLowerCase().includes(q))&&(!tp||x.Tipo===tp)&&(!fs||(fs==='ativo'?at:!at));});
-  document.getElementById('mcfg-vol').textContent=malotesConfig.filter(x=>x.Tipo==='TIPO_VOLUME'&&ativoBool(x.Ativo)).length;
-  document.getElementById('mcfg-cat').textContent=malotesConfig.filter(x=>x.Tipo==='CATEGORIA'&&ativoBool(x.Ativo)).length;
-  document.getElementById('mcfg-sla').textContent=malotesConfig.filter(x=>x.Tipo==='SLA'&&ativoBool(x.Ativo)).length;
-  document.getElementById('mcfg-oco').textContent=malotesConfig.filter(x=>x.Tipo==='OCORRENCIA'&&ativoBool(x.Ativo)).length;
-  const b=document.getElementById('mcfg-body'),e=document.getElementById('mcfg-empty');if(!b||!e)return;e.style.display=a.length?'none':'block';
-  b.innerHTML=a.map(function(x){const at=ativoBool(x.Ativo);return '<tr'+(at?'':' style="opacity:.55"')+'><td>'+esc(MCFG_LABEL[x.Tipo]||x.Tipo)+'</td><td><strong>'+esc(x.Valor||'')+'</strong></td><td>'+esc(x.Extra1||'—')+'</td><td>'+esc(x.Extra2||'—')+'</td><td>'+badgeAtivo(at)+'</td><td style="white-space:nowrap"><button class="btn sm" onclick="openMcfg(\''+x.ID+'\')">✏️</button> <button class="btn sm '+(at?'':'primary')+'" onclick="toggleMcfg(\''+x.ID+'\','+(!at)+')">'+(at?'⏸️':'▶️')+'</button>'+(ehAdmin()?' <button class="btn sm danger" onclick="delMcfg(\''+x.ID+'\')">🗑️</button>':'')+'</td></tr>';}).join('');
-}
-function mcfgTipoMudou(){
-  const t=document.getElementById('mc-tipo').value,e1=document.getElementById('mc-extra1-wrap'),e2=document.getElementById('mc-extra2-wrap'),l1=document.getElementById('mc-lbl-extra1'),l2=document.getElementById('mc-lbl-extra2'),h=document.getElementById('mc-help');
-  e1.style.display=['SLA','JANELA_COLETA'].includes(t)?'flex':'none';e2.style.display=t==='JANELA_COLETA'?'flex':'none';
-  l1.textContent=t==='SLA'?'Prazo em horas':t==='JANELA_COLETA'?'Hora inicial':'Parâmetro 1';l2.textContent='Hora final';
-  h.textContent=t==='SLA'?'Ex.: ROTINA com 24 horas; URGENTE com 2 horas.':t==='JANELA_COLETA'?'Valor = dias (ex.: SEGUNDA A SEXTA), com hora inicial e final.':t==='TRANSPORTADORA'?'Cadastre a empresa que realiza a coleta dos malotes.':'';
-}
-function openMcfg(id){
-  document.getElementById('mc-id').value=id||'';document.getElementById('mcfg-title').textContent=id?'Editar configuração':'Nova configuração';
-  document.getElementById('mc-tipo').value='TIPO_VOLUME';document.getElementById('mc-valor').value='';document.getElementById('mc-extra1').value='';document.getElementById('mc-extra2').value='';document.getElementById('mc-ativo').value='true';
-  if(id){const x=malotesConfig.find(function(y){return String(y.ID)===String(id)});if(x){document.getElementById('mc-tipo').value=x.Tipo;document.getElementById('mc-valor').value=x.Valor||'';document.getElementById('mc-extra1').value=x.Extra1||'';document.getElementById('mc-extra2').value=x.Extra2||'';document.getElementById('mc-ativo').value=ativoBool(x.Ativo)?'true':'false';}}
-  mcfgTipoMudou();document.getElementById('modal-mcfg').classList.add('open');
-}
-function closeMcfg(){document.getElementById('modal-mcfg').classList.remove('open')}
-async function saveMcfg(){const p={ID:document.getElementById('mc-id').value,Tipo:document.getElementById('mc-tipo').value,Valor:document.getElementById('mc-valor').value.trim().toUpperCase(),Extra1:document.getElementById('mc-extra1').value.trim().toUpperCase(),Extra2:document.getElementById('mc-extra2').value.trim().toUpperCase(),Ativo:document.getElementById('mc-ativo').value==='true',__actor:{nome:currentUser.nome,email:currentUser.email}};if(!p.Valor){showNotif('Informe o valor.','err');return}const r=await apiFetch('savemaloteconfig',p);if(r.ok){closeMcfg();showNotif('Configuração salva.','ok');carregarTudo()}else showNotif(r.message||'Erro.','err')}
-async function toggleMcfg(id,novo){const x=malotesConfig.find(y=>String(y.ID)===String(id));if(!x)return;const r=await apiFetch('savemaloteconfig',{ID:id,Tipo:x.Tipo,Valor:x.Valor,Extra1:x.Extra1,Extra2:x.Extra2,Ativo:novo,__actor:{nome:currentUser.nome,email:currentUser.email}});if(r.ok){showNotif(novo?'Configuração ativada.':'Configuração desativada.','ok');carregarTudo()}else showNotif(r.message||'Erro.','err')}
-async function delMcfg(id){if(!confirm('Excluir definitivamente esta configuração?'))return;const r=await apiFetch('deletemaloteconfig',{id:id,__actor:{nome:currentUser.nome,email:currentUser.email}});if(r.ok){showNotif('Configuração excluída.','ok');carregarTudo()}else showNotif(r.message||'Erro.','err')}
 
 // ── Auditoria ──
 async function carregarAuditoria(){

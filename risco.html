@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conversor Hygia — Classificação de Risco</title>
+<title>Conversor Hygia — Classificação de Risco v2.1</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -436,17 +436,12 @@
         <div class="field">
           <label for="unit">Unidade de sa&uacute;de</label>
           <select id="unit">
-            <option value="" data-title="">Selecione a unidade&hellip;</option>
-            <option data-title="UPA NORTE"
-              value='UPA Norte "Dr. Nelson Mandela" &mdash; Av. Euclydes Figueiredo, 295 &mdash; Adelino Simioni &mdash; 14071-140'>UPA Norte &mdash; Dr. Nelson Mandela</option>
-            <option data-title="UPA LESTE"
-              value='UPA Leste "Dr. Luis At&iacute;lio Losi Viana" &mdash; Av. Treze de Maio, 353 &mdash; Jd. Paulistano &mdash; 14090-270'>UPA Leste &mdash; Dr. Luis At&iacute;lio Losi Viana</option>
-            <option data-title="UPA OESTE"
-              value='UPA Oeste "Prof. Dr. Jo&atilde;o Jos&eacute; Carneiro" &mdash; R. Teresina, 678 &mdash; Vila Maria Lu&iacute;za &mdash; 14055-380'>UPA Oeste &mdash; Prof. Dr. Jo&atilde;o Jos&eacute; Carneiro</option>
-            <option data-title="UPA RIBEIR&Atilde;O VERDE"
-              value='UPA Ribeir&atilde;o Verde "Luciana Ap. C&acirc;ndido dos Santos" &mdash; Estr. Ant&ocirc;nia Mugnatto Marincek, 555 &mdash; Cond. Copacabana &mdash; 14078-405'>UPA Ribeir&atilde;o Verde &mdash; Luciana Ap. C&acirc;ndido dos Santos</option>
-            <option data-title="UBDS VILA VIRG&Iacute;NIA"
-              value='UBDS Vila Virg&iacute;nia "Dr. Marco Ant&ocirc;nio Sah&atilde;o" &mdash; R. Franco da Rocha, 1270 &mdash; Vila Virg&iacute;nia &mdash; 14030-470'>UBDS Vila Virg&iacute;nia &mdash; Dr. Marco Ant&ocirc;nio Sah&atilde;o</option>
+            <option value="">Selecione a unidade&hellip;</option>
+            <option value="UPA NORTE">UPA Norte &mdash; Dr. Nelson Mandela</option>
+            <option value="UPA LESTE">UPA Leste &mdash; Dr. Luis At&iacute;lio Losi Viana</option>
+            <option value="UPA OESTE">UPA Oeste &mdash; Prof. Dr. Jo&atilde;o Jos&eacute; Carneiro</option>
+            <option value="UPA RIBEIR&Atilde;O VERDE">UPA Ribeir&atilde;o Verde &mdash; Luciana Ap. C&acirc;ndido dos Santos</option>
+            <option value="UBDS VILA VIRG&Iacute;NIA">UBDS Vila Virg&iacute;nia &mdash; Dr. Marco Ant&ocirc;nio Sah&atilde;o</option>
           </select>
         </div>
         <div class="field">
@@ -946,22 +941,41 @@ function renderResult(agg){
 }
 
 // ---- render tabela indicador ----
+function normalizeUnitTitle(v){
+  const s=String(v||"").trim();
+  if(!s) return "";
+  const direct=unitByTitle(s);
+  if(direct) return direct.title;
+  const sl=s.toUpperCase();
+  const found=UNITS.find(u=>{
+    const title=u.title.toUpperCase();
+    const full=u.full.toUpperCase();
+    return sl===title || sl===full || sl.startsWith(title+" ") || sl.startsWith(title+" —") || sl.startsWith(title+' "');
+  });
+  return found ? found.title : s.toUpperCase();
+}
 function scopeUnitTitle(){
-  const us=unitsInScope();
-  if(us.length===1) return us[0];
-  if(us.length>1) return "CONSOLIDADO";
-  return "UNIDADE"; // nenhuma definida
+  const us=unitsInScope().map(normalizeUnitTitle).filter(Boolean);
+  const unique=[...new Set(us)];
+  if(unique.length===1) return unique[0].toUpperCase();
+  if(unique.length>1) return "CONSOLIDADO";
+  return "UNIDADE";
 }
 function indicatorTitle(){
-  const num=String(hlKey).padStart(2,"0");
-  return scopeUnitTitle()+" \u2014 INDICADOR DE DESEMPENHO "+num;
+  const num=String(hlKey);
+  return String(scopeUnitTitle()||"UNIDADE").toUpperCase()+" \u2014 INDICADOR DE DESEMPENHO "+num;
 }
 function scopeUnitFooter(){
   const us=unitsInScope();
   if(us.length===0) return "&mdash;";
-  if(us.length===1){ const u=unitByTitle(us[0]); return u?u.full:us[0]; }
-  // consolidado: listar as unidades
-  return "Consolidado \u2014 "+us.map(t=>{const u=unitByTitle(t);return u?u.title:t;}).join(", ");
+  if(us.length===1){
+    const title=normalizeUnitTitle(us[0]);
+    const u=unitByTitle(title);
+    return u ? u.full : us[0];
+  }
+  return "Consolidado \u2014 "+[...new Set(us.map(normalizeUnitTitle))].map(t=>{
+    const u=unitByTitle(t); return u?u.title:t;
+  }).join(", ");
 }
 function renderIndicator(agg){
   const ind=agg.ind; let totQ=0,totL=0;
@@ -1373,7 +1387,7 @@ function buildPdf(){
   const t=temposClassificacao();
   const totalAt=currentRecs.length;
   const hoje=new Date().toLocaleDateString('pt-BR');
-  const num=String(hlKey).padStart(2,"0");
+  const num=String(hlKey);
   const unidade=scopeUnitFooter().replace(/&mdash;/g,"\u2014");
   const periodo = monthScope.value!=="all" ? monthLabel(monthScope.value) : "Per\u00edodo completo";
   const nEnf=enfResumo().length;
@@ -1660,8 +1674,12 @@ function buildPagePdf(pg){
   clone.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
   clone.querySelectorAll('.actions,.seg,.seg-title,.ctrls,#perFileUnits,details,.pdf-share').forEach(el=>el.remove());
   const head=document.createElement('div'); head.className='screen-pdf-head';
-  const titles={1:'Indicador de desempenho',2:'Análise para a gestão',3:'Tempos e produção médica'};
-  head.innerHTML='<h1>'+scopeUnitTitle()+' — '+titles[pg]+'</h1><p>Fonte: Sistema Hygia · '+currentScopeLabel()+' · Emitido em '+new Date().toLocaleDateString('pt-BR')+'</p>';
+  const titles={
+    1:'INDICADOR DE DESEMPENHO '+String(hlKey),
+    2:'ANÁLISE PARA A GESTÃO',
+    3:'TEMPOS E PRODUÇÃO MÉDICA'
+  };
+  head.innerHTML='<h1>'+String(scopeUnitTitle()).toUpperCase()+' — '+titles[pg]+'</h1><p>Fonte: Sistema Hygia · '+currentScopeLabel()+' · Emitido em '+new Date().toLocaleDateString('pt-BR')+'</p>';
   const wrap=document.createElement('div'); wrap.className='pdf-screen-page'; wrap.appendChild(head); wrap.appendChild(clone);
   const pa=document.getElementById('printArea'); pa.innerHTML=''; pa.appendChild(wrap);
   const oldTitle=document.title;

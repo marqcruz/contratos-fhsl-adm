@@ -8,6 +8,7 @@
 html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
 #loading{min-height:100vh;display:grid;place-items:center;font-size:14px;padding:20px;text-align:center}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 </head>
 <body>
 <div id="loading">Carregando Contratos...</div>
@@ -20,10 +21,12 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
       if(!r.ok) throw new Error(p+' HTTP '+r.status);
       return r.text();
     })));
-    const b64=chunks.join('').trim();
-    const bin=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
-    const ds=new DecompressionStream('gzip');
-    const html=await new Response(new Blob([bin]).stream().pipeThrough(ds)).text();
+    const b64=chunks.join('').replace(/\s+/g,'');
+    const raw=atob(b64);
+    const bin=new Uint8Array(raw.length);
+    for(let i=0;i<raw.length;i++) bin[i]=raw.charCodeAt(i);
+    if(!window.pako) throw new Error('Biblioteca de descompactação não carregou');
+    const html=window.pako.ungzip(bin,{to:'string'});
     document.open();
     document.write(html);
     document.close();

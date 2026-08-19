@@ -1,0 +1,179 @@
+name: Aplicar melhorias CNES
+
+on:
+  push:
+    branches: [layout_gpt]
+    paths:
+      - '.github/workflows/aplicar-melhorias-cnes.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: layout_gpt
+      - name: Atualizar cnes.html diretamente
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('cnes.html')
+          s=p.read_text(encoding='utf-8')
+
+          def rep(old,new,label):
+              global s
+              if old not in s:
+                  raise SystemExit(f'Bloco não localizado: {label}')
+              s=s.replace(old,new,1)
+
+          # 1) Filtro CBO e ordenação rápida
+          rep(
+          '''      <select id="filtro-tipo" onchange="renderTabela()"><option value="">Todos os tipos</option><option value="1">1 - Administrativo</option><option value="2">2 - Médico</option><option value="3">3 - Assistencial</option></select>''',
+          '''      <select id="filtro-tipo" onchange="renderTabela()"><option value="">Todos os tipos</option><option value="1">1 - Administrativo</option><option value="2">2 - Médico</option><option value="3">3 - Assistencial</option></select>\n      <select id="filtro-cbo" onchange="pagina=1;renderTabela()"><option value="">Todos os CBOs</option></select>\n      <select id="ordem-cadastro" onchange="ordenarRapido(this.value)"><option value="nome">Ordenar: nome</option><option value="cad_desc">Cadastro: mais recentes</option><option value="cad_asc">Cadastro: mais antigos</option></select>''',
+          'toolbar')
+
+          # 2) Listas da Administração + filtro CBO
+          rep(
+          '''async function carregarListas(){
+  try{
+    const r=await apiFetch('getcneslistas');
+    if(r.ok && r.listas){
+      if(Array.isArray(r.listas.cbos) && r.listas.cbos.length) CBOS=r.listas.cbos;
+      if(Array.isArray(r.listas.conselhos) && r.listas.conselhos.length) CONSELHOS=r.listas.conselhos;
+      if(Array.isArray(r.listas.vinculos) && r.listas.vinculos.length) VINCULOS=r.listas.vinculos;
+    }
+  }catch(e){ /* usa os valores padrão embutidos */ }
+  preencherCbos(); preencherConselhos(); preencherVinculos();
+}''',
+          '''async function carregarListas(){
+  try{
+    const r=await apiFetch('getcneslistas',{_ts:Date.now()});
+    if(r.ok && r.listas){
+      if(Array.isArray(r.listas.cbos) && r.listas.cbos.length) CBOS=r.listas.cbos;
+      if(Array.isArray(r.listas.conselhos) && r.listas.conselhos.length) CONSELHOS=r.listas.conselhos;
+      if(Array.isArray(r.listas.vinculos) && r.listas.vinculos.length) VINCULOS=r.listas.vinculos;
+    }
+  }catch(e){ /* usa os valores padrão embutidos */ }
+  preencherCbos(); preencherConselhos(); preencherVinculos(); popularFiltroCbo();
+}
+function popularFiltroCbo(){
+  const sel=document.getElementById('filtro-cbo'); if(!sel) return;
+  const atual=sel.value;
+  const itens=(CBOS||[]).slice().sort(function(a,b){ return String(a[0]).localeCompare(String(b[0])); });
+  sel.innerHTML='<option value="">Todos os CBOs</option>'+itens.map(function(c){ return '<option value="'+esc(c[0])+'">'+esc(c[0]+' - '+c[1])+'</option>'; }).join('');
+  if(itens.some(function(c){ return String(c[0])===atual; })) sel.value=atual;
+}
+window.addEventListener('focus',function(){ if(currentUser) carregarListas(); });
+document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible'&&currentUser) carregarListas(); });
+setInterval(function(){ if(document.visibilityState==='visible'&&currentUser) carregarListas(); },60000);''',
+          'carregarListas')
+
+          # 3) CNPJ automático para tipo 1 e 2
+          rep(
+          '''function tipoMudou(){
+  const t=document.getElementById('cd-tipo').value;
+  const esconder=(t==='1');''',
+          '''function tipoMudou(){
+  const t=document.getElementById('cd-tipo').value;
+  const cnpj=document.getElementById('cd-cnpj');
+  if(cnpj && (t==='1'||t==='2') && !String(cnpj.value||'').trim()){
+    cnpj.value='13.370.183/0001-89';
+    validarCnpjVisual();
+  }
+  const esconder=(t==='1');''',
+          'tipoMudou')
+
+          # 4) Nome sempre maiúsculo na digitação
+          rep(
+          '''        <div class="fg full"><label>Nome do profissional *</label><input type="text" id="cd-nome" placeholder="Nome completo"></div>''',
+          '''        <div class="fg full"><label>Nome do profissional *</label><input type="text" id="cd-nome" placeholder="Nome completo" oninput="this.value=this.value.toLocaleUpperCase('pt-BR')"></div>''',
+          'nome input')
+
+          # 5) Nome uppercase também no salvar
+          rep(
+          '''  const nome=document.getElementById('cd-nome').value.trim();''',
+          '''  const nome=document.getElementById('cd-nome').value.trim().toLocaleUpperCase('pt-BR');''',
+          'salvar nome')
+
+          # 6) Filtro por CBO
+          rep(
+          '''  const ft=document.getElementById('filtro-tipo').value;
+  const fs=document.getElementById('filtro-status').value;''',
+          '''  const ft=document.getElementById('filtro-tipo').value;
+  const fcbo=document.getElementById('filtro-cbo')?document.getElementById('filtro-cbo').value:'';
+  const fs=document.getElementById('filtro-status').value;''',
+          'filtro cbo vars')
+          rep(
+          '''    if(ft && String(c.Tipo)!==ft) return false;
+    if(fs && (c.Status||'Ativo')!==fs) return false;''',
+          '''    if(ft && String(c.Tipo)!==ft) return false;
+    if(fcbo && String(c.CBO)!==fcbo) return false;
+    if(fs && (c.Status||'Ativo')!==fs) return false;''',
+          'filtro cbo regra')
+
+          # 7) Ordenação por data/hora real (aceita ISO e dd/MM/yyyy HH:mm)
+          rep(
+          '''function parseData(v){ // dd/MM/yyyy HH:mm -> número comparável
+  if(!v) return 0; const m=String(v).match(/(\\d{2})\\/(\\d{2})\\/(\\d{4})(?:\\s+(\\d{2}):(\\d{2}))?/);
+  if(!m) return 0; return new Date(m[3],m[2]-1,m[1],m[5]||0,m[6]||0).getTime();
+}''',
+          '''function parseData(v){
+  if(!v) return 0;
+  const direto=new Date(v); if(!isNaN(direto.getTime())) return direto.getTime();
+  const m=String(v).match(/(\\d{2})\\/(\\d{2})\\/(\\d{4})(?:\\s+(\\d{2}):(\\d{2}))?/);
+  if(!m) return 0; return new Date(m[3],m[2]-1,m[1],m[4]||0,m[5]||0).getTime();
+}
+function ordenarRapido(v){
+  if(v==='cad_desc'){ ordCampo='CriadoEm'; ordDir=-1; }
+  else if(v==='cad_asc'){ ordCampo='CriadoEm'; ordDir=1; }
+  else { ordCampo='Nome'; ordDir=1; }
+  pagina=1; renderTabela();
+}''',
+          'parseData')
+
+          # 8) Mostrar hora do cadastro na tabela
+          rep(
+          '''function fmtDataHora(v){
+  if(!v) return '—'; const s=String(v);
+  if(/^\\d{2}\\/\\d{2}\\/\\d{4}/.test(s)) return s;
+  const d=new Date(s); if(isNaN(d.getTime())) return s;
+  return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+}''',
+          '''function fmtDataHora(v){
+  if(!v) return '—'; const s=String(v);
+  if(/^\\d{2}\\/\\d{2}\\/\\d{4}(?:\\s+\\d{2}:\\d{2})?/.test(s)) return s;
+  const d=new Date(s); if(isNaN(d.getTime())) return s;
+  return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear()+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+}''',
+          'fmtDataHora')
+
+          # 9) Ao montar competência também atualizar filtro CBO
+          rep(
+          '''  s.innerHTML='<option value="">Todas as competências</option>'+comps.map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
+}''',
+          '''  s.innerHTML='<option value="">Todas as competências</option>'+comps.map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
+  popularFiltroCbo();
+}''',
+          'montarFiltroComp')
+
+          p.write_text(s,encoding='utf-8')
+          print('CNES atualizado com sucesso')
+      - name: Validar JavaScript básico
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('cnes.html').read_text(encoding='utf-8')
+          for x in ['id="filtro-cbo"','function popularFiltroCbo','13.370.183/0001-89','function ordenarRapido','toLocaleUpperCase']:
+              assert x in s, x
+          print('Validação textual OK')
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cnes.html
+          git commit -m "CNES: sincronizar listas, CNPJ automático, filtro CBO e ordenação" || exit 0
+          git push origin HEAD:layout_gpt

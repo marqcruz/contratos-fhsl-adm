@@ -14,9 +14,16 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
 <script>
 (async()=>{
   try{
-    const r=await fetch('cnes_importacao_modelo_compativel.html',{cache:'no-store'});
-    if(!r.ok) throw new Error('cnes_importacao_modelo_compativel.html HTTP '+r.status);
-    const html=await r.text();
+    const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/layout_gpt/.tdngo/cnes/';
+    const paths=['part1.txt','part2.txt','part3.txt'];
+    const chunks=await Promise.all(paths.map(p=>fetch(base+p,{cache:'no-store'}).then(r=>{
+      if(!r.ok) throw new Error(p+' HTTP '+r.status);
+      return r.text();
+    })));
+    const b64=chunks.join('').trim();
+    const bin=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+    const ds=new DecompressionStream('gzip');
+    const html=await new Response(new Blob([bin]).stream().pipeThrough(ds)).text();
     document.open();
     document.write(html);
     document.close();

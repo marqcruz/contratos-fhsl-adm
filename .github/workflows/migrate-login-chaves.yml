@@ -1,0 +1,147 @@
+name: TDNGo migrate login and chaves
+on:
+  push:
+    branches: [layout_gpt]
+    paths: ['.github/workflows/migrate-login-chaves.yml']
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: layout_gpt
+      - name: Migrar frontends para Supabase
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          AUTH='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api'
+          CHAVES='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-chaves-api'
+          LEGACY='https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec'
+
+          # CHAVES: dados + login 100% Supabase
+          p=Path('chaves.html'); s=p.read_text(encoding='utf-8')
+          old=re.search(r"const SCRIPT_URL = .*?\nlet currentUser = null;\n\nasync function apiFetch\(action, payload\)\{[\s\S]*?\n\}",s)
+          if not old: raise SystemExit('apiFetch de chaves não encontrado')
+          new=f'''const AUTH_API_URL = '{AUTH}';
+const CHAVES_API_URL = '{CHAVES}';
+let currentUser = null;
+let chavesBootstrapPromise = null;
+
+async function authApi(payload){{
+  const r=await fetch(AUTH_API_URL,{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(payload||{{}})}});
+  const t=await r.text(); try{{return JSON.parse(t)}}catch(e){{return {{ok:false,message:t||'Falha na autenticação.'}}}}
+}}
+async function chavesApi(action,payload){{
+  const token=currentUser&&currentUser.tdngoToken||'';
+  const r=await fetch(CHAVES_API_URL,{{method:'POST',headers:{{'Content-Type':'application/json','Authorization':'Bearer '+token}},body:JSON.stringify(Object.assign({{action:action}},payload||{{}}))}});
+  const t=await r.text(); let j; try{{j=JSON.parse(t)}}catch(e){{j={{ok:false,message:t||'Falha no módulo Chaves.'}}}}
+  if(r.status===401) j.message=j.message||'Sessão expirada. Volte ao TDNGo e entre novamente.';
+  return j;
+}}
+async function getChavesBootstrap(){{
+  if(!chavesBootstrapPromise){{
+    chavesBootstrapPromise=chavesApi('bootstrap',{{}}).finally(()=>setTimeout(()=>{{chavesBootstrapPromise=null}},250));
+  }}
+  return chavesBootstrapPromise;
+}}
+async function apiFetch(action,payload){{
+  if(action==='authuser') return authApi({{action:'login',email:payload&&payload.email,senha:payload&&payload.senha}});
+  if(action==='getchaves'){{const r=await getChavesBootstrap();return r.ok?{{ok:true,data:r.chaves||[],tipos:r.tipos||[]}}:r;}}
+  if(action==='getlocais'){{const r=await getChavesBootstrap();return r.ok?{{ok:true,data:r.locais||[]}}:r;}}
+  if(action==='getmovs'){{const r=await getChavesBootstrap();return r.ok?{{ok:true,data:r.movs||[]}}:r;}}
+  if(action==='savechave') return chavesApi('saveChave',{{payload:payload||{{}}}});
+  if(action==='deletechave') return chavesApi('deleteChave',{{id:payload&&payload.id}});
+  if(action==='savemov') return chavesApi('saveMov',{{payload:payload||{{}}}});
+  if(action==='savelocal') return chavesApi('saveLocal',{{payload:payload||{{}}}});
+  if(action==='deletelocal') return chavesApi('deleteLocal',{{id:payload&&payload.id}});
+  return {{ok:false,message:'Ação não suportada pelo módulo Chaves.'}};
+}}'''
+          s=s[:old.start()]+new+s[old.end():]
+          # Garante que login direto guarde o token central
+          s=s.replace("currentUser=r.user;", "currentUser=r.user||{}; if(r.token&&!currentUser.tdngoToken) currentUser.tdngoToken=r.token;",1)
+          p.write_text(s,encoding='utf-8')
+
+          # ADMIN: usuário/login via Supabase; demais cadastros seguem legados por enquanto
+          p=Path('admin.html'); s=p.read_text(encoding='utf-8')
+          old=re.search(r"const SCRIPT_URL = .*?\nlet currentUser = null;\n\nasync function apiFetch\(action, payload\)\{[\s\S]*?\n\}",s)
+          if not old: raise SystemExit('apiFetch do admin não encontrado')
+          new=f'''const SCRIPT_URL = '{LEGACY}';
+const AUTH_API_URL = '{AUTH}';
+let currentUser = null;
+async function authAdminApi(action,payload,authenticated){{
+  const headers={{'Content-Type':'application/json'}};
+  if(authenticated!==false && currentUser&&currentUser.tdngoToken) headers.Authorization='Bearer '+currentUser.tdngoToken;
+  const r=await fetch(AUTH_API_URL,{{method:'POST',headers:headers,body:JSON.stringify(Object.assign({{action:action}},payload||{{}}))}});
+  const t=await r.text();try{{return JSON.parse(t)}}catch(e){{return {{ok:false,message:t||'Falha no serviço de usuários.'}}}}
+}}
+async function apiFetch(action, payload){{
+  if(action==='authuser') return authAdminApi('login',{{email:payload&&payload.email,senha:payload&&payload.senha}},false);
+  if(action==='getusers') return authAdminApi('users',{{}},true);
+  if(action==='saveuser') return authAdminApi('saveUser',{{payload:payload||{{}}}},true);
+  if(action==='deleteuser') return authAdminApi('deleteUser',{{id:payload&&payload.id}},true);
+  const r=await fetch(SCRIPT_URL+'?action='+action,{{method:'POST',body:JSON.stringify(payload||{{}})}});
+  const t=await r.text();try{{return JSON.parse(t)}}catch(e){{return {{ok:false,message:t}}}}
+}}'''
+          s=s[:old.start()]+new+s[old.end():]
+          s=s.replace("currentUser=r.user;", "currentUser=r.user||{}; if(r.token&&!currentUser.tdngoToken) currentUser.tdngoToken=r.token;",1)
+          p.write_text(s,encoding='utf-8')
+
+          # INDEX: feedback visual claro no login
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          if 'id="login-btn"' not in s:
+            s=s.replace('<button class="login-btn" onclick="doLogin()">Entrar</button>','<button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button><div id="login-status" style="min-height:18px;margin-top:9px;text-align:center;font-size:11px;color:var(--text2)"></div>')
+          # Patch function only if still simple
+          m=re.search(r'async function doLogin\(\)\{[\s\S]*?\n\}',s)
+          if m and 'loginEmAndamento' not in s[m.start()-80:m.end()+80]:
+            oldfn=m.group(0)
+            body='''let loginEmAndamento=false;
+async function doLogin(){
+  if(loginEmAndamento)return;
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const senha=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-err'),btn=document.getElementById('login-btn'),st=document.getElementById('login-status');
+  err.style.display='none'; if(st)st.textContent='';
+  if(!email||!senha){err.textContent='Preencha e-mail e senha.';err.style.display='block';return;}
+  loginEmAndamento=true; if(btn){btn.disabled=true;btn.textContent='Entrando...';} if(st)st.textContent='Validando seu acesso...';
+  try{
+    const r=await tdngoAuthLogin(email,senha);
+    if(!r.ok){err.textContent=r.message||'E-mail ou senha incorretos.';err.style.display='block';return;}
+    currentUser=r.user||{}; if(r.token&&!currentUser.tdngoToken)currentUser.tdngoToken=r.token;
+    sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));
+    if(st){st.textContent='Login realizado. Carregando módulos...';st.style.color='var(--green)';}
+    setTimeout(startApp,80);
+  }catch(e){err.textContent='Sem conexão com o servidor de autenticação.';err.style.display='block';}
+  finally{loginEmAndamento=false;if(btn){btn.disabled=false;btn.textContent='Entrar';}}
+}'''
+            s=s.replace(oldfn,body,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Validar JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile, sys
+          for fn in ['index.html','admin.html','chaves.html']:
+            s=Path(fn).read_text(encoding='utf-8')
+            js='\n'.join(re.findall(r'<script[^>]*>([\s\S]*?)</script>',s,re.I))
+            f=tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8');f.write(js);f.close()
+            r=subprocess.run(['node','--check',f.name],capture_output=True,text=True)
+            if r.returncode:
+              print(fn,r.stderr);sys.exit(1)
+          print('JS OK')
+          PY
+          grep -q 'tdngo-chaves-api' chaves.html
+          grep -q "authAdminApi('users'" admin.html
+          grep -q 'Entrando...' index.html
+      - name: Commit
+        run: |
+          git config user.name "TDNGo Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html admin.html chaves.html
+          git commit -m "TDNGo: concluir login Supabase e migrar Chaves" || exit 0
+          git push origin layout_gpt

@@ -1,0 +1,78 @@
+name: Migrar Auditoria para Supabase
+on:
+  push:
+    paths:
+      - '.github/workflows/migrate-auditoria-supabase.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: layout_gpt
+      - name: Atualizar Administração
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('admin.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nlet currentUser = null;", "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nconst AUTH_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api';\nconst AUDIT_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auditoria-api';\nlet currentUser = null;",1)
+          old="""async function doLogin(){
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const senha=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-err'); err.style.display='none';
+  if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
+  try{
+    const r=await apiFetch('authuser',{email,senha});
+    if(!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
+    currentUser=r.user;
+  }catch(e){ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; return; }
+  sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
+  startApp();
+}"""
+          new="""async function doLogin(){
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const senha=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-err'); err.style.display='none';
+  const btn=document.querySelector('.login-btn');
+  if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
+  if(btn){ btn.disabled=true; btn.textContent='Entrando...'; }
+  try{
+    const rr=await fetch(AUTH_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',email:email,senha:senha})});
+    const r=await rr.json();
+    if(!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
+    currentUser=r.user||{};
+    if(r.token&&!currentUser.tdngoToken) currentUser.tdngoToken=r.token;
+  }catch(e){ err.textContent='Sem conexão com o servidor de autenticação.'; err.style.display='block'; return; }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='Entrar'; } }
+  sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
+  startApp();
+}"""
+          if old not in s: raise SystemExit('bloco doLogin não localizado')
+          s=s.replace(old,new,1)
+          old2="""async function carregarAuditoria(){
+  try{ const r=await apiFetch('getlog'); if(r.ok){ auditoria=r.data||[]; renderAuditoria(); } }
+  catch(e){ showNotif('Erro ao carregar auditoria.','err'); }
+}"""
+          new2="""async function carregarAuditoria(){
+  try{
+    if(!currentUser||!currentUser.tdngoToken){ showNotif('Sua sessão precisa ser renovada. Saia e entre novamente.','err'); return; }
+    const rr=await fetch(AUDIT_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken},body:JSON.stringify({action:'list',limit:3000})});
+    const r=await rr.json();
+    if(r.ok){ auditoria=r.data||[]; renderAuditoria(); }
+    else showNotif(r.message||'Erro ao carregar auditoria.','err');
+  }catch(e){ showNotif('Erro ao carregar auditoria no Supabase.','err'); }
+}"""
+          if old2 not in s: raise SystemExit('bloco auditoria não localizado')
+          s=s.replace(old2,new2,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name actions
+          git config user.email actions@github.com
+          git add admin.html
+          git commit -m "TDNGo: Auditoria passa a consultar Supabase" || exit 0
+          git push origin layout_gpt

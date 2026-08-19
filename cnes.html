@@ -85,18 +85,69 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117}
     }
   });
 
+  function normalizarCompetencia(valor){
+    const dig=String(valor||'').replace(/\\D/g,'').slice(0,6);
+    if(!dig) return '';
+    if(dig.length<=2) return dig;
+    return dig.slice(0,2)+'/'+dig.slice(2);
+  }
+
+  function competenciaValida(valor){
+    const m=String(valor||'').match(/^(0[1-9]|1[0-2])\\/(20\\d{2})$/);
+    return !!m;
+  }
+
+  function instalarMascaraCompetencia(){
+    const comp=document.getElementById('cd-comp');
+    if(!comp || comp.dataset.tdngoComp==='1') return;
+    comp.dataset.tdngoComp='1';
+    comp.maxLength=7;
+    comp.inputMode='numeric';
+    comp.placeholder='MM/AAAA (ex: 07/2026)';
+    comp.setAttribute('pattern','(0[1-9]|1[0-2])/20[0-9]{2}');
+    comp.addEventListener('input',function(){
+      const pos=this.selectionStart;
+      this.value=normalizarCompetencia(this.value);
+      try{ this.setSelectionRange(this.value.length,this.value.length); }catch(e){}
+    });
+    comp.addEventListener('blur',function(){
+      if(this.value && !competenciaValida(this.value)){
+        showNotif('Competência inválida. Use MM/AAAA, por exemplo 07/2026.','err');
+        this.focus();
+      }
+    });
+  }
+
   const salvarCadastroOriginal=salvarCadastro;
   salvarCadastro=async function(){
     const nome=document.getElementById('cd-nome');
     if(nome) nome.value=String(nome.value||'').trim().toLocaleUpperCase('pt-BR');
+    const comp=document.getElementById('cd-comp');
+    if(comp){
+      comp.value=normalizarCompetencia(comp.value);
+      if(!competenciaValida(comp.value)){
+        showNotif('Informe a competência no padrão MM/AAAA, por exemplo 07/2026.','err');
+        comp.focus();
+        return;
+      }
+    }
     return salvarCadastroOriginal.apply(this,arguments);
   };
 
   const abrirCadastroOriginal=abrirCadastro;
   abrirCadastro=function(){
     abrirCadastroOriginal();
+    instalarMascaraCompetencia();
     tipoMudou();
     carregarListas();
+  };
+
+  const editarCadOriginal=editarCad;
+  editarCad=function(){
+    editarCadOriginal.apply(this,arguments);
+    instalarMascaraCompetencia();
+    const comp=document.getElementById('cd-comp');
+    if(comp) comp.value=fmtComp(comp.value)==='—'?'':fmtComp(comp.value);
   };
 
   const listaFiltradaOriginal=listaFiltrada;
@@ -139,8 +190,37 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117}
     popularFiltroCbo();
   };
 
+  exportarCsv=function(){
+    if(!cadastros.length){ showNotif('Nada para exportar.','err'); return; }
+    const lista=listaFiltrada();
+    if(!lista.length){ showNotif('Nenhum registro nos filtros atuais.','err'); return; }
+    const cab=['CPF','NOME','CBO','CNPJ','TIPO','CH','OE','UF','REG'];
+    let csv=cab.join(';')+'\\n';
+    lista.forEach(function(c){
+      const cpf=padCPF(c.CPF);
+      const nome=String(c.Nome||'').trim().toLocaleUpperCase('pt-BR');
+      const cbo=String(c.CBO||'').replace(/\\D/g,'');
+      const cnpj=String(c.CNPJ||'').replace(/\\D/g,'');
+      const tipo=String(c.Tipo||'');
+      const ch=(parseInt(c.CHAmbulatorial||0,10)||0)+(parseInt(c.CHHospitalar||0,10)||0)+(parseInt(c.CHOutros||0,10)||0);
+      const oe=String(c.Conselho||'').trim();
+      const uf=String(c.UF||'SP').trim().toUpperCase();
+      const reg=String(c.NumConselho||'').trim();
+      const linha=[cpf,nome,cbo,cnpj,tipo,ch,oe,uf,reg].map(function(v){ return String(v).replace(/;/g,','); });
+      csv+=linha.join(';')+'\\n';
+    });
+    const blob=new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='CNES_'+(unidadeAtual||'unidade').replace(/[^a-zA-Z0-9]/g,'_')+'.csv';
+    a.click();
+    setTimeout(function(){ try{URL.revokeObjectURL(a.href);}catch(e){} },1000);
+    showNotif('Exportado no padrão CNES ('+lista.length+' registros).','ok');
+  };
+
   instalarFiltros();
   popularFiltroCbo();
+  instalarMascaraCompetencia();
   if(currentUser) carregarListas();
   window.addEventListener('focus',function(){ if(currentUser) carregarListas(); });
   document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible'&&currentUser) carregarListas(); });

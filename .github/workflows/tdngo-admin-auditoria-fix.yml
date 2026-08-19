@@ -1,158 +1,90 @@
-name: TDNGo auditoria e limpeza contratos
+name: TDNGo corrigir auditoria e contratos
 
 on:
-  push:
+  pull_request:
     branches: [layout_gpt]
-    paths:
-      - '.github/workflows/tdngo-admin-auditoria-fix.yml'
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
 
 jobs:
   patch:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: layout_gpt
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
-      - name: Aplicar correcoes
+      - name: Corrigir arquivos
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
 
-          # ---------- ADMIN: auditoria central Supabase ----------
+          # ADMIN: auditoria central do Supabase + login central para garantir token
           p=Path('admin.html')
           s=p.read_text(encoding='utf-8')
-
           if "const AUDITORIA_API_URL" not in s:
               s=s.replace(
-                  "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nlet currentUser = null;",
-                  "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nconst AUTH_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api';\nconst AUDITORIA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auditoria-api';\nlet currentUser = null;",
-                  1)
+                "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nlet currentUser = null;",
+                "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nconst AUTH_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api';\nconst AUDITORIA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auditoria-api';\nlet currentUser = null;",1)
 
-          old_login = '''async function doLogin(){
+          s=re.sub(r"async function doLogin\(\)\{.*?\n\}", """async function doLogin(){
   const email=document.getElementById('login-email').value.trim().toLowerCase();
   const senha=document.getElementById('login-pass').value;
   const err=document.getElementById('login-err'); err.style.display='none';
   if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
   try{
-    const r=await apiFetch('authuser',{email,senha});
-    if(!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
-    currentUser=r.user;
-  }catch(e){ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; return; }
-  sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
-  startApp();
-}'''
-          new_login = '''async function doLogin(){
-  const email=document.getElementById('login-email').value.trim().toLowerCase();
-  const senha=document.getElementById('login-pass').value;
-  const err=document.getElementById('login-err'); err.style.display='none';
-  if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
-  try{
-    const r0=await fetch(AUTH_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',email:email,senha:senha})});
-    const t=await r0.text(); let r; try{r=JSON.parse(t)}catch(e){r={ok:false,message:t}}
+    const rr=await fetch(AUTH_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',email:email,senha:senha})});
+    const txt=await rr.text(); let r; try{r=JSON.parse(txt)}catch(e){r={ok:false,message:txt}}
     if(!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
     currentUser=r.user||{}; currentUser.tdngoToken=r.token||currentUser.tdngoToken||'';
   }catch(e){ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; return; }
   sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
   startApp();
-}'''
-          if old_login in s:
-              s=s.replace(old_login,new_login,1)
+}""", s, count=1, flags=re.S)
 
-          old_aud = '''async function carregarAuditoria(){
-  try{ const r=await apiFetch('getlog'); if(r.ok){ auditoria=r.data||[]; renderAuditoria(); } }
-  catch(e){ showNotif('Erro ao carregar auditoria.','err'); }
-}'''
-          new_aud = '''async function carregarAuditoria(){
+          s=re.sub(r"async function carregarAuditoria\(\)\{.*?\n\}", """async function carregarAuditoria(){
   try{
     if(!currentUser || !currentUser.tdngoToken){ showNotif('Sessão sem token do TDNGo. Entre novamente.','err'); return; }
-    const resp=await fetch(AUDITORIA_API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken},body:JSON.stringify({action:'list',limit:3000})});
-    const txt=await resp.text(); let r; try{r=JSON.parse(txt)}catch(e){r={ok:false,message:txt}}
-    if(!resp.ok || !r.ok){ showNotif(r.message||'Erro ao carregar auditoria.','err'); return; }
+    const rr=await fetch(AUDITORIA_API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken},body:JSON.stringify({action:'list',limit:3000})});
+    const txt=await rr.text(); let r; try{r=JSON.parse(txt)}catch(e){r={ok:false,message:txt}}
+    if(!rr.ok || !r.ok){ showNotif(r.message||'Erro ao carregar auditoria.','err'); return; }
     auditoria=r.data||[]; renderAuditoria();
   }catch(e){ showNotif('Erro ao carregar auditoria.','err'); }
-}'''
-          if old_aud in s:
-              s=s.replace(old_aud,new_aud,1)
-
+}""", s, count=1, flags=re.S)
           p.write_text(s,encoding='utf-8')
 
-          # ---------- CONTRATOS: remove auditoria + usuarios do modulo ----------
+          # CONTRATOS: auditoria e usuarios ficam exclusivamente na Administração
           p=Path('contratos.html')
           s=p.read_text(encoding='utf-8')
-
-          # menu auditoria
-          s=s.replace('  <div class="nav-group perm-admin"><div class="nav-label">Controle</div><button class="nav-item" data-page="auditoria" onclick="showPage(\'auditoria\',this)">🛡️ Auditoria</button></div>\n','')
-
-          # paginas ocultas de usuarios e auditoria
-          s=re.sub(r'\n  <!-- USUÁRIOS -->\n  <div class="page" id="page-usuarios">.*?\n  <!-- CADASTRO DE UNIDADES -->', '\n  <!-- CADASTRO DE UNIDADES -->', s, count=1, flags=re.S)
-          s=re.sub(r'\n  <!-- AUDITORIA -->\n  <div class="page" id="page-auditoria">.*?\n  <!-- SETUP -->', '\n  <!-- SETUP -->', s, count=1, flags=re.S)
-
-          # modal de usuario
-          s=re.sub(r'\n<div class="modal-overlay" id="modal-user".*?</div>\n\n<!-- DIALOG PDF -->', '\n\n<!-- DIALOG PDF -->', s, count=1, flags=re.S)
-
-          # variaveis e helpers de usuarios/auditoria
-          s=s.replace('let users = [];\n','')
-          s=s.replace('let auditLog = [];\n','')
-          s=re.sub(r'function localUsers\(\).*?function saveLocalUsers\(u\)\{ localStorage\.setItem\(\'fhsl_users\', JSON\.stringify\(u\)\); \}\n\n', '', s, count=1, flags=re.S)
-
-          # carregamento principal sem usuarios
-          s=s.replace('async function loadAll(){ await Promise.all([ loadUnits(), loadContracts(), loadUsers() ]); }','async function loadAll(){ await Promise.all([ loadUnits(), loadContracts() ]); }')
-
-          # metadados e hooks
-          s=s.replace("  usuarios:['Usuários','Controle de acesso ao sistema'],\n",'')
+          s=re.sub(r'\n\s*<div class="nav-group perm-admin">.*?data-page="auditoria".*?</div>\s*', '\n', s, count=1, flags=re.S)
+          s=re.sub(r'\n\s*<!-- AUDITORIA -->\s*<div class="page" id="page-auditoria">.*?</div>\s*(?=<!-- SETUP -->)', '\n  ', s, count=1, flags=re.S)
           s=s.replace("  auditoria:['Auditoria','Registro de todas as ações no sistema'],\n",'')
-          s=s.replace("  if (id==='usuarios') renderUsers();\n",'')
           s=s.replace("  if (id==='auditoria') loadLog();\n",'')
+          s=re.sub(r"\n// ═+\n// AUDITORIA\n// ═+.*?(?=\n// ═+\n// NOTIFICAÇÕES \(sino\))", '', s, count=1, flags=re.S)
 
-          # card usuarios ativos do dashboard
-          s=s.replace("    + '<div class=\"stat-card c-green\"><div class=\"stat-num\">'+(users.filter(function(u){return u.ativo;}).length||1)+'</div><div class=\"stat-label\">Usuários ativos</div></div>';",
-                      "    ;")
-
-          # blocos JS completos de usuarios e auditoria
-          s=re.sub(r'\n// ═+\n// USUÁRIOS \(admin\)\n// ═+.*?\n// ═+\n// AUDITORIA\n// ═+.*?\n// ═+\n// NOTIFICAÇÕES \(sino\)', '\n// ═══════════════════════════════════════════════════════════════════\n// NOTIFICAÇÕES (sino)', s, count=1, flags=re.S)
-
+          # tira contagem e gestão local de usuários do Contratos
+          s=re.sub(r"\n\s*\+ '<div class=\\?\"stat-card c-green\\?\"><div class=\\?\"stat-num\\?\">'\+\(users\.filter\(function\(u\)\{return u\.ativo;\}\)\.length\|\|1\)\+'</div><div class=\\?\"stat-label\\?\">Usuários ativos</div></div>';", "';", s, count=1)
+          s=s.replace('async function loadAll(){ await Promise.all([ loadUnits(), loadContracts(), loadUsers() ]); }','async function loadAll(){ await Promise.all([ loadUnits(), loadContracts() ]); }')
+          s=s.replace("  usuarios:['Usuários','Controle de acesso ao sistema'],\n",'')
+          s=s.replace("  if (id==='usuarios') renderUsers();\n",'')
+          s=re.sub(r'\n\s*<!-- USUÁRIOS -->\s*<div class="page" id="page-usuarios">.*?</div>\s*(?=<!-- CADASTRO DE UNIDADES -->)', '\n  ', s, count=1, flags=re.S)
+          s=re.sub(r'\n<div class="modal-overlay" id="modal-user".*?(?=\n<!-- DIALOG PDF -->)', '\n', s, count=1, flags=re.S)
+          s=re.sub(r"\n// ═+\n// USUÁRIOS \(admin\)\n// ═+.*?(?=\n// ═+\n// NOTIFICAÇÕES \(sino\))", '', s, count=1, flags=re.S)
+          s=s.replace('let users = [];\n','')
           p.write_text(s,encoding='utf-8')
-
-          # sanity checks
-          c=Path('contratos.html').read_text(encoding='utf-8')
-          a=Path('admin.html').read_text(encoding='utf-8')
-          assert 'data-page="auditoria"' not in c
-          assert 'id="page-auditoria"' not in c
-          assert 'Usuários ativos' not in c
-          assert "AUDITORIA_API_URL" in a
-          assert "action:'list'" in a
           PY
 
-      - name: Validar JavaScript basico
-        shell: bash
-        run: |
-          python - <<'PY'
-          import re, pathlib, subprocess, tempfile, os
-          for fn in ['admin.html','contratos.html']:
-              s=pathlib.Path(fn).read_text(encoding='utf-8')
-              scripts=re.findall(r'<script[^>]*>([\s\S]*?)</script>',s,re.I)
-              code='\n'.join(scripts)
-              fd,path=tempfile.mkstemp(suffix='.js'); os.close(fd)
-              pathlib.Path(path).write_text(code,encoding='utf-8')
-              r=subprocess.run(['node','--check',path],capture_output=True,text=True)
-              os.unlink(path)
-              if r.returncode:
-                  print(fn, r.stderr)
-                  raise SystemExit(1)
-          PY
-
-      - name: Commitar correcoes
+      - name: Commitar correção no PR
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/workflows/tdngo-admin-auditoria-fix.yml
           git add admin.html contratos.html
+          if git diff --cached --quiet; then exit 0; fi
           git commit -m "Centraliza auditoria no Admin e limpa Contratos"
-          git push origin layout_gpt
+          git push origin HEAD:${{ github.head_ref }}

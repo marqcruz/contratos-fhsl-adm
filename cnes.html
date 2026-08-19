@@ -1,1354 +1,157 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CNES — TDNGo</title>
-
 <style>
-
-*{box-sizing:border-box;margin:0;padding:0}
-body[data-theme="light"]{
-  --bg:#f4f4f2;--surface:#fff;--surface2:#f0f0ed;--border:#e2e2de;
-  --text:#1a1a18;--text2:#5c5c58;--text3:#9a9a96;
-  --accent:#1d6aad;--accent-bg:#eff6ff;--accent-text:#1558a0;
-  --green:#15803d;--green-bg:#f0fdf4;--green-text:#14693a;
-  --yellow:#a16207;--yellow-bg:#fefce8;--yellow-text:#926008;
-  --red:#b91c1c;--red-bg:#fef2f2;--red-text:#a81818;
-  --purple:#6d28d9;--purple-bg:#f5f3ff;--purple-text:#5b21b6;
-  --orange:#c2410c;--orange-bg:#fff7ed;--orange-text:#9a3412;
-  --shadow:0 1px 3px rgba(0,0,0,.07);
-}
-:root{
-  --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#2a3140;
-  --text:#e6edf3;--text2:#9aa7b8;--text3:#6b7888;
-  --accent:#3b9eff;--accent-bg:#15243a;--accent-text:#79c0ff;
-  --green:#3fb950;--green-bg:#11271a;--green-text:#56d364;
-  --yellow:#d29922;--yellow-bg:#2b2310;--yellow-text:#e3b341;
-  --red:#f85149;--red-bg:#2d1416;--red-text:#ff7b72;
-  --purple:#a371f7;--purple-bg:#21193a;--purple-text:#bc8cff;
-  --orange:#db6d28;--orange-bg:#2c1a0e;--orange-text:#f0883e;
-  --radius:9px;--shadow:0 1px 3px rgba(0,0,0,.4);
-}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
-a{color:var(--accent)}
-/* LOGIN */
-.login-screen{position:fixed;inset:0;background:radial-gradient(circle at 30% 20%,#16314f 0%,#0d1117 60%);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem}
-.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
-.login-logo{text-align:center;margin-bottom:1.75rem}
-.login-logo .icon{width:56px;height:56px;background:var(--accent);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;margin:0 auto 12px}
-.login-logo h1{font-size:20px;font-weight:700;color:var(--text)}
-.login-logo p{font-size:13px;color:var(--text3);margin-top:4px}
-.login-field{margin-bottom:14px}
-.login-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
-.login-field input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--surface2);color:var(--text);transition:.15s}
-.login-field input::placeholder{color:var(--text3)}
-.login-field input:focus{outline:none;border-color:var(--accent);background:var(--bg)}
-.login-err{color:var(--red);font-size:12px;margin-bottom:10px;display:none;background:var(--red-bg);padding:8px 10px;border-radius:6px;border:1px solid #fca5a5}
-.login-btn{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
-.login-btn:hover{background:#2b8ae6}
-.login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;line-height:1.5}
-/* APP */
-.app{display:flex;min-height:100vh}
-.sidebar{width:248px;background:var(--surface);border-right:1px solid var(--border);padding:1.25rem 1rem;flex-shrink:0;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;z-index:100}
-.main{margin-left:248px;padding:2rem;flex:1;min-width:0}
-.logo{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
-.logo-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
-.logo-text{font-size:12px;font-weight:700;line-height:1.25}
-.logo-sub{font-size:10px;color:var(--text3)}
-.user-card{background:var(--surface2);border-radius:8px;padding:9px 11px;margin-bottom:1.1rem;display:flex;align-items:center;gap:9px}
-.user-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
-.user-name{font-size:12px;font-weight:700;line-height:1.2}
-.user-role{font-size:10px;color:var(--text3)}
-.user-logout{margin-left:auto;background:none;border:none;cursor:pointer;font-size:15px;color:var(--text3);padding:2px}
-.user-logout:hover{color:var(--red)}
-.nav-group{margin-bottom:1rem}
-.nav-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;padding:0 8px}
-.nav-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;border:none;background:none;width:100%;text-align:left;font-family:inherit;transition:.12s}
-.nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:var(--accent-bg);color:var(--accent-text);font-weight:600}
-.nav-badge{margin-left:auto;background:var(--red);color:#fff;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;display:none}
-/* TOPBAR */
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
-.topbar-left .page-title{font-size:20px;font-weight:700}
-.topbar-left .page-sub{font-size:13px;color:var(--text2);margin-top:2px}
-.topbar-right{display:flex;align-items:center;gap:8px}
-/* BELL */
-.bell-wrap{position:relative}
-.bell-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative}
-.bell-btn:hover{background:var(--surface2)}
-.bell-dot{position:absolute;top:4px;right:4px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--red);color:#fff;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff}
-.bell-dropdown{position:absolute;right:0;top:42px;width:330px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.14);z-index:500;display:none;max-height:420px;overflow-y:auto}
-.bell-dropdown.open{display:block}
-.bell-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface)}
-.bell-head span{font-size:13px;font-weight:700}
-.bell-clear{font-size:11px;color:var(--accent);cursor:pointer;border:none;background:none;font-family:inherit}
-.notif-item{padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:.12s}
-.notif-item:hover{background:var(--surface2)}
-.notif-item.unread{background:var(--accent-bg)}
-.notif-item:last-child{border-bottom:none}
-.ni-title{font-size:13px;font-weight:600;margin-bottom:2px}
-.ni-sub{font-size:11px;color:var(--text2)}
-.page{display:none}.page.active{display:block}
-/* BTN */
-.btn{padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:.12s;white-space:nowrap}
-.btn:hover{background:var(--surface2)}
-.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-.btn.primary:hover{background:#2b8ae6}
-.btn.danger{background:var(--red-bg);color:var(--red-text);border-color:#fca5a5}
-.btn.success{background:var(--green-bg);color:var(--green-text);border-color:#86efac}
-.btn.sm{padding:5px 10px;font-size:12px}
-.btn.xs{padding:3px 7px;font-size:11px}
-.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
-/* STATS */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1.1rem;box-shadow:var(--shadow)}
-.stat-num{font-size:25px;font-weight:700;line-height:1;letter-spacing:-.5px}
-.stat-label{font-size:11px;color:var(--text2);margin-top:4px}
-.c-green .stat-num{color:var(--green)}.c-yellow .stat-num{color:var(--yellow)}.c-red .stat-num{color:var(--red)}.c-accent .stat-num{color:var(--accent)}.c-purple .stat-num{color:var(--purple)}
-/* TOOLBAR + TABLE */
-.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-.toolbar input,.toolbar select{padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:13px;font-family:inherit}
-.toolbar input{flex:1;min-width:180px}
-.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--accent)}
-.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th{text-align:left;padding:9px 13px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:10px 13px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:13px}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:var(--surface2)}
-.link{color:var(--accent);cursor:pointer;font-weight:600}.link:hover{text-decoration:underline}
-/* BADGES */
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
-.badge.contrato{background:var(--accent-bg);color:var(--accent-text)}
-.badge.aditivo{background:var(--purple-bg);color:var(--purple-text)}
-.badge.vigente{background:var(--green-bg);color:var(--green-text)}
-.badge.aditivo-vig{background:var(--purple-bg);color:var(--purple-text)}
-.badge.substituido{background:var(--surface2);color:var(--text3);text-decoration:line-through}
-.badge.vencendo{background:var(--yellow-bg);color:var(--yellow-text)}
-.badge.vencido,.badge.encerrado{background:var(--red-bg);color:var(--red-text)}
-.badge.negociacao{background:var(--surface2);color:var(--text2)}
-.badge.suspenso{background:var(--orange-bg);color:var(--orange-text)}
-.badge.admin{background:#fdf4ff;color:#86198f}
-.badge.gestor{background:var(--accent-bg);color:var(--accent-text)}
-.badge.visualizador{background:var(--surface2);color:var(--text2)}
-/* FORM */
-.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1rem}
-.form-section{padding:1.4rem;border-bottom:1px solid var(--border)}
-.fsec-title{font-size:13px;font-weight:700;margin-bottom:.9rem;display:flex;align-items:center;gap:8px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
-.form-grid.g3{grid-template-columns:1fr 1fr 1fr}
-.fg{display:flex;flex-direction:column;gap:4px}
-.fg.full{grid-column:1/-1}
-.fg label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
-.fg input,.fg select,.fg textarea{padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;transition:.12s}
-.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--accent);background:var(--bg)}
-.fg textarea{resize:vertical;min-height:72px}
-.fg input[readonly]{background:var(--surface2);color:var(--text2)}
-.form-actions{padding:1.1rem 1.4rem;background:var(--surface2);border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
-/* CNPJ */
-.cnpj-row{display:flex;gap:8px}.cnpj-row input{flex:1}
-.cmsg{font-size:12px;margin-top:4px;display:none}
-.cmsg.ok{color:var(--green);display:block}.cmsg.err{color:var(--red);display:block}
-/* UNITS */
-.units-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
-.units-table th{background:var(--surface2);padding:7px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border)}
-.units-table td{padding:5px 8px;border-bottom:1px solid var(--border)}
-.units-table tr:last-child td{border-bottom:none}
-.units-table input{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:5px;background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit}
-.units-table input:focus{outline:none;border-color:var(--accent);background:var(--bg)}
-/* PDF */
-.pdf-drop{border:2px dashed var(--border);border-radius:var(--radius);padding:1.25rem;text-align:center;cursor:pointer;transition:.2s;background:var(--surface2)}
-.pdf-drop:hover,.pdf-drop.drag{border-color:var(--accent);background:var(--accent-bg)}
-.pdf-drop p{font-size:12px;color:var(--text2);margin-top:5px}
-.pdf-chosen{font-size:12px;color:var(--green);margin-top:8px;font-weight:600;display:none;align-items:center;gap:8px}
-.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:var(--orange-bg);color:var(--orange-text);cursor:pointer}
-/* CALENDAR */
-.cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
-.cal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.cal-title{font-size:15px;font-weight:700;min-width:160px;text-align:center}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
-.cal-dow{padding:8px 4px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);border-bottom:1px solid var(--border);text-transform:uppercase}
-.cal-day{min-height:74px;padding:5px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);font-size:12px;vertical-align:top;overflow:hidden}
-.cal-day:nth-child(7n){border-right:none}
-.cal-day-num{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:3px}
-.cal-day.today .cal-day-num{background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
-.cal-day.other-month{background:var(--surface2)}
-.cal-event{font-size:10px;padding:2px 5px;border-radius:4px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
-.cal-event.vencendo{background:var(--yellow-bg);color:var(--yellow-text)}
-.cal-event.vencido{background:var(--red-bg);color:var(--red-text)}
-.cal-event.vigente{background:var(--green-bg);color:var(--green-text)}
-/* CHARTS */
-.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem}
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;box-shadow:var(--shadow)}
-.chart-card.full{grid-column:1/-1}
-.chart-title{font-size:13px;font-weight:700;margin-bottom:1rem}
-.bar-item{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px}
-.bar-label{width:140px;flex-shrink:0;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar-track{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
-.bar-fill{height:100%;border-radius:4px;background:var(--accent)}
-.bar-val{width:100px;text-align:right;font-weight:600;font-size:11px}
-.month-chart{display:flex;align-items:flex-end;gap:6px;height:180px;padding-top:10px}
-.month-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
-.month-bar{width:100%;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;transition:.3s;position:relative;cursor:pointer}
-.month-bar:hover{background:var(--accent-text)}
-.month-bar.has-venc{background:var(--yellow)}
-.month-lbl{font-size:10px;color:var(--text3);white-space:nowrap}
-.month-val{font-size:9px;color:var(--text2);font-weight:600}
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:1000;padding:1rem}
-.modal-overlay.open{display:flex}
-.modal{background:var(--surface);border-radius:12px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);border:1px solid var(--border)}
-.modal.sm{max-width:440px}
-.modal.lg{max-width:920px;height:90vh;display:flex;flex-direction:column}
-.mhead{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
-.mtitle{font-size:15px;font-weight:700}
-.mclose{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);line-height:1;padding:2px 5px;border-radius:4px}
-.mclose:hover{background:var(--surface2)}
-.mbody{padding:1.4rem}
-/* DETAIL */
-.dsec{margin-bottom:1.3rem}.dsec:last-child{margin-bottom:0}
-.dsec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid var(--border)}
-.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.di label{font-size:10px;color:var(--text3);display:block;margin-bottom:2px}
-.di p{font-size:13px;word-break:break-word}
-.di.full{grid-column:1/-1}
-.hist-list,.aditivos-list{display:flex;flex-direction:column;gap:6px}
-.hist-item{background:var(--surface2);border-radius:6px;padding:8px 12px;border-left:3px solid var(--accent)}
-.hist-item .ht{font-size:12px;font-weight:600}
-.hist-item .hd{font-size:11px;color:var(--text3);margin-top:1px}
-.aditivo-item{background:var(--purple-bg);border:1px solid #ddd6fe;border-radius:6px;padding:9px 13px;font-size:13px;cursor:pointer}
-.aditivo-item:hover{background:#ede9fe}
-.aditivo-item .at{font-weight:700;color:var(--purple-text)}
-/* ALERTS */
-.alert-card{border-radius:var(--radius);padding:12px 15px;margin-bottom:9px;border:1px solid;cursor:pointer;transition:.12s}
-.alert-card:hover{filter:brightness(.97)}
-.alert-card.yellow{background:var(--yellow-bg);border-color:#fde68a;color:var(--yellow-text)}
-.alert-card.red{background:var(--red-bg);border-color:#fca5a5;color:var(--red-text)}
-.alert-title{font-weight:700;font-size:13px;margin-bottom:2px}
-.alert-sub{font-size:12px;opacity:.85}
-/* UNIT CARDS */
-.unit-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.unit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;box-shadow:var(--shadow);cursor:pointer;transition:.12s}
-.unit-card:hover{border-color:var(--accent);box-shadow:0 4px 12px rgba(29,106,173,.1)}
-.unit-card-name{font-size:14px;font-weight:700;margin-bottom:8px}
-.unit-card-val{font-size:18px;font-weight:700;color:var(--accent);margin-bottom:4px}
-.unit-card-sub{font-size:12px;color:var(--text2)}
-/* USERS */
-.user-row{display:grid;grid-template-columns:auto 1fr 1fr auto auto;gap:12px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px}
-.user-row:last-child{border-bottom:none}
-.user-row .uav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
-/* ADV SEARCH */
-.adv-filters{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
-.adv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
-/* SETUP */
-.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;max-width:760px}
-.step{display:flex;gap:14px;margin-bottom:1.4rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
-.step:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.step-n{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.step-title{font-size:13px;font-weight:700;margin-bottom:4px}
-.step-desc{font-size:13px;color:var(--text2);line-height:1.6}
-.code-block{background:#1e1e2e;border-radius:6px;padding:12px;font-family:monospace;font-size:11px;color:#cdd6f4;margin-top:8px;position:relative;max-height:280px;overflow-y:auto;line-height:1.55}
-.copy-btn{position:sticky;float:right;top:0;padding:3px 10px;font-size:11px;border-radius:4px;border:1px solid #45475a;background:#313244;color:#cdd6f4;cursor:pointer;font-family:inherit;margin-bottom:4px}
-.copy-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
-/* MISC */
-.notif-toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:11px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:9999;display:none;max-width:340px}
-.notif-toast.ok{background:var(--green);color:#fff}
-.notif-toast.err{background:var(--red);color:#fff}
-.notif-toast.info{background:var(--accent);color:#fff}
-.loading-overlay{position:fixed;inset:0;background:rgba(13,17,23,.8);display:none;align-items:center;justify-content:center;z-index:2000;font-size:14px;font-weight:600;color:var(--accent);gap:12px}
-.loading-overlay.open{display:flex}
-.spinner{width:20px;height:20px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:3000;padding:1rem}
-.dialog-overlay.open{display:flex}
-.dialog{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-.dialog h3{font-size:15px;font-weight:700;margin-bottom:8px}
-.dialog p{font-size:13px;color:var(--text2);margin-bottom:1.4rem;line-height:1.6}
-.dialog-btns{display:flex;flex-direction:column;gap:8px}
-.empty-state{text-align:center;padding:3.5rem 2rem;color:var(--text2)}
-.empty-icon{font-size:44px;display:block;margin-bottom:10px;opacity:.35}
-@media print{
-  .sidebar,.topbar,.btn,.modal-overlay,.notif-toast,.loading-overlay,.dialog-overlay,.no-print{display:none!important}
-  .main{margin-left:0!important;padding:0!important}
-  .page:not(.active){display:none!important}
-}
-@media(max-width:768px){
-  .sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid var(--border)}
-  .main{margin-left:0;padding:1rem}
-  .app{flex-direction:column}
-  .dgrid,.form-grid,.form-grid.g3,.chart-row{grid-template-columns:1fr}
-  .fg.full{grid-column:1}
-}
-
-
-/* ── HUB ── */
-.hub-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem}
-.hub-header{text-align:center;margin-bottom:2.5rem}
-.hub-header .icon{width:64px;height:64px;background:var(--accent);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px}
-.hub-header h1{font-size:24px;font-weight:700;letter-spacing:-.5px}
-.hub-header p{font-size:14px;color:var(--text2);margin-top:6px}
-.hub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;max-width:820px;width:100%}
-.hub-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem 1.4rem;cursor:pointer;transition:.18s;text-decoration:none;color:inherit;display:block}
-.hub-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.28)}
-.hub-card.soon{opacity:.55;cursor:default}
-.hub-card.soon:hover{transform:none;border-color:var(--border);box-shadow:none}
-.hub-ico{font-size:30px;margin-bottom:10px;display:block}
-.hub-card h3{font-size:15px;font-weight:700;margin-bottom:4px}
-.hub-card p{font-size:12px;color:var(--text2);line-height:1.5}
-.hub-tag{display:inline-block;margin-top:10px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--surface2);color:var(--text3)}
-.hub-tag.ativo{background:var(--green-bg);color:var(--green-text)}
-.hub-foot{margin-top:2.5rem;font-size:12px;color:var(--text3);text-align:center}
-.back-hub{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);text-decoration:none;padding:6px 10px;border-radius:6px;margin-bottom:10px}
-.back-hub:hover{background:var(--surface2);color:var(--text)}
-.wip{background:var(--yellow-bg);border:1px solid #fde68a;color:var(--yellow-text);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem}
-
-
-.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:820px}
-.step{display:flex;gap:14px;margin-bottom:1.4rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
-.step:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.step-n{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.step-title{font-size:13px;font-weight:700;margin-bottom:4px}
-.step-desc{font-size:13px;color:var(--text2);line-height:1.6}
-.step-desc code{background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:12px}
-.code-block{position:relative;margin-top:8px}
-.resultado-box{display:flex;gap:1rem;flex-wrap:wrap;background:var(--surface2);border-radius:12px;padding:1.2rem;margin-top:1rem;border:2px solid var(--border)}
-.resultado-box.ok{border-color:var(--green)}
-.resultado-box.alerta{border-color:var(--red)}
-.res-item{flex:1;min-width:120px;text-align:center}
-.res-item.destaque .res-num{color:var(--accent-text)}
-.res-num{font-size:28px;font-weight:800}
-.res-lbl{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.4}
-.c-blue-b{background:var(--accent-bg);color:var(--accent-text)}
-.pdf-drop{border:2px dashed var(--border);border-radius:12px;padding:1.4rem;text-align:center;cursor:pointer;color:var(--text2)}
-.pdf-drop:hover{border-color:var(--accent);color:var(--text)}
-
-
-#page-nova input[type=text],#page-nova input[type=number],#page-nova input[type=date],#page-nova input[type=time],#page-nova input[type=month],#page-nova select,#page-nova textarea{
-  width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;box-sizing:border-box}
-#page-nova .fg{margin-bottom:14px}
-#page-nova label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
-.form-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem;max-width:900px}
-.form-section{margin-bottom:1.6rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
-.form-section:last-of-type{border-bottom:none}
-.fsec-title{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
-.assin-canvas{border:2px dashed var(--border);border-radius:10px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair;box-shadow:inset 0 0 0 1px rgba(0,0,0,.02)}
-.assin-wrap{background:var(--surface2);border-radius:10px;padding:12px;display:inline-block}
-
-.crit-det{margin-top:4px}
-.crit-det summary{cursor:pointer;font-size:11px;color:var(--accent-text);font-weight:600;list-style:none}
-.crit-det summary::-webkit-details-marker{display:none}
-.crit-box{margin-top:6px;background:var(--surface2);border-radius:8px;padding:8px 10px}
-.crit-linha{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:5px;display:flex;gap:7px;align-items:flex-start}
-.crit-linha:last-child{margin-bottom:0}
-.crit-n{flex-shrink:0;width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;color:#fff;font-weight:700;font-size:11px}
-.assin-wrap{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-.assin-canvas{border:1px solid var(--border);border-radius:8px;background:#fff;touch-action:none;max-width:100%;cursor:crosshair}
-.colab-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:10px;flex-wrap:wrap}
-.colab-row input{flex:1;min-width:180px}
-.nota-sel{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-family:inherit;font-size:13px}
-.aviso-fin{background:var(--yellow-bg,#fff8e6);border:1px solid #ffe08a;color:#8a6d00;padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:1.4rem}
-.form-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.6rem;max-width:920px}
-.form-section{margin-bottom:1.6rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
-.form-section:last-of-type{border-bottom:none}
-.fsec-title{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
-#page-nova input[type=text],#page-nova input[type=month],#page-nova select,#page-nova textarea{width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;box-sizing:border-box}
-#page-nova .fg{margin-bottom:14px}
-#page-nova label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
-.grupo-tit{font-weight:700;font-size:13px;color:var(--accent-text);margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
-.item-row{padding:10px 0;border-bottom:1px solid var(--border)}
-.item-txt{font-size:13px;margin-bottom:6px;line-height:1.4}
-.item-ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.item-est{padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text)}
-.item-anexos{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px}
-.anexo-chip{background:var(--surface2);border-radius:6px;padding:3px 9px;font-size:12px;color:var(--text2)}
-.anexo-chip b{cursor:pointer;color:var(--red-text);margin-left:4px;font-weight:700}
-.resumo-box{display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border-radius:10px;padding:12px 16px;font-size:13px;flex-wrap:wrap;gap:8px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.fg.full{grid-column:1/-1}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.fg.full{grid-column:1/-1}
-.fg label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
-.fg input,.fg select{width:100%;padding:9px 11px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-family:inherit;box-sizing:border-box}
-.valid-msg{font-size:11px;margin-top:3px;min-height:14px}
-.valid-msg.ok{color:var(--green-text,#166534)}
-.valid-msg.err{color:var(--red-text,#991b1b)}
-.c-blue-b{background:var(--accent-bg,#dbeafe);color:var(--accent-text,#1e40af)}
-.c-green-b{background:#dcfce7;color:#166534}
-.c-yellow-b{background:#fef9c3;color:#854d0e}
-#nav-unidades .nav-item{width:100%;text-align:left}
-.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600}
-
-
-.prog-wrap{width:100%;height:14px;background:var(--surface2);border-radius:8px;overflow:hidden}
-.prog-bar{height:100%;background:var(--accent,#1d6aad);transition:width .3s;border-radius:8px}
-
-th.ord{cursor:pointer;user-select:none;white-space:nowrap}
-th.ord:hover{background:var(--accent-bg,#e7f0f9)}
-.ord-i{font-size:10px;color:var(--accent-text,#1d6aad)}
-.cnes-toggle{border:none;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
-.cnes-toggle.on{background:#dcfce7;color:#166534}
-.cnes-toggle.off{background:#fef9c3;color:#854d0e}
-.cnes-toggle:hover{filter:brightness(.95)}
-.cp-btn{background:none;border:none;cursor:pointer;font-size:12px;padding:1px 3px;border-radius:4px;opacity:.6;vertical-align:middle}
-.cp-btn:hover{opacity:1;background:var(--surface2)}
-td.nowrap{white-space:nowrap}
-.row-corrigir{background:rgba(220,38,38,.07)}
-.row-corrigir td{border-top:1px solid rgba(220,38,38,.2);border-bottom:1px solid rgba(220,38,38,.2)}
-.c-red-b{background:#fee2e2;color:#991b1b}
-.stat-card.c-red .stat-num{color:#dc2626}
-
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117}
+#cnes-frame{display:block;width:100%;height:100vh;border:0;background:#0d1117}
 </style>
-<style>
-.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600}
-.c-red-b{background:var(--red-bg);color:var(--red-text)}
-.c-green-b{background:var(--green-bg);color:var(--green-text)}
-.btn.sm{padding:5px 10px;font-size:12px}
-.btn.danger{background:var(--red-bg);color:var(--red-text);border-color:transparent}
-.btn.danger:hover{background:var(--red);color:#fff}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;padding:1rem}
-.modal-overlay.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:560px;max-width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.mhead{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid var(--border)}
-.mtitle{font-size:16px;font-weight:700}
-.mclose{background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer}
-.mbody{padding:1.3rem 1.4rem}
-.mfoot{display:flex;gap:8px;justify-content:flex-end;padding:1rem 1.4rem;border-top:1px solid var(--border)}
-.notif-toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:2000;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-.notif-toast.ok{background:var(--green);color:#fff}
-.notif-toast.err{background:var(--red);color:#fff}
-.notif-toast.info{background:var(--accent);color:#fff}
-</style>
-
-<style id="tdngo-standard-nav-style">
-.tdngo-home{position:fixed;left:14px;bottom:14px;z-index:2147483600;display:inline-flex;align-items:center;gap:9px;min-height:40px;padding:7px 12px 7px 8px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(18,24,32,.94);color:#fff!important;text-decoration:none!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);backdrop-filter:blur(10px);transition:.15s}
-.tdngo-home:hover{transform:translateY(-2px);border-color:#58a6ff;background:#15243a}.tdngo-home .tdngo-home-ico{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;background:#1d6aad;font-size:14px;font-weight:800;flex:none}.tdngo-home .tdngo-home-copy{display:flex;flex-direction:column;line-height:1.05}.tdngo-home b{font-size:12px}.tdngo-home small{font-size:9px;color:#aab6c5;margin-top:3px}@media(max-width:560px){.tdngo-home{padding:7px;bottom:10px;left:10px}.tdngo-home .tdngo-home-copy{display:none}}@media print{.tdngo-home{display:none!important}}</style></head>
-
+</head>
 <body>
-<div class="login-screen" id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">
-      <div class="icon">🏥</div>
-      <h1>CNES</h1>
-      <p>TDN Gestão Operacional</p>
-      <p style="font-size:11px;color:var(--text3);margin-top:10px">Desenvolvido por Marcos Cruz, com IA</p>
-    </div>
-    <div class="login-err" id="login-err"></div>
-    <div class="login-field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="login-field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="login-btn" onclick="doLogin()">Entrar</button>
-  </div>
-</div>
-<div class="app" id="app" style="display:none">
-<aside class="sidebar">
-  <div class="logo">
-    <div class="logo-icon">🏥</div>
-    <div><div class="logo-text">CNES</div><div class="logo-sub">Cadastros por unidade</div></div>
-  </div>
-  <div class="user-card">
-    <div class="user-avatar" id="side-avatar">?</div>
-    <div style="min-width:0"><div class="user-name" id="side-name">—</div><div class="user-role" id="side-role">—</div></div>
-    <button class="user-logout" onclick="doLogout()" title="Sair">⏻</button>
-  </div>
-  <div class="nav-group">
-    <div class="nav-label">Unidades</div>
-    <div id="nav-unidades"></div>
-  </div>
-  <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)"></div>
-</aside>
-<main class="main">
-  <div class="topbar">
-    <div class="topbar-left"><div class="page-title" id="pg-title">CNES</div><div class="page-sub" id="pg-sub">Selecione uma unidade</div></div>
-    <div class="topbar-right"><button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema claro/escuro">🌙</button></div>
-  </div>
-
-  <!-- SEM UNIDADE SELECIONADA -->
-  <div class="page active" id="page-vazio">
-    <div class="empty-state"><span class="empty-icon">🏥</span>Selecione uma unidade no menu à esquerda para ver os cadastros do CNES.</div>
-  </div>
-
-  <!-- UNIDADE -->
-  <div class="page" id="page-unidade">
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-num" id="kpi-total">0</div><div class="stat-label">Cadastros</div></div>
-      <div class="stat-card c-green"><div class="stat-num" id="kpi-ativos">0</div><div class="stat-label">Ativos</div></div>
-      <div class="stat-card c-blue"><div class="stat-num" id="kpi-med">0</div><div class="stat-label">Médicos (tipo 2)</div></div>
-      <div class="stat-card c-yellow"><div class="stat-num" id="kpi-assist">0</div><div class="stat-label">Assistenciais (tipo 3)</div></div>
-      <div class="stat-card c-red"><div class="stat-num" id="kpi-corrigir">0</div><div class="stat-label">A corrigir</div></div>
-      <div class="stat-card c-green"><div class="stat-num" id="kpi-cnes-sim">0</div><div class="stat-label">✔️ No CNES</div></div>
-      <div class="stat-card c-yellow"><div class="stat-num" id="kpi-cnes-nao">0</div><div class="stat-label">⏳ Aguardando cadastro</div></div>
-    </div>
-    <div class="toolbar">
-      <input type="text" id="busca" placeholder="🔍 Buscar por nome, CPF, CBO..." oninput="renderTabela()">
-      <select id="filtro-comp" onchange="renderTabela()"><option value="">Todas as competências</option></select>
-      <select id="filtro-tipo" onchange="renderTabela()"><option value="">Todos os tipos</option><option value="1">1 - Administrativo</option><option value="2">2 - Médico</option><option value="3">3 - Assistencial</option></select>
-      <select id="filtro-status" onchange="renderTabela()"><option value="">Todos os status</option><option value="ATIVO">Ativo</option><option value="AGUARDANDO INSERÇÃO">Aguardando inserção</option><option value="CORRIGIR CNPJ">Corrigir CNPJ</option><option value="CORRIGIR CPF">Corrigir CPF</option><option value="EXCLUÍDO">Excluído</option></select>
-      <select id="filtro-cnes" onchange="renderTabela()"><option value="">CNES: todos</option><option value="sim">✔️ No CNES</option><option value="nao">⏳ Aguardando</option></select>
-      <div style="flex:1"></div>
-      <button class="btn" onclick="abrirImport()">📥 Importar CSV</button>
-      <button class="btn" onclick="exportarCsv()">📤 Exportar CSV</button>
-      <button class="btn" onclick="imprimirLista(false)">🖨️ Imprimir</button>
-      <button class="btn primary" onclick="abrirCadastro()">➕ Novo cadastro</button>
-    </div>
-    <div id="barra-sel" style="display:none;align-items:center;gap:10px;background:var(--accent-bg,#e7f0f9);border-radius:10px;padding:8px 14px;margin-bottom:10px;flex-wrap:wrap">
-      <strong id="sel-count">0</strong> selecionado(s)
-      <div style="flex:1"></div>
-      <button class="btn sm" onclick="imprimirLista(true)">🖨️ Imprimir selecionados</button>
-      <button class="btn sm danger" id="btn-del-sel" onclick="excluirSelecionados()">🗑️ Excluir selecionados</button>
-      <button class="btn sm" onclick="limparSelecao()">Limpar seleção</button>
-    </div>
-    <div class="table-wrap"><table>
-      <thead><tr><th style="width:32px"><input type="checkbox" id="ck-todos" onclick="toggleTodos(this)" title="Selecionar todos"></th><th class="ord" onclick="ordenarPor('Nome')">Nome <span class="ord-i" data-col="Nome"></span></th><th class="ord" onclick="ordenarPor('CPF')">CPF <span class="ord-i" data-col="CPF"></span></th><th class="ord" onclick="ordenarPor('Tipo')">Tipo <span class="ord-i" data-col="Tipo"></span></th><th>CBO</th><th>CNPJ</th><th>Conselho</th><th>Vínculo</th><th>CH (A/H/O)</th><th class="ord" onclick="ordenarPor('Competencia')">Comp. <span class="ord-i" data-col="Competencia"></span></th><th class="ord" onclick="ordenarPor('Status')">Status <span class="ord-i" data-col="Status"></span></th><th class="ord" onclick="ordenarPor('CadastradoCNES')">CNES <span class="ord-i" data-col="CadastradoCNES"></span></th><th class="ord" onclick="ordenarPor('CriadoEm')">Cadastrado em <span class="ord-i" data-col="CriadoEm"></span></th><th class="ord" onclick="ordenarPor('AtualizadoEm')">Atualizado em <span class="ord-i" data-col="AtualizadoEm"></span></th><th></th></tr></thead>
-      <tbody id="tabela-body"></tbody>
-    </table><div class="empty-state" id="tabela-empty" style="display:none"><span class="empty-icon">📋</span>Nenhum cadastro nesta unidade ainda</div></div>
-    <div id="paginacao" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;flex-wrap:wrap"></div>
-  </div>
-</main>
-</div>
-
-<!-- MODAL CADASTRO -->
-<div class="modal-overlay" id="modal-cad" onclick="if(event.target.id==='modal-cad')fecharCadastro()">
-  <div class="modal" style="max-width:720px">
-    <div class="mhead"><div class="mtitle" id="cad-title">Novo cadastro</div><button class="mclose" onclick="fecharCadastro()">✕</button></div>
-    <div class="mbody">
-      <input type="hidden" id="cd-id">
-      <div class="form-grid">
-        <div class="fg full"><label>Nome do profissional *</label><input type="text" id="cd-nome" placeholder="Nome completo"></div>
-        <div class="fg"><label>CPF *</label><input type="text" id="cd-cpf" placeholder="000.000.000-00" oninput="validarCpfVisual()"><div class="valid-msg" id="cpf-msg"></div></div>
-        <div class="fg"><label>Tipo de cadastro *</label><select id="cd-tipo" onchange="tipoMudou()"><option value="1">1 - Administrativo</option><option value="2">2 - Médico</option><option value="3">3 - Assistencial (enfermagem, técnicos, farmácia...)</option></select></div>
-        <div class="fg"><label>CBO *</label><select id="cd-cbo" onchange="cboMudou()"><option value="">Selecione...</option></select></div>
-        <div class="fg"><label>Código CBO <span style="font-weight:400;color:var(--text3)">(copie p/ o outro sistema)</span></label>
-          <div style="display:flex;gap:6px"><input type="text" id="cd-cbo-cod" readonly style="font-family:monospace;font-weight:700"><button class="btn sm" type="button" onclick="copiarCbo()">📋</button></div></div>
-        <div class="fg" id="fg-conselho"><label>Conselho de classe</label><select id="cd-conselho"><option value="">Selecione...</option></select></div>
-        <div class="fg" id="fg-numconselho"><label>Nº do conselho</label><input type="text" id="cd-numconselho" placeholder="Número"></div>
-        <div class="fg" id="fg-uf"><label>Estado (UF)</label><input type="text" id="cd-uf" maxlength="2" placeholder="SP" style="text-transform:uppercase"></div>
-        <div class="fg"><label>Indicador de vínculo</label><select id="cd-vinculo"><option value="">Selecione...</option><option value="080501">080501</option><option value="080400">080400</option></select></div>
-        <div class="fg"><label>CNPJ</label><input type="text" id="cd-cnpj" placeholder="00.000.000/0000-00" oninput="validarCnpjVisual()"><div class="valid-msg" id="cnpj-msg"></div></div>
-        <div class="fg" id="fg-cha"><label>CH Ambulatorial</label><input type="number" id="cd-cha" min="0" placeholder="Horas"></div>
-        <div class="fg" id="fg-chh"><label>CH Hospitalar</label><input type="number" id="cd-chh" min="0" placeholder="Horas"></div>
-        <div class="fg"><label>CH Outros</label><input type="number" id="cd-cho" min="0" placeholder="Horas"></div>
-        <div class="fg"><label>Competência *</label><input type="text" id="cd-comp" placeholder="MM/AAAA (ex: 08/2026)"></div>
-        <div class="fg"><label>Data de inclusão</label><input type="date" id="cd-datainc"></div>
-        <div class="fg"><label>Data de saída</label><input type="date" id="cd-datasaida"></div>
-        <div class="fg"><label>Status</label><select id="cd-status"><option value="ATIVO">Ativo</option><option value="AGUARDANDO INSERÇÃO">Aguardando inserção</option><option value="CORRIGIR CNPJ">Corrigir CNPJ</option><option value="CORRIGIR CPF">Corrigir CPF</option><option value="EXCLUÍDO">Excluído</option></select></div>
-        <div class="fg"><label>Situação no CNES</label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;text-transform:none;margin-top:4px">
-            <input type="checkbox" id="cd-cnes" style="width:16px;height:16px"> Já cadastrado no sistema CNES
-          </label></div>
-        <div class="fg full"><label>Observação</label><input type="text" id="cd-obs" placeholder="Opcional"></div>
-      </div>
-    </div>
-    <div class="mfoot"><button class="btn" onclick="fecharCadastro()">Cancelar</button><button class="btn primary" onclick="salvarCadastro()">Salvar</button></div>
-  </div>
-</div>
-
-<!-- MODAL IMPORTAR CSV -->
-<div class="modal-overlay" id="modal-import" onclick="if(event.target.id==='modal-import')fecharImport()">
-  <div class="modal">
-    <div class="mhead"><div class="mtitle">Importar carga inicial (CSV)</div><button class="mclose" onclick="fecharImport()">✕</button></div>
-    <div class="mbody">
-      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Importa cadastros para <strong id="import-unidade">—</strong>.</p>
-
-      <div style="background:#e7f0f9;border:1px solid #b8d4ea;border-radius:10px;padding:14px;margin-bottom:14px">
-        <div style="font-size:13px;color:#1a3550;margin-bottom:10px;font-weight:600">Não tem o arquivo pronto? Baixe o modelo:</div>
-        <button type="button" onclick="baixarModelo()" style="padding:10px 18px;background:#1d6aad;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:block;width:100%">⬇️ BAIXAR MODELO CSV</button>
-      </div>
-
-      <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.7">
-        <div style="font-weight:700;margin-bottom:6px;color:var(--text)">📖 Como preencher</div>
-        <div><strong>1 linha por profissional.</strong> A unidade é definida aqui (a que está aberta), não vai na planilha.</div>
-        <div style="margin-top:8px"><strong>Colunas:</strong> Nome, CPF (obrigatórios) · Tipo (1=Adm, 2=Médico, 3=Assistencial) · CBO · Conselho · NumConselho · IndicadorVinculo · CNPJ · CHAmbulatorial · CHHospitalar · CHOutros · Competencia (MM/AAAA, obrigatório) · DataInclusao · Status.</div>
-        <div style="margin-top:8px"><strong>Regras:</strong> CPF/CNPJ inválidos entram marcados como CORRIGIR (em vermelho, nada se perde). CPF duplicado na mesma unidade é bloqueado. Nomes de coluna são flexíveis.</div>
-        <div style="margin-top:8px;color:var(--text3)">Dica: teste com 5 linhas antes de importar tudo.</div>
-      </div>
-
-      <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px">Selecione o arquivo CSV preenchido:</label>
-      <input type="file" id="csv-input" accept=".csv" onchange="lerCsv(this)">
-      <div id="csv-preview" style="margin-top:12px;font-size:13px"></div>
-    </div>
-    <div class="mfoot"><button class="btn" onclick="fecharImport()">Cancelar</button><button class="btn primary" id="btn-import" onclick="confirmarImport()" style="display:none">Importar</button></div>
-  </div>
-</div>
-
-<div class="notif-toast" id="notif" style="display:none"></div>
-
+<iframe id="cnes-frame" src="cnes-base-current.html" title="CNES"></iframe>
 <script>
-
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';
-const CNES_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-cnes-api';
-let currentUser = null;
-
-async function apiFetch(action, payload){
-  const r = await fetch(SCRIPT_URL+'?action='+action, { method:'POST', body: JSON.stringify(payload||{}) });
-  const t = await r.text();
-  try { return JSON.parse(t); } catch(e){ return { ok:false, message:t }; }
-}
-
-async function cnesApi(action, payload, autenticado=true){
-  const headers={'Content-Type':'application/json'};
-  const token=(currentUser&&(currentUser.tdngoToken||currentUser.cnesToken))||'';
-  if(autenticado && token) headers.Authorization='Bearer '+token;
-  const r=await fetch(CNES_API_URL,{method:'POST',headers,body:JSON.stringify(Object.assign({action},payload||{}))});
-  const t=await r.text();
-  let j; try{j=JSON.parse(t)}catch(e){j={ok:false,message:t}}
-  if(r.status===401 && autenticado){
-    try{console.warn('CNES: sessão rejeitada pela API; mantendo sessão central para reautenticação.')}catch(e){}
-    if(currentUser){ delete currentUser.cnesToken; delete currentUser.tdngoToken; }
-  }
-  return j;
-}
-async function doLogin(){
-  const email=document.getElementById('login-email').value.trim().toLowerCase();
-  const senha=document.getElementById('login-pass').value;
-  const err=document.getElementById('login-err'); err.style.display='none';
-  if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
-  try{
-    const r=await cnesApi('login',{email,senha},false);
-    if(!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
-    currentUser=r.user||{};
-    currentUser.tdngoToken=r.token;
-    currentUser.cnesToken=r.token;
-  }catch(e){ err.textContent='Sem conexão com o banco CNES.'; err.style.display='block'; return; }
-  sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
-  startApp();
-}
-function doLogout(){
-  sessionStorage.removeItem('fhsl_session'); currentUser=null;
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  const p=document.getElementById('login-pass'); if(p) p.value='';
-}
-function themeKey(){ return 'fhsl_theme_'+((currentUser&&currentUser.email)||'default'); }
-function applyTheme(t){ document.body.setAttribute('data-theme', t==='light'?'light':'dark');
-  const b=document.getElementById('theme-btn'); if(b) b.textContent=t==='light'?'☀️':'🌙'; }
-function toggleTheme(){ const cur=document.body.getAttribute('data-theme')==='light'?'light':'dark';
-  const n=cur==='light'?'dark':'light'; applyTheme(n); try{localStorage.setItem(themeKey(),n);}catch(e){} }
-function loadUserTheme(){ let t='dark'; try{t=localStorage.getItem(themeKey())||'dark';}catch(e){} applyTheme(t); }
-function initials(n){ return String(n||'?').split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase(); }
-function showNotif(msg,type){ const el=document.getElementById('notif'); if(!el) return;
-  el.textContent=msg; el.className='notif-toast '+(type||'ok'); el.style.display='block';
-  setTimeout(function(){ el.style.display='none'; },3500); }
-window.addEventListener('DOMContentLoaded', function(){
-  const s=sessionStorage.getItem('fhsl_session');
-  if(s){
+(function(){
+  const frame=document.getElementById('cnes-frame');
+  frame.addEventListener('load',function(){
     try{
-      currentUser=JSON.parse(s);
-      if(currentUser && (currentUser.tdngoToken||currentUser.cnesToken)) startApp();
-      else currentUser=null;
-    }catch(e){ currentUser=null; }
-  }
-});
-// Lista de CBOs comuns em saúde (código + descrição). Ajuste conforme sua base.
-let CBOS = [
-  ['131210','Gerente de serviços de saúde'],
-  ['221105','Biólogo'],
-  ['223405','Farmacêutico'],
-  ['223505','Enfermeiro'],
-  ['225124','Médico pediatra'],
-  ['225125','Médico clínico'],
-  ['225133','Médico psiquiatra'],
-  ['225225','Médico cirurgião geral'],
-  ['225250','Médico ginecologista e obstetra'],
-  ['225270','Médico ortopedista e traumatologista'],
-  ['251605','Assistente social'],
-  ['322205','Técnico de enfermagem'],
-  ['422105','Recepcionista'],
-  ['513430','Copeiro de hospital'],
-  ['517410','Porteiro(a)'],
-  ['521130','Atendente de farmácia / balconista'],
-  ['223810','Biomédico'],
-  ['322230','Auxiliar de enfermagem'],
-  ['322415','Auxiliar em saúde bucal'],
-  ['225145','Médico anestesiologista'],
-  ['225150','Médico cardiologista'],
-  ['223605','Fisioterapeuta'],
-  ['223705','Nutricionista'],
-  ['251510','Psicólogo clínico'],
-  ['223208','Cirurgião-dentista'],
-  ['411005','Auxiliar administrativo'],
-  ['514320','Servente de limpeza'],
-  ['517420','Vigia']
-];
-let CONSELHOS = ['66-ENFERMAGEM CONSELHO REGIONAL','Não possui conselho de classe','69-FARMACIA CONSELHO REGIONAL','62-ASSISTENCIA SOCIAL CONSELHO REGIONAL','18-CR BIOLOGIA','71-MEDICINA CONSELHO REGIONAL'];
-let VINCULOS = [['080501','Autônomo'],['080400','Celetista']];
+      const doc=frame.contentDocument;
+      const sc=doc.createElement('script');
+      sc.textContent=`
+(function(){
+  const FHSL_CNPJ='13.370.183/0001-89';
 
-const PAGE_META = {};
-let cadastros=[], unidades=[], unidadesPermitidas=[], unidadeAtual=null, tipos={};
-let importPend=null;
+  function instalarFiltros(){
+    const tipo=document.getElementById('filtro-tipo');
+    if(!tipo) return;
+    if(!document.getElementById('filtro-cbo')){
+      const cbo=document.createElement('select');
+      cbo.id='filtro-cbo';
+      cbo.innerHTML='<option value="">Todos os CBOs</option>';
+      cbo.onchange=function(){ pagina=1; renderTabela(); };
+      tipo.insertAdjacentElement('afterend',cbo);
 
-function startApp(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  loadUserTheme();
-  document.getElementById('side-avatar').textContent = initials(currentUser.nome);
-  const cores={admin:'#86198f',cadastros:'#0f766e',gestor:'#1d6aad',visualizador:'#5c5c58'};
-  document.getElementById('side-avatar').style.background = cores[currentUser.role]||'#1d6aad';
-  document.getElementById('side-name').textContent = currentUser.nome;
-  document.getElementById('side-role').textContent = ({admin:'Administrador',gestor:'Gestor',cadastros:'Gestor de cadastros',visualizador:'Visualizador'})[currentUser.role]||currentUser.role;
-  carregarListas();
-  carregarUnidades();
-}
-// carrega as listas configuráveis (CBO, conselho, vínculo) do servidor
-async function carregarListas(){
-  try{
-    const r=await apiFetch('getcneslistas');
-    if(r.ok && r.listas){
-      if(Array.isArray(r.listas.cbos) && r.listas.cbos.length) CBOS=r.listas.cbos;
-      if(Array.isArray(r.listas.conselhos) && r.listas.conselhos.length) CONSELHOS=r.listas.conselhos;
-      if(Array.isArray(r.listas.vinculos) && r.listas.vinculos.length) VINCULOS=r.listas.vinculos;
+      const ord=document.createElement('select');
+      ord.id='ordem-cadastro';
+      ord.innerHTML='<option value="nome">Ordenar: nome</option><option value="cad_desc">Cadastro: mais recentes</option><option value="cad_asc">Cadastro: mais antigos</option>';
+      ord.onchange=function(){ ordenarRapido(this.value); };
+      cbo.insertAdjacentElement('afterend',ord);
     }
-  }catch(e){ /* usa os valores padrão embutidos */ }
-  preencherCbos(); preencherConselhos(); preencherVinculos();
-}
-function preencherConselhos(){
-  const s=document.getElementById('cd-conselho'); if(!s) return;
-  s.innerHTML='<option value="">Selecione...</option>'+CONSELHOS.map(function(c){return '<option value="'+esc(c)+'">'+esc(c)+'</option>';}).join('');
-}
-function preencherVinculos(){
-  const s=document.getElementById('cd-vinculo'); if(!s) return;
-  s.innerHTML='<option value="">Selecione...</option>'+VINCULOS.map(function(v){return '<option value="'+esc(v[0])+'">'+esc(v[0])+'</option>';}).join('');
-}
-function podeEditar(){ return currentUser && (currentUser.role==='admin'||currentUser.role==='gestor'||currentUser.role==='cadastros'); }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
-function fmtCpf(v){ const d=String(v||'').replace(/\D/g,'').padStart(11,'0').slice(-11); return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4'); }
-
-// ── Validação de CPF/CNPJ (espelha o servidor) ──
-function soDig(v){ return String(v==null?'':v).replace(/\D/g,''); }
-function padCPF(v){ let d=soDig(v); while(d.length<11) d='0'+d; return d.slice(-11); }
-function validaCPF(cpf){ cpf=padCPF(cpf); if(cpf.length!==11||/^(\d)\1{10}$/.test(cpf)) return false;
-  let s=0,r; for(let i=0;i<9;i++) s+=parseInt(cpf.charAt(i))*(10-i); r=(s*10)%11; if(r>9)r=0; if(r!==parseInt(cpf.charAt(9))) return false;
-  s=0; for(let i=0;i<10;i++) s+=parseInt(cpf.charAt(i))*(11-i); r=(s*10)%11; if(r>9)r=0; return r===parseInt(cpf.charAt(10)); }
-function validaCNPJ(c){ c=soDig(c); if(c.length!==14||/^(\d)\1{13}$/.test(c)) return false;
-  let t=12,n=c.substring(0,t),d=c.substring(t),s=0,p=t-7; for(let i=t;i>=1;i--){ s+=n.charAt(t-i)*p--; if(p<2)p=9; }
-  let r=s%11<2?0:11-s%11; if(r!=d.charAt(0)) return false; t=13; n=c.substring(0,t); s=0; p=t-7;
-  for(let i=t;i>=1;i--){ s+=n.charAt(t-i)*p--; if(p<2)p=9; } r=s%11<2?0:11-s%11; return r==d.charAt(1); }
-
-function validarCpfVisual(){
-  const v=document.getElementById('cd-cpf').value; const msg=document.getElementById('cpf-msg');
-  if(!v){ msg.textContent=''; return; }
-  if(validaCPF(v)){ msg.textContent='✔️ CPF válido'; msg.className='valid-msg ok'; }
-  else { msg.textContent='✕ CPF inválido'; msg.className='valid-msg err'; }
-}
-function validarCnpjVisual(){
-  const v=document.getElementById('cd-cnpj').value; const msg=document.getElementById('cnpj-msg');
-  if(!v){ msg.textContent=''; return; }
-  if(validaCNPJ(v)){ msg.textContent='✔️ CNPJ válido'; msg.className='valid-msg ok'; }
-  else { msg.textContent='✕ CNPJ inválido'; msg.className='valid-msg err'; }
-}
-
-// ── CBO ──
-function preencherCbos(){
-  const s=document.getElementById('cd-cbo');
-  s.innerHTML='<option value="">Selecione...</option>'+CBOS.map(function(c){return '<option value="'+c[0]+'">'+c[0]+' — '+esc(c[1])+'</option>';}).join('');
-}
-function cboMudou(){
-  const cod=document.getElementById('cd-cbo').value;
-  document.getElementById('cd-cbo-cod').value=cod;
-  // sugere tipo pelo CBO (médico=3, alguns assistenciais=2)
-  const c=CBOS.find(function(x){return x[0]===cod;});
-  if(c){ const desc=c[1].toLowerCase();
-    if(desc.indexOf('médico')>=0) document.getElementById('cd-tipo').value='2';
-    else if(/enfermeiro|técnico de enfermagem|auxiliar de enfermagem|farmac|assistente social|biólogo|biomédico|fisioterap|nutricion|psicólog|fonoaudiólog|dentista|saúde bucal/.test(desc)) document.getElementById('cd-tipo').value='3';
-    else document.getElementById('cd-tipo').value='1';
   }
-  tipoMudou();
-}
-function copiarCbo(){
-  const el=document.getElementById('cd-cbo-cod'); if(!el.value){ showNotif('Selecione um CBO primeiro.','err'); return; }
-  navigator.clipboard.writeText(el.value).then(function(){ showNotif('Código CBO copiado: '+el.value,'ok'); });
-}
-// esconde CH amb/hosp, conselho e nº conselho quando tipo = 1 (Administrativo)
-function tipoMudou(){
-  const t=document.getElementById('cd-tipo').value;
-  const esconder=(t==='1');
-  ['fg-conselho','fg-numconselho','fg-uf','fg-cha','fg-chh'].forEach(function(id){
-    const el=document.getElementById(id); if(el) el.style.display=esconder?'none':'';
-  });
-  if(esconder){
-    document.getElementById('cd-conselho').value='';
-    document.getElementById('cd-numconselho').value='';
-    document.getElementById('cd-uf').value='';
-    document.getElementById('cd-cha').value='';
-    document.getElementById('cd-chh').value='';
+
+  function popularFiltroCbo(){
+    instalarFiltros();
+    const sel=document.getElementById('filtro-cbo');
+    if(!sel) return;
+    const atual=sel.value;
+    const itens=(CBOS||[]).slice().sort(function(a,b){ return String(a[0]).localeCompare(String(b[0])); });
+    sel.innerHTML='<option value="">Todos os CBOs</option>'+itens.map(function(c){ return '<option value="'+esc(c[0])+'">'+esc(c[0]+' - '+c[1])+'</option>'; }).join('');
+    if(itens.some(function(c){ return String(c[0])===atual; })) sel.value=atual;
   }
-}
 
-// ── Unidades (menu lateral) ──
-async function carregarUnidades(){
-  try{
-    const ra=await cnesApi('bootstrap');
-    if(ra.ok){
-      unidades=(ra.unidades||[]).filter(function(u){ return String(u.Ativo)!=='false'&&String(u.Ativo)!=='FALSE'; });
-      tipos=ra.tipos||tipos;
-    } else throw new Error(ra.message||'Erro');
-    unidadesPermitidas = unidades.slice();
-    montarNavUnidades();
-  }catch(e){ showNotif(e.message||'Erro ao carregar unidades.','err'); }
-}
-function montarNavUnidades(){
-  const cont=document.getElementById('nav-unidades');
-  if(!unidadesPermitidas.length){ cont.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px">Nenhuma unidade disponível.</div>'; return; }
-  cont.innerHTML=unidadesPermitidas.map(function(u){
-    return '<button class="nav-item" data-unidade="'+esc(u.Nome)+'" onclick="selecionarUnidade(\''+esc(u.Nome).replace(/'/g,"\\'")+'\',this)">🏥 '+esc(u.Nome)+'</button>';
-  }).join('');
-}
-async function selecionarUnidade(nome, btn){
-  unidadeAtual=nome;
-  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-  if(btn) btn.classList.add('active');
-  document.getElementById('pg-title').textContent=nome;
-  document.getElementById('pg-sub').textContent='Cadastros do CNES';
-  document.getElementById('page-vazio').classList.remove('active');
-  document.getElementById('page-unidade').classList.add('active');
-  await carregar();
-}
+  const carregarListasOriginal=carregarListas;
+  carregarListas=async function(){
+    try{
+      const r=await apiFetch('getcneslistas',{_ts:Date.now()});
+      if(r && r.ok && r.listas){
+        if(Array.isArray(r.listas.cbos) && r.listas.cbos.length) CBOS=r.listas.cbos;
+        if(Array.isArray(r.listas.conselhos) && r.listas.conselhos.length) CONSELHOS=r.listas.conselhos;
+        if(Array.isArray(r.listas.vinculos) && r.listas.vinculos.length) VINCULOS=r.listas.vinculos;
+        preencherCbos(); preencherConselhos(); preencherVinculos(); popularFiltroCbo();
+        return;
+      }
+    }catch(e){ console.warn('CNES: falha ao atualizar listas da Administração',e); }
+    await carregarListasOriginal();
+    popularFiltroCbo();
+  };
 
-async function carregar(){
-  if(!unidadeAtual) return;
-  showNotif('Carregando...','info');
-  try{
-    const r=await cnesApi('list',{unidade:unidadeAtual});
-    if(r.ok){ cadastros=r.data||[]; tipos=r.tipos||{}; montarFiltroComp(); renderTabela(); hideNotif(); }
-    else showNotif(r.message||'Erro.','err');
-  }catch(e){ showNotif('Erro ao carregar cadastros.','err'); }
-}
-function hideNotif(){ const n=document.getElementById('notif'); if(n) n.style.display='none'; }
+  const tipoMudouOriginal=tipoMudou;
+  tipoMudou=function(){
+    tipoMudouOriginal();
+    const t=document.getElementById('cd-tipo')?.value;
+    const cnpj=document.getElementById('cd-cnpj');
+    if(cnpj && (t==='1'||t==='2') && !String(cnpj.value||'').trim()){
+      cnpj.value=FHSL_CNPJ;
+      if(typeof validarCnpjVisual==='function') validarCnpjVisual();
+    }
+  };
 
-function montarFiltroComp(){
-  const comps=[]; cadastros.forEach(function(c){ const cp=fmtComp(c.Competencia); if(cp && cp!=='—' && comps.indexOf(cp)<0) comps.push(cp); });
-  comps.sort();
-  const s=document.getElementById('filtro-comp');
-  s.innerHTML='<option value="">Todas as competências</option>'+comps.map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
-}
-
-function listaFiltrada(){
-  const q=(document.getElementById('busca').value||'').toLowerCase();
-  const fc=document.getElementById('filtro-comp').value;
-  const ft=document.getElementById('filtro-tipo').value;
-  const fs=document.getElementById('filtro-status').value;
-  const fcnes=document.getElementById('filtro-cnes')?document.getElementById('filtro-cnes').value:'';
-  return cadastros.filter(function(c){
-    if(q && !((c.Nome+' '+c.CPF+' '+c.CBO+' '+c.CBODesc).toLowerCase().includes(q))) return false;
-    if(fc && fmtComp(c.Competencia)!==fc) return false;
-    if(ft && String(c.Tipo)!==ft) return false;
-    if(fs && (c.Status||'Ativo')!==fs) return false;
-    if(fcnes==='sim' && String(c.CadastradoCNES)!=='true') return false;
-    if(fcnes==='nao' && String(c.CadastradoCNES)==='true') return false;
-    return true;
+  document.addEventListener('input',function(ev){
+    if(ev.target && ev.target.id==='cd-nome'){
+      const ini=ev.target.selectionStart, fim=ev.target.selectionEnd;
+      ev.target.value=String(ev.target.value||'').toLocaleUpperCase('pt-BR');
+      try{ ev.target.setSelectionRange(ini,fim); }catch(e){}
+    }
   });
-}
-let ordCampo='Nome', ordDir=1, pagina=1, porPagina=50;
-function ordenarPor(campo){
-  if(ordCampo===campo) ordDir=-ordDir; else { ordCampo=campo; ordDir=1; }
-  pagina=1; renderTabela();
-}
-function ordenarLista(lista){
-  const c=ordCampo;
-  return lista.slice().sort(function(a,b){
-    let va=a[c]||'', vb=b[c]||'';
-    if(c==='CPF'){ va=padCPF(a.CPF); vb=padCPF(b.CPF); }
-    if(c==='Tipo'){ va=parseInt(a.Tipo||0,10); vb=parseInt(b.Tipo||0,10); }
-    if(c==='CriadoEm'||c==='AtualizadoEm'){ va=parseData(a[c]); vb=parseData(b[c]); }
-    if(c==='Competencia'){ va=compChave(a.Competencia); vb=compChave(b.Competencia); }
-    if(va<vb) return -1*ordDir; if(va>vb) return 1*ordDir; return 0;
-  });
-}
-function parseData(v){ // dd/MM/yyyy HH:mm -> número comparável
-  if(!v) return 0; const m=String(v).match(/(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?/);
-  if(!m) return 0; return new Date(m[3],m[2]-1,m[1],m[5]||0,m[6]||0).getTime();
-}
-function compChave(v){ const s=fmtComp(v); const m=s.match(/(\d{2})\/(\d{4})/); return m?(m[2]+m[1]):s; }
 
-function renderTabela(){
-  let lista=listaFiltrada();
-  // KPIs (da unidade toda, não do filtro)
-  document.getElementById('kpi-total').textContent=cadastros.length;
-  document.getElementById('kpi-ativos').textContent=cadastros.filter(function(c){return (c.Status||'Ativo')==='Ativo';}).length;
-  document.getElementById('kpi-med').textContent=cadastros.filter(function(c){return String(c.Tipo)==='2';}).length;
-  document.getElementById('kpi-assist').textContent=cadastros.filter(function(c){return String(c.Tipo)==='3';}).length;
-  document.getElementById('kpi-corrigir').textContent=cadastros.filter(function(c){return /^CORRIGIR/i.test(String(c.Status||''));}).length;
-  document.getElementById('kpi-cnes-sim').textContent=cadastros.filter(function(c){return String(c.CadastradoCNES)==='true';}).length;
-  document.getElementById('kpi-cnes-nao').textContent=cadastros.filter(function(c){return String(c.CadastradoCNES)!=='true';}).length;
-  // ordena
-  lista=ordenarLista(lista);
-  // atualiza indicadores de ordenação no cabeçalho
-  document.querySelectorAll('.ord-i').forEach(function(el){ el.textContent = (el.dataset.col===ordCampo)?(ordDir>0?'▲':'▼'):''; });
-  document.getElementById('tabela-empty').style.display=lista.length?'none':'block';
-  // paginação
-  const totalPag=Math.max(1, Math.ceil(lista.length/porPagina));
-  if(pagina>totalPag) pagina=totalPag;
-  const ini=(pagina-1)*porPagina;
-  const pageLista=lista.slice(ini, ini+porPagina);
-  const tipoBadge=function(t){ const m={'1':'c-yellow-b','2':'c-blue-b','3':'c-green-b'}; return '<span class="badge '+(m[t]||'')+'">'+(t||'?')+'</span>'; };
-  document.getElementById('tabela-body').innerHTML=pageLista.map(function(c){
-    const acoes=(podeEditar()?'<button class="btn sm" onclick="editarCad(\''+c.ID+'\')">✏️</button> <button class="btn sm danger" onclick="delCad(\''+c.ID+'\')">🗑️</button>':'<button class="btn sm" onclick="editarCad(\''+c.ID+'\')">👁️</button>');
-    const ch=(c.CHAmbulatorial||'0')+'/'+(c.CHHospitalar||'0')+'/'+(c.CHOutros||'0');
-    const st=String(c.Status||'Ativo');
-    const corrigir=/^CORRIGIR/i.test(st);
-    const stCell=corrigir?('<span class="badge c-red-b">⚠️ '+esc(st)+'</span>'):esc(st);
-    const cpfLimpo=padCPF(c.CPF);
-    const cnpjLimpo=String(c.CNPJ||'').replace(/\D/g,'');
-    const chTotal=(parseInt(c.CHAmbulatorial||0,10)+parseInt(c.CHHospitalar||0,10)+parseInt(c.CHOutros||0,10));
-    const noCnes=(String(c.CadastradoCNES)==='true');
-    const btnCnes=podeEditar()
-      ? '<button class="cnes-toggle '+(noCnes?'on':'off')+'" onclick="toggleCadCnes(\''+c.ID+'\','+(!noCnes)+')" title="Clique para '+(noCnes?'desmarcar':'marcar')+'">'+(noCnes?'✔️ Sim':'Não')+'</button>'
-      : (noCnes?'<span class="badge c-green-b">✔️ Sim</span>':'<span class="badge c-yellow-b">Não</span>');
-    return '<tr'+(corrigir?' class="row-corrigir"':'')+'><td><input type="checkbox" class="ck-linha" value="'+c.ID+'" onclick="atualizaSelecao()"></td><td><strong>'+esc(c.Nome)+'</strong></td>'
-      +'<td class="nowrap">'+fmtCpf(c.CPF)+' <button class="cp-btn" title="Copiar CPF sem pontos" onclick="copiar(\''+cpfLimpo+'\',\'CPF\')">📋</button></td>'
-      +'<td>'+tipoBadge(String(c.Tipo))+'</td>'
-      +'<td class="nowrap"><span style="font-family:monospace">'+esc(c.CBO)+'</span> <button class="cp-btn" title="Copiar código CBO" onclick="copiar(\''+esc(c.CBO)+'\',\'CBO\')">📋</button> '+esc(c.CBODesc||'')+'</td>'
-      +'<td class="nowrap">'+(cnpjLimpo?esc(cnpjLimpo)+' <button class="cp-btn" title="Copiar CNPJ" onclick="copiar(\''+cnpjLimpo+'\',\'CNPJ\')">📋</button>':'')+'</td>'
-      +'<td>'+esc(c.Conselho||'')+' '+esc(c.NumConselho||'')+'</td><td>'+esc(c.IndicadorVinculo||'')+'</td>'
-      +'<td class="nowrap">'+ch+' <button class="cp-btn" title="Copiar CH total ('+chTotal+')" onclick="copiar(\''+chTotal+'\',\'Carga horária\')">📋</button></td>'
-      +'<td>'+esc(fmtComp(c.Competencia))+'</td><td>'+stCell+'</td>'
-      +'<td>'+btnCnes+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)">'+esc(fmtDataHora(c.CriadoEm))+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)">'+esc(fmtDataHora(c.AtualizadoEm||c.CriadoEm))+'</td>'
-      +'<td style="white-space:nowrap">'+acoes+'</td></tr>';
-  }).join('');
-  // controles de paginação
-  renderPaginacao(lista.length, totalPag, ini, pageLista.length);
-  // reseta seleção ao re-renderizar
-  const bs=document.getElementById('barra-sel'); if(bs) bs.style.display='none';
-  const ct=document.getElementById('ck-todos'); if(ct){ ct.checked=false; ct.indeterminate=false; }
-}
-function renderPaginacao(total, totalPag, ini, mostrados){
-  const el=document.getElementById('paginacao'); if(!el) return;
-  if(total<=porPagina){ el.innerHTML='<span style="font-size:12px;color:var(--text2)">'+total+' registro(s)</span>'; return; }
-  el.innerHTML=
-    '<button class="btn sm" '+(pagina<=1?'disabled':'')+' onclick="irPagina('+(pagina-1)+')">‹ Anterior</button>'
-    +'<span style="font-size:13px;margin:0 10px">Página <strong>'+pagina+'</strong> de '+totalPag+' · mostrando '+(ini+1)+'–'+(ini+mostrados)+' de '+total+'</span>'
-    +'<button class="btn sm" '+(pagina>=totalPag?'disabled':'')+' onclick="irPagina('+(pagina+1)+')">Próxima ›</button>';
-}
-function irPagina(p){ pagina=p; renderTabela(); document.querySelector('.table-wrap').scrollTop=0; }
-async function toggleCadCnes(id, novoValor){
-  const r=await cnesApi('toggle', { id:id, valor:novoValor });
-  if(r.ok){
-    const c=cadastros.find(function(x){return String(x.ID)===String(id);});
-    if(c){ c.CadastradoCNES=novoValor?'true':''; c.AtualizadoEm=(new Date()).toLocaleString('pt-BR'); }
-    showNotif(novoValor?'Marcado como cadastrado no CNES.':'Desmarcado do CNES.','ok');
+  const salvarCadastroOriginal=salvarCadastro;
+  salvarCadastro=async function(){
+    const nome=document.getElementById('cd-nome');
+    if(nome) nome.value=String(nome.value||'').trim().toLocaleUpperCase('pt-BR');
+    return salvarCadastroOriginal.apply(this,arguments);
+  };
+
+  const abrirCadastroOriginal=abrirCadastro;
+  abrirCadastro=function(){
+    abrirCadastroOriginal();
+    tipoMudou();
+    carregarListas();
+  };
+
+  const listaFiltradaOriginal=listaFiltrada;
+  listaFiltrada=function(){
+    let lista=listaFiltradaOriginal();
+    const fcbo=document.getElementById('filtro-cbo')?.value||'';
+    if(fcbo) lista=lista.filter(function(c){ return String(c.CBO||'')===fcbo; });
+    return lista;
+  };
+
+  parseData=function(v){
+    if(!v) return 0;
+    const d=new Date(v);
+    if(!isNaN(d.getTime())) return d.getTime();
+    const m=String(v).match(/(\\d{2})\\/(\\d{2})\\/(\\d{4})(?:\\s+(\\d{2}):(\\d{2}))?/);
+    if(!m) return 0;
+    return new Date(m[3],Number(m[2])-1,m[1],m[4]||0,m[5]||0).getTime();
+  };
+
+  fmtDataHora=function(v){
+    if(!v) return '—';
+    const s=String(v);
+    if(/^\\d{2}\\/\\d{2}\\/\\d{4}\\s+\\d{2}:\\d{2}/.test(s)) return s;
+    const d=new Date(s);
+    if(isNaN(d.getTime())) return s;
+    return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear()+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+  };
+
+  ordenarRapido=function(v){
+    if(v==='cad_desc'){ ordCampo='CriadoEm'; ordDir=-1; }
+    else if(v==='cad_asc'){ ordCampo='CriadoEm'; ordDir=1; }
+    else { ordCampo='Nome'; ordDir=1; }
+    pagina=1;
     renderTabela();
-  } else showNotif(r.message||'Erro.','err');
-}
-function copiar(txt, label){
-  navigator.clipboard.writeText(String(txt)).then(function(){ showNotif((label||'Valor')+' copiado: '+txt,'ok'); });
-}
-// formata datas ISO -> dd/MM/yyyy (e mantém dd/MM/yyyy HH:mm se já vier assim)
-function fmtDataHora(v){
-  if(!v) return '—'; const s=String(v);
-  if(/^\d{2}\/\d{2}\/\d{4}/.test(s)) return s;
-  const d=new Date(s); if(isNaN(d.getTime())) return s;
-  return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
-}
-// converte dd/MM/yyyy ou ISO -> YYYY-MM-DD (para input type=date)
-function normDataInput(v){
-  if(!v) return ''; const s=String(v).trim();
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  let m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})/); if(m) return m[3]+'-'+m[2]+'-'+m[1];
-  const d=new Date(s); if(!isNaN(d.getTime())) return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
-  return '';
-}
-// competência sempre MM/AAAA (aceita ISO, dd/MM/yyyy, MM/AAAA)
-function fmtComp(v){
-  if(!v) return '—'; const s=String(v).trim();
-  if(/^\d{2}\/\d{4}$/.test(s)) return s;
-  let m=s.match(/^(\d{4})-(\d{2})/); if(m) return m[2]+'/'+m[1];
-  m=s.match(/\d{2}\/(\d{2})\/(\d{4})/); if(m) return m[1]+'/'+m[2];
-  const d=new Date(s); if(!isNaN(d.getTime())) return ('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
-  return s;
-}
-
-// ── Cadastro ──
-function abrirCadastro(){
-  document.getElementById('cad-title').textContent='Novo cadastro';
-  document.getElementById('cd-id').value='';
-  ['cd-nome','cd-cpf','cd-cbo-cod','cd-conselho','cd-numconselho','cd-vinculo','cd-cnpj','cd-cha','cd-chh','cd-cho','cd-comp','cd-datainc','cd-datasaida','cd-obs'].forEach(function(k){document.getElementById(k).value='';});
-  document.getElementById('cd-uf').value='SP';
-  document.getElementById('cd-cbo').value=''; document.getElementById('cd-tipo').value='1'; document.getElementById('cd-status').value='ATIVO'; document.getElementById('cd-cnes').checked=false; tipoMudou();
-  document.getElementById('cpf-msg').textContent=''; document.getElementById('cnpj-msg').textContent='';
-  document.getElementById('modal-cad').classList.add('open');
-}
-function editarCad(id){
-  const c=cadastros.find(function(x){return String(x.ID)===String(id);}); if(!c) return;
-  document.getElementById('cad-title').textContent='Editar cadastro';
-  document.getElementById('cd-id').value=id;
-  document.getElementById('cd-nome').value=c.Nome||'';
-  document.getElementById('cd-cpf').value=c.CPF?fmtCpf(c.CPF):'';
-  document.getElementById('cd-tipo').value=String(c.Tipo||'1');
-  document.getElementById('cd-cbo').value=c.CBO||''; document.getElementById('cd-cbo-cod').value=c.CBO||'';
-  document.getElementById('cd-conselho').value=c.Conselho||'';
-  document.getElementById('cd-numconselho').value=c.NumConselho||'';
-  document.getElementById('cd-vinculo').value=c.IndicadorVinculo||'';
-  document.getElementById('cd-uf').value=c.UF||'SP';
-  document.getElementById('cd-cnpj').value=c.CNPJ||'';
-  document.getElementById('cd-cha').value=c.CHAmbulatorial||''; document.getElementById('cd-chh').value=c.CHHospitalar||''; document.getElementById('cd-cho').value=c.CHOutros||'';
-  document.getElementById('cd-comp').value=c.Competencia||'';
-  document.getElementById('cd-datainc').value=normDataInput(c.DataInclusao); document.getElementById('cd-datasaida').value=normDataInput(c.DataSaida);
-  document.getElementById('cd-status').value=c.Status||'ATIVO';
-  document.getElementById('cd-cnes').checked=(String(c.CadastradoCNES)==='true');
-  document.getElementById('cd-obs').value=c.Obs||'';
-  document.getElementById('cpf-msg').textContent=''; document.getElementById('cnpj-msg').textContent='';
-  tipoMudou();
-  document.getElementById('modal-cad').classList.add('open');
-}
-function fecharCadastro(){ document.getElementById('modal-cad').classList.remove('open'); }
-async function salvarCadastro(){
-  if(!podeEditar()){ showNotif('Sem permissão.','err'); return; }
-  const nome=document.getElementById('cd-nome').value.trim();
-  const cpf=document.getElementById('cd-cpf').value.trim();
-  if(!nome){ showNotif('Informe o nome.','err'); return; }
-  const cnpj=document.getElementById('cd-cnpj').value.trim();
-  // não bloqueia: apenas avisa; o servidor marca status CORRIGIR
-  if(cpf && !validaCPF(cpf)) showNotif('CPF inválido — será salvo e marcado como CORRIGIR CPF.','info');
-  else if(cnpj && !validaCNPJ(cnpj)) showNotif('CNPJ inválido — será salvo e marcado como CORRIGIR CNPJ.','info');
-  const cbo=document.getElementById('cd-cbo').value;
-  const cboObj=CBOS.find(function(x){return x[0]===cbo;});
-  const payload={ ID:document.getElementById('cd-id').value||'', Unidade:unidadeAtual, Nome:nome, CPF:cpf,
-    Tipo:document.getElementById('cd-tipo').value, CBO:cbo, CBODesc:cboObj?cboObj[1]:'',
-    Conselho:document.getElementById('cd-conselho').value.trim(), NumConselho:document.getElementById('cd-numconselho').value.trim(),
-    IndicadorVinculo:document.getElementById('cd-vinculo').value.trim(), UF:document.getElementById('cd-uf').value.trim().toUpperCase(), CNPJ:cnpj,
-    CHAmbulatorial:document.getElementById('cd-cha').value, CHHospitalar:document.getElementById('cd-chh').value, CHOutros:document.getElementById('cd-cho').value,
-    Competencia:document.getElementById('cd-comp').value.trim(), DataInclusao:document.getElementById('cd-datainc').value,
-    DataSaida:document.getElementById('cd-datasaida').value, Status:document.getElementById('cd-status').value,
-    CadastradoCNES:document.getElementById('cd-cnes').checked, Obs:document.getElementById('cd-obs').value.trim(), __actor:{ nome:currentUser.nome, email:currentUser.email } };
-  showNotif('Salvando...','info');
-  const r=await cnesApi('save', {payload:payload});
-  if(r.ok){
-    if(r.statusAjustado) showNotif('Cadastro salvo e marcado como '+r.statusAjustado+'.','ok');
-    else showNotif('Cadastro salvo.','ok');
-    fecharCadastro(); carregar();
-  }
-  else if(r.duplicado){ showNotif('Duplicidade: '+r.message,'err'); alert('Cadastro bloqueado por duplicidade:\n\n'+r.message); }
-  else showNotif(r.message||'Erro ao salvar.','err');
-}
-async function delCad(id){
-  const c=cadastros.find(function(x){return String(x.ID)===String(id);});
-  if(!confirm('Excluir o cadastro de "'+((c&&c.Nome)||'')+'"?')) return;
-  showNotif('Excluindo, aguarde...','info');
-  try{
-    const r=await cnesApi('delete', { id:id });
-    if(r.ok){ showNotif('Cadastro excluído com sucesso.','ok'); await carregar(); }
-    else showNotif(r.message||'Erro ao excluir.','err');
-  }catch(e){ showNotif('Erro de conexão ao excluir.','err'); }
-}
-
-// ── Seleção múltipla ──
-function idsSelecionados(){ return Array.prototype.map.call(document.querySelectorAll('.ck-linha:checked'), function(c){ return c.value; }); }
-function atualizaSelecao(){
-  const sel=idsSelecionados();
-  document.getElementById('sel-count').textContent=sel.length;
-  document.getElementById('barra-sel').style.display=sel.length?'flex':'none';
-  const btn=document.getElementById('btn-del-sel');
-  if(currentUser.role!=='admin'){ btn.style.display='none'; } else { btn.style.display='inline-flex'; }
-  const todos=document.querySelectorAll('.ck-linha'); const marc=document.querySelectorAll('.ck-linha:checked');
-  const ckt=document.getElementById('ck-todos'); if(ckt){ ckt.checked=todos.length>0&&todos.length===marc.length; ckt.indeterminate=marc.length>0&&marc.length<todos.length; }
-}
-function toggleTodos(el){ document.querySelectorAll('.ck-linha').forEach(function(c){ c.checked=el.checked; }); atualizaSelecao(); }
-function limparSelecao(){ document.querySelectorAll('.ck-linha').forEach(function(c){ c.checked=false; }); const t=document.getElementById('ck-todos'); if(t){t.checked=false;t.indeterminate=false;} atualizaSelecao(); }
-async function excluirSelecionados(){
-  if(currentUser.role!=='admin'){ showNotif('Apenas administradores podem excluir em massa.','err'); return; }
-  const ids=idsSelecionados();
-  if(!ids.length){ showNotif('Nada selecionado.','err'); return; }
-  if(!confirm('Excluir '+ids.length+' cadastro(s) selecionado(s)? Esta ação não pode ser desfeita.')) return;
-  if(ids.length>=20 && !confirm('CONFIRMAÇÃO FINAL: você está prestes a excluir '+ids.length+' cadastros de forma permanente. Continuar?')) return;
-  const btn=document.getElementById('btn-del-sel');
-  const txtOrig=btn.innerHTML;
-  btn.disabled=true; btn.innerHTML='⏳ Excluindo '+ids.length+'...';
-  showNotif('Excluindo '+ids.length+' cadastro(s), aguarde...','info');
-  try{
-    const r=await cnesApi('deletebatch', { ids:ids });
-    btn.disabled=false; btn.innerHTML=txtOrig;
-    if(r.ok){ showNotif('✅ '+r.removidos+' cadastro(s) excluído(s) com sucesso.','ok'); limparSelecao(); await carregar(); }
-    else showNotif(r.message||'Erro ao excluir.','err');
-  }catch(e){ btn.disabled=false; btn.innerHTML=txtOrig; showNotif('Erro de conexão. Recarregue e verifique se os cadastros foram excluídos.','err'); }
-}
-
-// ── Imprimir ──
-function imprimirLista(apenasSelecionados){
-  let lista;
-  if(apenasSelecionados){
-    const ids=idsSelecionados();
-    lista=cadastros.filter(function(c){ return ids.indexOf(String(c.ID))>=0; });
-  } else {
-    lista=listaFiltrada(); // respeita os filtros ativos
-  }
-  if(!lista.length){ showNotif('Nada para imprimir.','err'); return; }
-  const tiposLbl={'1':'Administrativo','2':'Médico','3':'Assistencial'};
-  let linhas='';
-  lista.forEach(function(c){
-    linhas+='<tr><td>'+esc(c.Nome)+'</td><td>'+padCPF(c.CPF)+'</td><td>'+(tiposLbl[String(c.Tipo)]||c.Tipo||'')+'</td>'
-      +'<td>'+esc(c.CBO||'')+' '+esc(c.CBODesc||'')+'</td><td>'+esc(c.Conselho||'')+' '+esc(c.NumConselho||'')+'</td>'
-      +'<td>'+((c.CHAmbulatorial||'0')+'/'+(c.CHHospitalar||'0')+'/'+(c.CHOutros||'0'))+'</td>'
-      +'<td>'+esc(fmtComp(c.Competencia))+'</td><td>'+esc(c.Status||'')+'</td>'
-      +'<td>'+(String(c.CadastradoCNES)==='true'?'Sim':'Não')+'</td></tr>';
-  });
-  const w=window.open('','_blank');
-  w.document.write('<html><head><title>CNES - '+esc(unidadeAtual||'')+'</title><style>'
-    +'body{font-family:Arial,sans-serif;color:#222;padding:0;font-size:11px}'
-    +'.cab{background:#1d6aad;color:#fff;padding:16px 22px}.cab h1{margin:0;font-size:15px}.cab p{margin:2px 0 0;font-size:11px;opacity:.9}'
-    +'.body{padding:18px 22px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:4px 7px;text-align:left;font-size:10.5px}'
-    +'th{background:#f0f0ee;text-transform:uppercase;font-size:9px;letter-spacing:.03em}'
-    +'@media print{button{display:none}.cab{-webkit-print-color-adjust:exact;print-color-adjust:exact}}'
-    +'</style></head><body><div class="cab"><h1>CNES — '+esc(unidadeAtual||'')+'</h1><p>'+lista.length+' profissional(is) · Emitido em '+new Date().toLocaleString('pt-BR')+'</p></div>'
-    +'<div class="body"><table><thead><tr><th>Nome</th><th>CPF</th><th>Tipo</th><th>CBO</th><th>Conselho</th><th>CH A/H/O</th><th>Comp.</th><th>Status</th><th>CNES</th></tr></thead><tbody>'
-    +linhas+'</tbody></table></div>'
-    +'<div style="padding:0 22px 22px;display:flex;gap:10px"><button onclick="window.print()" style="padding:11px 20px;background:#1d6aad;color:#fff;border:none;border-radius:8px;cursor:pointer">🖨️ Imprimir</button>'
-    +'<button onclick="window.close()" style="padding:11px 20px;background:#e8e8e4;border:none;border-radius:8px;cursor:pointer">✕ Fechar</button></div><a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo"><span class="tdngo-home-ico">⌂</span><span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span></a></body></html>');
-  w.document.close();
-}
-
-// ── Importar CSV ──
-function abrirImport(){
-  if(!unidadeAtual){ showNotif('Selecione uma unidade primeiro.','err'); return; }
-  document.getElementById('import-unidade').textContent=unidadeAtual;
-  const gu=document.getElementById('guia-unidade'); if(gu) gu.textContent=unidadeAtual;
-  document.getElementById('csv-input').value=''; document.getElementById('csv-preview').innerHTML='';
-  document.getElementById('btn-import').style.display='none'; importPend=null;
-  document.getElementById('modal-import').classList.add('open');
-}
-function baixarModelo(){
-  const cab=['Nome','CPF','Tipo','CBO','Conselho','NumConselho','IndicadorVinculo','CNPJ','CHAmbulatorial','CHHospitalar','CHOutros','Competencia','DataInclusao','Status','CadastradoCNES'];
-  // linha de instrução (o usuário deve APAGAR esta linha antes de importar)
-  const instr=[
-    'APAGUE ESTA LINHA >>> Nome completo (obrigatório)',
-    'Só números, com zero à esquerda (obrigatório)',
-    '1=Administrativo, 2=Médico, 3=Assistencial',
-    'Código CBO (6 dígitos) - ex 225125',
-    'Conselho/órgão exatamente como no CNES (deixe vazio se tipo 1)',
-    'Número do registro no conselho (vazio se tipo 1)',
-    'Código: 080501=Autônomo, 080400=Celetista',
-    'Só números, 14 dígitos (será validado)',
-    'Horas ambulatoriais (vazio/0 se tipo 1)',
-    'Horas hospitalares (vazio/0 se tipo 1)',
-    'Horas outros',
-    'MM/AAAA - ex 07/2026',
-    'DD/MM/AAAA - ex 01/07/2026',
-    'ATIVO, AGUARDANDO INSERÇÃO, etc.',
-    'sim ou nao (já cadastrado no CNES?)'
-  ];
-  const exemplos=[
-    ['MARIA SILVA SANTOS','11144477735','2','225125','06-MEDICINA CONSELHO REGIONAL','123456','080501','13370183000189','20','0','0','07/2026','01/07/2026','ATIVO','nao'],
-    ['JOAO PEREIRA LIMA','22255588846','3','223505','66-ENFERMAGEM CONSELHO REGIONAL','654321','080400','13370183000189','36','0','0','07/2026','01/07/2026','ATIVO','sim'],
-    ['ANA COSTA OLIVEIRA','33366699957','1','422105','','','080400','13370183000189','0','0','36','07/2026','01/07/2026','ATIVO','nao']
-  ];
-  let csv=cab.join(';')+'\n';
-  csv+=instr.join(';')+'\n';
-  exemplos.forEach(function(e){ csv+=e.join(';')+'\n'; });
-  const blob=new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='MODELO_Importacao_CNES.csv'; a.click();
-  showNotif('Modelo baixado. Apague a linha de instrução e os exemplos antes de importar.','ok');
-}
-function fecharImport(){ document.getElementById('modal-import').classList.remove('open'); }
-function parseCsv(txt){
-  // separador , ou ;  — detecta pelo cabeçalho
-  const linhas=txt.replace(/\r/g,'').split('\n').filter(function(l){return l.trim();});
-  if(!linhas.length) return [];
-  const sep=(linhas[0].split(';').length>linhas[0].split(',').length)?';':',';
-  const heads=linhas[0].split(sep).map(function(h){return h.trim();});
-  const out=[];
-  for(let i=1;i<linhas.length;i++){
-    const cols=linhas[i].split(sep);
-    const o={}; heads.forEach(function(h,j){ o[h]=(cols[j]||'').trim(); });
-    out.push(o);
-  }
-  return { heads:heads, linhas:out };
-}
-// mapeia nomes de coluna flexíveis -> campos do sistema
-function mapearColuna(nome){
-  const n=nome.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9]/g,'');
-  const mapa={
-    // Nome
-    nome:'Nome', nomedoprofissional:'Nome', profissional:'Nome',
-    // CPF (prioriza o sem pontos; o formatado também cai aqui)
-    cpf:'CPF', cpfautomatico:'CPF',
-    // CBO: a coluna "CBO" traz código+descrição; "CBO II" traz só o código
-    cbo:'CBOFull', cboii:'CBO',
-    // Órgão/conselho e registro
-    orgao:'Conselho', orgo:'Conselho', conselho:'Conselho', conselhodeclasse:'Conselho',
-    regclasse:'NumConselho', numconselho:'NumConselho', numerodoconselho:'NumConselho', registro:'NumConselho',
-    // Vínculo
-    indicadordevinculo:'IndicadorVinculo', indicadorvinculo:'IndicadorVinculo', vinculo:'IndicadorVinculo',
-    // Cargas horárias
-    cargahorariaoutros:'CHOutros', choutros:'CHOutros', outros:'CHOutros',
-    cargahorariaamb:'CHAmbulatorial', chambulatorial:'CHAmbulatorial', amb:'CHAmbulatorial', ambulatorial:'CHAmbulatorial',
-    cargahorariahosp:'CHHospitalar', chhospitalar:'CHHospitalar', hosp:'CHHospitalar', hospitalar:'CHHospitalar',
-    // CNPJ
-    cnpjdodetalhamento:'CNPJ', cnpjdetalhamento:'CNPJ', cnpj:'CNPJ',
-    // Tipo
-    tipo:'Tipo',
-    cadastradocnes:'CadastradoCNES', cadastrocnes:'CadastradoCNES', nocnes:'CadastradoCNES', cnes:'CadastradoCNES',
-    // Status e data
-    statuscomp:'Status', status:'Status',
-    datainsercao:'DataInclusao', datainclusao:'DataInclusao', datadeinsercao:'DataInclusao', datadeinclusao:'DataInclusao',
-    datasaida:'DataSaida', competencia:'Competencia', comp:'Competencia',
-    // CH final (ignorada, é redundante) — não mapeada
   };
-  return mapa[n]||null;
-}
-function lerCsv(input){
-  const f=input.files[0]; if(!f) return;
-  const reader=new FileReader();
-  reader.onload=function(){
-    const parsed=parseCsv(reader.result);
-    if(!parsed.linhas || !parsed.linhas.length){ document.getElementById('csv-preview').innerHTML='<span style="color:var(--red-text)">CSV vazio ou inválido.</span>'; return; }
-    // converte para os campos do sistema
-    const convert=parsed.linhas.filter(function(row){
-      // ignora a linha de instrução do modelo (caso o usuário esqueça de apagar)
-      const vals=Object.values(row).join(' ').toUpperCase();
-      return vals.indexOf('APAGUE ESTA LINHA')<0;
-    }).map(function(row){
-      const o={ Unidade:unidadeAtual };
-      Object.keys(row).forEach(function(col){ const campo=mapearColuna(col); if(campo) o[campo]=row[col]; });
-      // CBO: se veio "223505  ENFERMEIRO" (CBOFull), separa código e descrição
-      if(o.CBOFull){
-        // aceita: "225125 - Médico clínico", "225125 Médico clínico" ou apenas "225125"
-        const m=String(o.CBOFull).trim().match(/^(\d{4,6})\s*(?:[-–—]\s*)?(.*)$/);
-        if(m){
-          if(!o.CBO) o.CBO=m[1];
-          if(m[2]) o.CBODesc=m[2].trim();
-        } else if(!o.CBO){
-          o.CBO=String(o.CBOFull).trim();
-        }
-        delete o.CBOFull;
-      }
-      // se CBO tem código mas sem descrição, busca na lista conhecida
-      if(o.CBO && !o.CBODesc){ const c=CBOS.find(function(x){return x[0]===String(o.CBO).trim();}); if(c) o.CBODesc=c[1]; }
-      // normaliza CPF preservando zero à esquerda perdido pelo Excel
-      if(o.CPF){
-        const cpfDig=String(o.CPF).replace(/\D/g,'');
-        if(cpfDig.length<=11) o.CPF=cpfDig.padStart(11,'0');
-      }
-      // competência: aceita 07/2026, 07/26, jul/26, JUL/2026 etc.
-      if(o.Competencia){
-        const comp=String(o.Competencia).trim().toLowerCase();
-        const meses={jan:'01',fev:'02',mar:'03',abr:'04',mai:'05',jun:'06',jul:'07',ago:'08',set:'09',out:'10',nov:'11',dez:'12'};
-        let mc=comp.match(/^([a-zç]{3})\/(\d{2}|\d{4})$/i);
-        let mn=comp.match(/^(\d{1,2})\/(\d{2}|\d{4})$/);
-        if(mc){
-          const mm=meses[mc[1].normalize('NFD').replace(/[\u0300-\u036f]/g,'').slice(0,3)];
-          if(mm){ const aa=mc[2].length===2?'20'+mc[2]:mc[2]; o.Competencia=mm+'/'+aa; }
-        } else if(mn){
-          const mm=String(parseInt(mn[1],10)).padStart(2,'0');
-          const aa=mn[2].length===2?'20'+mn[2]:mn[2];
-          o.Competencia=mm+'/'+aa;
-        }
-      }
-      if(!o.Competencia && o.DataInclusao){
-        const dm=String(o.DataInclusao).match(/\d{2}\/(\d{2})\/(\d{4})/);
-        if(dm) o.Competencia=dm[1]+'/'+dm[2];
-      }
-      // vínculo: aceita 80501/80400 vindos do Excel e recompõe o zero inicial
-      if(o.IndicadorVinculo==='-') o.IndicadorVinculo='';
-      if(o.IndicadorVinculo){
-        const orig=String(o.IndicadorVinculo).trim();
-        if(/^\d{4,6}$/.test(orig)){
-          o.IndicadorVinculo=orig.length===5 ? ('0'+orig) : orig;
-        } else {
-          const vl=orig.toLowerCase();
-          if(/aut[oô]nomo/.test(vl)) o.IndicadorVinculo='080501';
-          else if(/celetista|empregado|clt/.test(vl)) o.IndicadorVinculo='080400';
-          else o.IndicadorVinculo=orig;
-        }
-      }
-      // Conselho e NumConselho: importados EXATAMENTE como no CSV (sem alteração)
-      // CadastradoCNES: sim/s/true/1 -> true
-      if(o.CadastradoCNES!==undefined){
-        const cv=String(o.CadastradoCNES).toLowerCase().trim();
-        o.CadastradoCNES=(cv==='sim'||cv==='s'||cv==='true'||cv==='1'||cv==='x')?true:false;
-      }
-      return o;
-    });
-    importPend=convert;
-    // preview: valida CPF/CNPJ e conta problemas
-    let okCpf=0, badCpf=0, badCnpj=0;
-    convert.forEach(function(o){ if(o.CPF){ validaCPF(o.CPF)?okCpf++:badCpf++; } if(o.CNPJ && !validaCNPJ(o.CNPJ)) badCnpj++; });
-    const colsRecon=parsed.heads.map(function(h){ const c=mapearColuna(h); return c?('<span style="color:var(--green-text)">'+esc(h)+'→'+c+'</span>'):('<span style="color:var(--text3)">'+esc(h)+' (ignorada)</span>'); }).join(', ');
-    document.getElementById('csv-preview').innerHTML=
-      '<div style="margin-bottom:8px"><strong>'+convert.length+'</strong> linhas lidas.</div>'
-      +'<div style="font-size:12px;color:var(--green-text);margin-bottom:8px">✔ Formato compatível: CBO com descrição, vínculo sem zero inicial e competência por mês abreviado são normalizados automaticamente.</div>'
-      +'<div style="font-size:12px;margin-bottom:8px">Colunas: '+colsRecon+'</div>'
-      +(badCpf?'<div style="color:var(--red-text);font-size:12px">⚠️ '+badCpf+' CPF(s) inválido(s) serão importados e marcados como CORRIGIR CPF.</div>':'')
-      +(badCnpj?'<div style="color:var(--red-text);font-size:12px">⚠️ '+badCnpj+' CNPJ(s) inválido(s) serão importados e marcados como CORRIGIR CNPJ.</div>':'')
-      +'<div style="color:var(--green-text);font-size:12px">✔️ '+okCpf+' CPF(s) válido(s).</div>';
-    document.getElementById('btn-import').style.display='inline-flex';
+
+  const montarFiltroCompOriginal=montarFiltroComp;
+  montarFiltroComp=function(){
+    montarFiltroCompOriginal();
+    popularFiltroCbo();
   };
-  reader.readAsText(f, 'UTF-8');
-}
-async function confirmarImport(){
-  if(!importPend || !importPend.length){ showNotif('Nada para importar.','err'); return; }
-  document.getElementById('btn-import').disabled=true;
-  const total=importPend.length;
-  const LOTE=100; // envia de 100 em 100 (evita timeout e permite barra de progresso)
-  let importados=0, marcados=[], duplicados=[];
-  // monta a barra
-  const prev=document.getElementById('csv-preview');
-  prev.innerHTML='<div style="font-size:13px;margin-bottom:8px">Importando <strong id="imp-cont">0</strong> de '+total+'...</div>'
-    +'<div class="prog-wrap"><div class="prog-bar" id="imp-bar" style="width:0%"></div></div>';
-  try{
-    for(let i=0;i<total;i+=LOTE){
-      const lote=importPend.slice(i, i+LOTE);
-      const r=await cnesApi('import', { unidade:unidadeAtual, linhas:lote });
-      if(r.ok){ importados+=r.importados||lote.length; if(r.marcados) marcados=marcados.concat(r.marcados); if(r.duplicados) duplicados=duplicados.concat(r.duplicados); }
-      else {
-        const detalhe=(r.message||'Falha desconhecida');
-        showNotif('Erro na importação: '+detalhe,'err');
-        if(/sessão|sessao|401|expirada|autent/i.test(detalhe)){
-          document.getElementById('csv-preview').innerHTML='<div style="color:var(--red-text);font-size:12px">A sessão do CNES não foi aceita. Volte ao TDNGo, entre novamente e abra o módulo CNES.</div>';
-        }
-        break;
-      }
-      const feito=Math.min(i+LOTE, total);
-      const pct=Math.round(feito/total*100);
-      document.getElementById('imp-bar').style.width=pct+'%';
-      document.getElementById('imp-cont').textContent=feito;
+
+  instalarFiltros();
+  popularFiltroCbo();
+  if(currentUser) carregarListas();
+  window.addEventListener('focus',function(){ if(currentUser) carregarListas(); });
+  document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible'&&currentUser) carregarListas(); });
+  setInterval(function(){ if(document.visibilityState==='visible'&&currentUser) carregarListas(); },60000);
+})();`;
+      doc.body.appendChild(sc);
+    }catch(e){
+      console.error('Falha ao aplicar melhorias do CNES',e);
     }
-    document.getElementById('btn-import').disabled=false;
-    let msg=importados+' cadastros importados.';
-    if(marcados.length) msg+=' '+marcados.length+' p/ corrigir.';
-    if(duplicados.length) msg+=' '+duplicados.length+' duplicado(s) bloqueado(s).';
-    showNotif(msg,'ok');
-    await carregar();
-    setTimeout(function(){ fecharImport();
-      let av='';
-      if(marcados.length) av+='Marcados como CORRIGIR (vermelho na lista):\n'+marcados.join('\n')+'\n\n';
-      if(duplicados.length) av+='DUPLICADOS bloqueados (CPF ja existia na unidade, nao importados):\n'+duplicados.join('\n');
-      if(av) alert(av);
-    }, 600);
-  }catch(e){ document.getElementById('btn-import').disabled=false; showNotif('Erro ao importar: '+e.message,'err'); }
-}
-
-// ── Exportar CSV ──
-function exportarCsv(){
-  if(!cadastros.length){ showNotif('Nada para exportar.','err'); return; }
-  // mesmas colunas do modelo de importação -> exportação pode ser reimportada direto
-  const cols=['Nome','CPF','Tipo','CBO','Conselho','NumConselho','IndicadorVinculo','CNPJ','CHAmbulatorial','CHHospitalar','CHOutros','Competencia','DataInclusao','Status','CadastradoCNES'];
-  let csv=cols.join(';')+'\n';
-  // exporta o que está filtrado na tela (respeita busca/filtros); se quiser tudo, limpa os filtros
-  listaFiltrada().forEach(function(c){
-    csv+=cols.map(function(k){
-      let v=(c[k]!=null?c[k]:'');
-      if(k==='CPF') v="'"+padCPF(c.CPF);            // preserva zero à esquerda no Excel
-      else if(k==='CNPJ') v=String(c.CNPJ||'').replace(/\D/g,'');
-      else if(k==='CadastradoCNES') v=(String(c.CadastradoCNES)==='true')?'sim':'nao';
-      else if(k==='Competencia') v=fmtComp(c.Competencia);
-      return String(v).replace(/;/g,',');
-    }).join(';')+'\n';
   });
-  const blob=new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='CNES_'+(unidadeAtual||'unidade').replace(/[^a-zA-Z0-9]/g,'_')+'.csv'; a.click();
-  showNotif('Exportado ('+listaFiltrada().length+' registros).','ok');
-}
-
+})();
 </script>
-
-<!-- ===== FHSL BACK BUTTON ===== -->
-
-<a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo">
-  <span class="tdngo-home-ico">⌂</span>
-  <span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span>
-</a>
-<!-- ===== /FHSL BACK BUTTON ===== -->
 </body>
 </html>

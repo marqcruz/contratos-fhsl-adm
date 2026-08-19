@@ -14,6 +14,11 @@
       "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nconst AUTH_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api';\nconst AUDITORIA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auditoria-api';\nlet currentUser = null;"
     );
 
+    html=html.replace(
+      '<button class="nav-item" data-page="listascnes" onclick="showPage(\'listascnes\',this)">🏥 Listas CNES</button>',
+      '<button class="nav-item" data-page="listascnes" onclick="showPage(\'listascnes\',this)">🏥 Listas CNES</button><a class="nav-item" href="admin-cnes.html" style="text-decoration:none">🧭 Gestão CNES</a>'
+    );
+
     const loginNovo=`async function doLogin(){
   const email=document.getElementById('login-email').value.trim().toLowerCase();
   const senha=document.getElementById('login-pass').value;

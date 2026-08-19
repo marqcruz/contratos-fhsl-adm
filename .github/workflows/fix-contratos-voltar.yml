@@ -1,0 +1,43 @@
+name: Corrigir botão voltar Contratos
+on:
+  push:
+    branches: [layout_gpt]
+    paths: ['.github/workflows/fix-contratos-voltar.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: layout_gpt
+      - name: Inserir botão Voltar ao TDNGo
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('contratos.html')
+          s=p.read_text(encoding='utf-8')
+          marker='<!-- ===== FHSL BACK BUTTON ===== -->\n<!-- ===== /FHSL BACK BUTTON ===== -->'
+          button='''<!-- ===== FHSL BACK BUTTON ===== -->
+          <a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo">
+            <span class="tdngo-home-ico">⌂</span>
+            <span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span>
+          </a>
+          <!-- ===== /FHSL BACK BUTTON ===== -->'''
+          if marker not in s:
+              raise SystemExit('Marcador do botão não encontrado')
+          s=s.replace(marker,button,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Validar
+        run: |
+          grep -q 'href="index.html"' contratos.html
+          grep -q 'Voltar aos módulos' contratos.html
+      - name: Commit
+        run: |
+          git config user.name "TDNGo Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add contratos.html
+          git commit -m "TDNGo: restaura botão voltar em Contratos"
+          git push origin layout_gpt

@@ -4,28 +4,49 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CNES — TDNGo</title>
-<style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117}
-#cnes-frame{display:block;width:100%;height:100vh;border:0;background:#0d1117}
-</style>
+<style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#loading{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center}</style>
 </head>
-<body>
-<iframe id="cnes-frame" src="cnes-base-current.html" title="CNES"></iframe>
+<body><div id="loading">Carregando CNES...</div>
 <script>
-(function(){
-  const frame=document.getElementById('cnes-frame');
-  frame.addEventListener('load',function(){
-    try{
-      const doc=frame.contentDocument;
-      const sc=doc.createElement('script');
-      sc.src='cnes-enhancements.js?v=20260824-1206';
-      sc.async=false;
-      doc.body.appendChild(sc);
-    }catch(e){
-      console.error('Falha ao aplicar melhorias do CNES',e);
+(async()=>{
+  try{
+    const r=await fetch('cnes-base-current.html',{cache:'no-store'});
+    if(!r.ok) throw new Error('cnes-base-current.html HTTP '+r.status);
+    let html=await r.text();
+
+    html=html.replace(
+      /const SCRIPT_URL = 'https:\/\/script\.google\.com\/macros\/s\/[^']+';/,
+      "const CNES_LISTS_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-cnes-lists-api';"
+    );
+
+    const listasApi=`async function cnesListsApi(action,payload){
+  const headers={'Content-Type':'application/json'};
+  const token=(currentUser&&(currentUser.tdngoToken||currentUser.cnesToken))||'';
+  if(token) headers.Authorization='Bearer '+token;
+  try{
+    const r=await fetch(CNES_LISTS_API_URL,{method:'POST',headers,body:JSON.stringify(Object.assign({action:action},payload||{}))});
+    const t=await r.text(); let j; try{j=JSON.parse(t)}catch(e){j={ok:false,message:t}}
+    if(!r.ok&&!j.message) j.message='Erro HTTP '+r.status;
+    return j;
+  }catch(e){ return {ok:false,message:'Falha de conexão com Supabase.'}; }
+}`;
+    html=html.replace(/async function apiFetch\(action, payload\)\{[\s\S]*?\n\}/,listasApi);
+    html=html.replace(/\bapiFetch\(/g,'cnesListsApi(');
+    html=html.replace(/'getcneslistas'/g,"'listCnesCatalogs'");
+
+    if(/script\.google\.com|SCRIPT_URL|\bapiFetch\(/.test(html)){
+      throw new Error('CNES ainda contém referência ativa ao Apps Script.');
     }
-  });
+
+    document.open();document.write(html);document.close();
+
+    const sc=document.createElement('script');
+    sc.src='cnes-enhancements.js?v=20260824-1254';
+    sc.async=false;
+    document.body.appendChild(sc);
+  }catch(e){
+    document.getElementById('loading').textContent='Falha ao carregar CNES: '+(e&&e.message?e.message:String(e));
+    console.error(e);
+  }
 })();
-</script>
-</body>
-</html>
+</script></body></html>

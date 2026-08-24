@@ -36,7 +36,7 @@
     try{
       const token=(currentUser&&(currentUser.tdngoToken||currentUser.cnesToken))||'';
       if(!token) throw new Error('Sessão sem token');
-      const rr=await fetch(CNES_LISTS_API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action:'getcneslistas',_ts:Date.now()})});
+      const rr=await fetch(CNES_LISTS_API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action:'listCnesCatalogs',_ts:Date.now()})});
       const txt=await rr.text(); let r; try{r=JSON.parse(txt)}catch(e){r={ok:false,message:txt}}
       if(r&&r.ok&&r.listas){
         if(Array.isArray(r.listas.cbos)&&r.listas.cbos.length) CBOS=r.listas.cbos;

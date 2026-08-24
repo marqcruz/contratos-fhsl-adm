@@ -11,7 +11,7 @@
 
     html=html.replace(
       "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nlet currentUser = null;",
-      "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nconst AUTH_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api';\nconst AUDITORIA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auditoria-api';\nlet currentUser = null;"
+      "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nconst AUTH_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api';\nconst AUDITORIA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auditoria-api';\nconst ADMIN_DATA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-admin-data-api';\nlet currentUser = null;"
     );
 
     html=html.replace(
@@ -34,6 +34,46 @@
   startApp();
 }`;
     html=html.replace(/async function doLogin\(\)\{[\s\S]*?\n\}/,loginNovo);
+
+    const carregarTudoNovo=`async function carregarTudo(){
+  // Usuários carregam primeiro, direto do Supabase, sem aguardar Apps Script.
+  const pUsuarios=(async()=>{
+    try{
+      if(!currentUser || !currentUser.tdngoToken) return;
+      const rr=await fetch(ADMIN_DATA_API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken},body:JSON.stringify({action:'listUsers'})});
+      const txt=await rr.text(); let ru; try{ru=JSON.parse(txt)}catch(e){ru={ok:false,message:txt}}
+      if(rr.ok && ru.ok){ usuarios=ru.data||[]; renderUsuarios(); }
+    }catch(e){ console.warn('Falha no carregamento rápido de usuários',e); }
+  })();
+
+  // Unidades e locais continuam no fluxo atual, em segundo plano.
+  const pDemais=(async()=>{
+    try{
+      const r=await apiFetch('getadmin');
+      if(r && r.ok && (r.usuarios || r.unidades || r.locais)){
+        if(!usuarios.length) usuarios=r.usuarios||[];
+        unidades=r.unidades||[]; locais=r.locais||[];
+      } else {
+        const [rn,rl]=await Promise.all([apiFetch('getunits'),apiFetch('getlocais')]);
+        unidades=(rn&&rn.ok&&rn.data)?rn.data:[];
+        locais=(rl&&rl.ok&&rl.data)?rl.data:[];
+      }
+      renderUnidades(); renderLocais();
+      if(!usuarios.length) renderUsuarios();
+    }catch(e){
+      try{
+        const [rn,rl]=await Promise.all([apiFetch('getunits'),apiFetch('getlocais')]);
+        unidades=(rn&&rn.ok&&rn.data)?rn.data:[];
+        locais=(rl&&rl.ok&&rl.data)?rl.data:[];
+        renderUnidades(); renderLocais();
+      }catch(e2){ showNotif('Erro ao carregar unidades/locais.','err'); }
+    }
+  })();
+
+  await pUsuarios;
+  pDemais.catch(()=>{});
+}`;
+    html=html.replace(/async function carregarTudo\(\)\{[\s\S]*?\n\}\nfunction render\(\)/,carregarTudoNovo+'\nfunction render()');
 
     const auditNovo=`async function carregarAuditoria(){
   try{

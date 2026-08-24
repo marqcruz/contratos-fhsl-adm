@@ -1,0 +1,188 @@
+name: Remove Apps Script legacy
+
+on:
+  push:
+    branches:
+      - chore/remove-appscript-admin-cnes
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: ${{ !contains(github.event.head_commit.message, '[legacy-cleanup]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/remove-appscript-admin-cnes
+          fetch-depth: 0
+
+      - name: Remove legacy code
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          ADMIN_API="https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-admin-data-api"
+          AUTH_API="https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api"
+          AUDIT_API="https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auditoria-api"
+          CNES_API="https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-cnes-api"
+          CNES_LISTS_API="https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-cnes-lists-api"
+
+          def sub_once(pattern, repl, text, label, flags=re.S):
+              new, n = re.subn(pattern, repl, text, count=1, flags=flags)
+              if n != 1:
+                  raise SystemExit(f'Falha ao substituir {label}: {n} ocorrência(s)')
+              return new
+
+          # ADMIN BASE: passa a nascer 100% Supabase.
+          p=Path('admin-base-current.html')
+          s=p.read_text(encoding='utf-8')
+          backend=f'''const AUTH_API_URL = '{AUTH_API}';
+          const AUDITORIA_API_URL = '{AUDIT_API}';
+          const ADMIN_DATA_API_URL = '{ADMIN_API}';
+          let currentUser = null;
+
+          async function adminApi(action,payload){{
+            if(!currentUser || !currentUser.tdngoToken) return {{ok:false,message:'Sessão sem token do TDNGo.'}};
+            try{{
+              const body=Object.assign({{action:action}},payload||{{}});
+              const rr=await fetch(ADMIN_DATA_API_URL,{{method:'POST',headers:{{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken}},body:JSON.stringify(body)}});
+              const txt=await rr.text(); let data; try{{data=JSON.parse(txt)}}catch(e){{data={{ok:false,message:txt}}}}
+              if(!rr.ok && !data.message) data.message='Erro HTTP '+rr.status;
+              return data;
+            }}catch(e){{ return {{ok:false,message:'Falha de conexão com Supabase.'}}; }}
+          }}'''
+          s=sub_once(r"const SCRIPT_URL\s*=\s*'https://script\.google\.com[^']+';\s*let currentUser = null;\s*async function apiFetch\(action, payload\)\{.*?\n\}",backend,s,'backend legado Administração')
+
+          login=f'''async function doLogin(){{
+            const email=document.getElementById('login-email').value.trim().toLowerCase();
+            const senha=document.getElementById('login-pass').value;
+            const err=document.getElementById('login-err'); err.style.display='none';
+            if(!email||!senha){{ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }}
+            try{{
+              const rr=await fetch(AUTH_API_URL,{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{action:'login',email:email,senha:senha}})}});
+              const txt=await rr.text(); let data; try{{data=JSON.parse(txt)}}catch(e){{data={{ok:false,message:txt}}}}
+              if(!data.ok){{ err.textContent=data.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }}
+              currentUser=data.user||{{}}; currentUser.tdngoToken=data.token||currentUser.tdngoToken||'';
+            }}catch(e){{ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; return; }}
+            sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));
+            startApp();
+          }}'''
+          s=sub_once(r"async function doLogin\(\)\{.*?\n\}\nfunction doLogout\(\)",login+'\nfunction doLogout()',s,'login Administração')
+          s=s.replace('apiFetch(', 'adminApi(')
+          for old,new in {
+              "'getadmin'":"'bootstrapAdmin'",
+              "'getusers'":"'listUsers'",
+              "'getunits'":"'listUnits'",
+              "'getlocais'":"'listLocals'",
+              "'getcneslistas'":"'listCnesCatalogs'",
+              "'savecneslistas'":"'saveCnesCatalogs'",
+          }.items(): s=s.replace(old,new)
+
+          carregar='''async function carregarTudo(){
+            try{
+              const data=await adminApi('bootstrapAdmin');
+              if(!data || !data.ok){ showNotif((data&&data.message)||'Erro ao carregar Administração.','err'); return; }
+              usuarios=data.usuarios||[];
+              unidades=data.unidades||[];
+              locais=data.locais||[];
+              render();
+            }catch(e){ showNotif('Erro ao carregar dados da Administração.','err'); }
+          }'''
+          s=sub_once(r"async function carregarTudo\(\)\{.*?\n\}\nfunction render\(\)",carregar+'\nfunction render()',s,'carregarTudo Administração')
+
+          auditoria=f'''async function carregarAuditoria(){{
+            try{{
+              if(!currentUser || !currentUser.tdngoToken){{ showNotif('Sessão sem token do TDNGo. Entre novamente.','err'); return; }}
+              const rr=await fetch(AUDITORIA_API_URL,{{method:'POST',headers:{{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken}},body:JSON.stringify({{action:'list',limit:3000}})}});
+              const txt=await rr.text(); let data; try{{data=JSON.parse(txt)}}catch(e){{data={{ok:false,message:txt}}}}
+              if(!rr.ok || !data.ok){{ showNotif(data.message||'Erro ao carregar auditoria.','err'); return; }}
+              auditoria=data.data||[]; renderAuditoria();
+            }}catch(e){{ showNotif('Erro ao carregar auditoria.','err'); }}
+          }}'''
+          s=sub_once(r"async function carregarAuditoria\(\)\{.*?\n\}\n// ── Listas CNES ──",auditoria+'\n// ── Listas CNES ──',s,'auditoria Administração')
+
+          diag='''async function verificarDiag(){
+            const box=document.getElementById('diag-box'); if(!box) return;
+            box.textContent='Verificando conexão com o Supabase...';
+            try{
+              const r=await adminApi('bootstrapAdmin');
+              box.innerHTML=r&&r.ok?'🟢 Conectado ao Supabase.':'🟡 Supabase respondeu, mas a Administração não retornou dados.';
+            }catch(e){ box.innerHTML='🔴 Sem conexão com o Supabase.'; }
+          }'''
+          s=sub_once(r"async function verificarDiag\(\)\{.*?\n\}",diag,s,'diagnóstico Administração')
+          s=s.replace('Verifique a conexão e a publicação do Apps Script.','Verifique a conexão com o Supabase.')
+          p.write_text(s,encoding='utf-8')
+
+          # ADMIN WRAPPER: loader simples, sem código de adaptação legado.
+          Path('admin.html').write_text('''<!doctype html>
+          <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administração — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#loading{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center}</style></head>
+          <body><div id="loading">Carregando Administração...</div><script>
+          (async()=>{try{const r=await fetch('admin-base-current.html',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const html=await r.text();document.open();document.write(html);document.close();}catch(e){document.getElementById('loading').textContent='Falha ao carregar Administração: '+(e&&e.message?e.message:String(e));console.error(e)}})();
+          </script></body></html>''',encoding='utf-8')
+
+          # CNES BASE: remove endpoint e função do Apps Script; catálogos vêm apenas do Supabase.
+          p=Path('cnes-base-current.html')
+          s=p.read_text(encoding='utf-8')
+          cnes_backend=f'''const CNES_API_URL = '{CNES_API}';
+          const CNES_LISTS_API_URL = '{CNES_LISTS_API}';
+          let currentUser = null;
+
+          async function cnesListsApi(action,payload){{
+            const token=(currentUser&&(currentUser.tdngoToken||currentUser.cnesToken))||'';
+            if(!token) return {{ok:false,message:'Sessão sem token do TDNGo.'}};
+            try{{
+              const r=await fetch(CNES_LISTS_API_URL,{{method:'POST',headers:{{'Content-Type':'application/json','Authorization':'Bearer '+token}},body:JSON.stringify(Object.assign({{action:action}},payload||{{}}))}});
+              const t=await r.text(); let j; try{{j=JSON.parse(t)}}catch(e){{j={{ok:false,message:t}}}}
+              if(!r.ok&&!j.message)j.message='Erro HTTP '+r.status;
+              return j;
+            }}catch(e){{ return {{ok:false,message:'Falha de conexão com Supabase.'}}; }}
+          }}'''
+          s=sub_once(r"const SCRIPT_URL\s*=\s*'https://script\.google\.com[^']+';\s*const CNES_API_URL\s*=\s*'[^']+';\s*let currentUser = null;\s*async function apiFetch\(action, payload\)\{.*?\n\}",cnes_backend,s,'backend legado CNES')
+          s=s.replace('apiFetch(', 'cnesListsApi(').replace("'getcneslistas'","'listCnesCatalogs'")
+
+          # Sem listas locais como fallback: Supabase é a fonte única.
+          s, n = re.subn(r"let CBOS = \[.*?\];\s*let CONSELHOS = \[.*?\];\s*let VINCULOS = \[.*?\];", "let CBOS = [];\nlet CONSELHOS = [];\nlet VINCULOS = [];", s, count=1, flags=re.S)
+          if n != 1: raise SystemExit(f'Falha ao remover listas locais CNES: {n}')
+          # Em erro de catálogo, não mascara com dados embutidos.
+          s=s.replace("}catch(e){ /* usa os valores padrão embutidos */ }", "}catch(e){ CBOS=[]; CONSELHOS=[]; VINCULOS=[]; showNotif('Não foi possível carregar as listas CNES do Supabase.','err'); }")
+          p.write_text(s,encoding='utf-8')
+
+          # ENHANCEMENTS: erro de catálogo não usa fallback local.
+          p=Path('cnes-enhancements.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("}catch(e){ console.warn('CNES: usando listas locais por falha no Supabase',e); }", "}catch(e){ CBOS=[]; CONSELHOS=[]; VINCULOS=[]; console.error('CNES: falha ao carregar catálogos do Supabase',e); if(typeof showNotif==='function') showNotif('Não foi possível carregar as listas CNES do Supabase.','err'); }")
+          p.write_text(s,encoding='utf-8')
+
+          # CNES WRAPPER: injeta enhancements durante o parse, sem transformar código legado.
+          Path('cnes.html').write_text('''<!doctype html>
+          <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CNES — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#loading{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center}</style></head>
+          <body><div id="loading">Carregando CNES...</div><script>
+          (async()=>{try{const r=await fetch('cnes-base-current.html',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);let html=await r.text();html=html.replace('</body>','<script src="cnes-enhancements.js?v=20260824-1300"><\\/script></body>');document.open();document.write(html);document.close();}catch(e){document.getElementById('loading').textContent='Falha ao carregar CNES: '+(e&&e.message?e.message:String(e));console.error(e)}})();
+          </script></body></html>''',encoding='utf-8')
+
+          # Validação: nenhum legado pode restar nos arquivos ativos da etapa.
+          targets=['admin.html','admin-base-current.html','cnes.html','cnes-base-current.html','cnes-enhancements.js']
+          forbidden=['script.google.com','SCRIPT_URL','apiFetch(','getadmin','getusers','getunits','getlocais','getcneslistas','savecneslistas','Apps Script']
+          problems=[]
+          for name in targets:
+              text=Path(name).read_text(encoding='utf-8')
+              for token in forbidden:
+                  if token in text: problems.append(f'{name}: {token}')
+          if problems:
+              raise SystemExit('Legado ainda encontrado:\n'+'\n'.join(problems))
+          print('OK: Administração + CNES sem referências/fallbacks do Apps Script.')
+          PY
+
+      - name: Commit cleanup and remove one-time workflow
+        shell: bash
+        run: |
+          git rm .github/workflows/remove-appscript-legacy.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin.html admin-base-current.html cnes.html cnes-base-current.html cnes-enhancements.js
+          git commit -m "refactor: remove Apps Script legacy from Admin and CNES [legacy-cleanup]"
+          git push origin HEAD:chore/remove-appscript-admin-cnes

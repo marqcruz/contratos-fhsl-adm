@@ -9,7 +9,7 @@
     if(!r.ok)throw new Error('HTTP '+r.status);
     let html=await r.text();
     html=html.replace('id="tb-users"','id="tb_users"').replace('id="tb-units"','id="tb_units"').replace('id="tb-locals"','id="tb_locals"').replace('id="tb-audit"','id="tb_audit"');
-    html=html.replace(/\blogin\(\)/g,'doLogin()').replace('function login(){','function doLogin(){');
+    html=html.replace(/\blogin\(\)/g,'doLogin()');
     document.open();document.write(html);document.close();
   }catch(e){document.getElementById('loading').textContent='Falha ao carregar Administração: '+(e&&e.message?e.message:String(e));console.error(e)}
 })();

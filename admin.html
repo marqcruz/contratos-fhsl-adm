@@ -6,71 +6,10 @@
 (async()=>{
   try{
     const r=await fetch('admin-base-current.html',{cache:'no-store'});
-    if(!r.ok) throw new Error('admin-base-current.html HTTP '+r.status);
+    if(!r.ok)throw new Error('HTTP '+r.status);
     let html=await r.text();
-
-    html=html.replace(
-      "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nlet currentUser = null;",
-      "const AUTH_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api';\nconst AUDITORIA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auditoria-api';\nconst ADMIN_DATA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-admin-data-api';\nlet currentUser = null;"
-    );
-
-    html=html.replace(
-      '<button class="nav-item" data-page="listascnes" onclick="showPage(\'listascnes\',this)">🏥 Listas CNES</button>',
-      '<button class="nav-item" data-page="listascnes" onclick="showPage(\'listascnes\',this)">🏥 Listas CNES</button><a class="nav-item" href="admin-cnes.html" style="text-decoration:none">🧭 Gestão CNES</a>'
-    );
-
-    const apiNovo=`async function apiFetch(action,payload){
-  if(!currentUser || !currentUser.tdngoToken) return {ok:false,message:'Sessão sem token do TDNGo.'};
-  try{
-    const body=Object.assign({action:action},payload||{});
-    const rr=await fetch(ADMIN_DATA_API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken},body:JSON.stringify(body)});
-    const txt=await rr.text(); let data; try{data=JSON.parse(txt)}catch(e){data={ok:false,message:txt}}
-    if(!rr.ok && !data.message) data.message='Erro HTTP '+rr.status;
-    return data;
-  }catch(e){ return {ok:false,message:'Falha de conexão com Supabase.'}; }
-}`;
-    html=html.replace(/async function apiFetch\(action, payload\)\{[\s\S]*?\n\}/,apiNovo);
-
-    const loginNovo=`async function doLogin(){
-  const email=document.getElementById('login-email').value.trim().toLowerCase();
-  const senha=document.getElementById('login-pass').value;
-  const err=document.getElementById('login-err'); err.style.display='none';
-  if(!email||!senha){ err.textContent='Preencha e-mail e senha.'; err.style.display='block'; return; }
-  try{
-    const rr=await fetch(AUTH_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',email:email,senha:senha})});
-    const txt=await rr.text(); let data; try{data=JSON.parse(txt)}catch(e){data={ok:false,message:txt}}
-    if(!data.ok){ err.textContent=data.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
-    currentUser=data.user||{}; currentUser.tdngoToken=data.token||currentUser.tdngoToken||'';
-  }catch(e){ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; return; }
-  sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));
-  startApp();
-}`;
-    html=html.replace(/async function doLogin\(\)\{[\s\S]*?\n\}/,loginNovo);
-
-    const carregarTudoNovo=`async function carregarTudo(){
-  try{
-    const data=await apiFetch('getadmin');
-    if(!data || !data.ok){ showNotif((data&&data.message)||'Erro ao carregar Administração.','err'); return; }
-    usuarios=data.usuarios||[];
-    unidades=data.unidades||[];
-    locais=data.locais||[];
-    render();
-  }catch(e){ showNotif('Erro ao carregar dados da Administração.','err'); }
-}`;
-    html=html.replace(/async function carregarTudo\(\)\{[\s\S]*?\n\}\nfunction render\(\)/,carregarTudoNovo+'\nfunction render()');
-
-    const auditNovo=`async function carregarAuditoria(){
-  try{
-    if(!currentUser || !currentUser.tdngoToken){ showNotif('Sessão sem token do TDNGo. Entre novamente.','err'); return; }
-    const rr=await fetch(AUDITORIA_API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken},body:JSON.stringify({action:'list',limit:3000})});
-    const txt=await rr.text(); let data; try{data=JSON.parse(txt)}catch(e){data={ok:false,message:txt}}
-    if(!rr.ok || !data.ok){ showNotif(data.message||'Erro ao carregar auditoria.','err'); return; }
-    auditoria=data.data||[]; renderAuditoria();
-  }catch(e){ showNotif('Erro ao carregar auditoria.','err'); }
-}`;
-    html=html.replace(/async function carregarAuditoria\(\)\{[\s\S]*?\n\}/,auditNovo);
-
-    document.open(); document.write(html); document.close();
+    html=html.replace('id="tb-users"','id="tb_users"').replace('id="tb-units"','id="tb_units"').replace('id="tb-locals"','id="tb_locals"').replace('id="tb-audit"','id="tb_audit"').replace(/\blogin\(\)/g,'doLogin()');
+    document.open();document.write(html);document.close();
   }catch(e){document.getElementById('loading').textContent='Falha ao carregar Administração: '+(e&&e.message?e.message:String(e));console.error(e)}
 })();
 </script></body></html>

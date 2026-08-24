@@ -8,14 +8,18 @@
   const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/7c12a630e3a0e910d7457c97e9b407ed97d14505/malotes.html';
   const r=await fetch(base,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);
   let html=await r.text();
-  html=html.replace("const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';","const SCRIPT_URL='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-malotes-api';");
+  html=html.replace("const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';","const SCRIPT_URL='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-malotes-api'; const IMPORT_URL='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-malotes-import';");
   html=html.replace(/async function apiFetch\(action,payload\)\{const r=await fetch\(SCRIPT_URL\+'\\?action='\+action,\{method:'POST',body:JSON\.stringify\(payload\|\|\{\}\)\}\);const t=await r\.text\(\);try\{return JSON\.parse\(t\)\}catch\(e\)\{return\{ok:false,message:t\|\|'Resposta inválida'\}\}\}/,
 `async function apiFetch(action,payload){
  const tk=(currentUser&&currentUser.tdngoToken)||(()=>{try{return JSON.parse(sessionStorage.getItem('fhsl_session')||'null')?.tdngoToken||''}catch(e){return''}})();
  const headers={'Content-Type':'application/json'};if(tk)headers.Authorization='Bearer '+tk;
  const r=await fetch(SCRIPT_URL,{method:'POST',headers,body:JSON.stringify({action,...(payload||{})})});
  const t=await r.text();let d;try{d=JSON.parse(t)}catch(e){d={ok:false,message:t||'Resposta inválida'}}
- if(r.status===401&&action!=='authuser'){sessionStorage.removeItem('fhsl_session');location.reload();}
+ if(r.status===401&&action!=='authuser'){sessionStorage.removeItem('fhsl_session');location.reload();return d}
+ if(action==='getmalotesbootstrap'&&d?.ok&&Array.isArray(d?.data?.malotes)&&d.data.malotes.length===0&&tk&&!window.__malImportTried&&['admin','gestor'].includes(String(currentUser?.role||'').toLowerCase())){
+   window.__malImportTried=true;
+   try{const ir=await fetch(IMPORT_URL,{method:'POST',headers,body:'{}'});const id=await ir.json();if(ir.ok&&id?.ok&&Number(id.importados||0)>0)return await apiFetch(action,payload)}catch(e){}
+ }
  return d
 }`);
   html=html.replace("window.addEventListener('DOMContentLoaded',()=>{const s=sessionStorage.getItem('fhsl_session');if(s)try{currentUser=JSON.parse(s);startApp()}catch(e){}})","window.addEventListener('DOMContentLoaded',()=>{const s=sessionStorage.getItem('fhsl_session');if(s)try{const u=JSON.parse(s);if(u&&u.tdngoToken){currentUser=u;startApp()}else sessionStorage.removeItem('fhsl_session')}catch(e){sessionStorage.removeItem('fhsl_session')}})");

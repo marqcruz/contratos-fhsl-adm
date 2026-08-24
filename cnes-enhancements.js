@@ -1,6 +1,7 @@
 (function(){
   const FHSL_CNPJ='13.370.183/0001-89';
   const CNES_ACCESS_API='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-cnes-access-api';
+  const CNES_LISTS_API='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-cnes-lists-api';
 
   cnesApi=async function(action,payload,autenticado=true){
     const headers={'Content-Type':'application/json'};
@@ -31,18 +32,19 @@
     if(itens.some(function(c){ return String(c[0])===atual; })) sel.value=atual;
   }
 
-  const carregarListasOriginal=carregarListas;
   carregarListas=async function(){
     try{
-      const r=await apiFetch('getcneslistas',{_ts:Date.now()});
+      const token=(currentUser&&(currentUser.tdngoToken||currentUser.cnesToken))||'';
+      if(!token) throw new Error('Sessão sem token');
+      const rr=await fetch(CNES_LISTS_API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action:'getcneslistas',_ts:Date.now()})});
+      const txt=await rr.text(); let r; try{r=JSON.parse(txt)}catch(e){r={ok:false,message:txt}}
       if(r&&r.ok&&r.listas){
         if(Array.isArray(r.listas.cbos)&&r.listas.cbos.length) CBOS=r.listas.cbos;
         if(Array.isArray(r.listas.conselhos)&&r.listas.conselhos.length) CONSELHOS=r.listas.conselhos;
         if(Array.isArray(r.listas.vinculos)&&r.listas.vinculos.length) VINCULOS=r.listas.vinculos;
-        preencherCbos(); preencherConselhos(); preencherVinculos(); popularFiltroCbo(); return;
-      }
-    }catch(e){ console.warn('CNES: falha ao atualizar listas da Administração',e); }
-    await carregarListasOriginal(); popularFiltroCbo();
+      } else throw new Error(r&&r.message?r.message:'Erro ao carregar listas');
+    }catch(e){ console.warn('CNES: usando listas locais por falha no Supabase',e); }
+    preencherCbos(); preencherConselhos(); preencherVinculos(); popularFiltroCbo();
   };
 
   const tipoMudouOriginal=tipoMudou;

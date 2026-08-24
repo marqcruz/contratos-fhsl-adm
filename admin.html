@@ -11,7 +11,7 @@
 
     html=html.replace(
       "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nlet currentUser = null;",
-      "const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\nconst AUTH_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api';\nconst AUDITORIA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auditoria-api';\nconst ADMIN_DATA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-admin-data-api';\nlet currentUser = null;"
+      "const AUTH_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auth-api';\nconst AUDITORIA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-auditoria-api';\nconst ADMIN_DATA_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-admin-data-api';\nlet currentUser = null;"
     );
 
     html=html.replace(
@@ -20,11 +20,6 @@
     );
 
     const apiNovo=`async function apiFetch(action,payload){
-  const legacyActions=['getcneslistas','savecneslistas'];
-  if(legacyActions.includes(action)){
-    const rr=await fetch(SCRIPT_URL+'?action='+encodeURIComponent(action),{method:'POST',body:JSON.stringify(payload||{})});
-    const txt=await rr.text(); try{return JSON.parse(txt)}catch(e){return{ok:false,message:txt}}
-  }
   if(!currentUser || !currentUser.tdngoToken) return {ok:false,message:'Sessão sem token do TDNGo.'};
   try{
     const body=Object.assign({action:action},payload||{});

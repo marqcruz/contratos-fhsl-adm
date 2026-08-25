@@ -18,12 +18,22 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117}
     try{
       const doc=frame.contentDocument;
       if(!doc || !doc.body) throw new Error('Documento CNES indisponível');
-      if(doc.getElementById('tdngo-cnes-enhancements-v2')) return;
-      const sc=doc.createElement('script');
-      sc.id='tdngo-cnes-enhancements-v2';
-      sc.src='cnes-enhancements-v2.js?v=20260825-1445';
-      sc.async=false;
-      doc.body.appendChild(sc);
+
+      if(!doc.getElementById('tdngo-cnes-enhancements-v2')){
+        const sc=doc.createElement('script');
+        sc.id='tdngo-cnes-enhancements-v2';
+        sc.src='cnes-enhancements-v2.js?v=20260825-1445';
+        sc.async=false;
+        doc.body.appendChild(sc);
+      }
+
+      if(!doc.getElementById('tdngo-cnes-print-enhancements')){
+        const sp=doc.createElement('script');
+        sp.id='tdngo-cnes-print-enhancements';
+        sp.src='cnes-print-enhancements.js?v=20260825-1711';
+        sp.async=false;
+        doc.body.appendChild(sp);
+      }
     }catch(e){
       console.error('Falha ao aplicar melhorias do CNES',e);
     }

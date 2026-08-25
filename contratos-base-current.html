@@ -2522,7 +2522,8 @@ function printFicha(id){
     + row('Observações',c.observacoes)+row('Renovação iniciada',c.renovacaoIniciada||'Não')
     + '</table>'+unidades
     + '<div style="margin-top:24px;font-size:11px;color:#888;border-top:1px solid #ccc;padding-top:10px">Emitido em '+new Date().toLocaleString('pt-BR')+' por '+(currentUser.nome||'')+' · TDN Gestão Operacional — TDNGo</div>'
-    + '<script>window.onload=function(){window.print();}<\/script><a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo"><span class="tdngo-home-ico">⌂</span><span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span></a></body></html>';
+    + '<script>window.onload=function(){window.print();}<\/script><a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo"><span class="tdngo-home-ico">⌂</span><span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span></a><script src="tdngo-nav.js"></script>
+</body></html>';
   const w = window.open('','_blank');
   w.document.write(html); w.document.close();
 }

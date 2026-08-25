@@ -35,4 +35,5 @@ function renderEditor(){const u=data.usuarios.find(x=>x.id===userId);if(!u)retur
 function marcarTodas(v){document.querySelectorAll('.uchk').forEach(x=>x.checked=v)}
 async function salvar(){const u=data.usuarios.find(x=>x.id===userId);if(!u||!modulo)return;const habilitado=u.role==='admin'?true:document.getElementById('habilitado').checked,ids=[...document.querySelectorAll('.uchk:checked')].map(x=>x.value);try{await api('saveModuleAccess',{usuario_id:u.id,modulo,habilitado,unidade_ids:ids});const r=await api('accessOverview');data=r.data;toast('Acesso atualizado.');renderUsers();renderEditor()}catch(e){toast(e.message)}}
 </script>
+<script src="tdngo-nav.js"></script>
 </body></html>

@@ -1,4 +1,4 @@
-name: Padronizar navegacao TDNGo
+name: Reparar paginas TDNGo
 on:
   push:
     branches: [layout_gpt]
@@ -6,39 +6,89 @@ on:
 permissions:
   contents: write
 jobs:
-  patch:
+  repair:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: layout_gpt
-      - name: Injetar navegacao comum
+          fetch-depth: 0
+      - name: Restaurar arquivos antes da injecao quebrada
+        shell: bash
+        run: |
+          git checkout c26253a7967b886b2547a030f8f3cc7ac201063f -- \
+            acessos.html \
+            admin-base-current.html \
+            admin-cnes.html \
+            admin.html \
+            chaves.html \
+            cnes-base-current.html \
+            cnes.html \
+            conferencia.html \
+            conferencia_individual_documentos.html \
+            consulta-limpeza.html \
+            contratos-base-current.html \
+            contratos-gestao.html \
+            contratos.html \
+            indicador_laboratorial.html \
+            indicadores.html \
+            indicadores_configuravel_upas.html \
+            limpeza.html \
+            malotes.html \
+            notas_indicadores.html \
+            painel-ubs.html \
+            painel-upas.html \
+            risco.html \
+            seguranca.html \
+            solicitacao_interna_formulario.html \
+            visitantes.html
+      - name: Reaplicar acesso por unidade no Visitantes sem wrapper
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          tag='<script src="tdngo-nav.js"></script>'
-          changed=[]
-          for p in Path('.').glob('*.html'):
-              if p.name=='index.html':
-                  continue
-              s=p.read_text(encoding='utf-8')
-              if tag in s:
-                  continue
-              if '</body>' in s:
-                  s=s.replace('</body>',tag+'\n</body>',1)
-              elif '</html>' in s:
-                  s=s.replace('</html>',tag+'\n</html>',1)
-              else:
-                  continue
-              p.write_text(s,encoding='utf-8')
-              changed.append(p.name)
-          print('Arquivos ajustados:', ', '.join(changed))
+          p=Path('visitantes.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL4toQDT4FSxp4-ytfcE-wMuti0AReZ_msABQGqcXz2Er3N73Jb5cJLHnzyZGXsdRf/exec';\n",'')
+          start=s.find('async function apiFetch(action,payload){')
+          if start!=-1:
+              end=s.find('\n\nasync function visitantesApi',start)
+              if end!=-1:
+                  s=s[:start]+s[end+2:]
+          s=s.replace(
+              "let currentUser=null, visitantes=[], config={tipos:[],locais:[],setores:[],motivos:[]}, relDados=[];",
+              "let currentUser=null, visitantes=[], config={tipos:[],locais:[],setores:[],motivos:[]}, relDados=[], unidadesAcesso=[];"
+          )
+          s=s.replace(
+              '<div class="fg"><label class="req">Tipo de acesso</label><select id="f-tipo" onchange="tipoMudou()"></select></div>',
+              '<div class="fg"><label class="req">Unidade</label><select id="f-unidade"></select></div><div class="fg"><label class="req">Tipo de acesso</label><select id="f-tipo" onchange="tipoMudou()"></select></div>'
+          )
+          s=s.replace(
+              "visitantes=d.visitantes||[];\n    if(d.config)config=d.config;\n    preencherSelecoes();atualizarSugestoes();renderTudo()",
+              "visitantes=d.visitantes||[];\n    unidadesAcesso=d.unidades||[];\n    if(d.config)config=d.config;\n    preencherSelecoes();atualizarSugestoes();renderTudo()"
+          )
+          s=s.replace(
+              "fillSelect('f-tipo',config.tipos,true);fillSelect('f-setor',locais,true);fillSelect('f-motivo',config.motivos,false);",
+              "const us=document.getElementById('f-unidade');if(us){us.innerHTML=unidadesAcesso.map(u=>`<option value=\"${esc(u.id)}\">${esc(u.nome)}</option>`).join('');us.disabled=unidadesAcesso.length<=1;}fillSelect('f-tipo',config.tipos,true);fillSelect('f-setor',locais,true);fillSelect('f-motivo',config.motivos,false);"
+          )
+          s=s.replace(
+              "document.getElementById('form-title').textContent=v?'Editar registro':'Nova entrada';document.getElementById('f-id').value=v?v.ID:'';",
+              "document.getElementById('form-title').textContent=v?'Editar registro':'Nova entrada';document.getElementById('f-id').value=v?v.ID:'';const fu=document.getElementById('f-unidade');if(fu){fu.value=v?.UnidadeId||unidadesAcesso[0]?.id||'';}"
+          )
+          s=s.replace(
+              "const p={\n    Tipo:document.getElementById('f-tipo').value.toUpperCase(),",
+              "const p={\n    UnidadeId:document.getElementById('f-unidade')?.value||'',\n    Tipo:document.getElementById('f-tipo').value.toUpperCase(),"
+          )
+          s=s.replace("if(!p.Tipo||!p.Documento||!p.Nome", "if(!p.UnidadeId||!p.Tipo||!p.Documento||!p.Nome")
+          s=s.replace("const items=[['Nome completo',v.Nome]", "const items=[['Unidade',v.Unidade||'—'],['Nome completo',v.Nome]")
+          if 'script.google.com' in s or 'SCRIPT_URL' in s or 'apiFetch(' in s:
+              raise SystemExit('Visitantes ainda contém dependência legada')
+          p.write_text(s,encoding='utf-8')
           PY
-      - name: Commit
+      - name: Commit da reparacao
         run: |
           git config user.name "TDNGo Automation"
           git config user.email "actions@users.noreply.github.com"
           git add '*.html'
-          git commit -m "TDNGo: padroniza botoes de voltar" || exit 0
+          git commit -m "TDNGo: restaura paginas e corrige navegacao" || exit 0
           git push origin layout_gpt

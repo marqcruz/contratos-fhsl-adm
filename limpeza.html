@@ -585,11 +585,11 @@ async function doLogin(){
     if(!r.ok){ err.textContent=r.message||'E-mail ou senha incorretos.'; err.style.display='block'; return; }
     currentUser=r.user; currentUser.tdngoToken=r.token;
   }catch(e){ err.textContent='Sem conexão com o servidor.'; err.style.display='block'; return; }
-  sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
+  sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser)); localStorage.setItem('fhsl_session', JSON.stringify(currentUser));
   startApp();
 }
 function doLogout(){
-  sessionStorage.removeItem('fhsl_session'); currentUser=null;
+  sessionStorage.removeItem('fhsl_session'); localStorage.removeItem('fhsl_session'); currentUser=null;
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
   const p=document.getElementById('login-pass'); if(p) p.value='';
@@ -605,7 +605,7 @@ function showNotif(msg,type){ const el=document.getElementById('notif'); if(!el)
   el.textContent=msg; el.className='notif-toast '+(type||'ok'); el.style.display='block';
   setTimeout(function(){ el.style.display='none'; },3500); }
 window.addEventListener('DOMContentLoaded', function(){
-  const s=sessionStorage.getItem('fhsl_session');
+  const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session'); if(s&&!sessionStorage.getItem('fhsl_session')) sessionStorage.setItem('fhsl_session',s);
   if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&currentUser.tdngoToken) startApp(); else currentUser=null; }catch(e){currentUser=null;} }
 });
 const PAGE_META = {

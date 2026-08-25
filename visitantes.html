@@ -564,7 +564,7 @@ async function visitantesApi(action,payload,autenticado=true){
   if(autenticado&&currentUser&&currentUser.tdngoToken)headers.Authorization='Bearer '+currentUser.tdngoToken;
   const r=await fetch(VISITANTES_API_URL,{method:'POST',headers,body:JSON.stringify(Object.assign({action},payload||{}))});
   const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){j={ok:false,message:t}}
-  if(r.status===401&&autenticado){try{sessionStorage.removeItem('fhsl_session')}catch(e){}}
+  if(r.status===401&&autenticado){try{sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session')}catch(e){}}
   return j
 }
 async function tdngoAuthLogin(email,senha){
@@ -596,12 +596,12 @@ async function doLogin(){
     currentUser=r.user||{};
     if(r.token&&!currentUser.tdngoToken)currentUser.tdngoToken=r.token;
   }catch(e){err.textContent='Sem conexão com o servidor de autenticação.';err.style.display='block';return}
-  sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));
+  sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));localStorage.setItem('fhsl_session',JSON.stringify(currentUser));
   startApp()
 }
-function doLogout(){sessionStorage.removeItem('fhsl_session');currentUser=null;document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('login-pass').value=''}
+function doLogout(){sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');currentUser=null;document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('login-pass').value=''}
 window.addEventListener('DOMContentLoaded',()=>{
-  const s=sessionStorage.getItem('fhsl_session');if(!s)return;
+  const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');if(!s)return;if(!sessionStorage.getItem('fhsl_session'))sessionStorage.setItem('fhsl_session',s);
   try{
     currentUser=JSON.parse(s);
     if(currentUser&&currentUser.tdngoToken){startApp();return}

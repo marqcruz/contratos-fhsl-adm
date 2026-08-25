@@ -1,14 +1,2 @@
 <!doctype html>
-<html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CNES — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#loading{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center}</style></head>
-<body><div id="loading">Carregando CNES...</div>
-<script>
-(async()=>{
-  try{
-    const r=await fetch('cnes-base-current.html',{cache:'no-store'});
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const html=await r.text();
-    document.open();document.write(html);document.close();
-  }catch(e){document.getElementById('loading').textContent='Falha ao carregar CNES: '+(e&&e.message?e.message:String(e));console.error(e)}
-})();
-</script></body></html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CNES — TDNGo</title><meta http-equiv="refresh" content="0;url=cnes-base-current.html"></head><body style="background:#0d1117;color:#e6edf3;font-family:system-ui"><p>Carregando CNES...</p><script>location.replace("cnes-base-current.html")<\/script></body></html>

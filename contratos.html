@@ -17,6 +17,9 @@
     html=html.replace("    + '<div class=\"stat-card c-green\"><div class=\"stat-num\">'+(users.filter(function(u){return u.ativo;}).length||1)+'</div><div class=\"stat-label\">Usuários ativos</div></div>';",";");
     html=html.replace('async function loadAll(){ await Promise.all([ loadUnits(), loadContracts(), loadUsers() ]); }','async function loadAll(){ await Promise.all([ loadUnits(), loadContracts() ]); }');
 
+    html=html.replace("window.addEventListener('DOMContentLoaded', function(){","setTimeout(function(){");
+    html=html.replace("const sess = sessionStorage.getItem('fhsl_session');","const sess = sessionStorage.getItem('fhsl_session') || localStorage.getItem('fhsl_session'); if(sess&&!sessionStorage.getItem('fhsl_session')) sessionStorage.setItem('fhsl_session',sess);");
+    html=html.replace(/sessionStorage\.removeItem\('fhsl_session'\);/g,"sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');");
     document.open(); document.write(html); document.close();
   }catch(e){document.getElementById('loading').textContent='Falha ao carregar Contratos: '+(e&&e.message?e.message:String(e));console.error(e)}
 })();

@@ -62,5 +62,4 @@ async function loadAudit(){try{const r=await post(AUDIT,{action:'list',limit:300
 function renderAudit(){const q=qa.value.toLowerCase();tb_audit.innerHTML=audit.filter(a=>((a.Usuario||'')+' '+(a.Acao||'')+' '+(a.Detalhe||'')).toLowerCase().includes(q)).slice(0,1000).map(a=>`<tr><td>${esc(a.DataHora)}</td><td>${esc(a.Usuario)}</td><td>${esc(a.Acao)}</td><td>${esc(a.Detalhe)}</td></tr>`).join('')}
 (function(){document.body.dataset.theme=localStorage.getItem('tdngo_theme')||'dark';try{const s=JSON.parse(sessionStorage.getItem('fhsl_session')||'null');if(s?.tdngoToken){me=s;token=s.tdngoToken;start()}}catch{}})();
 </script>
-<script src="tdngo-nav.js"></script>
 </body></html>

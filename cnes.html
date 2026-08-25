@@ -5,12 +5,10 @@
 <script>
 (async()=>{
   try{
-    const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/c26253a7967b886b2547a030f8f3cc7ac201063f/cnes-base-current.html';
-    const r=await fetch(base,{cache:'no-store'});
+    const r=await fetch('cnes-base-current.html',{cache:'no-store'});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const html=await r.text();
     document.open();document.write(html);document.close();
   }catch(e){document.getElementById('loading').textContent='Falha ao carregar CNES: '+(e&&e.message?e.message:String(e));console.error(e)}
 })();
-</script>
-</body></html>
+</script></body></html>

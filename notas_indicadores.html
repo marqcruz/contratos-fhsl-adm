@@ -296,6 +296,5 @@ file.onchange=async()=>{const f=file.files[0];if(!f)return;try{parseWorkbook(f,a
 ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));
 drop.addEventListener('drop',async e=>{const f=e.dataTransfer.files[0];if(!f)return;try{parseWorkbook(f,await f.arrayBuffer())}catch(err){$('status').className='status err';$('status').textContent='Erro: '+err.message}});
 </script>
-<a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo"><span class="tdngo-home-ico">⌂</span><span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span></a><script src="tdngo-nav.js"></script>
-</body>
+<a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo"><span class="tdngo-home-ico">⌂</span><span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span></a></body>
 </html>

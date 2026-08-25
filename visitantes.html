@@ -13,6 +13,8 @@
  html=html.replace("const p={\n    Tipo:document.getElementById('f-tipo').value.toUpperCase(),","const p={\n    UnidadeId:document.getElementById('f-unidade')?.value||'',\n    Tipo:document.getElementById('f-tipo').value.toUpperCase(),");
  html=html.replace("if(!p.Tipo||!p.Documento||!p.Nome", "if(!p.UnidadeId||!p.Tipo||!p.Documento||!p.Nome");
  html=html.replace("const items=[['Nome completo',v.Nome]", "const items=[['Unidade',v.Unidade||'—'],['Nome completo',v.Nome]");
+ html=html.replace("window.addEventListener('DOMContentLoaded',()=>{", "(()=>{");
+ html=html.replace("\n})\n\nconst PAGE_META=", "\n})()\n\nconst PAGE_META=");
  html=html.replace(/<script src="tdngo-nav\.js"><\/script>/g,'');
  html=html.replace('</body>','<script src="tdngo-nav.js"></script></body>');
  if(html.includes('script.google.com')||html.includes('SCRIPT_URL')||html.includes('apiFetch('))throw new Error('Referência legada permaneceu em Visitantes.');

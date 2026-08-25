@@ -1,0 +1,44 @@
+name: Padronizar navegacao TDNGo
+on:
+  push:
+    branches: [layout_gpt]
+    paths: ['.tdngo-trigger-nav.txt']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: layout_gpt
+      - name: Injetar navegacao comum
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          tag='<script src="tdngo-nav.js"></script>'
+          changed=[]
+          for p in Path('.').glob('*.html'):
+              if p.name=='index.html':
+                  continue
+              s=p.read_text(encoding='utf-8')
+              if tag in s:
+                  continue
+              if '</body>' in s:
+                  s=s.replace('</body>',tag+'\n</body>',1)
+              elif '</html>' in s:
+                  s=s.replace('</html>',tag+'\n</html>',1)
+              else:
+                  continue
+              p.write_text(s,encoding='utf-8')
+              changed.append(p.name)
+          print('Arquivos ajustados:', ', '.join(changed))
+          PY
+      - name: Commit
+        run: |
+          git config user.name "TDNGo Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add '*.html'
+          git commit -m "TDNGo: padroniza botoes de voltar" || exit 0
+          git push origin layout_gpt

@@ -1,5 +1,6 @@
 (function(){
   'use strict';
+  const CPF_FIX_URL='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-cnes-cpf-api';
 
   function onlyDigits(v){ return String(v==null?'':v).replace(/\D/g,''); }
   function notify(msg,type){
@@ -33,6 +34,16 @@
     }
   }
   window.tdngoCopyCnes=function(v,label,digitsOnly){ return copyText(v,label,digitsOnly); };
+
+  async function fixExistingCpf(id,cpf){
+    if(!id||!cpf) return;
+    const headers={'Content-Type':'application/json'};
+    try{ if(typeof token!=='undefined'&&token) headers.Authorization='Bearer '+token; }catch(e){}
+    const r=await fetch(CPF_FIX_URL,{method:'POST',headers,body:JSON.stringify({id:id,cpf:cpf})});
+    const t=await r.text(); let j;
+    try{j=JSON.parse(t)}catch(e){j={ok:false,message:t}}
+    if(!r.ok||!j.ok) throw new Error(j.message||'Não foi possível atualizar o CPF.');
+  }
 
   function addCss(){
     if(document.getElementById('tdngo-cnes-ux-style')) return;
@@ -111,10 +122,23 @@
     const original=window.saveForm;
     const wrapped=async function(){
       const el=document.getElementById('c-cpf');
-      if(el && !validCPF(el.value)){
-        notify('CPF inválido. Corrija antes de salvar.','err');
-        el.focus();
-        return;
+      const id=document.getElementById('c-id')?.value||'';
+      const nome=document.getElementById('c-name')?.value.trim()||'';
+      const comp=document.getElementById('c-comp')?.value||'';
+      if(!nome){ notify('Informe o nome.','err'); return; }
+      try{ if(typeof validComp==='function'&&!validComp(comp)){ notify('Competência inválida. Use MM/AAAA.','err'); return; } }catch(e){}
+      if(el){
+        const cpf=onlyDigits(el.value);
+        el.value=cpf;
+        if(!validCPF(cpf)){
+          notify('CPF inválido. Corrija antes de salvar.','err');
+          el.focus();
+          return;
+        }
+        if(id){
+          try{ await fixExistingCpf(id,cpf); }
+          catch(e){ notify(e.message||'Não foi possível atualizar o CPF.','err'); el.focus(); return; }
+        }
       }
       return original.apply(this,arguments);
     };

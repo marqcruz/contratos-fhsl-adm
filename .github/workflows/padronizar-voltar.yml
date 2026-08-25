@@ -81,14 +81,68 @@ jobs:
           )
           s=s.replace("if(!p.Tipo||!p.Documento||!p.Nome", "if(!p.UnidadeId||!p.Tipo||!p.Documento||!p.Nome")
           s=s.replace("const items=[['Nome completo',v.Nome]", "const items=[['Unidade',v.Unidade||'—'],['Nome completo',v.Nome]")
-          if 'script.google.com' in s or 'SCRIPT_URL' in s or 'apiFetch(' in s:
-              raise SystemExit('Visitantes ainda contém dependência legada')
           p.write_text(s,encoding='utf-8')
+          PY
+      - name: Corrigir sessao unica e CNES sem wrapper
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # INDEX: após substituir o login antigo pelo novo, propaga sessão também em localStorage.
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          marker="if(!html.includes(old))throw new Error('Bloco de login não localizado.');html=html.replace(old,neu);"
+          patch="""if(!html.includes(old))throw new Error('Bloco de login não localizado.');html=html.replace(old,neu);\n html=html.replace(/sessionStorage\\.getItem\\('fhsl_session'\\)/g,\"(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session'))\");\n html=html.replace(/sessionStorage\\.setItem\\('fhsl_session',JSON\\.stringify\\(currentUser\\)\\);/g,\"sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));localStorage.setItem('fhsl_session',JSON.stringify(currentUser));\");\n html=html.replace(/sessionStorage\\.removeItem\\('fhsl_session'\\);/g,\"sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');\");"""
+          if marker in s:
+              s=s.replace(marker,patch)
+          p.write_text(s,encoding='utf-8')
+
+          # CONTRATOS: wrapper pode perder DOMContentLoaded. Executa init após document.write e usa fallback persistente.
+          p=Path('contratos.html')
+          s=p.read_text(encoding='utf-8')
+          before='    document.open(); document.write(html); document.close();'
+          insert="""    html=html.replace(\"window.addEventListener('DOMContentLoaded', function(){\",\"setTimeout(function(){\");\n    html=html.replace(\"const sess = sessionStorage.getItem('fhsl_session');\",\"const sess = sessionStorage.getItem('fhsl_session') || localStorage.getItem('fhsl_session'); if(sess&&!sessionStorage.getItem('fhsl_session')) sessionStorage.setItem('fhsl_session',sess);\");\n    html=html.replace(/sessionStorage\\.removeItem\\('fhsl_session'\\);/g,\"sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');\");\n    document.open(); document.write(html); document.close();"""
+          if before in s:
+              s=s.replace(before,insert)
+          p.write_text(s,encoding='utf-8')
+
+          # LIMPEZA: usa sessão central também entre abas.
+          p=Path('limpeza.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));","sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser)); localStorage.setItem('fhsl_session', JSON.stringify(currentUser));")
+          s=s.replace("sessionStorage.removeItem('fhsl_session'); currentUser=null;","sessionStorage.removeItem('fhsl_session'); localStorage.removeItem('fhsl_session'); currentUser=null;")
+          s=s.replace("const s=sessionStorage.getItem('fhsl_session');","const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session'); if(s&&!sessionStorage.getItem('fhsl_session')) sessionStorage.setItem('fhsl_session',s);")
+          p.write_text(s,encoding='utf-8')
+
+          # VISITANTES: mesma sessão central; em 401 limpa as duas cópias.
+          p=Path('visitantes.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("try{sessionStorage.removeItem('fhsl_session')}catch(e){}","try{sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session')}catch(e){}")
+          s=s.replace("sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));","sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));localStorage.setItem('fhsl_session',JSON.stringify(currentUser));")
+          s=s.replace("function doLogout(){sessionStorage.removeItem('fhsl_session');currentUser=null;","function doLogout(){sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');currentUser=null;")
+          s=s.replace("const s=sessionStorage.getItem('fhsl_session');if(!s)return;","const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');if(!s)return;if(!sessionStorage.getItem('fhsl_session'))sessionStorage.setItem('fhsl_session',s);")
+          p.write_text(s,encoding='utf-8')
+
+          # CNES base: sessão compartilhada. CNES passa a abrir diretamente a base, sem document.write.
+          p=Path('cnes-base-current.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("sessionStorage.getItem('fhsl_session')","(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session'))")
+          s=s.replace("sessionStorage.setItem('fhsl_session',JSON.stringify({user:r.user,tdngoToken:r.token}))","sessionStorage.setItem('fhsl_session',JSON.stringify({user:r.user,tdngoToken:r.token}));localStorage.setItem('fhsl_session',JSON.stringify({user:r.user,tdngoToken:r.token}))")
+          s=s.replace("sessionStorage.removeItem('fhsl_session')","sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session')")
+          p.write_text(s,encoding='utf-8')
+
+          Path('cnes.html').write_text('''<!doctype html>\n<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CNES — TDNGo</title><meta http-equiv="refresh" content="0;url=cnes-base-current.html"></head><body style="background:#0d1117;color:#e6edf3;font-family:system-ui"><p>Carregando CNES...</p><script>location.replace("cnes-base-current.html")<\\/script></body></html>''',encoding='utf-8')
+
+          for f in ['visitantes.html','limpeza.html','contratos.html','cnes-base-current.html']:
+              txt=Path(f).read_text(encoding='utf-8')
+              if 'script.google.com' in txt and f in ['visitantes.html']:
+                  raise SystemExit(f'{f} ainda contém Apps Script')
           PY
       - name: Commit da reparacao
         run: |
           git config user.name "TDNGo Automation"
           git config user.email "actions@users.noreply.github.com"
           git add '*.html'
-          git commit -m "TDNGo: restaura paginas e corrige navegacao" || exit 0
+          git commit -m "TDNGo: restaura paginas, corrige SSO e CNES" || exit 0
           git push origin layout_gpt

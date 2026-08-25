@@ -15,8 +15,6 @@
  html=html.replace("const items=[['Nome completo',v.Nome]", "const items=[['Unidade',v.Unidade||'—'],['Nome completo',v.Nome]");
  html=html.replace("window.addEventListener('DOMContentLoaded',()=>{", "(()=>{");
  html=html.replace("\n})\n\nconst PAGE_META=", "\n})()\n\nconst PAGE_META=");
- html=html.replace(/<script src="tdngo-nav\.js"><\/script>/g,'');
- html=html.replace('</body>','<script src="tdngo-nav.js"></script></body>');
  if(html.includes('script.google.com')||html.includes('SCRIPT_URL')||html.includes('apiFetch('))throw new Error('Referência legada permaneceu em Visitantes.');
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('loading').textContent='Falha ao carregar Visitantes: '+e.message;console.error(e)}})();

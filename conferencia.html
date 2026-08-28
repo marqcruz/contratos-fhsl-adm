@@ -12,12 +12,15 @@
     const rr=await fetch(CONFERENCIA_PDF_API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken},body:JSON.stringify(Object.assign({action:action},extra||{}))});
     const txt=await rr.text();let d;try{d=JSON.parse(txt)}catch(e){d={ok:false,message:txt||('HTTP '+rr.status)}}
     if(!rr.ok&&!d.message)d.message='HTTP '+rr.status;return d;
-  }catch(e){return {ok:false,message:'Falha de conexão ao arquivar o PDF final.'};}
+  }catch(e){return {ok:false,message:'Falha de conexão ao consultar o PDF final.'};}
 }
-async function blobParaBase64(blob){
-  const buf=await blob.arrayBuffer(),u8=new Uint8Array(buf);let s='';const step=0x8000;
-  for(let i=0;i<u8.length;i+=step)s+=String.fromCharCode.apply(null,u8.subarray(i,i+step));
-  return btoa(s);
+async function conferenciaPdfUpload(id,blob,fileName){
+  if(!currentUser||!currentUser.tdngoToken)return {ok:false,message:'Sessão sem token do TDNGo.'};
+  try{
+    const rr=await fetch(CONFERENCIA_PDF_API_URL,{method:'POST',headers:{'Content-Type':'application/pdf','Authorization':'Bearer '+currentUser.tdngoToken,'x-conferencia-id':String(id),'x-file-name':encodeURIComponent(fileName)},body:blob});
+    const txt=await rr.text();let d;try{d=JSON.parse(txt)}catch(e){d={ok:false,message:txt||('HTTP '+rr.status)}}
+    if(!rr.ok&&!d.message)d.message='HTTP '+rr.status;return d;
+  }catch(e){return {ok:false,message:'Falha de conexão ao arquivar o PDF final.'};}
 }
 async function abrirPdfSalvo(id){
   const r=await conferenciaPdfApi('url',{id:id});
@@ -42,8 +45,7 @@ async function abrirPdfSalvo(id){
     if(!pdfFinalBlob){ showNotif('PDF final indisponível. Compile novamente antes de concluir.','err'); editId=confId; return; }
     const emp=(payload.Empresa||'EMPRESA').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,70), comp=String(payload.MesRef||'').replace(/[^0-9-]/g,'');
     const nomePdf='Conferencia_'+emp+'_'+comp+'.pdf';
-    const pdfB64=await blobParaBase64(pdfFinalBlob);
-    const up=await conferenciaPdfApi('save',{id:confId,pdfBase64:pdfB64,fileName:nomePdf});
+    const up=await conferenciaPdfUpload(confId,pdfFinalBlob,nomePdf);
     if(!up.ok){ showNotif('Conferência não foi concluída: '+(up.message||'falha ao arquivar o PDF final.'),'err'); editId=confId; return; }
     const finalPayload=Object.assign({},payload,{ID:confId,Status:'Concluída'});
     const rf=await operacionalApi('save_conferencia',{payload:finalPayload});

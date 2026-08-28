@@ -12,6 +12,10 @@
     html=html.replace('<button class="active" data-page="usuarios" onclick="show(\'usuarios\',this)">👤 Usuários</button>','<button class="active" data-page="usuarios" onclick="show(\'usuarios\',this)">👤 Usuários</button><a href="acessos.html">🔐 Acessos por módulo</a><a href="admin-visitantes.html">🪪 Config. Visitantes</a>');
     html=html.replace('<a class="home" href="index.html">⌂ TDNGo</a>','<a class="home" href="index.html">← Voltar ao TDNGo</a>');
     html=html.replace("['conferencia','📑 Conferência'],['admin','⚙️ Administração']","['conferencia','📑 Conferência'],['documentos','📄 Documentos Internos'],['planejamento_compras','📦 Planejamento de Compras'],['admin','⚙️ Administração']");
+    html=html.replace(/<div class="full"><label style="text-transform:none"><input id="uaprova"[\s\S]*?<\/label><\/div>/,'');
+    html=html.replace(/uaprova\.checked=bool\(u\?\.AprovaConf\);?/g,'');
+    html=html.replace(/,AprovaConf:uaprova\.checked/g,'');
+    html=html.replace(/,AprovaConf:bool\(u\.AprovaConf\)/g,'');
     document.open();document.write(html);document.close();
   }catch(e){document.getElementById('loading').textContent='Falha ao carregar Administração: '+(e&&e.message?e.message:String(e));console.error(e)}
 })();

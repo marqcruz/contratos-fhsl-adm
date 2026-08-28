@@ -14,7 +14,6 @@
  const compraCard='<a class="hub-card" data-mod="planejamento_compras" data-cat="gestao" data-search="compras estoque sishosp planejamento previsão consumo cobertura fornecedor materiais" href="planejamento-compras.html"><span class="hub-ico">📦</span><h3>Planejamento de Compras</h3><p>Dimensionamento por consumo, cobertura e prazo de reposição.</p><span class="hub-tag ativo">Disponível</span></a>\n        ';
  const docCard='<a class="hub-card" data-mod="documentos" data-cat="operacao" data-search="documentos internos solicitação interna termo orientação ponto formulário pdf" href="documentos-internos.html"><span class="hub-ico">📄</span><h3>Documentos Internos</h3><p>Solicitação interna e termos institucionais.</p><span class="hub-tag ativo">Disponível</span></a>\n        ';
  html=html.replace('<a class="hub-card" data-mod="admin"',compraCard+docCard+'<a class="hub-card" data-mod="admin"');
- html=html.replace("const okModulo=admin || !permitidos || permitidos.indexOf(mod)>=0 ||","const okModulo=admin || mod==='documentos' || mod==='planejamento_compras' || !permitidos || permitidos.indexOf(mod)>=0 ||");
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('initial').textContent='Falha ao carregar TDNGo: '+e.message;console.error(e)}})();
 </script></body></html>

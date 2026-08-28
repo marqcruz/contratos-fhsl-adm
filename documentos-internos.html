@@ -9,16 +9,38 @@
 </style>
 </head>
 <body>
-<header class="topbar"><div class="brand"><h1>Documentos Internos</h1><p>Fundação Hospital Santa Lydia</p></div><nav class="tabs"><button class="tab active" data-src="solicitacao_interna_formulario.html" data-title="Solicitação Interna">Solicitação Interna</button><button class="tab" data-src="termo_orientacao_ponto.html" data-title="Termo de Orientação — Ponto">Termo de Orientação — Ponto</button></nav><div class="right"><a class="back" href="index.html">← TDNGo</a></div></header>
+<header class="topbar"><div class="brand"><h1>Documentos Internos</h1><p>Fundação Hospital Santa Lydia</p></div><nav class="tabs"><button class="tab active" data-src="solicitacao_interna_formulario.html" data-title="Solicitação Interna">Solicitação Interna</button><button class="tab" data-src="termo_orientacao_ponto.html" data-title="Termo de Orientação — Ponto">Termo de Orientação — Ponto</button></nav><div class="right"><a class="back" href="index.html" target="_top">← TDNGo</a></div></header>
 <main class="frame-wrap"><div class="loading" id="loading">Carregando documento…</div><iframe id="frame" title="Editor de documento"></iframe></main>
 <script>
 (function(){
  let sess=null;try{sess=JSON.parse(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'null')}catch(e){}
  if(!sess){location.replace('index.html');return}
  const frame=document.getElementById('frame'),loading=document.getElementById('loading');
- function openDoc(btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');loading.style.display='grid';frame.src=btn.dataset.src;frame.title=btn.dataset.title;}
+ const docsPermitidos=new Set(['/contratos-fhsl-adm/solicitacao_interna_formulario.html','/contratos-fhsl-adm/termo_orientacao_ponto.html']);
+ function openDoc(btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');loading.style.display='grid';frame.src=btn.dataset.src+'?v=20260828-1148';frame.title=btn.dataset.title;}
  document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>openDoc(btn)));
- frame.addEventListener('load',()=>{loading.style.display='none'});
+ frame.addEventListener('load',()=>{
+   try{
+     const loc=frame.contentWindow.location;
+     const path=loc.pathname;
+     const nome=path.split('/').pop();
+     if(nome && !['solicitacao_interna_formulario.html','termo_orientacao_ponto.html'].includes(nome)){
+       window.top.location.href=loc.href;return;
+     }
+     const d=frame.contentDocument;
+     if(d){
+       d.querySelectorAll('a[href]').forEach(a=>{
+         const href=a.getAttribute('href')||'';
+         if(!href||href.startsWith('#')||href.startsWith('javascript:'))return;
+         try{
+           const u=new URL(href,loc.href),n=u.pathname.split('/').pop();
+           if(n && !['solicitacao_interna_formulario.html','termo_orientacao_ponto.html'].includes(n))a.target='_top';
+         }catch(e){}
+       });
+     }
+   }catch(e){}
+   loading.style.display='none';
+ });
  openDoc(document.querySelector('.tab.active'));
 })();
 </script>

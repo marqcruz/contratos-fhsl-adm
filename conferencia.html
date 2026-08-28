@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Conferência Documental — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#initial{min-height:100vh;display:grid;place-items:center;color:#9aa7b8;padding:20px;text-align:center}</style></head><body><div id="initial">Carregando Conferência Documental...</div><script>
 (async()=>{try{
  const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/fa56cf4de159f6b36945994d55909ab9a892c0d1/conferencia.html';
- const r=await fetch(base+'?v=20260828-1148',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);let html=await r.text();
+ const r=await fetch(base+'?v=20260828-1300',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);let html=await r.text();
  html=html.replace("const OPERACIONAL_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-operacional-api';","const OPERACIONAL_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-operacional-api';\nconst CONFERENCIA_PDF_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-conferencia-pdf-api';");
  html=html.replace('Os PDFs permanecem apenas nesta sessão do navegador. Ao fechar, atualizar, sair desta tela ou concluir a conferência, todos os anexos serão perdidos.','Os anexos individuais permanecem apenas nesta sessão do navegador. O PDF final compilado será arquivado no TDNGo somente ao concluir a conferência.');
  html=html.replace("document.getElementById('compilar-status').textContent='Os PDFs não ficam salvos — reanexe se for compilar novamente.';","document.getElementById('compilar-status').textContent='Os anexos individuais não ficam salvos. Se esta conferência já foi concluída, use o botão 📎 da lista para visualizar o PDF final arquivado.';");
@@ -17,19 +17,44 @@
 
  const pdfApi=`async function conferenciaPdfApi(action,extra){
   if(!currentUser||!currentUser.tdngoToken)return {ok:false,message:'Sessão sem token do TDNGo.'};
+  const ctrl=new AbortController();
+  const timer=setTimeout(function(){ctrl.abort();},30000);
   try{
-    const rr=await fetch(CONFERENCIA_PDF_API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken},body:JSON.stringify(Object.assign({action:action},extra||{}))});
+    const rr=await fetch(CONFERENCIA_PDF_API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken},body:JSON.stringify(Object.assign({action:action},extra||{})),signal:ctrl.signal});
     const txt=await rr.text();let d;try{d=JSON.parse(txt)}catch(e){d={ok:false,message:txt||('HTTP '+rr.status)}}
     if(!rr.ok&&!d.message)d.message='HTTP '+rr.status;return d;
-  }catch(e){return {ok:false,message:'Falha de conexão ao consultar o PDF final.'};}
+  }catch(e){
+    if(e&&e.name==='AbortError')return {ok:false,message:'Tempo excedido ao consultar o serviço de PDF final.'};
+    return {ok:false,message:'Falha de conexão ao consultar o PDF final.'};
+  }finally{clearTimeout(timer);}
 }
 async function conferenciaPdfUpload(id,blob,fileName){
   if(!currentUser||!currentUser.tdngoToken)return {ok:false,message:'Sessão sem token do TDNGo.'};
+  if(!blob||!blob.size)return {ok:false,message:'PDF final vazio ou indisponível.'};
+  const mb=(blob.size/1024/1024).toFixed(1);
   try{
-    const rr=await fetch(CONFERENCIA_PDF_API_URL,{method:'POST',headers:{'Content-Type':'application/pdf','Authorization':'Bearer '+currentUser.tdngoToken,'x-conferencia-id':String(id),'x-file-name':encodeURIComponent(fileName)},body:blob});
-    const txt=await rr.text();let d;try{d=JSON.parse(txt)}catch(e){d={ok:false,message:txt||('HTTP '+rr.status)}}
-    if(!rr.ok&&!d.message)d.message='HTTP '+rr.status;return d;
-  }catch(e){return {ok:false,message:'Falha de conexão ao arquivar o PDF final.'};}
+    const prep=await conferenciaPdfApi('prepare',{id:String(id),fileName:fileName,tamanho:blob.size});
+    if(!prep.ok||!prep.signedUrl||!prep.path)return {ok:false,message:prep.message||'Não foi possível preparar o arquivamento do PDF.'};
+
+    const fd=new FormData();
+    fd.append('cacheControl','3600');
+    fd.append('',blob,fileName||'conferencia.pdf');
+    const ctrl=new AbortController();
+    const timer=setTimeout(function(){ctrl.abort();},180000);
+    let rr;
+    try{
+      rr=await fetch(prep.signedUrl,{method:'PUT',headers:{'x-upsert':'true'},body:fd,signal:ctrl.signal});
+    }finally{clearTimeout(timer);}
+    const txt=await rr.text();
+    if(!rr.ok)return {ok:false,message:'Falha no envio do PDF ao Storage (HTTP '+rr.status+'). '+(txt||'')};
+
+    const conf=await conferenciaPdfApi('confirm',{id:String(id),path:prep.path,nome:prep.nome||fileName,tamanho:blob.size});
+    if(!conf.ok)return conf;
+    return Object.assign({ok:true,path:prep.path,nome:prep.nome||fileName,tamanho:blob.size},conf);
+  }catch(e){
+    if(e&&e.name==='AbortError')return {ok:false,message:'Tempo excedido ao enviar o PDF ('+mb+' MB). Tente novamente.'};
+    return {ok:false,message:'Falha ao arquivar o PDF final: '+(e&&e.message?e.message:String(e))};
+  }
 }
 async function abrirPdfSalvo(id){
   const r=await conferenciaPdfApi('url',{id:id});
@@ -58,7 +83,7 @@ async function abrirPdfSalvo(id){
     if(!pdfFinalBlob){ showNotif('PDF final indisponível. Compile e baixe novamente antes de concluir.','err'); atualizarEtapasConferencia(); return; }
     const emp=(payload.Empresa||'EMPRESA').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,70), comp=String(payload.MesRef||'').replace(/[^0-9-]/g,'');
     const nomePdf='Conferencia_'+emp+'_'+comp+'.pdf';
-    if(stFinal) stFinal.textContent='2/3 Arquivando PDF final no TDNGo...';
+    if(stFinal) stFinal.textContent='2/3 Arquivando PDF final no TDNGo ('+(pdfFinalBlob.size/1024/1024).toFixed(1)+' MB)...';
     const up=await conferenciaPdfUpload(confId,pdfFinalBlob,nomePdf);
     if(!up.ok){ showNotif('Não foi possível concluir: '+(up.message||'falha ao salvar o PDF final.'),'err'); if(stFinal)stFinal.textContent='Falha ao arquivar o PDF final. A conferência permanece em aberto.'; atualizarEtapasConferencia(); return; }
     if(stFinal) stFinal.textContent='3/3 Finalizando conferência...';

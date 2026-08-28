@@ -17,9 +17,42 @@
     html=html.replace("    + '<div class=\"stat-card c-green\"><div class=\"stat-num\">'+(users.filter(function(u){return u.ativo;}).length||1)+'</div><div class=\"stat-label\">Usuários ativos</div></div>';",";");
     html=html.replace('async function loadAll(){ await Promise.all([ loadUnits(), loadContracts(), loadUsers() ]); }','async function loadAll(){ await Promise.all([ loadUnits(), loadContracts() ]); }');
 
+    html=html.replace(
+      "const CONTRATOS_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-contratos-api';",
+      "const CONTRATOS_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-contratos-api';\nconst CONTRATOS_PDF_AI_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-contratos-pdf-ai';"
+    );
+
+    const pdfApi = `async function contratosPdfAi(payload){
+  if(!currentUser || !currentUser.tdngoToken) return {ok:false,message:'Sessão sem token do TDNGo. Entre novamente.'};
+  const ctrl=new AbortController();
+  const tm=setTimeout(function(){ctrl.abort();},120000);
+  try{
+    const rr=await fetch(CONTRATOS_PDF_AI_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.tdngoToken},
+      body:JSON.stringify(Object.assign({action:'extractpdf'},payload||{})),
+      signal:ctrl.signal
+    });
+    const txt=await rr.text();let data;
+    try{data=JSON.parse(txt)}catch(e){data={ok:false,message:txt||('Erro HTTP '+rr.status)}}
+    if(!rr.ok && !data.message)data.message='Erro HTTP '+rr.status;
+    return data;
+  }catch(e){
+    if(e && e.name==='AbortError') return {ok:false,message:'A leitura do PDF excedeu 2 minutos. Tente novamente ou use um PDF menor.'};
+    return {ok:false,message:'Falha ao conectar ao serviço de leitura por IA.'};
+  }finally{clearTimeout(tm)}
+}`;
+    html=html.replace('async function contratosApi(action, payload, autenticado){',pdfApi+'\n\nasync function contratosApi(action, payload, autenticado){');
+
+    html=html.replace("apiFetch('extractpdf', { pdfBase64: pendingPdfB64 })","contratosPdfAi({ pdfBase64: pendingPdfB64, fileName: pendingPdfName })");
+    html=html.replace("apiFetch('extractpdf', { pdfBase64: f.b64 })","contratosPdfAi({ pdfBase64: f.b64, fileName: f.name })");
+
     html=html.replace("window.addEventListener('DOMContentLoaded', function(){","setTimeout(function(){");
     html=html.replace("const sess = sessionStorage.getItem('fhsl_session');","const sess = sessionStorage.getItem('fhsl_session') || localStorage.getItem('fhsl_session'); if(sess&&!sessionStorage.getItem('fhsl_session')) sessionStorage.setItem('fhsl_session',sess);");
     html=html.replace(/sessionStorage\.removeItem\('fhsl_session'\);/g,"sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');");
+
+    if(html.includes("apiFetch('extractpdf'")) throw new Error('Ainda existe chamada legada extractpdf no módulo Contratos.');
+
     document.open(); document.write(html); document.close();
   }catch(e){document.getElementById('loading').textContent='Falha ao carregar Contratos: '+(e&&e.message?e.message:String(e));console.error(e)}
 })();

@@ -25,15 +25,12 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
   sessao=JSON.stringify(usuario);
   try{sessionStorage.setItem('fhsl_session',sessao);localStorage.setItem('fhsl_session',sessao);}catch(e){}
 
-  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1325';
+  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1335';
   const r=await fetch(src,{cache:'no-store'});
   if(!r.ok)throw new Error('HTTP '+r.status);
   let wrapper=await r.text();
   const alvo='document.open();document.write(html);document.close();';
-  const patch=`html=html.replace("const s=sessionStorage.getItem('fhsl_session');","const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');");
- html=html.replace("if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&currentUser.tdngoToken) startApp(); else currentUser=null; }catch(e){currentUser=null;} }","if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&!currentUser.tdngoToken&&currentUser.token) currentUser.tdngoToken=currentUser.token; if(currentUser&&currentUser.tdngoToken) startApp(); else currentUser=null; }catch(e){currentUser=null;} }");
- html=html.replace('</head>','<style>.login-screen{display:none!important}</style></head>');
- document.open();document.write(html);document.close();`;
+  const patch=`const oldInit="window.addEventListener('DOMContentLoaded', function(){\\n  const s=sessionStorage.getItem('fhsl_session');\\n  if(s){ try{ currentUser=JSON.parse(s); startApp(); }catch(e){} }\\n});";\n const newInit="(function(){\\n  const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');\\n  if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&!currentUser.tdngoToken&&currentUser.token) currentUser.tdngoToken=currentUser.token; if(currentUser&&currentUser.tdngoToken) startApp(); }catch(e){ console.error(e); } }\\n})();";\n html=html.replace(oldInit,newInit);\n document.open();document.write(html);document.close();`;
   if(!wrapper.includes(alvo))throw new Error('Inicialização da Conferência não localizada.');
   wrapper=wrapper.replace(alvo,patch);
   document.open();document.write(wrapper);document.close();

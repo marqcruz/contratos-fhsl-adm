@@ -4,27 +4,35 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Conferência Documental — TDNGo</title>
-<style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#initial{min-height:100vh;display:grid;place-items:center;color:#9aa7b8;padding:20px;text-align:center}</style>
+<style>
+html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+#initial{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center}
+.session-box{max-width:520px;background:#161b22;border:1px solid #2a3140;border-radius:14px;padding:28px;color:#e6edf3}
+.session-box h2{margin:0 0 10px;font-size:20px}.session-box p{margin:0 0 16px;color:#9aa7b8;line-height:1.55}.session-box a{display:inline-block;padding:10px 16px;border-radius:8px;background:#3b9eff;color:#fff;text-decoration:none;font-weight:700}
+</style>
 </head>
 <body>
 <div id="initial">Carregando Conferência Documental...</div>
 <script>
 (async()=>{try{
-  let sessao=null;
+  let sessao=null, usuario=null;
   try{sessao=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');}catch(e){}
-  if(!sessao){window.location.replace('index.html');return;}
-  try{
-    const u=JSON.parse(sessao);
-    if(u&&!u.tdngoToken&&u.token)u.tdngoToken=u.token;
-    if(!u||!u.tdngoToken){window.location.replace('index.html');return;}
-    sessao=JSON.stringify(u);
-    sessionStorage.setItem('fhsl_session',sessao);
-    localStorage.setItem('fhsl_session',sessao);
-  }catch(e){window.location.replace('index.html');return;}
+  if(sessao){
+    try{
+      usuario=JSON.parse(sessao);
+      if(usuario&&!usuario.tdngoToken&&usuario.token)usuario.tdngoToken=usuario.token;
+    }catch(e){usuario=null;}
+  }
+  if(!usuario||!usuario.tdngoToken){
+    document.getElementById('initial').innerHTML='<div class="session-box"><h2>Sessão do TDNGo precisa ser renovada</h2><p>Esta é uma sessão antiga, criada antes da autenticação central das novas APIs. Volte à Central, saia da conta e entre novamente uma única vez. A Conferência não possui mais login próprio.</p><a href="index.html">Voltar à Central do TDNGo</a></div>';
+    return;
+  }
+  sessao=JSON.stringify(usuario);
+  try{sessionStorage.setItem('fhsl_session',sessao);localStorage.setItem('fhsl_session',sessao);}catch(e){}
 
-  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1215';
+  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1230';
   const r=await fetch(src,{cache:'no-store'});
-  if(!r.ok) throw new Error('HTTP '+r.status);
+  if(!r.ok)throw new Error('HTTP '+r.status);
   let wrapper=await r.text();
   const alvo='document.open();document.write(html);document.close();';
   const patch=`html=html.replace("const s=sessionStorage.getItem('fhsl_session');","const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');");
@@ -33,20 +41,18 @@
    function iniciarTdngo(){
      try{
        var s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');
-       if(!s){location.replace('index.html');return;}
+       if(!s)return;
        currentUser=JSON.parse(s);
        if(currentUser&&!currentUser.tdngoToken&&currentUser.token)currentUser.tdngoToken=currentUser.token;
-       if(!currentUser||!currentUser.tdngoToken){location.replace('index.html');return;}
-       try{sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));}catch(e){}
        var login=document.querySelector('.login-screen');if(login)login.remove();
-       startApp();
-     }catch(e){console.error('Inicialização Conferência',e);location.replace('index.html');}
+       if(currentUser&&currentUser.tdngoToken)startApp();
+     }catch(e){console.error('Inicialização Conferência',e);}
    }
    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(iniciarTdngo,0);},{once:true});
    else setTimeout(iniciarTdngo,0);
  })();<\\/script></body>\`);
  document.open();document.write(html);document.close();`;
-  if(!wrapper.includes(alvo)) throw new Error('Inicialização da Conferência não localizada.');
+  if(!wrapper.includes(alvo))throw new Error('Inicialização da Conferência não localizada.');
   wrapper=wrapper.replace(alvo,patch);
   document.open();document.write(wrapper);document.close();
 }catch(e){

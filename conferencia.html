@@ -30,7 +30,7 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
       localStorage.setItem('fhsl_session',s);
     }catch(e){}
 
-    const url='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/fa56cf4de159f6b36945994d55909ab9a892c0d1/conferencia.html?v=prod-pdf-storage-20260831-1545';
+    const url='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/fa56cf4de159f6b36945994d55909ab9a892c0d1/conferencia.html?v=prod-pdf-storage-20260831-1628';
     const r=await fetch(url,{cache:'no-store'});
     if(!r.ok)throw new Error('HTTP '+r.status);
     let html=await r.text();
@@ -46,8 +46,31 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
 
       const acoes="let acoes=(podeEditar()?'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\" title=\"Editar/ver\">✏️</button>':'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\">👁️</button>');";
       if(html.includes(acoes)){
-        html=html.replace(acoes,acoes+"\n    if(c.TemPdfFinal) acoes+=' <button class=\"btn sm\" onclick=\"abrirPdfSalvo(\\''+c.ID+'\\')\" title=\"Abrir PDF final arquivado\">📎</button>'; ");
+        html=html.replace(acoes,acoes+"\n    if(c.TemPdfFinal) acoes+=' <button class=\"btn sm\" onclick=\"abrirPdfSalvo(\\''+c.ID+'\\')\" title=\"Visualizar PDF final arquivado\">📎</button>'; ");
       }
+
+      html=html.replace('</head>',`<style>
+#modal-pdf-arquivado{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:12000;display:none;align-items:center;justify-content:center;padding:18px}
+#modal-pdf-arquivado.open{display:flex}
+.pdf-arq-box{width:min(1180px,96vw);height:min(900px,94vh);background:var(--surface,#161b22);border:1px solid var(--border,#2a3140);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+.pdf-arq-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border,#2a3140);background:var(--surface2,#1c2230)}
+.pdf-arq-title{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.pdf-arq-frame{border:0;width:100%;height:100%;background:#fff;flex:1}
+.pdf-arq-loading{flex:1;display:grid;place-items:center;color:var(--text2,#9aa7b8)}
+@media(max-width:700px){#modal-pdf-arquivado{padding:4px}.pdf-arq-box{width:100vw;height:100vh;border-radius:0}}
+</style></head>`);
+
+      html=html.replace('</body>',`<div id="modal-pdf-arquivado" onclick="if(event.target===this)fecharPdfSalvo()">
+  <div class="pdf-arq-box">
+    <div class="pdf-arq-head">
+      <span class="pdf-arq-title" id="pdf-arq-title">PDF final arquivado</span>
+      <a class="btn sm primary" id="pdf-arq-download" href="#" download target="_blank" rel="noopener">⬇️ Baixar PDF</a>
+      <button class="btn sm" onclick="fecharPdfSalvo()">Fechar</button>
+    </div>
+    <div class="pdf-arq-loading" id="pdf-arq-loading">Carregando PDF...</div>
+    <iframe class="pdf-arq-frame" id="pdf-arq-frame" title="PDF final arquivado" style="display:none"></iframe>
+  </div>
+</div></body>`);
 
       const apiFn='async function operacionalApi(action,payload,autenticado){';
       if(html.includes(apiFn)){
@@ -99,10 +122,33 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
     throw e;
   }finally{clearTimeout(timer);}
 }
+let pdfArquivadoUrl='';
 async function abrirPdfSalvo(id){
-  const r=await operacionalApi('get_conferencia_pdf_url',{id:id});
-  if(r&&r.ok&&r.url) window.open(r.url,'_blank','noopener');
-  else showNotif((r&&r.message)||'PDF final não encontrado.','err');
+  const modal=document.getElementById('modal-pdf-arquivado');
+  const frame=document.getElementById('pdf-arq-frame');
+  const load=document.getElementById('pdf-arq-loading');
+  const down=document.getElementById('pdf-arq-download');
+  const title=document.getElementById('pdf-arq-title');
+  if(modal) modal.classList.add('open');
+  if(frame){frame.style.display='none';frame.src='about:blank';}
+  if(load){load.style.display='grid';load.textContent='Carregando PDF...';}
+  try{
+    const r=await operacionalApi('get_conferencia_pdf_url',{id:id});
+    if(!r||!r.ok||!r.url) throw new Error((r&&r.message)||'PDF final não encontrado.');
+    pdfArquivadoUrl=r.url;
+    if(title) title.textContent=r.nome||'PDF final arquivado';
+    if(down){down.href=r.url;down.setAttribute('download',r.nome||'conferencia.pdf');}
+    if(frame){frame.onload=function(){if(load)load.style.display='none';frame.style.display='block';};frame.src=r.url+'#toolbar=1&navpanes=0';}
+  }catch(e){
+    if(load){load.style.display='grid';load.textContent=e.message||'Não foi possível carregar o PDF.';}
+    showNotif(e.message||'PDF final não encontrado.','err');
+  }
+}
+function fecharPdfSalvo(){
+  const modal=document.getElementById('modal-pdf-arquivado');
+  const frame=document.getElementById('pdf-arq-frame');
+  if(modal) modal.classList.remove('open');
+  if(frame){frame.src='about:blank';frame.style.display='none';}
 }
 `;
         html=html.replace(apiFn,helper+'\n'+apiFn);

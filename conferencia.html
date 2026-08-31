@@ -10,14 +10,16 @@
 <div id="initial">Carregando Conferência Documental...</div>
 <script>
 (async()=>{try{
-  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1155';
+  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1200';
   const r=await fetch(src,{cache:'no-store'});
   if(!r.ok) throw new Error('HTTP '+r.status);
   let wrapper=await r.text();
   const alvo='document.open();document.write(html);document.close();';
-  const init=`const sessaoAntiga=\`window.addEventListener('DOMContentLoaded', function(){\n  const s=sessionStorage.getItem('fhsl_session');\n  if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&currentUser.tdngoToken) startApp(); else currentUser=null; }catch(e){currentUser=null;} }\n});\`;\n const sessaoNova=\`setTimeout(function(){\n  let s=null;\n  try{s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');}catch(e){}\n  if(s){\n    try{\n      currentUser=JSON.parse(s);\n      if(currentUser&&!currentUser.tdngoToken&&currentUser.token) currentUser.tdngoToken=currentUser.token;\n      if(currentUser&&currentUser.tdngoToken){\n        try{sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));}catch(e){}\n        startApp();\n        return;\n      }\n    }catch(e){currentUser=null;}\n  }\n  currentUser=null;\n},0);\`;\n if(html.includes(sessaoAntiga)) html=html.replace(sessaoAntiga,sessaoNova);\n else html=html.replace(/window\\.addEventListener\\('DOMContentLoaded',[\\s\\S]*?\\n\\}\\);/,sessaoNova);\n document.open();document.write(html);document.close();`;
+  const patch=`html=html.replace("const s=sessionStorage.getItem('fhsl_session');","const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');");
+ html=html.replace("if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&currentUser.tdngoToken) startApp(); else currentUser=null; }catch(e){currentUser=null;} }","if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&!currentUser.tdngoToken&&currentUser.token) currentUser.tdngoToken=currentUser.token; if(currentUser&&currentUser.tdngoToken){ try{sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));}catch(e){} startApp(); } else { window.location.replace('index.html'); } }catch(e){ window.location.replace('index.html'); } } else { window.location.replace('index.html'); }");
+ document.open();document.write(html);document.close();`;
   if(!wrapper.includes(alvo)) throw new Error('Inicialização da Conferência não localizada.');
-  wrapper=wrapper.replace(alvo,init);
+  wrapper=wrapper.replace(alvo,patch);
   document.open();document.write(wrapper);document.close();
 }catch(e){
   const el=document.getElementById('initial');

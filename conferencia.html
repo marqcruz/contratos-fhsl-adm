@@ -30,7 +30,7 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
       localStorage.setItem('fhsl_session',s);
     }catch(e){}
 
-    const url='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/fa56cf4de159f6b36945994d55909ab9a892c0d1/conferencia.html?v=prod-pdf-storage-20260831-1628';
+    const url='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/fa56cf4de159f6b36945994d55909ab9a892c0d1/conferencia.html?v=prod-pdf-storage-20260831-1640';
     const r=await fetch(url,{cache:'no-store'});
     if(!r.ok)throw new Error('HTTP '+r.status);
     let html=await r.text();
@@ -138,7 +138,9 @@ async function abrirPdfSalvo(id){
     pdfArquivadoUrl=r.url;
     if(title) title.textContent=r.nome||'PDF final arquivado';
     if(down){down.href=r.url;down.setAttribute('download',r.nome||'conferencia.pdf');}
-    if(frame){frame.onload=function(){if(load)load.style.display='none';frame.style.display='block';};frame.src=r.url+'#toolbar=1&navpanes=0';}
+    const previewUrl=new URL(r.url);
+    previewUrl.searchParams.delete('download');
+    if(frame){frame.onload=function(){if(load)load.style.display='none';frame.style.display='block';};frame.src=previewUrl.toString()+'#toolbar=1&navpanes=0';}
   }catch(e){
     if(load){load.style.display='grid';load.textContent=e.message||'Não foi possível carregar o PDF.';}
     showNotif(e.message||'PDF final não encontrado.','err');

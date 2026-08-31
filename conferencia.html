@@ -6,7 +6,7 @@
 <title>Conferência Documental — TDNGo</title>
 <style>
 html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
-#initial{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center}
+#initial{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center;color:#9aa7b8}
 .session-box{max-width:520px;background:#161b22;border:1px solid #2a3140;border-radius:14px;padding:28px;color:#e6edf3}
 .session-box h2{margin:0 0 10px;font-size:20px}.session-box p{margin:0 0 16px;color:#9aa7b8;line-height:1.55}.session-box a{display:inline-block;padding:10px 16px;border-radius:8px;background:#3b9eff;color:#fff;text-decoration:none;font-weight:700}
 </style>
@@ -14,31 +14,34 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
 <body>
 <div id="initial">Carregando Conferência Documental...</div>
 <script>
-(async()=>{try{
-  let sessao=null,usuario=null;
-  try{sessao=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');}catch(e){}
-  if(sessao){try{usuario=JSON.parse(sessao);if(usuario&&!usuario.tdngoToken&&usuario.token)usuario.tdngoToken=usuario.token;}catch(e){usuario=null;}}
-  if(!usuario||!usuario.tdngoToken){
-    document.getElementById('initial').innerHTML='<div class="session-box"><h2>Sessão do TDNGo não encontrada</h2><p>Abra a Conferência pela Central do TDNGo. Se necessário, saia e entre novamente na Central.</p><a href="index.html">Voltar à Central do TDNGo</a></div>';
-    return;
-  }
-  sessao=JSON.stringify(usuario);
-  try{sessionStorage.setItem('fhsl_session',sessao);localStorage.setItem('fhsl_session',sessao);}catch(e){}
+(async()=>{
+  try{
+    let s=null;
+    try{s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');}catch(e){}
+    if(!s){
+      document.getElementById('initial').innerHTML='<div class="session-box"><h2>Sessão do TDNGo não encontrada</h2><p>Abra a Conferência pela Central do TDNGo.</p><a href="index.html">Voltar à Central</a></div>';
+      return;
+    }
+    try{
+      const u=JSON.parse(s);
+      if(u&&!u.tdngoToken&&u.token)u.tdngoToken=u.token;
+      s=JSON.stringify(u);
+      sessionStorage.setItem('fhsl_session',s);
+      localStorage.setItem('fhsl_session',s);
+    }catch(e){}
 
-  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1335';
-  const r=await fetch(src,{cache:'no-store'});
-  if(!r.ok)throw new Error('HTTP '+r.status);
-  let wrapper=await r.text();
-  const alvo='document.open();document.write(html);document.close();';
-  const patch=`const oldInit="window.addEventListener('DOMContentLoaded', function(){\\n  const s=sessionStorage.getItem('fhsl_session');\\n  if(s){ try{ currentUser=JSON.parse(s); startApp(); }catch(e){} }\\n});";\n const newInit="(function(){\\n  const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');\\n  if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&!currentUser.tdngoToken&&currentUser.token) currentUser.tdngoToken=currentUser.token; if(currentUser&&currentUser.tdngoToken) startApp(); }catch(e){ console.error(e); } }\\n})();";\n html=html.replace(oldInit,newInit);\n document.open();document.write(html);document.close();`;
-  if(!wrapper.includes(alvo))throw new Error('Inicialização da Conferência não localizada.');
-  wrapper=wrapper.replace(alvo,patch);
-  document.open();document.write(wrapper);document.close();
-}catch(e){
-  const el=document.getElementById('initial');
-  if(el)el.innerHTML='<div class="session-box"><h2>Falha ao carregar Conferência</h2><p>'+String(e&&e.message?e.message:e)+'</p><a href="index.html">Voltar à Central</a></div>';
-  console.error(e);
-}})();
+    const url='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/fa56cf4de159f6b36945994d55909ab9a892c0d1/conferencia.html?v=prod-rollback-20260831-1345';
+    const r=await fetch(url,{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const html=await r.text();
+    document.open();
+    document.write(html);
+    document.close();
+  }catch(e){
+    document.getElementById('initial').innerHTML='<div class="session-box"><h2>Falha ao carregar Conferência</h2><p>'+String(e&&e.message?e.message:e)+'</p><a href="index.html">Voltar à Central</a></div>';
+    console.error(e);
+  }
+})();
 </script>
 </body>
 </html>

@@ -2,12 +2,12 @@
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Conferência Documental — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#initial{min-height:100vh;display:grid;place-items:center;color:#9aa7b8;padding:20px;text-align:center}</style></head><body><div id="initial">Carregando Conferência Documental...</div><script>
 (async()=>{try{
  const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/fa56cf4de159f6b36945994d55909ab9a892c0d1/conferencia.html';
- const r=await fetch(base+'?v=20260828-1705',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);let html=await r.text();
+ const r=await fetch(base+'?v=20260831-1055',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);let html=await r.text();
  html=html.replace("const OPERACIONAL_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-operacional-api';","const OPERACIONAL_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-conferencia-api';");
- html=html.replace('Os PDFs permanecem apenas nesta sessão do navegador. Ao fechar, atualizar, sair desta tela ou concluir a conferência, todos os anexos serão perdidos.','Os anexos individuais permanecem apenas nesta sessão do navegador. Ao concluir, o PDF final compilado será arquivado automaticamente no TDNGo.');
- html=html.replace("document.getElementById('compilar-status').textContent='Os PDFs não ficam salvos — reanexe se for compilar novamente.';","document.getElementById('compilar-status').textContent='Os anexos individuais não ficam salvos. O PDF final será arquivado automaticamente ao concluir.';");
+ html=html.replace('Os PDFs permanecem apenas nesta sessão do navegador. Ao fechar, atualizar, sair desta tela ou concluir a conferência, todos os anexos serão perdidos.','Os anexos individuais permanecem apenas nesta sessão do navegador. Ao clicar em “Compilar e salvar PDF final”, o arquivo final será arquivado no TDNGo e a conferência será concluída automaticamente.');
+ html=html.replace("document.getElementById('compilar-status').textContent='Os PDFs não ficam salvos — reanexe se for compilar novamente.';","document.getElementById('compilar-status').textContent='Os anexos individuais não ficam salvos. O PDF final arquivado permanece disponível na lista de conferências.';");
 
- // Remove completamente a antiga aprovação e a mensagem pós-aprovação.
+ // Remove o fluxo antigo de aprovação.
  html=html.replace(/\n<!-- MODAL APROVAR -->[\s\S]*?\n<script>/,'\n<script>');
  html=html.replace(/\/\/ ===== MENSAGEM E PASSO A PASSO DO SOLAR[\s\S]*?const MSG_APROVADA = \{[\s\S]*?\n\};\n/,'');
  html=html.replace(/\/\/ ── Aprovação ──[\s\S]*?\/\/ ── Compilar PDF \(merge no navegador via pdf-lib\) ──/,'// ── Compilar PDF (merge no navegador via pdf-lib) ──');
@@ -15,7 +15,7 @@
  html=html.replace("const ok=conferencias.filter(function(c){return c.Status==='Concluída';}).length;","const ok=conferencias.filter(function(c){return c.Status==='Concluída'||c.Status==='Aprovada';}).length;");
  html=html.replace(/\n    \/\/ botão aprovar[\s\S]*?\n    \/\/ se aprovada[^\n]*\n    if\(c\.Status==='Aprovada'\)[^\n]*\n/,'\n');
 
- // Fluxo simples: Conferência 100% -> PDF compilado -> Concluir.
+ // Novo fluxo: conferência 100% -> compilar e salvar. Sem botão separado de concluir.
  html=html.replace(`<div class="etapas-final">
         <span class="etapa-final" id="conf-etapa-1">1. CONFERÊNCIA 100%</span>
         <span class="etapa-final" id="conf-etapa-2">2. PDF COMPILADO</span>
@@ -23,31 +23,47 @@
         <span class="etapa-final" id="conf-etapa-4">4. CONCLUIR</span>
       </div>`,`<div class="etapas-final">
         <span class="etapa-final" id="conf-etapa-1">1. CONFERÊNCIA 100%</span>
-        <span class="etapa-final" id="conf-etapa-2">2. PDF COMPILADO</span>
-        <span class="etapa-final" id="conf-etapa-3">3. CONCLUIR</span>
+        <span class="etapa-final" id="conf-etapa-2">2. COMPILAR E SALVAR PDF</span>
       </div>`);
+ html=html.replace(`<button class="btn" onclick="compilarPDF()" id="btn-compilar">📎 Compilar PDF final</button>
+        <button class="btn primary" onclick="salvarConf('Concluída')" id="btn-concluir" disabled>✅ Concluir conferência</button>`,`<button class="btn primary" onclick="compilarPDF()" id="btn-compilar">📎 Compilar e salvar PDF final</button>`);
  html=html.replace(`<div class="pdf-final-msg" id="pdf-final-msg">Baixe o PDF final para liberar a conclusão.</div>
       <div class="acoes">
         <button class="btn primary" onclick="baixarPdfFinal()" id="btn-baixar-pdf">⬇️ Baixar PDF final</button>
         <button class="btn success" onclick="salvarConf('Concluída')" id="btn-concluir-modal" disabled>✅ Concluir conferência</button>
-      </div>`,`<div class="pdf-final-msg ok" id="pdf-final-msg">Ao concluir, este PDF será arquivado automaticamente no TDNGo e ficará disponível na listagem.</div>
-      <div class="acoes">
-        <button class="btn success" onclick="salvarConf('Concluída')" id="btn-concluir-modal">✅ Concluir conferência</button>
-      </div>`);
+      </div>`,`<div class="pdf-final-msg ok" id="pdf-final-msg">O PDF final arquivado fica disponível na lista de conferências.</div>
+      <div class="acoes"><button class="btn" onclick="fecharPreviewPdf()">Fechar</button></div>`);
+
+ // Saída continua protegida contra perda acidental, mas o botão Cancelar/sair funciona normalmente.
  html=html.replace("if(!v.ok || !pdfFinalGerado || !pdfFinalBaixado)","if(!v.ok || !pdfFinalGerado)");
  html=html.replace("if(!v.ok || !pdfFinalGerado || !pdfFinalBaixado){","if(!v.ok || !pdfFinalGerado){");
- html=html.replace("showNotif('Conclua toda a conferência, compile e baixe o PDF final antes de sair.','err');","showNotif('Conclua toda a conferência e compile o PDF final antes de sair.','err');");
- html=html.replace("showNotif('A conferência somente pode ser encerrada após todos os itens serem concluídos e o PDF final ser compilado e baixado.','err');","showNotif('A conferência somente pode ser encerrada após todos os itens serem concluídos e o PDF final ser compilado.','err');");
- html=html.replace("  if(!pdfFinalBaixado){ showNotif('Baixe o PDF final antes de concluir a conferência.','err'); abrirPreviewPdf(); return; }\n",'');
- html=html.replace("const els=[1,2,3,4].map(function(n){return document.getElementById('conf-etapa-'+n);});","const els=[1,2,3].map(function(n){return document.getElementById('conf-etapa-'+n);});");
- html=html.replace("if(els[2] && pdfFinalBaixado) els[2].classList.add('ok');","if(els[2] && pdfFinalGerado) els[2].classList.add('atual');");
- html=html.replace("if(els[3] && pdfFinalBaixado) els[3].classList.add('atual');",'');
- html=html.replace("if(b1) b1.disabled=!pdfFinalBaixado;","if(b1) b1.disabled=!pdfFinalGerado;");
- html=html.replace("if(b2) b2.disabled=!pdfFinalBaixado;","if(b2) b2.disabled=!pdfFinalGerado;");
- html=html.replace("if(msg){ msg.textContent='Baixe o PDF final para liberar a conclusão.'; msg.className='pdf-final-msg'; }","if(msg){ msg.textContent='Compile o PDF final para liberar a conclusão. O arquivamento será automático.'; msg.className='pdf-final-msg'; }");
- html=html.replace("st.textContent='PDF final compilado com checklist de capa e '+paginas.length+' página(s). Revise e baixe o arquivo para liberar a conclusão.';","st.textContent='PDF final compilado com checklist de capa e '+paginas.length+' página(s). Revise e clique em Concluir conferência.';");
+ html=html.replace("showNotif('Conclua toda a conferência, compile e baixe o PDF final antes de sair.','err');","showNotif('Conclua toda a conferência e use “Compilar e salvar PDF final” antes de sair.','err');");
+ html=html.replace("showNotif('A conferência somente pode ser encerrada após todos os itens serem concluídos e o PDF final ser compilado e baixado.','err');","showNotif('A conferência somente pode ser encerrada após todos os itens serem concluídos e o PDF final ser compilado e salvo.','err');");
 
- // Cancelar/sair descarta somente a sessão temporária e retorna à listagem.
+ const oldEtapas=`function atualizarEtapasConferencia(){
+  const v=validarConferenciaCompleta(false);
+  const els=[1,2,3,4].map(function(n){return document.getElementById('conf-etapa-'+n);});
+  els.forEach(function(el){ if(el) el.className='etapa-final'; });
+  if(els[0]) els[0].classList.add(v.ok?'ok':'atual');
+  if(els[1] && pdfFinalGerado) els[1].classList.add('ok');
+  if(els[2] && pdfFinalBaixado) els[2].classList.add('ok');
+  if(els[3] && pdfFinalBaixado) els[3].classList.add('atual');
+  const b1=document.getElementById('btn-concluir');
+  const b2=document.getElementById('btn-concluir-modal');
+  if(b1) b1.disabled=!pdfFinalBaixado;
+  if(b2) b2.disabled=!pdfFinalBaixado;
+}`;
+ const newEtapas=`function atualizarEtapasConferencia(){
+  const v=validarConferenciaCompleta(false);
+  const e1=document.getElementById('conf-etapa-1'),e2=document.getElementById('conf-etapa-2');
+  [e1,e2].forEach(function(el){if(el)el.className='etapa-final';});
+  if(e1)e1.classList.add(v.ok?'ok':'atual');
+  if(e2){if(pdfFinalGerado)e2.classList.add('ok');else if(v.ok)e2.classList.add('atual');}
+  const b=document.getElementById('btn-compilar');if(b)b.disabled=!v.ok;
+}`;
+ if(html.includes(oldEtapas))html=html.replace(oldEtapas,newEtapas);
+ html=html.replace("if(msg){ msg.textContent='Baixe o PDF final para liberar a conclusão.'; msg.className='pdf-final-msg'; }","if(msg){ msg.textContent='Compile e salve novamente o PDF final após qualquer alteração.'; msg.className='pdf-final-msg'; }");
+
  const oldSair=`function tentarSairConferencia(){
   const v=validarConferenciaCompleta(true);
   if(!v.ok || !pdfFinalGerado || !pdfFinalBaixado){
@@ -60,88 +76,81 @@
  const newSair=`function tentarSairConferencia(){
   if(conferenciaEmEdicao && !confirm('Sair desta conferência? Os anexos temporários desta sessão serão descartados.')) return;
   permitindoSaida=true; conferenciaEmEdicao=false; anexos={};
-  if(pdfFinalUrl){ try{URL.revokeObjectURL(pdfFinalUrl);}catch(e){} }
-  pdfFinalUrl=''; pdfFinalBlob=null; pdfFinalGerado=false; pdfFinalBaixado=false;
+  if(pdfFinalUrl){try{URL.revokeObjectURL(pdfFinalUrl);}catch(e){}}
+  pdfFinalUrl='';pdfFinalBlob=null;pdfFinalGerado=false;pdfFinalBaixado=false;
   try{fecharPreviewPdf();}catch(e){}
-  showPage('lista');
-  permitindoSaida=false;
-  atualizarEtapasConferencia();
+  showPage('lista');permitindoSaida=false;atualizarEtapasConferencia();
 }`;
- if(html.includes(oldSair)) html=html.replace(oldSair,newSair);
+ if(html.includes(oldSair))html=html.replace(oldSair,newSair);
 
- // PDF e registros usam o mesmo endpoint da Conferência.
- const pdfApi=`async function conferenciaPdfUpload(id,blob,fileName){
+ // Uma única requisição salva dados + PDF + status concluído.
+ const apiFinal=`async function finalizarConferenciaComPdf(payload,blob,fileName){
   if(!currentUser||!currentUser.tdngoToken)return {ok:false,message:'Sessão sem token do TDNGo.'};
   if(!blob||!blob.size)return {ok:false,message:'PDF final vazio ou indisponível.'};
   const fd=new FormData();
-  fd.append('action','save_conferencia_pdf');
+  fd.append('action','finalize_conferencia');
   fd.append('module','conferencia');
-  fd.append('id',String(id));
+  fd.append('payload',JSON.stringify(payload||{}));
   fd.append('fileName',fileName||'conferencia.pdf');
   fd.append('file',blob,fileName||'conferencia.pdf');
   const ctrl=new AbortController();
   const timer=setTimeout(function(){ctrl.abort();},60000);
   try{
     const rr=await fetch(OPERACIONAL_API_URL,{method:'POST',headers:{'Authorization':'Bearer '+currentUser.tdngoToken},body:fd,signal:ctrl.signal});
-    const txt=await rr.text();let d;try{d=JSON.parse(txt)}catch(e){d={ok:false,message:txt||('HTTP '+rr.status)}}
-    if(!rr.ok&&!d.message)d.message='HTTP '+rr.status;
-    return d;
+    const tx=await rr.text();let d;try{d=JSON.parse(tx)}catch(e){d={ok:false,message:tx||('HTTP '+rr.status)}}
+    if(!rr.ok&&!d.message)d.message='HTTP '+rr.status;return d;
   }catch(e){
-    if(e&&e.name==='AbortError')return {ok:false,message:'Tempo excedido ao arquivar o PDF final.'};
-    return {ok:false,message:'Falha ao arquivar o PDF final: '+(e&&e.message?e.message:String(e))};
+    if(e&&e.name==='AbortError')return {ok:false,message:'Tempo excedido ao salvar o PDF final.'};
+    return {ok:false,message:'Falha ao salvar o PDF final: '+(e&&e.message?e.message:String(e))};
   }finally{clearTimeout(timer);}
+}
+function coletarPayloadFinal(){
+  const contrato=document.getElementById('cf-contrato').value;
+  const c=contratosEmpresasUnicas().find(function(x){return String(x.id)===String(contrato);})||{};
+  return {ID:editId||'',Unidade:document.getElementById('cf-unidade').value,MesRef:document.getElementById('cf-mesref').value,ContratoID:contrato,ContratoNum:c.numero||'',Empresa:document.getElementById('cf-empresa').value.trim(),CNPJ:document.getElementById('cf-cnpj').value.trim(),NotaFiscal:document.getElementById('cf-nf').value.trim(),TemSocios:document.getElementById('cf-socios').value,Itens:coletarItens(),Observacoes:document.getElementById('cf-obs').value.trim(),Status:'Concluída',__actor:{nome:currentUser.nome,email:currentUser.email}};
 }
 async function abrirPdfSalvo(id){
   const r=await operacionalApi('get_conferencia_pdf_url',{id:id});
   if(r.ok&&r.url)window.open(r.url,'_blank','noopener');else showNotif(r.message||'PDF final não encontrado.','err');
 }`;
- html=html.replace('async function operacionalApi(action, payload, autenticado){',pdfApi+'\n\nasync function operacionalApi(action, payload, autenticado){');
+ html=html.replace('async function operacionalApi(action,payload,autenticado){',apiFinal+'\n\nasync function operacionalApi(action,payload,autenticado){');
 
- const old=`  showNotif('Salvando...','info');
-  const r=await operacionalApi('save_conferencia',{payload:payload});
-  if(r.ok){
-    showNotif('Conferência concluída.','ok');
-    editId=null; conferenciaEmEdicao=false; permitindoSaida=true; anexos={};
-    if(pdfFinalUrl){ try{URL.revokeObjectURL(pdfFinalUrl);}catch(e){} }
-    pdfFinalUrl=''; pdfFinalBlob=null; pdfFinalGerado=false; pdfFinalBaixado=false;
-    fecharPreviewPdf(); carregar(); showPage('lista'); permitindoSaida=false; atualizarEtapasConferencia();
-  }
-  else showNotif(r.message||'Erro ao salvar.','err');`;
- const neu=`  showNotif('Concluindo conferência...','info');
-  const stFinal=document.getElementById('compilar-status');
-  const btnModal=document.getElementById('btn-concluir-modal');
-  const btnTela=document.getElementById('btn-concluir');
-  if(btnModal)btnModal.disabled=true;
-  if(btnTela)btnTela.disabled=true;
-  if(stFinal) stFinal.textContent='1/3 Salvando dados da conferência...';
-  const inicial=Object.assign({},payload,{Status:'Em conferência'});
-  const r=await operacionalApi('save_conferencia',{payload:inicial});
-  if(r.ok){
-    const confId=r.id||editId;
-    editId=confId;
-    if(!pdfFinalBlob){ showNotif('PDF final indisponível. Compile novamente antes de concluir.','err'); if(btnModal)btnModal.disabled=false; if(btnTela)btnTela.disabled=false; atualizarEtapasConferencia(); return; }
-    const emp=(payload.Empresa||'EMPRESA').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,70), comp=String(payload.MesRef||'').replace(/[^0-9-]/g,'');
-    const nomePdf='Conferencia_'+emp+'_'+comp+'.pdf';
-    if(stFinal) stFinal.textContent='2/3 Arquivando PDF final no TDNGo...';
-    const up=await conferenciaPdfUpload(confId,pdfFinalBlob,nomePdf);
-    if(!up.ok){ showNotif('Não foi possível concluir: '+(up.message||'falha ao salvar o PDF final.'),'err'); if(stFinal)stFinal.textContent='Falha ao arquivar o PDF final. A conferência permanece em aberto.'; if(btnModal)btnModal.disabled=false; if(btnTela)btnTela.disabled=false; atualizarEtapasConferencia(); return; }
-    if(stFinal) stFinal.textContent='3/3 Finalizando conferência...';
-    const finalPayload=Object.assign({},payload,{ID:confId,Status:'Concluída'});
-    const rf=await operacionalApi('save_conferencia',{payload:finalPayload});
-    if(!rf.ok){ showNotif('PDF salvo, mas houve falha ao finalizar o registro: '+(rf.message||'erro'),'err'); if(btnModal)btnModal.disabled=false; if(btnTela)btnTela.disabled=false; atualizarEtapasConferencia(); return; }
-    showNotif('Conferência concluída. PDF disponível na listagem.','ok');
-    editId=null; conferenciaEmEdicao=false; permitindoSaida=true; anexos={};
-    if(pdfFinalUrl){ try{URL.revokeObjectURL(pdfFinalUrl);}catch(e){} }
-    pdfFinalUrl=''; pdfFinalBlob=null; pdfFinalGerado=false; pdfFinalBaixado=false;
-    fecharPreviewPdf();
-    await carregar();
-    showPage('lista');
-    permitindoSaida=false;
+ // Ao terminar a compilação local, arquiva e conclui automaticamente.
+ const oldFim=`    pdfFinalBlob=new Blob([bytes],{type:'application/pdf'});
+    pdfFinalUrl=URL.createObjectURL(pdfFinalBlob);
+    pdfFinalGerado=true;
+    pdfFinalBaixado=false;
+    st.textContent='PDF final compilado com checklist de capa e '+paginas.length+' página(s). Revise e baixe o arquivo para liberar a conclusão.';
+    const msg=document.getElementById('pdf-final-msg');
+    if(msg){ msg.textContent='Baixe o PDF final para liberar a conclusão.'; msg.className='pdf-final-msg'; }
     atualizarEtapasConferencia();
-  } else { showNotif(r.message||'Erro ao salvar.','err'); if(btnModal)btnModal.disabled=false; if(btnTela)btnTela.disabled=false; atualizarEtapasConferencia(); }`;
- if(!html.includes(old))throw new Error('Fluxo de conclusão da Conferência não localizado.');html=html.replace(old,neu);
+    abrirPreviewPdf();
+    showNotif('PDF final compilado. Revise e baixe o arquivo.','ok');`;
+ const newFim=`    pdfFinalBlob=new Blob([bytes],{type:'application/pdf'});
+    pdfFinalUrl=URL.createObjectURL(pdfFinalBlob);
+    pdfFinalGerado=true;
+    pdfFinalBaixado=false;
+    atualizarEtapasConferencia();
+    const btn=document.getElementById('btn-compilar');if(btn){btn.disabled=true;btn.textContent='⏳ Salvando PDF final...';}
+    st.textContent='PDF compilado. Arquivando no TDNGo...';
+    const payload=coletarPayloadFinal();
+    const emp=(payload.Empresa||'EMPRESA').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,70);
+    const comp=String(payload.MesRef||'').replace(/[^0-9-]/g,'');
+    const nomePdf='Conferencia_'+emp+'_'+comp+'.pdf';
+    const fin=await finalizarConferenciaComPdf(payload,pdfFinalBlob,nomePdf);
+    if(!fin.ok)throw new Error(fin.message||'Não foi possível arquivar o PDF final.');
+    document.getElementById('cf-numero').value=fin.numero||'';
+    st.textContent='PDF final compilado e salvo no TDNGo. Conferência concluída.';
+    showNotif('PDF final salvo. Conferência concluída.','ok');
+    editId=null;conferenciaEmEdicao=false;permitindoSaida=true;anexos={};
+    if(pdfFinalUrl){try{URL.revokeObjectURL(pdfFinalUrl);}catch(e){}}
+    pdfFinalUrl='';pdfFinalBlob=null;pdfFinalGerado=false;pdfFinalBaixado=false;
+    await carregar();showPage('lista');permitindoSaida=false;atualizarEtapasConferencia();`;
+ if(!html.includes(oldFim))throw new Error('Trecho final da compilação não localizado.');
+ html=html.replace(oldFim,newFim);
 
- html=html.replace("let acoes=(podeEditar()?'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\" title=\"Editar/ver\">✏️</button>':'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\">👁️</button>');","let acoes=(podeEditar()?'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\" title=\"Editar/ver\">✏️</button>':'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\">👁️</button>'); if(c.Status==='Concluída'||c.Status==='Aprovada') acoes+=' <button class=\"btn sm\" onclick=\"abrirPdfSalvo(\\''+c.ID+'\\')\" title=\"Baixar PDF final arquivado\">📎</button>'; ");
+ // O botão da lista abre o PDF arquivado.
+ html=html.replace("let acoes=(podeEditar()?'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\" title=\"Editar/ver\">✏️</button>':'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\">👁️</button>');","let acoes=(podeEditar()?'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\" title=\"Editar/ver\">✏️</button>':'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\">👁️</button>'); if(c.TemPdfFinal) acoes+=' <button class=\"btn sm\" onclick=\"abrirPdfSalvo(\\''+c.ID+'\\')\" title=\"Abrir PDF final arquivado\">📎</button>'; ");
 
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('initial').textContent='Falha ao carregar Conferência: '+(e&&e.message?e.message:String(e));console.error(e)}})();

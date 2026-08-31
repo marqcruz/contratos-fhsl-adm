@@ -22,13 +22,29 @@
     localStorage.setItem('fhsl_session',sessao);
   }catch(e){window.location.replace('index.html');return;}
 
-  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1205';
+  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1215';
   const r=await fetch(src,{cache:'no-store'});
   if(!r.ok) throw new Error('HTTP '+r.status);
   let wrapper=await r.text();
   const alvo='document.open();document.write(html);document.close();';
   const patch=`html=html.replace("const s=sessionStorage.getItem('fhsl_session');","const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');");
- html=html.replace("if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&currentUser.tdngoToken) startApp(); else currentUser=null; }catch(e){currentUser=null;} }","if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&!currentUser.tdngoToken&&currentUser.token) currentUser.tdngoToken=currentUser.token; if(currentUser&&currentUser.tdngoToken){ startApp(); } else { window.location.replace('index.html'); } }catch(e){ window.location.replace('index.html'); } } else { window.location.replace('index.html'); }");
+ html=html.replace('</head>','<style>.login-screen{display:none!important}</style></head>');
+ html=html.replace('</body>',\`<script>(function(){
+   function iniciarTdngo(){
+     try{
+       var s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');
+       if(!s){location.replace('index.html');return;}
+       currentUser=JSON.parse(s);
+       if(currentUser&&!currentUser.tdngoToken&&currentUser.token)currentUser.tdngoToken=currentUser.token;
+       if(!currentUser||!currentUser.tdngoToken){location.replace('index.html');return;}
+       try{sessionStorage.setItem('fhsl_session',JSON.stringify(currentUser));}catch(e){}
+       var login=document.querySelector('.login-screen');if(login)login.remove();
+       startApp();
+     }catch(e){console.error('Inicialização Conferência',e);location.replace('index.html');}
+   }
+   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(iniciarTdngo,0);},{once:true});
+   else setTimeout(iniciarTdngo,0);
+ })();<\\/script></body>\`);
  document.open();document.write(html);document.close();`;
   if(!wrapper.includes(alvo)) throw new Error('Inicialização da Conferência não localizada.');
   wrapper=wrapper.replace(alvo,patch);

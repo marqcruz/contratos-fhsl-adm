@@ -15,49 +15,31 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
 <div id="initial">Carregando Conferência Documental...</div>
 <script>
 (async()=>{try{
-  let sessao=null, usuario=null;
+  let sessao=null,usuario=null;
   try{sessao=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');}catch(e){}
-  if(sessao){
-    try{
-      usuario=JSON.parse(sessao);
-      if(usuario&&!usuario.tdngoToken&&usuario.token)usuario.tdngoToken=usuario.token;
-    }catch(e){usuario=null;}
-  }
+  if(sessao){try{usuario=JSON.parse(sessao);if(usuario&&!usuario.tdngoToken&&usuario.token)usuario.tdngoToken=usuario.token;}catch(e){usuario=null;}}
   if(!usuario||!usuario.tdngoToken){
-    document.getElementById('initial').innerHTML='<div class="session-box"><h2>Sessão do TDNGo precisa ser renovada</h2><p>Esta é uma sessão antiga, criada antes da autenticação central das novas APIs. Volte à Central, saia da conta e entre novamente uma única vez. A Conferência não possui mais login próprio.</p><a href="index.html">Voltar à Central do TDNGo</a></div>';
+    document.getElementById('initial').innerHTML='<div class="session-box"><h2>Sessão do TDNGo não encontrada</h2><p>Abra a Conferência pela Central do TDNGo. Se necessário, saia e entre novamente na Central.</p><a href="index.html">Voltar à Central do TDNGo</a></div>';
     return;
   }
   sessao=JSON.stringify(usuario);
   try{sessionStorage.setItem('fhsl_session',sessao);localStorage.setItem('fhsl_session',sessao);}catch(e){}
 
-  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1230';
+  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1325';
   const r=await fetch(src,{cache:'no-store'});
   if(!r.ok)throw new Error('HTTP '+r.status);
   let wrapper=await r.text();
   const alvo='document.open();document.write(html);document.close();';
   const patch=`html=html.replace("const s=sessionStorage.getItem('fhsl_session');","const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');");
+ html=html.replace("if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&currentUser.tdngoToken) startApp(); else currentUser=null; }catch(e){currentUser=null;} }","if(s){ try{ currentUser=JSON.parse(s); if(currentUser&&!currentUser.tdngoToken&&currentUser.token) currentUser.tdngoToken=currentUser.token; if(currentUser&&currentUser.tdngoToken) startApp(); else currentUser=null; }catch(e){currentUser=null;} }");
  html=html.replace('</head>','<style>.login-screen{display:none!important}</style></head>');
- html=html.replace('</body>',\`<script>(function(){
-   function iniciarTdngo(){
-     try{
-       var s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');
-       if(!s)return;
-       currentUser=JSON.parse(s);
-       if(currentUser&&!currentUser.tdngoToken&&currentUser.token)currentUser.tdngoToken=currentUser.token;
-       var login=document.querySelector('.login-screen');if(login)login.remove();
-       if(currentUser&&currentUser.tdngoToken)startApp();
-     }catch(e){console.error('Inicialização Conferência',e);}
-   }
-   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(iniciarTdngo,0);},{once:true});
-   else setTimeout(iniciarTdngo,0);
- })();<\\/script></body>\`);
  document.open();document.write(html);document.close();`;
   if(!wrapper.includes(alvo))throw new Error('Inicialização da Conferência não localizada.');
   wrapper=wrapper.replace(alvo,patch);
   document.open();document.write(wrapper);document.close();
 }catch(e){
   const el=document.getElementById('initial');
-  if(el)el.textContent='Falha ao carregar Conferência: '+(e&&e.message?e.message:String(e));
+  if(el)el.innerHTML='<div class="session-box"><h2>Falha ao carregar Conferência</h2><p>'+String(e&&e.message?e.message:e)+'</p><a href="index.html">Voltar à Central</a></div>';
   console.error(e);
 }})();
 </script>

@@ -10,12 +10,12 @@
 <div id="initial">Carregando Conferência Documental...</div>
 <script>
 (async()=>{try{
-  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1115';
+  const src='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a1335a6875415966e37d251e720c0faf877c3eff/conferencia.html?v=20260831-1125';
   const r=await fetch(src,{cache:'no-store'});
   if(!r.ok) throw new Error('HTTP '+r.status);
   let wrapper=await r.text();
   const alvo='document.open();document.write(html);document.close();';
-  const init=`html=html.replace(/window\\.addEventListener\\('DOMContentLoaded', function\\(\\)\\{([\\s\\S]*?)\\n\\}\\);/,function(_,corpo){return 'setTimeout(function(){'+corpo+'\\n},0);';});\n document.open();document.write(html);document.close();`;
+  const init=`html=html.replace(/sessionStorage\\.getItem\\('fhsl_session'\\)/g,"(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session'))");\n html=html.replace(/window\\.addEventListener\\('DOMContentLoaded', function\\(\\)\\{([\\s\\S]*?)\\n\\}\\);/,function(_,corpo){return 'setTimeout(function(){'+corpo+'\\n},0);';});\n document.open();document.write(html);document.close();`;
   if(!wrapper.includes(alvo)) throw new Error('Inicialização da Conferência não localizada.');
   wrapper=wrapper.replace(alvo,init);
   document.open();document.write(wrapper);document.close();

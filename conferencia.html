@@ -30,10 +30,112 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
       localStorage.setItem('fhsl_session',s);
     }catch(e){}
 
-    const url='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/fa56cf4de159f6b36945994d55909ab9a892c0d1/conferencia.html?v=prod-rollback-20260831-1345';
+    const url='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/fa56cf4de159f6b36945994d55909ab9a892c0d1/conferencia.html?v=prod-pdf-storage-20260831-1545';
     const r=await fetch(url,{cache:'no-store'});
     if(!r.ok)throw new Error('HTTP '+r.status);
-    const html=await r.text();
+    let html=await r.text();
+
+    try{
+      const apiOld="const OPERACIONAL_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-operacional-api';";
+      const apiNew="const OPERACIONAL_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-conferencia-api';";
+      if(html.includes(apiOld)) html=html.replace(apiOld,apiNew);
+
+      html=html.replace("function podeAprovar(){ return currentUser && (currentUser.role==='admin' || currentUser.aprovaConf===true); }","function podeAprovar(){ return false; }");
+      html=html.replace("if(st==='Aprovada') return '<span class=\"badge c-green-b\">✅ Aprovada</span>';","if(st==='Aprovada') st='Concluída';");
+      html=html.replace("const ok=conferencias.filter(function(c){return c.Status==='Concluída';}).length;","const ok=conferencias.filter(function(c){return c.Status==='Concluída'||c.Status==='Aprovada';}).length;");
+
+      const acoes="let acoes=(podeEditar()?'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\" title=\"Editar/ver\">✏️</button>':'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\">👁️</button>');";
+      if(html.includes(acoes)){
+        html=html.replace(acoes,acoes+"\n    if(c.TemPdfFinal) acoes+=' <button class=\"btn sm\" onclick=\"abrirPdfSalvo(\\''+c.ID+'\\')\" title=\"Abrir PDF final arquivado\">📎</button>'; ");
+      }
+
+      const apiFn='async function operacionalApi(action,payload,autenticado){';
+      if(html.includes(apiFn)){
+        const helper=`async function salvarPdfFinalGerado(){
+  if(!pdfFinalBlob||!pdfFinalBlob.size) throw new Error('PDF final vazio ou indisponível.');
+  if(!currentUser||!currentUser.tdngoToken) throw new Error('Sessão do TDNGo sem token válido.');
+  const contrato=document.getElementById('cf-contrato').value;
+  const unicos=contratosEmpresasUnicas();
+  const c=unicos.find(function(x){return String(x.id)===String(contrato);})||{};
+  const payload={
+    ID:editId||'',
+    Numero:document.getElementById('cf-numero').value||'',
+    Unidade:document.getElementById('cf-unidade').value,
+    MesRef:document.getElementById('cf-mesref').value,
+    ContratoID:contrato,
+    ContratoNum:c.numero||'',
+    Empresa:document.getElementById('cf-empresa').value.trim(),
+    CNPJ:document.getElementById('cf-cnpj').value.trim(),
+    NotaFiscal:document.getElementById('cf-nf').value.trim(),
+    TemSocios:document.getElementById('cf-socios').value,
+    Itens:coletarItens(),
+    Observacoes:document.getElementById('cf-obs').value.trim(),
+    Status:'Em conferência',
+    __actor:{nome:currentUser.nome,email:currentUser.email}
+  };
+  const salvo=await operacionalApi('save_conferencia',{payload:payload});
+  if(!salvo||!salvo.ok) throw new Error((salvo&&salvo.message)||'Não foi possível salvar a conferência antes do PDF.');
+  editId=salvo.id||editId;
+  if(salvo.numero) document.getElementById('cf-numero').value=salvo.numero;
+  const emp=(payload.Empresa||'EMPRESA').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,60);
+  const comp=String(payload.MesRef||'').replace(/[^0-9-]/g,'');
+  const nome='Conferencia_'+emp+'_'+comp+'.pdf';
+  const fd=new FormData();
+  fd.append('action','save_conferencia_pdf');
+  fd.append('module','conferencia');
+  fd.append('id',editId);
+  fd.append('fileName',nome);
+  fd.append('file',pdfFinalBlob,nome);
+  const ctrl=new AbortController();
+  const timer=setTimeout(function(){ctrl.abort();},30000);
+  try{
+    const rr=await fetch(OPERACIONAL_API_URL,{method:'POST',headers:{Authorization:'Bearer '+currentUser.tdngoToken},body:fd,signal:ctrl.signal});
+    const tx=await rr.text();
+    let d; try{d=JSON.parse(tx)}catch(e){d={ok:false,message:tx||('HTTP '+rr.status)}}
+    if(!rr.ok||!d.ok) throw new Error(d.message||('HTTP '+rr.status));
+    return d;
+  }catch(e){
+    if(e&&e.name==='AbortError') throw new Error('Tempo excedido ao arquivar o PDF final.');
+    throw e;
+  }finally{clearTimeout(timer);}
+}
+async function abrirPdfSalvo(id){
+  const r=await operacionalApi('get_conferencia_pdf_url',{id:id});
+  if(r&&r.ok&&r.url) window.open(r.url,'_blank','noopener');
+  else showNotif((r&&r.message)||'PDF final não encontrado.','err');
+}
+`;
+        html=html.replace(apiFn,helper+'\n'+apiFn);
+      }
+
+      const oldFim=`    pdfFinalBlob=new Blob([bytes],{type:'application/pdf'});
+    pdfFinalUrl=URL.createObjectURL(pdfFinalBlob);
+    pdfFinalGerado=true;
+    pdfFinalBaixado=false;
+    st.textContent='PDF final compilado com checklist de capa e '+paginas.length+' página(s). Revise e baixe o arquivo para liberar a conclusão.';
+    const msg=document.getElementById('pdf-final-msg');
+    if(msg){ msg.textContent='Baixe o PDF final para liberar a conclusão.'; msg.className='pdf-final-msg'; }
+    atualizarEtapasConferencia();
+    abrirPreviewPdf();
+    showNotif('PDF final compilado. Revise e baixe o arquivo.','ok');`;
+      const newFim=`    pdfFinalBlob=new Blob([bytes],{type:'application/pdf'});
+    pdfFinalUrl=URL.createObjectURL(pdfFinalBlob);
+    pdfFinalGerado=true;
+    pdfFinalBaixado=false;
+    atualizarEtapasConferencia();
+    st.textContent='PDF compilado. Arquivando uma cópia no TDNGo...';
+    await salvarPdfFinalGerado();
+    st.textContent='PDF final compilado e arquivado no TDNGo. Revise e baixe o arquivo para liberar a conclusão.';
+    const msg=document.getElementById('pdf-final-msg');
+    if(msg){ msg.textContent='PDF arquivado no TDNGo. Você também pode baixá-lo agora para concluir.'; msg.className='pdf-final-msg ok'; }
+    abrirPreviewPdf();
+    showNotif('PDF final compilado e salvo no TDNGo.','ok');`;
+      if(html.includes(oldFim)) html=html.replace(oldFim,newFim);
+      else console.warn('[Conferencia] trecho de compilacao nao localizado; carregando fluxo estavel sem arquivamento automatico.');
+    }catch(patchErr){
+      console.error('[Conferencia] melhoria de PDF nao aplicada; mantendo base estavel.',patchErr);
+    }
+
     document.open();
     document.write(html);
     document.close();

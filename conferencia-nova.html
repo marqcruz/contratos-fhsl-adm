@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conferência Documental — TDNGo</title>
+<style>
+html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+#initial{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center;color:#9aa7b8}
+.session-box{max-width:520px;background:#161b22;border:1px solid #2a3140;border-radius:14px;padding:28px;color:#e6edf3}
+.session-box h2{margin:0 0 10px;font-size:20px}.session-box p{margin:0 0 16px;color:#9aa7b8;line-height:1.55}.session-box a{display:inline-block;padding:10px 16px;border-radius:8px;background:#3b9eff;color:#fff;text-decoration:none;font-weight:700}
+</style>
+</head>
+<body>
+<div id="initial">Carregando Conferência Documental...</div>
+<script>
+(async()=>{try{
+  let s=null,u=null;
+  try{s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');}catch(e){}
+  if(s){try{u=JSON.parse(s);if(u&&!u.tdngoToken&&u.token)u.tdngoToken=u.token;}catch(e){u=null;}}
+  if(!u||!u.tdngoToken){document.getElementById('initial').innerHTML='<div class="session-box"><h2>Sessão do TDNGo não encontrada</h2><p>Abra este módulo pela Central do TDNGo.</p><a href="index.html">Voltar à Central</a></div>';return;}
+  s=JSON.stringify(u);sessionStorage.setItem('fhsl_session',s);localStorage.setItem('fhsl_session',s);
+
+  const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/fa56cf4de159f6b36945994d55909ab9a892c0d1/conferencia.html';
+  const r=await fetch(base+'?v=nova-20260831-1515',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);let html=await r.text();
+
+  const apiAntiga="const OPERACIONAL_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-operacional-api';";
+  const apiNova="const OPERACIONAL_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-conferencia-api';";
+  if(!html.includes(apiAntiga))throw new Error('API da Conferência não localizada na base.');
+  html=html.replace(apiAntiga,apiNova);
+
+  html=html.replace("const s=sessionStorage.getItem('fhsl_session');","const s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');");
+  html=html.replace("sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));","sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser)); localStorage.setItem('fhsl_session', JSON.stringify(currentUser));");
+  html=html.replace("sessionStorage.removeItem('fhsl_session');","sessionStorage.removeItem('fhsl_session'); localStorage.removeItem('fhsl_session');");
+  html=html.replace('</head>','<style>.login-screen{display:none!important}#btn-concluir,#btn-baixar-pdf,#btn-concluir-modal{display:none!important}</style></head>');
+
+  html=html.replace("function podeAprovar(){ return currentUser && (currentUser.role==='admin' || currentUser.aprovaConf===true); }","function podeAprovar(){ return false; }");
+  html=html.replace("if(st==='Aprovada') return '<span class=\"badge c-green-b\">✅ Aprovada</span>';","if(st==='Aprovada') st='Concluída';");
+  html=html.replace("const ok=conferencias.filter(function(c){return c.Status==='Concluída';}).length;","const ok=conferencias.filter(function(c){return c.Status==='Concluída'||c.Status==='Aprovada';}).length;");
+
+  const acoes="let acoes=(podeEditar()?'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\" title=\"Editar/ver\">✏️</button>':'<button class=\"btn sm\" onclick=\"editarConf(\\''+c.ID+'\\')\">👁️</button>');";
+  if(html.includes(acoes))html=html.replace(acoes,acoes+"\n    if(c.TemPdfFinal) acoes+=' <button class=\"btn sm\" onclick=\"abrirPdfSalvo(\\''+c.ID+'\\')\" title=\"Abrir PDF final\">📎</button>'; ");
+
+  html=html.replace(`<button class="btn" onclick="compilarPDF()" id="btn-compilar">📎 Compilar PDF final</button>\n        <button class="btn primary" onclick="salvarConf('Concluída')" id="btn-concluir" disabled>✅ Concluir conferência</button>`,`<button class="btn primary" onclick="compilarPDF()" id="btn-compilar">📎 Compilar e salvar PDF final</button>`);
+
+  const helper=`async function finalizarConferenciaComPdf(payload,blob,fileName){\n  if(!currentUser||!currentUser.tdngoToken)return {ok:false,message:'Sessão sem token do TDNGo.'};\n  if(!blob||!blob.size)return {ok:false,message:'PDF final vazio ou indisponível.'};\n  const fd=new FormData();\n  fd.append('action','finalize_conferencia');fd.append('module','conferencia');fd.append('payload',JSON.stringify(payload||{}));fd.append('fileName',fileName||'conferencia.pdf');fd.append('file',blob,fileName||'conferencia.pdf');\n  const ctrl=new AbortController();const tm=setTimeout(function(){ctrl.abort();},60000);\n  try{const rr=await fetch(OPERACIONAL_API_URL,{method:'POST',headers:{Authorization:'Bearer '+currentUser.tdngoToken},body:fd,signal:ctrl.signal});const tx=await rr.text();let d;try{d=JSON.parse(tx)}catch(e){d={ok:false,message:tx||('HTTP '+rr.status)}}if(!rr.ok&&!d.message)d.message='HTTP '+rr.status;return d;}catch(e){if(e&&e.name==='AbortError')return {ok:false,message:'Tempo excedido ao salvar o PDF final.'};return {ok:false,message:'Falha ao salvar o PDF final: '+(e&&e.message?e.message:String(e))};}finally{clearTimeout(tm);}\n}\nfunction coletarPayloadFinal(){\n  const contrato=document.getElementById('cf-contrato').value;const unicos=contratosEmpresasUnicas();const c=unicos.find(function(x){return String(x.id)===String(contrato);})||{};\n  return {ID:editId||'',Unidade:document.getElementById('cf-unidade').value,MesRef:document.getElementById('cf-mesref').value,ContratoID:contrato,ContratoNum:c.numero||'',Empresa:document.getElementById('cf-empresa').value.trim(),CNPJ:document.getElementById('cf-cnpj').value.trim(),NotaFiscal:document.getElementById('cf-nf').value.trim(),TemSocios:document.getElementById('cf-socios').value,Itens:coletarItens(),Observacoes:document.getElementById('cf-obs').value.trim(),Status:'Concluída',__actor:{nome:currentUser.nome,email:currentUser.email}};\n}\nasync function abrirPdfSalvo(id){const rr=await operacionalApi('get_conferencia_pdf_url',{id:id});if(rr.ok&&rr.url)window.open(rr.url,'_blank','noopener');else showNotif(rr.message||'PDF final não encontrado.','err');}\n`;
+  const apiFn='async function operacionalApi(action,payload,autenticado){';
+  if(!html.includes(apiFn))throw new Error('Função operacional da Conferência não localizada.');
+  html=html.replace(apiFn,helper+apiFn);
+
+  const oldFim=`    pdfFinalBlob=new Blob([bytes],{type:'application/pdf'});\n    pdfFinalUrl=URL.createObjectURL(pdfFinalBlob);\n    pdfFinalGerado=true;\n    pdfFinalBaixado=false;\n    st.textContent='PDF final compilado com checklist de capa e '+paginas.length+' página(s). Revise e baixe o arquivo para liberar a conclusão.';\n    const msg=document.getElementById('pdf-final-msg');\n    if(msg){ msg.textContent='Baixe o PDF final para liberar a conclusão.'; msg.className='pdf-final-msg'; }\n    atualizarEtapasConferencia();\n    abrirPreviewPdf();\n    showNotif('PDF final compilado. Revise e baixe o arquivo.','ok');`;
+  const novoFim=`    pdfFinalBlob=new Blob([bytes],{type:'application/pdf'});\n    pdfFinalUrl=URL.createObjectURL(pdfFinalBlob);\n    pdfFinalGerado=true;pdfFinalBaixado=false;atualizarEtapasConferencia();\n    const btn=document.getElementById('btn-compilar');if(btn){btn.disabled=true;btn.textContent='⏳ Salvando no TDNGo...';}\n    st.textContent='PDF compilado. Salvando arquivo final no TDNGo...';\n    const payload=coletarPayloadFinal();\n    const emp=(payload.Empresa||'EMPRESA').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,60);\n    const comp=String(payload.MesRef||'').replace(/[^0-9-]/g,'');const nomePdf='Conferencia_'+emp+'_'+comp+'.pdf';\n    const fin=await finalizarConferenciaComPdf(payload,pdfFinalBlob,nomePdf);\n    if(!fin.ok)throw new Error(fin.message||'Não foi possível arquivar o PDF final.');\n    showNotif('Conferência concluída e PDF arquivado.','ok');\n    editId=null;conferenciaEmEdicao=false;permitindoSaida=true;anexos={};\n    if(pdfFinalUrl){try{URL.revokeObjectURL(pdfFinalUrl);}catch(e){}}pdfFinalUrl='';pdfFinalBlob=null;pdfFinalGerado=false;pdfFinalBaixado=false;\n    await carregar();showPage('lista');permitindoSaida=false;\n    if(btn){btn.disabled=false;btn.textContent='📎 Compilar e salvar PDF final';}`;
+  if(!html.includes(oldFim))throw new Error('Trecho de compilação do PDF não localizado.');
+  html=html.replace(oldFim,novoFim);
+
+  document.open();document.write(html);document.close();
+}catch(e){const el=document.getElementById('initial');if(el)el.innerHTML='<div class="session-box"><h2>Falha ao carregar Conferência</h2><p>'+String(e&&e.message?e.message:e)+'</p><a href="conferencia.html?v=20260831-1345">Abrir versão estável</a></div>';console.error(e)}})();
+</script>
+</body>
+</html>

@@ -47,6 +47,9 @@
     html=html.replace("apiFetch('extractpdf', { pdfBase64: pendingPdfB64 })","contratosPdfAi({ pdfBase64: pendingPdfB64, fileName: pendingPdfName })");
     html=html.replace("apiFetch('extractpdf', { pdfBase64: f.b64 })","contratosPdfAi({ pdfBase64: f.b64, fileName: f.name })");
 
+    html=html.replace("document.getElementById('dialog-pdf').classList.add('open');","await pdfUseAI();");
+    html=html.replace("<p>O que deseja fazer com <strong id=\"dialog-pdf-name\"></strong>?</p>","<p>O PDF <strong id=\"dialog-pdf-name\"></strong> será lido automaticamente pela IA.</p>");
+
     html=html.replace("window.addEventListener('DOMContentLoaded', function(){","setTimeout(function(){");
     html=html.replace("const sess = sessionStorage.getItem('fhsl_session');","const sess = sessionStorage.getItem('fhsl_session') || localStorage.getItem('fhsl_session'); if(sess&&!sessionStorage.getItem('fhsl_session')) sessionStorage.setItem('fhsl_session',sess);");
     html=html.replace(/sessionStorage\.removeItem\('fhsl_session'\);/g,"sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');");

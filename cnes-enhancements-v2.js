@@ -53,8 +53,41 @@
       .tdngo-copy:hover{border-color:var(--accent);color:var(--accent)}
       .tdngo-valid{font-size:11px;margin-top:4px;font-weight:700}.tdngo-valid.ok{color:var(--green)}.tdngo-valid.err{color:var(--red)}
       .tdngo-field-copy{display:flex;gap:6px;align-items:center}.tdngo-field-copy>input,.tdngo-field-copy>select{flex:1;min-width:0}
+      #tdngo-cnes-sort{min-width:155px}
     `;
     document.head.appendChild(st);
+  }
+
+  function setupSort(){
+    if(document.getElementById('tdngo-cnes-sort')) return;
+    const toolbar=document.querySelector('.toolbar');
+    if(!toolbar) return;
+    const sel=document.createElement('select');
+    sel.id='tdngo-cnes-sort';
+    sel.title='Ordenar listagem';
+    sel.innerHTML='<option value="az">Nome: A–Z</option><option value="za">Nome: Z–A</option><option value="padrao">Ordem padrão</option>';
+    sel.value='az';
+    sel.addEventListener('change',()=>{ try{ page=1; }catch(e){} try{ render(); }catch(e){} });
+    const search=document.getElementById('search');
+    if(search && search.nextSibling) toolbar.insertBefore(sel,search.nextSibling); else toolbar.prepend(sel);
+
+    if(typeof window.filtered==='function' && !window.filtered.__tdngoSort){
+      const original=window.filtered;
+      const wrapped=function(){
+        const arr=original.apply(this,arguments);
+        const modo=document.getElementById('tdngo-cnes-sort')?.value||'az';
+        if(modo==='padrao') return arr;
+        return arr.slice().sort((a,b)=>{
+          const an=String(a?.Nome||'').trim();
+          const bn=String(b?.Nome||'').trim();
+          const cmp=an.localeCompare(bn,'pt-BR',{sensitivity:'base',numeric:true});
+          return modo==='za'?-cmp:cmp;
+        });
+      };
+      wrapped.__tdngoSort=true;
+      window.filtered=wrapped;
+    }
+    try{ render(); }catch(e){}
   }
 
   function setupCpf(){
@@ -147,7 +180,7 @@
   }
 
   function install(){
-    addCss(); setupCpf(); setupFormCopies(); guardSave(); enhanceRows();
+    addCss(); setupSort(); setupCpf(); setupFormCopies(); guardSave(); enhanceRows();
     const body=document.getElementById('tbody');
     if(body && !body.__tdngoObserver){
       const obs=new MutationObserver(()=>enhanceRows()); obs.observe(body,{childList:true,subtree:true}); body.__tdngoObserver=obs;

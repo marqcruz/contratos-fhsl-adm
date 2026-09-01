@@ -19,10 +19,26 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117}
       const doc=frame.contentDocument;
       if(!doc || !doc.body) throw new Error('Documento CNES indisponível');
 
+      /* O CNES roda em iframe. Qualquer saída do módulo deve navegar a janela
+         principal; caso contrário, outro módulo abre dentro do iframe e a aba
+         continua com o título "CNES — TDNGo". */
+      doc.querySelectorAll('a[href]').forEach(a=>{
+        const href=(a.getAttribute('href')||'').trim();
+        if(href && !href.startsWith('#') && !href.startsWith('javascript:')) a.setAttribute('target','_top');
+      });
+      const home=doc.querySelector('a.home[href="index.html"]');
+      if(home){
+        home.setAttribute('target','_top');
+        home.addEventListener('click',function(ev){
+          ev.preventDefault();
+          window.top.location.href='index.html';
+        });
+      }
+
       if(!doc.getElementById('tdngo-cnes-enhancements-v2')){
         const sc=doc.createElement('script');
         sc.id='tdngo-cnes-enhancements-v2';
-        sc.src='cnes-enhancements-v2.js?v=20260825-1445';
+        sc.src='cnes-enhancements-v2.js?v=20260901-0840';
         sc.async=false;
         doc.body.appendChild(sc);
       }

@@ -11,7 +11,6 @@ let accessData={usuarios:[],unidades:[],links:[],modulos:[]};
 let accessLoaded=false;
 
 function escU(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function roleLabel(r){return PROFILE_INFO[r]?.nome||r||'—'}
 function addStyle(){
   if(document.getElementById('tdngo-unified-access-style'))return;
   const s=document.createElement('style');s.id='tdngo-unified-access-style';s.textContent=`
@@ -24,8 +23,8 @@ function addStyle(){
 async function accessPost(body){return post(ACCESS_API,body)}
 async function loadAccess(force=false){
   if(accessLoaded&&!force)return accessData;
-  if(!window.me||me.role!=='admin'){
-    accessData={usuarios:[],unidades:(window.units||[]).map(u=>({id:u.Uuid||u.ID,nome:u.Nome,tipo:u.Tipo})),links:[],modulos:(window.modules||[]).map(m=>m[0])};accessLoaded=true;return accessData;
+  if(!me||me.role!=='admin'){
+    accessData={usuarios:[],unidades:(units||[]).map(u=>({id:u.Uuid||u.ID,nome:u.Nome,tipo:u.Tipo})),links:[],modulos:(modules||[]).map(m=>m[0])};accessLoaded=true;return accessData;
   }
   const r=await accessPost({action:'accessOverview'});accessData=r.data||{usuarios:[],unidades:[],links:[],modulos:[]};accessLoaded=true;return accessData;
 }
@@ -48,15 +47,15 @@ function renderAccessMatrix(){
   const modbox=document.getElementById('modbox'),adminInfo=document.getElementById('ua-admin-info'),role=document.getElementById('uperfil')?.value||'visualizador';
   if(modbox)modbox.style.display=role==='admin'?'none':'block';if(adminInfo)adminInfo.style.display=role==='admin'?'block':'none';
   if(role==='admin')return;
-  const u=(window.users||[]).find(x=>String(x.ID)===String(document.getElementById('uid')?.value||''));
+  const u=(users||[]).find(x=>String(x.ID)===String(document.getElementById('uid')?.value||''));
   const au=currentAccessUser(u),uuid=au?.id||u?.Uuid||'';
   const selected=String(u?.Modulos||'').split(',').map(x=>x.trim()).filter(Boolean);
   const warning=document.getElementById('ua-warning');
   if(warning){const legacy=!!u&&u.Role!=='admin'&&!selected.length;warning.style.display=legacy?'block':'none';warning.textContent=legacy?'Atenção: este cadastro antigo não possui módulos explícitos. Antes de salvar, selecione ao menos um módulo para evitar uma permissão ambígua.':''}
-  const list=(accessData.unidades?.length?accessData.unidades:(window.units||[]).map(x=>({id:x.Uuid||x.ID,nome:x.Nome,tipo:x.Tipo})));
+  const list=(accessData.unidades?.length?accessData.unidades:(units||[]).map(x=>({id:x.Uuid||x.ID,nome:x.Nome,tipo:x.Tipo})));
   const modsEl=document.getElementById('mods');if(!modsEl)return;
   modsEl.className='ua-grid';
-  modsEl.innerHTML=(window.modules||[]).map(m=>{
+  modsEl.innerHTML=(modules||[]).map(m=>{
     const mod=m[0],enabled=selected.includes(mod);
     const linked=new Set((accessData.links||[]).filter(l=>String(l.usuario_id)===String(uuid)&&String(l.modulo)===String(mod)).map(l=>String(l.unidade_id)));
     const unitHtml=list.length?list.map(n=>'<label><input type="checkbox" class="ua-unit" data-mod="'+escU(mod)+'" value="'+escU(n.id)+'" '+(linked.has(String(n.id))?'checked':'')+' '+(enabled&&me.role==='admin'?'':'disabled')+'>'+escU(n.nome)+'</label>').join(''):'<span class="ua-no-units">Nenhuma unidade ativa cadastrada.</span>';
@@ -70,7 +69,7 @@ function patchDom(){
   const nav=document.querySelector('[data-page="usuarios"]');if(nav)nav.textContent='👤 Usuários e acessos';
   const page=document.getElementById('p-usuarios');
   if(page&&!document.getElementById('ua-guide')){
-    const guide=document.createElement('div');guide.id='ua-guide';guide.className='ua-guide';guide.innerHTML='<div class="ua-guide-title">Perfis de acesso</div><div class="ua-guide-grid">'+Object.entries(PROFILE_INFO).map(([k,v])=>'<div class="ua-guide-item"><b>'+escU(v.nome)+'</b><span>'+escU(v.texto)+'</span></div>').join('')+'</div>';
+    const guide=document.createElement('div');guide.id='ua-guide';guide.className='ua-guide';guide.innerHTML='<div class="ua-guide-title">Perfis de acesso</div><div class="ua-guide-grid">'+Object.values(PROFILE_INFO).map(v=>'<div class="ua-guide-item"><b>'+escU(v.nome)+'</b><span>'+escU(v.texto)+'</span></div>').join('')+'</div>';
     const toolbar=page.querySelector('.toolbar');if(toolbar)page.insertBefore(guide,toolbar);
   }
   const modbox=document.getElementById('modbox');
@@ -84,11 +83,10 @@ function patchDom(){
   const ths=[...document.querySelectorAll('#p-usuarios th')];const th=ths.find(x=>x.textContent.trim()==='Módulos');if(th)th.textContent='Acessos';
 }
 
-const originalOpenUser=window.openUser;
 window.openUser=async function(id=''){
   patchDom();
   try{await loadAccess()}catch(e){toast('Não foi possível carregar unidades e módulos: '+e.message,'err');return}
-  const u=(window.users||[]).find(x=>String(x.ID)===String(id));
+  const u=(users||[]).find(x=>String(x.ID)===String(id));
   uid.value=id;unome.value=u?.Nome||'';uemail.value=u?.Email||'';upass.value='';uperfil.value=u?.Role||'visualizador';uativo.value=bool(u?.Ativo??true)?'true':'false';
   renderAccessMatrix();mu.classList.add('open');
 };
@@ -96,7 +94,7 @@ window.renderMods=renderAccessMatrix;
 
 window.saveUser=async function(){
   const role=uperfil.value;
-  const old=(window.users||[]).find(x=>String(x.ID)===String(uid.value));
+  const old=(users||[]).find(x=>String(x.ID)===String(uid.value));
   const oldMods=String(old?.Modulos||'').split(',').map(x=>x.trim()).filter(Boolean);
   const selected=role==='admin'?[]:[...document.querySelectorAll('.ua-mod:checked')].map(x=>x.value);
   if(me.role==='admin'&&role!=='admin'&&!selected.length){toast('Selecione ao menos um módulo para este usuário.','err');return}
@@ -120,5 +118,5 @@ const oldLoadAll=window.loadAll;
 if(typeof oldLoadAll==='function')window.loadAll=async function(){await oldLoadAll();accessLoaded=false;try{await loadAccess()}catch(e){if(me?.role==='admin')toast('Falha ao atualizar acessos: '+e.message,'err')}patchDom()};
 
 patchDom();
-setTimeout(async()=>{patchDom();if(window.me?.role==='admin'){try{await loadAccess()}catch(e){}}},250);
+setTimeout(async()=>{patchDom();if(me?.role==='admin'){try{await loadAccess()}catch(e){}}},250);
 })();

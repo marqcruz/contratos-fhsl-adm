@@ -17,7 +17,7 @@
  if(!sess){location.replace('index.html');return}
  const frame=document.getElementById('frame'),loading=document.getElementById('loading');
  const docsPermitidos=new Set(['/contratos-fhsl-adm/solicitacao_interna_formulario.html','/contratos-fhsl-adm/termo_orientacao_ponto.html']);
- function openDoc(btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');loading.style.display='grid';frame.src=btn.dataset.src+'?v=20260828-1148';frame.title=btn.dataset.title;}
+ function openDoc(btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');loading.style.display='grid';frame.src=btn.dataset.src+'?v=20260902-1215';frame.title=btn.dataset.title;}
  document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>openDoc(btn)));
  frame.addEventListener('load',()=>{
    try{

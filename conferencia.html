@@ -72,6 +72,46 @@ html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:
   </div>
 </div></body>`);
 
+      html=html.replace('</body>',`<script>
+const CONFERENCIA_EMPRESAS_FIXAS=[
+  {id:'fixa-rontgen',numero:'',empresa:'RONTGEN & LUDWIG SERVIÇOS DE RADIOLOGIA MÉDICA LTDA',cnpj:'26.957.331/0001-08'},
+  {id:'fixa-cw2',numero:'',empresa:'CW2 MULTISERVICOS LTDA',cnpj:'25.526.444/0001-96'},
+  {id:'fixa-serer',numero:'',empresa:'SERER SEGURANCA PRIVADA LTDA',cnpj:'30.546.399/0001-71'}
+];
+contratosEmpresasUnicas=function(){return CONFERENCIA_EMPRESAS_FIXAS.slice();};
+contratoPorEmpresa=function(nome){
+  const k=normalizaEmpresaChave(nome);
+  return CONFERENCIA_EMPRESAS_FIXAS.find(function(c){return normalizaEmpresaChave(c.empresa)===k;})||null;
+};
+preencherContratos=function(empresaSelecionada){
+  const s=document.getElementById('cf-contrato');if(!s)return;
+  s.innerHTML='<option value="">Selecione a empresa...</option>'+CONFERENCIA_EMPRESAS_FIXAS.map(function(c){return '<option value="'+c.id+'">'+esc(c.empresa)+'</option>';}).join('');
+  if(empresaSelecionada){
+    const porId=CONFERENCIA_EMPRESAS_FIXAS.find(function(c){return String(c.id)===String(empresaSelecionada);});
+    const porNome=CONFERENCIA_EMPRESAS_FIXAS.find(function(c){return normalizaEmpresaChave(c.empresa)===normalizaEmpresaChave(empresaSelecionada);});
+    const achou=porId||porNome;
+    if(achou)s.value=achou.id;
+  }
+};
+contratoMudou=function(){
+  const id=document.getElementById('cf-contrato').value;
+  const c=CONFERENCIA_EMPRESAS_FIXAS.find(function(x){return String(x.id)===String(id);});
+  document.getElementById('cf-empresa').value=c?c.empresa:'';
+  document.getElementById('cf-cnpj').value=c?c.cnpj:'';
+  atualizarFlagEmpresa();
+  if(conferenciaEmEdicao) invalidarPdfFinal('Empresa alterada. Compile novamente o PDF final.');
+};
+(function(){
+  const sel=document.getElementById('cf-contrato');
+  if(sel){
+    const label=sel.closest('.fg')&&sel.closest('.fg').querySelector('label');
+    if(label)label.textContent='Empresa *';
+    preencherContratos();
+  }
+  const cnpj=document.getElementById('cf-cnpj');if(cnpj){cnpj.readOnly=true;cnpj.placeholder='CNPJ automático';}
+})();
+<\/script></body>`);
+
       const apiFn='async function operacionalApi(action,payload,autenticado){';
       if(html.includes(apiFn)){
         const helper=`async function salvarPdfFinalGerado(){

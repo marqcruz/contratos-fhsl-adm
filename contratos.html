@@ -46,17 +46,77 @@
 
     html=html.replace("apiFetch('extractpdf', { pdfBase64: pendingPdfB64 })","contratosPdfAi({ pdfBase64: pendingPdfB64, fileName: pendingPdfName })");
     html=html.replace("apiFetch('extractpdf', { pdfBase64: f.b64 })","contratosPdfAi({ pdfBase64: f.b64, fileName: f.name })");
-
     html=html.replace("document.getElementById('dialog-pdf').classList.add('open');","await pdfUseAI();");
     html=html.replace("<p>O que deseja fazer com <strong id=\"dialog-pdf-name\"></strong>?</p>","<p>O PDF <strong id=\"dialog-pdf-name\"></strong> será lido automaticamente pela IA.</p>");
 
-    html=html.replace("window.addEventListener('DOMContentLoaded', function(){","setTimeout(function(){");
-    html=html.replace("const sess = sessionStorage.getItem('fhsl_session');","const sess = sessionStorage.getItem('fhsl_session') || localStorage.getItem('fhsl_session'); if(sess&&!sessionStorage.getItem('fhsl_session')) sessionStorage.setItem('fhsl_session',sess);");
-    html=html.replace(/sessionStorage\.removeItem\('fhsl_session'\);/g,"sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');");
+    // O módulo Contratos não possui autenticação própria. Ele herda a sessão central do TDNGo.
+    const oldInit = `window.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('script-pre').textContent = SCRIPT_CODE;
+  addUnidade();
+  window.formDirty = false;
+  const pg = document.getElementById('page-novo');
+  if (pg) pg.addEventListener('input', function(){ window.formDirty = true; });
+  const sess = sessionStorage.getItem('fhsl_session');
+  if (sess) {
+    try {
+      currentUser = JSON.parse(sess);
+      if (currentUser && currentUser.tdngoToken) startApp();
+      else currentUser = null;
+    } catch(e){ currentUser=null; }
+  }
+});`;
+
+    const newInit = `setTimeout(function(){
+  document.getElementById('script-pre').textContent = SCRIPT_CODE;
+  addUnidade();
+  window.formDirty = false;
+  const pg = document.getElementById('page-novo');
+  if (pg) pg.addEventListener('input', function(){ window.formDirty = true; });
+
+  const sess = sessionStorage.getItem('fhsl_session') || localStorage.getItem('fhsl_session');
+  if (!sess){ window.location.replace('index.html'); return; }
+  try {
+    currentUser = JSON.parse(sess);
+    if (!currentUser || !currentUser.tdngoToken) throw new Error('Sessão central inválida');
+    sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
+    localStorage.setItem('fhsl_session', JSON.stringify(currentUser));
+    startApp();
+  } catch(e){
+    sessionStorage.removeItem('fhsl_session');
+    localStorage.removeItem('fhsl_session');
+    currentUser = null;
+    window.location.replace('index.html');
+  }
+},0);`;
+
+    if(!html.includes(oldInit)) throw new Error('Inicialização da sessão do módulo Contratos não localizada.');
+    html=html.replace(oldInit,newInit);
+
+    html=html.replace(/function doLogout\(\)\{[\s\S]*?\n\}\n\nfunction startApp\(\)\{/,
+`function doLogout(){
+  if (currentUser){ try { contratosApi('logevent', { acao:'Logout', detalhe:'Saída do sistema', alvo:currentUser.id||'' }); } catch(e){} }
+  sessionStorage.removeItem('fhsl_session');
+  localStorage.removeItem('fhsl_session');
+  currentUser = null;
+  window.location.replace('index.html');
+}
+
+function startApp(){`);
+
+    html=html.replace(
+`  if (r.status===401 && autenticado){
+    try { sessionStorage.removeItem('fhsl_session'); } catch(e){}
+  }`,
+`  if (r.status===401 && autenticado){
+    try {
+      sessionStorage.removeItem('fhsl_session');
+      localStorage.removeItem('fhsl_session');
+      setTimeout(function(){ window.location.replace('index.html'); },0);
+    } catch(e){}
+  }`
+    );
 
     // Etiquetas gerenciais do módulo Contratos.
-    // Mantém os códigos de classe existentes para não quebrar dashboard/alertas,
-    // mas recalcula qual aditivo é o atual e qual foi substituído.
     html=html.replace('>Vigente c/ aditivo</option>','>Vigente com aditivo</option>');
     html=html.replace(/>Substituído<\/option>/g,'>Aditivo substituído</option>');
     html=html.replace(/🔑 vigente/g,'🔑 atual');
@@ -129,16 +189,12 @@
 
   window.getStatusLabel = function(c){
     var s=(c.statusContrato||'').toLowerCase();
-
-    // Histórico de aditivos prevalece na etiqueta: todo aditivo anterior ao atual é substituído.
     if(isAditivoSubstituido(c)) return {cls:'substituido',txt:'Aditivo substituído'};
-
     if(s.indexOf('negoci')>=0) return {cls:'negociacao',txt:'Em negociação'};
     if(s.indexOf('encerr')>=0) return {cls:'encerrado',txt:'Encerrado'};
     if(s.indexOf('suspen')>=0) return {cls:'suspenso',txt:'Suspenso'};
 
     var v=getVigStatus(c);
-
     if(c.tipo==='Contrato'){
       var ve=vigenciaEfetiva(c);
       if(ve.fonte && ve.fonte.id!==c.id && (v==='ativo' || v==='vencendo')){
@@ -147,7 +203,6 @@
       if(v==='vencido') return {cls:'vencido',txt:'Contrato vencido'};
       return {cls:(v==='vencendo'?'vencendo':'vigente'),txt:'Contrato vigente'};
     }
-
     if(v==='vencido') return {cls:'vencido',txt:'Aditivo vencido'};
     return {cls:(v==='vencendo'?'vencendo':'vigente'),txt:'Aditivo vigente'};
   };

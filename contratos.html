@@ -1,37 +1,57 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contratos — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#loading{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center}</style></head>
-<body><div id="loading">Carregando Contratos...</div>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contratos — TDNGo</title>
+<style>
+html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+#loading{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<div id="loading">Carregando Contratos...</div>
 <script>
 (async()=>{
   try{
-    const r=await fetch('contratos-base-current.html',{cache:'no-store'});
-    if(!r.ok) throw new Error('contratos-base-current.html HTTP '+r.status);
+    // 1) Acesso somente pela sessão central do TDNGo.
+    const sess=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');
+    if(!sess){window.location.replace('index.html');return;}
+    let sessUser=null;
+    try{sessUser=JSON.parse(sess);}catch(e){}
+    if(!sessUser||!sessUser.tdngoToken){
+      sessionStorage.removeItem('fhsl_session');
+      localStorage.removeItem('fhsl_session');
+      window.location.replace('index.html');
+      return;
+    }
+    sessionStorage.setItem('fhsl_session',JSON.stringify(sessUser));
+    localStorage.setItem('fhsl_session',JSON.stringify(sessUser));
+
+    // 2) Carrega a base original sem cache.
+    const r=await fetch('contratos-base-current.html?v=20260903-1515',{cache:'no-store'});
+    if(!r.ok)throw new Error('contratos-base-current.html HTTP '+r.status);
     let html=await r.text();
 
-    // O módulo Contratos usa exclusivamente a autenticação central do TDNGo.
-    // Remove fisicamente do HTML a antiga tela própria de e-mail/senha.
-    html=html.replace(/\n<!-- ════════ LOGIN ════════ -->[\s\S]*?\n<!-- ════════ APP ════════ -->/,'\n<!-- ════════ APP ════════ -->');
-    html=html.replace(
-      "  document.getElementById('login-screen').style.display = 'none';",
-      "  const loginScreen=document.getElementById('login-screen'); if(loginScreen) loginScreen.style.display='none';"
-    );
+    // 3) O login legado permanece apenas no arquivo-base, mas nunca é exibido.
+    html=html.replace('</head>','<style id="tdngo-contratos-sso">#login-screen{display:none!important}</style></head>');
 
+    // Remove telas administrativas que pertencem ao módulo central.
     html=html.replace('  <div class="nav-group perm-admin"><div class="nav-label">Controle</div><button class="nav-item" data-page="auditoria" onclick="showPage(\'auditoria\',this)">🛡️ Auditoria</button></div>\n','');
     html=html.replace(/\n  <!-- AUDITORIA -->[\s\S]*?\n  <!-- SETUP -->/,'\n  <!-- SETUP -->');
     html=html.replace("  auditoria:['Auditoria','Registro de todas as ações no sistema'],\n",'');
     html=html.replace("  if (id==='auditoria') loadLog();\n",'');
-
     html=html.replace("    + '<div class=\"stat-card c-green\"><div class=\"stat-num\">'+(users.filter(function(u){return u.ativo;}).length||1)+'</div><div class=\"stat-label\">Usuários ativos</div></div>';",";");
     html=html.replace('async function loadAll(){ await Promise.all([ loadUnits(), loadContracts(), loadUsers() ]); }','async function loadAll(){ await Promise.all([ loadUnits(), loadContracts() ]); }');
 
+    // 4) PDF/IA via Supabase.
     html=html.replace(
       "const CONTRATOS_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-contratos-api';",
       "const CONTRATOS_API_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-contratos-api';\nconst CONTRATOS_PDF_AI_URL = 'https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-contratos-pdf-ai';"
     );
 
-    const pdfApi = `async function contratosPdfAi(payload){
-  if(!currentUser || !currentUser.tdngoToken) return {ok:false,message:'Sessão sem token do TDNGo. Entre novamente.'};
+    const pdfApi=`async function contratosPdfAi(payload){
+  if(!currentUser||!currentUser.tdngoToken)return{ok:false,message:'Sessão sem token do TDNGo.'};
   const ctrl=new AbortController();
   const tm=setTimeout(function(){ctrl.abort();},120000);
   try{
@@ -43,141 +63,64 @@
     });
     const txt=await rr.text();let data;
     try{data=JSON.parse(txt)}catch(e){data={ok:false,message:txt||('Erro HTTP '+rr.status)}}
-    if(!rr.ok && !data.message)data.message='Erro HTTP '+rr.status;
+    if(!rr.ok&&!data.message)data.message='Erro HTTP '+rr.status;
     return data;
   }catch(e){
-    if(e && e.name==='AbortError') return {ok:false,message:'A leitura do PDF excedeu 2 minutos. Tente novamente ou use um PDF menor.'};
-    return {ok:false,message:'Falha ao conectar ao serviço de leitura por IA.'};
+    if(e&&e.name==='AbortError')return{ok:false,message:'A leitura do PDF excedeu 2 minutos.'};
+    return{ok:false,message:'Falha ao conectar ao serviço de leitura por IA.'};
   }finally{clearTimeout(tm)}
 }`;
     html=html.replace('async function contratosApi(action, payload, autenticado){',pdfApi+'\n\nasync function contratosApi(action, payload, autenticado){');
-
     html=html.replace("apiFetch('extractpdf', { pdfBase64: pendingPdfB64 })","contratosPdfAi({ pdfBase64: pendingPdfB64, fileName: pendingPdfName })");
     html=html.replace("apiFetch('extractpdf', { pdfBase64: f.b64 })","contratosPdfAi({ pdfBase64: f.b64, fileName: f.name })");
     html=html.replace("document.getElementById('dialog-pdf').classList.add('open');","await pdfUseAI();");
     html=html.replace("<p>O que deseja fazer com <strong id=\"dialog-pdf-name\"></strong>?</p>","<p>O PDF <strong id=\"dialog-pdf-name\"></strong> será lido automaticamente pela IA.</p>");
 
-    const oldInit = `window.addEventListener('DOMContentLoaded', function(){
-  document.getElementById('script-pre').textContent = SCRIPT_CODE;
-  addUnidade();
-  window.formDirty = false;
-  const pg = document.getElementById('page-novo');
-  if (pg) pg.addEventListener('input', function(){ window.formDirty = true; });
-  const sess = sessionStorage.getItem('fhsl_session');
-  if (sess) {
-    try {
-      currentUser = JSON.parse(sess);
-      if (currentUser && currentUser.tdngoToken) startApp();
-      else currentUser = null;
-    } catch(e){ currentUser=null; }
-  }
-});`;
-
-    const newInit = `setTimeout(function(){
-  const sess = sessionStorage.getItem('fhsl_session') || localStorage.getItem('fhsl_session');
-  if (!sess){ window.location.replace('index.html'); return; }
-
-  try {
-    currentUser = JSON.parse(sess);
-    if (!currentUser || !currentUser.tdngoToken) throw new Error('Sessão central inválida');
-    sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
-    localStorage.setItem('fhsl_session', JSON.stringify(currentUser));
-  } catch(e){
-    sessionStorage.removeItem('fhsl_session');
-    localStorage.removeItem('fhsl_session');
-    currentUser = null;
-    window.location.replace('index.html');
-    return;
-  }
-
-  // Inicializações auxiliares não podem impedir a entrada no módulo.
-  try {
-    const pre=document.getElementById('script-pre'); if(pre) pre.textContent=SCRIPT_CODE;
-    addUnidade();
-    window.formDirty=false;
-    const pg=document.getElementById('page-novo');
-    if(pg) pg.addEventListener('input',function(){window.formDirty=true;});
-  } catch(e){ console.warn('Inicialização auxiliar do Contratos:',e); }
-
-  startApp();
-},0);`;
-
-    if(!html.includes(oldInit)) throw new Error('Inicialização da sessão do módulo Contratos não localizada.');
-    html=html.replace(oldInit,newInit);
-
-    html=html.replace(/function doLogout\(\)\{[\s\S]*?\n\}\n\nfunction startApp\(\)\{/,
-`function doLogout(){
-  if (currentUser){ try { contratosApi('logevent', { acao:'Logout', detalhe:'Saída do sistema', alvo:currentUser.id||'' }); } catch(e){} }
-  sessionStorage.removeItem('fhsl_session');
-  localStorage.removeItem('fhsl_session');
-  currentUser = null;
-  window.location.replace('index.html');
-}
-
-function startApp(){`);
-
+    // 5) A base passa a aceitar a sessão central também pelo localStorage.
     html=html.replace(
-`  if (r.status===401 && autenticado){
-    try { sessionStorage.removeItem('fhsl_session'); } catch(e){}
-  }`,
-`  if (r.status===401 && autenticado){
-    try {
-      sessionStorage.removeItem('fhsl_session');
-      localStorage.removeItem('fhsl_session');
-      setTimeout(function(){ window.location.replace('index.html'); },0);
-    } catch(e){}
-  }`
+      "const sess = sessionStorage.getItem('fhsl_session');",
+      "const sess = sessionStorage.getItem('fhsl_session') || localStorage.getItem('fhsl_session'); if(sess&&!sessionStorage.getItem('fhsl_session')) sessionStorage.setItem('fhsl_session',sess);"
     );
+    html=html.replace(/sessionStorage\.removeItem\('fhsl_session'\);/g,"sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');");
 
-    // Etiquetas gerenciais do módulo Contratos.
-    html=html.replace('>Vigente c/ aditivo</option>','>Vigente com aditivo</option>');
-    html=html.replace(/>Substituído<\/option>/g,'>Aditivo substituído</option>');
-    html=html.replace(/🔑 vigente/g,'🔑 atual');
-
-    const statusPatch = `<script>
+    // 6) Etiquetas gerenciais. A tag SCRIPT é montada em partes para não encerrar este carregador.
+    const statusJs=`
 (function(){
-  function tdngoDataAditivo(a){
-    if(!a) return null;
-    var d = parseBR(a.vigenciaInicio);
-    if(d) return d;
-    d = parseBR(a.dataAssinatura);
-    if(d) return d;
-    if(a.criadoEm){
-      var c = new Date(a.criadoEm);
-      if(!isNaN(c)) return c;
-    }
+  function dataAditivo(a){
+    if(!a)return null;
+    var d=parseBR(a.vigenciaInicio);if(d)return d;
+    d=parseBR(a.dataAssinatura);if(d)return d;
+    if(a.criadoEm){var c=new Date(a.criadoEm);if(!isNaN(c))return c;}
     return null;
   }
-  window.cmpAditivos = function(a,b){
-    var da=tdngoDataAditivo(a), db=tdngoDataAditivo(b);
-    if(da && db && da.getTime()!==db.getTime()) return da.getTime()-db.getTime();
-    if(da && !db) return 1;
-    if(!da && db) return -1;
-    var n=cmpNum(a&&a.numero,b&&b.numero);
-    if(n!==0) return n;
+  window.cmpAditivos=function(a,b){
+    var da=dataAditivo(a),db=dataAditivo(b);
+    if(da&&db&&da.getTime()!==db.getTime())return da.getTime()-db.getTime();
+    if(da&&!db)return 1;if(!da&&db)return-1;
+    var n=cmpNum(a&&a.numero,b&&b.numero);if(n!==0)return n;
     return String((a&&a.id)||'').localeCompare(String((b&&b.id)||''));
   };
-  window.aditivoMaisRecente = function(pai){
-    var lista=contracts.filter(function(a){return a.contratoPai===pai.id&&a.tipo==='Termo Aditivo'&&['Encerrado','Suspenso'].indexOf(a.statusContrato)<0;});
-    if(!lista.length)return null;lista.sort(cmpAditivos);return lista[lista.length-1];
+  window.aditivoMaisRecente=function(pai){
+    var l=contracts.filter(function(a){return a.contratoPai===pai.id&&a.tipo==='Termo Aditivo'&&['Encerrado','Suspenso'].indexOf(a.statusContrato)<0;});
+    if(!l.length)return null;l.sort(cmpAditivos);return l[l.length-1];
   };
-  window.aditivosOrdenados = function(pai){
+  window.aditivosOrdenados=function(pai){
     return contracts.filter(function(a){return a.contratoPai===pai.id&&a.tipo==='Termo Aditivo'&&['Encerrado','Suspenso'].indexOf(a.statusContrato)<0;}).sort(cmpAditivos);
   };
-  function aditivoMaisRecenteHistorico(pai){
-    var lista=contracts.filter(function(a){return a.contratoPai===pai.id&&a.tipo==='Termo Aditivo';});
-    if(!lista.length)return null;lista.sort(cmpAditivos);return lista[lista.length-1];
+  function ultimoAditivo(pai){
+    var l=contracts.filter(function(a){return a.contratoPai===pai.id&&a.tipo==='Termo Aditivo';});
+    if(!l.length)return null;l.sort(cmpAditivos);return l[l.length-1];
   }
   window.isAditivoVigente=function(a){
     if(a.tipo!=='Termo Aditivo'||!a.contratoPai)return false;
     if(['Encerrado','Suspenso'].indexOf(a.statusContrato)>=0)return false;
-    var pai=contracts.find(function(x){return x.id===a.contratoPai;});if(!pai)return false;
-    var atual=aditivoMaisRecenteHistorico(pai);return !!(atual&&atual.id===a.id&&getVigStatus(a)!=='vencido');
+    var p=contracts.find(function(x){return x.id===a.contratoPai;});if(!p)return false;
+    var u=ultimoAditivo(p);return !!(u&&u.id===a.id&&getVigStatus(a)!=='vencido');
   };
   window.isAditivoSubstituido=function(a){
     if(a.tipo!=='Termo Aditivo'||!a.contratoPai)return false;
-    var pai=contracts.find(function(x){return x.id===a.contratoPai;});if(!pai)return false;
-    var atual=aditivoMaisRecenteHistorico(pai);return !!(atual&&atual.id!==a.id&&cmpAditivos(a,atual)<0);
+    var p=contracts.find(function(x){return x.id===a.contratoPai;});if(!p)return false;
+    var u=ultimoAditivo(p);return !!(u&&u.id!==a.id&&cmpAditivos(a,u)<0);
   };
   window.getStatusLabel=function(c){
     var s=(c.statusContrato||'').toLowerCase();
@@ -195,14 +138,24 @@ function startApp(){`);
     if(v==='vencido')return{cls:'vencido',txt:'Aditivo vencido'};
     return{cls:(v==='vencendo'?'vencendo':'vigente'),txt:'Aditivo vigente'};
   };
-})();
-<\/script>`;
-    html=html.replace('</body>',statusPatch+'\n</body>');
+})();`;
+    const statusTag='<scr'+'ipt>'+statusJs+'</scr'+'ipt>';
+    html=html.replace('</body>',statusTag+'\n</body>');
+    html=html.replace('>Vigente c/ aditivo</option>','>Vigente com aditivo</option>');
+    html=html.replace(/>Substituído<\/option>/g,'>Aditivo substituído</option>');
+    html=html.replace(/🔑 vigente/g,'🔑 atual');
 
-    if(html.includes('id="login-screen"')) throw new Error('A tela de login legada ainda permaneceu no HTML do módulo Contratos.');
-    if(html.includes("apiFetch('extractpdf'")) throw new Error('Ainda existe chamada legada extractpdf no módulo Contratos.');
+    if(html.includes("apiFetch('extractpdf'"))throw new Error('Ainda existe chamada legada extractpdf.');
 
-    document.open(); document.write(html); document.close();
-  }catch(e){document.getElementById('loading').textContent='Falha ao carregar Contratos: '+(e&&e.message?e.message:String(e));console.error(e)}
+    document.open();
+    document.write(html);
+    document.close();
+  }catch(e){
+    const el=document.getElementById('loading');
+    if(el)el.textContent='Falha ao carregar Contratos: '+(e&&e.message?e.message:String(e));
+    console.error(e);
+  }
 })();
-</script></body></html>
+</script>
+</body>
+</html>

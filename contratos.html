@@ -9,6 +9,14 @@
     if(!r.ok) throw new Error('contratos-base-current.html HTTP '+r.status);
     let html=await r.text();
 
+    // O módulo Contratos usa exclusivamente a autenticação central do TDNGo.
+    // Remove fisicamente do HTML a antiga tela própria de e-mail/senha.
+    html=html.replace(/\n<!-- ════════ LOGIN ════════ -->[\s\S]*?\n<!-- ════════ APP ════════ -->/,'\n<!-- ════════ APP ════════ -->');
+    html=html.replace(
+      "  document.getElementById('login-screen').style.display = 'none';",
+      "  const loginScreen=document.getElementById('login-screen'); if(loginScreen) loginScreen.style.display='none';"
+    );
+
     html=html.replace('  <div class="nav-group perm-admin"><div class="nav-label">Controle</div><button class="nav-item" data-page="auditoria" onclick="showPage(\'auditoria\',this)">🛡️ Auditoria</button></div>\n','');
     html=html.replace(/\n  <!-- AUDITORIA -->[\s\S]*?\n  <!-- SETUP -->/,'\n  <!-- SETUP -->');
     html=html.replace("  auditoria:['Auditoria','Registro de todas as ações no sistema'],\n",'');
@@ -49,7 +57,6 @@
     html=html.replace("document.getElementById('dialog-pdf').classList.add('open');","await pdfUseAI();");
     html=html.replace("<p>O que deseja fazer com <strong id=\"dialog-pdf-name\"></strong>?</p>","<p>O PDF <strong id=\"dialog-pdf-name\"></strong> será lido automaticamente pela IA.</p>");
 
-    // O módulo Contratos não possui autenticação própria. Ele herda a sessão central do TDNGo.
     const oldInit = `window.addEventListener('DOMContentLoaded', function(){
   document.getElementById('script-pre').textContent = SCRIPT_CODE;
   addUnidade();
@@ -67,26 +74,32 @@
 });`;
 
     const newInit = `setTimeout(function(){
-  document.getElementById('script-pre').textContent = SCRIPT_CODE;
-  addUnidade();
-  window.formDirty = false;
-  const pg = document.getElementById('page-novo');
-  if (pg) pg.addEventListener('input', function(){ window.formDirty = true; });
-
   const sess = sessionStorage.getItem('fhsl_session') || localStorage.getItem('fhsl_session');
   if (!sess){ window.location.replace('index.html'); return; }
+
   try {
     currentUser = JSON.parse(sess);
     if (!currentUser || !currentUser.tdngoToken) throw new Error('Sessão central inválida');
     sessionStorage.setItem('fhsl_session', JSON.stringify(currentUser));
     localStorage.setItem('fhsl_session', JSON.stringify(currentUser));
-    startApp();
   } catch(e){
     sessionStorage.removeItem('fhsl_session');
     localStorage.removeItem('fhsl_session');
     currentUser = null;
     window.location.replace('index.html');
+    return;
   }
+
+  // Inicializações auxiliares não podem impedir a entrada no módulo.
+  try {
+    const pre=document.getElementById('script-pre'); if(pre) pre.textContent=SCRIPT_CODE;
+    addUnidade();
+    window.formDirty=false;
+    const pg=document.getElementById('page-novo');
+    if(pg) pg.addEventListener('input',function(){window.formDirty=true;});
+  } catch(e){ console.warn('Inicialização auxiliar do Contratos:',e); }
+
+  startApp();
 },0);`;
 
     if(!html.includes(oldInit)) throw new Error('Inicialização da sessão do módulo Contratos não localizada.');
@@ -135,7 +148,6 @@ function startApp(){`);
     }
     return null;
   }
-
   window.cmpAditivos = function(a,b){
     var da=tdngoDataAditivo(a), db=tdngoDataAditivo(b);
     if(da && db && da.getTime()!==db.getTime()) return da.getTime()-db.getTime();
@@ -145,71 +157,49 @@ function startApp(){`);
     if(n!==0) return n;
     return String((a&&a.id)||'').localeCompare(String((b&&b.id)||''));
   };
-
   window.aditivoMaisRecente = function(pai){
-    var lista = contracts.filter(function(a){
-      return a.contratoPai===pai.id && a.tipo==='Termo Aditivo' && ['Encerrado','Suspenso'].indexOf(a.statusContrato)<0;
-    });
-    if(!lista.length) return null;
-    lista.sort(cmpAditivos);
-    return lista[lista.length-1];
+    var lista=contracts.filter(function(a){return a.contratoPai===pai.id&&a.tipo==='Termo Aditivo'&&['Encerrado','Suspenso'].indexOf(a.statusContrato)<0;});
+    if(!lista.length)return null;lista.sort(cmpAditivos);return lista[lista.length-1];
   };
-
   window.aditivosOrdenados = function(pai){
-    return contracts.filter(function(a){
-      return a.contratoPai===pai.id && a.tipo==='Termo Aditivo' && ['Encerrado','Suspenso'].indexOf(a.statusContrato)<0;
-    }).sort(cmpAditivos);
+    return contracts.filter(function(a){return a.contratoPai===pai.id&&a.tipo==='Termo Aditivo'&&['Encerrado','Suspenso'].indexOf(a.statusContrato)<0;}).sort(cmpAditivos);
   };
-
   function aditivoMaisRecenteHistorico(pai){
-    var lista = contracts.filter(function(a){
-      return a.contratoPai===pai.id && a.tipo==='Termo Aditivo';
-    });
-    if(!lista.length) return null;
-    lista.sort(cmpAditivos);
-    return lista[lista.length-1];
+    var lista=contracts.filter(function(a){return a.contratoPai===pai.id&&a.tipo==='Termo Aditivo';});
+    if(!lista.length)return null;lista.sort(cmpAditivos);return lista[lista.length-1];
   }
-
-  window.isAditivoVigente = function(a){
-    if(a.tipo!=='Termo Aditivo' || !a.contratoPai) return false;
-    if(['Encerrado','Suspenso'].indexOf(a.statusContrato)>=0) return false;
-    var pai=contracts.find(function(x){return x.id===a.contratoPai;});
-    if(!pai) return false;
-    var atual=aditivoMaisRecenteHistorico(pai);
-    return !!(atual && atual.id===a.id && getVigStatus(a)!=='vencido');
+  window.isAditivoVigente=function(a){
+    if(a.tipo!=='Termo Aditivo'||!a.contratoPai)return false;
+    if(['Encerrado','Suspenso'].indexOf(a.statusContrato)>=0)return false;
+    var pai=contracts.find(function(x){return x.id===a.contratoPai;});if(!pai)return false;
+    var atual=aditivoMaisRecenteHistorico(pai);return !!(atual&&atual.id===a.id&&getVigStatus(a)!=='vencido');
   };
-
-  window.isAditivoSubstituido = function(a){
-    if(a.tipo!=='Termo Aditivo' || !a.contratoPai) return false;
-    var pai=contracts.find(function(x){return x.id===a.contratoPai;});
-    if(!pai) return false;
-    var atual=aditivoMaisRecenteHistorico(pai);
-    return !!(atual && atual.id!==a.id && cmpAditivos(a,atual)<0);
+  window.isAditivoSubstituido=function(a){
+    if(a.tipo!=='Termo Aditivo'||!a.contratoPai)return false;
+    var pai=contracts.find(function(x){return x.id===a.contratoPai;});if(!pai)return false;
+    var atual=aditivoMaisRecenteHistorico(pai);return !!(atual&&atual.id!==a.id&&cmpAditivos(a,atual)<0);
   };
-
-  window.getStatusLabel = function(c){
+  window.getStatusLabel=function(c){
     var s=(c.statusContrato||'').toLowerCase();
-    if(isAditivoSubstituido(c)) return {cls:'substituido',txt:'Aditivo substituído'};
-    if(s.indexOf('negoci')>=0) return {cls:'negociacao',txt:'Em negociação'};
-    if(s.indexOf('encerr')>=0) return {cls:'encerrado',txt:'Encerrado'};
-    if(s.indexOf('suspen')>=0) return {cls:'suspenso',txt:'Suspenso'};
-
+    if(isAditivoSubstituido(c))return{cls:'substituido',txt:'Aditivo substituído'};
+    if(s.indexOf('negoci')>=0)return{cls:'negociacao',txt:'Em negociação'};
+    if(s.indexOf('encerr')>=0)return{cls:'encerrado',txt:'Encerrado'};
+    if(s.indexOf('suspen')>=0)return{cls:'suspenso',txt:'Suspenso'};
     var v=getVigStatus(c);
     if(c.tipo==='Contrato'){
       var ve=vigenciaEfetiva(c);
-      if(ve.fonte && ve.fonte.id!==c.id && (v==='ativo' || v==='vencendo')){
-        return {cls:'aditivo-vig',txt:'Vigente com aditivo'};
-      }
-      if(v==='vencido') return {cls:'vencido',txt:'Contrato vencido'};
-      return {cls:(v==='vencendo'?'vencendo':'vigente'),txt:'Contrato vigente'};
+      if(ve.fonte&&ve.fonte.id!==c.id&&(v==='ativo'||v==='vencendo'))return{cls:'aditivo-vig',txt:'Vigente com aditivo'};
+      if(v==='vencido')return{cls:'vencido',txt:'Contrato vencido'};
+      return{cls:(v==='vencendo'?'vencendo':'vigente'),txt:'Contrato vigente'};
     }
-    if(v==='vencido') return {cls:'vencido',txt:'Aditivo vencido'};
-    return {cls:(v==='vencendo'?'vencendo':'vigente'),txt:'Aditivo vigente'};
+    if(v==='vencido')return{cls:'vencido',txt:'Aditivo vencido'};
+    return{cls:(v==='vencendo'?'vencendo':'vigente'),txt:'Aditivo vigente'};
   };
 })();
 <\/script>`;
     html=html.replace('</body>',statusPatch+'\n</body>');
 
+    if(html.includes('id="login-screen"')) throw new Error('A tela de login legada ainda permaneceu no HTML do módulo Contratos.');
     if(html.includes("apiFetch('extractpdf'")) throw new Error('Ainda existe chamada legada extractpdf no módulo Contratos.');
 
     document.open(); document.write(html); document.close();

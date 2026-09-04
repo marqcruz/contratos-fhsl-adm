@@ -19,7 +19,7 @@
  html=html.replace(/href="seguranca\.html"/g,'href="seguranca.html?v=20260901-0848"');
  html=html.replace(/href="admin\.html"/g,'href="admin.html?v=20260901-2335"');
  html=html.replace(/href="cnes\.html"/g,'href="cnes.html?v=20260901-0848"');
- html=html.replace(/href="contratos\.html"/g,'href="contratos.html?v=20260904-1945" onclick="try{var s=sessionStorage.getItem(\'fhsl_session\')||localStorage.getItem(\'fhsl_session\');if(s){sessionStorage.setItem(\'fhsl_session\',s);localStorage.setItem(\'fhsl_session\',s);}}catch(e){}"');
+ html=html.replace(/href="contratos\.html"/g,'href="contratos.html?v=20260904-2020" onclick="try{var s=sessionStorage.getItem(\'fhsl_session\')||localStorage.getItem(\'fhsl_session\');if(s){sessionStorage.setItem(\'fhsl_session\',s);localStorage.setItem(\'fhsl_session\',s);}}catch(e){}"');
  html=html.replace(/href="visitantes\.html"/g,'href="visitantes-unidades.html?v=20260901-1240"');
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('initial').textContent='Falha ao carregar TDNGo: '+e.message;console.error(e)}})();

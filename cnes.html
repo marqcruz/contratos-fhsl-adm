@@ -10,7 +10,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117}
 </style>
 </head>
 <body>
-<iframe id="cnes-frame" src="cnes-base-current.html?v=20260904-1235" title="CNES"></iframe>
+<iframe id="cnes-frame" src="cnes-base-current.html?v=20260905-1345" title="CNES"></iframe>
 <script>
 (function(){
   const frame=document.getElementById('cnes-frame');
@@ -18,49 +18,16 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117}
     try{
       const doc=frame.contentDocument;
       if(!doc || !doc.body) throw new Error('Documento CNES indisponível');
-
-      /* O CNES roda em iframe. Qualquer saída do módulo deve navegar a janela
-         principal; caso contrário, outro módulo abre dentro do iframe e a aba
-         continua com o título "CNES — TDNGo". */
       doc.querySelectorAll('a[href]').forEach(a=>{
         const href=(a.getAttribute('href')||'').trim();
         if(href && !href.startsWith('#') && !href.startsWith('javascript:')) a.setAttribute('target','_top');
       });
       const home=doc.querySelector('a.home[href="index.html"]');
-      if(home){
-        home.setAttribute('target','_top');
-        home.addEventListener('click',function(ev){
-          ev.preventDefault();
-          window.top.location.href='index.html';
-        });
-      }
-
-      if(!doc.getElementById('tdngo-cnes-enhancements-v2')){
-        const sc=doc.createElement('script');
-        sc.id='tdngo-cnes-enhancements-v2';
-        sc.src='cnes-enhancements-v2.js?v=20260904-1235';
-        sc.async=false;
-        doc.body.appendChild(sc);
-      }
-
-      if(!doc.getElementById('tdngo-cnes-admin-enhancements')){
-        const sa=doc.createElement('script');
-        sa.id='tdngo-cnes-admin-enhancements';
-        sa.src='cnes-admin-enhancements.js?v=20260904-1235';
-        sa.async=false;
-        doc.body.appendChild(sa);
-      }
-
-      if(!doc.getElementById('tdngo-cnes-print-enhancements')){
-        const sp=doc.createElement('script');
-        sp.id='tdngo-cnes-print-enhancements';
-        sp.src='cnes-print-enhancements.js?v=20260825-1711';
-        sp.async=false;
-        doc.body.appendChild(sp);
-      }
-    }catch(e){
-      console.error('Falha ao aplicar melhorias do CNES',e);
-    }
+      if(home){home.setAttribute('target','_top');home.addEventListener('click',function(ev){ev.preventDefault();window.top.location.href='index.html';});}
+      if(!doc.getElementById('tdngo-cnes-enhancements-v2')){const sc=doc.createElement('script');sc.id='tdngo-cnes-enhancements-v2';sc.src='cnes-enhancements-v2.js?v=20260905-1345';sc.async=false;doc.body.appendChild(sc);}
+      if(!doc.getElementById('tdngo-cnes-admin-enhancements')){const sa=doc.createElement('script');sa.id='tdngo-cnes-admin-enhancements';sa.src='cnes-admin-enhancements.js?v=20260905-1345';sa.async=false;doc.body.appendChild(sa);}
+      if(!doc.getElementById('tdngo-cnes-print-enhancements')){const sp=doc.createElement('script');sp.id='tdngo-cnes-print-enhancements';sp.src='cnes-print-enhancements.js?v=20260825-1711';sp.async=false;doc.body.appendChild(sp);}
+    }catch(e){console.error('Falha ao aplicar melhorias do CNES',e);}
   });
 })();
 </script>

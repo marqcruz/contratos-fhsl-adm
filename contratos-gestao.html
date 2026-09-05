@@ -11,6 +11,7 @@
   html=html.replace(/const\s+SCRIPT_URL\s*=\s*'[^']+';/,"const CG_API_URL='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-cg-api';");
   html=html.replace(/\bSCRIPT_URL\b/g,'CG_API_URL');
   html=html.replace(/\bapiFetch\b/g,'cgApi');
+  html=html.replace("function isAdmin(){return !!(currentUser&&currentUser.role==='admin');}","function isAdmin(){return !!(currentUser&&['admin','gestor'].includes(String(currentUser.role||'').toLowerCase()));}");
   const oldFn=`async function cgApi(action, payload){
   const r = await fetch(CG_API_URL+'?action='+action, { method:'POST', body: JSON.stringify(payload||{}) });
   const t = await r.text();

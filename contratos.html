@@ -21,45 +21,94 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
     if(veioDaCentral&&!foiClique){location.replace('index.html');return;}
   }catch(e){}
   try{if(location.search)history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
-  const KEY='fhsl_session',BASE='contratos-base-current.html?v=20260904-2305',PATCH='contratos-clean.js?v=20260904-2305',ADITIVOS='contratos-aditivos-v2.js?v=20260904-2305',ADITIVOS3='contratos-aditivos-v3.js?v=20260904-2305',PRE4='contratos-financeiro-pre-v4.js?v=20260904-2305',FINANCEIRO4='contratos-financeiro-v4.js?v=20260904-2305',AI='contratos-ai.js?v=20260904-2305',AIREVIEW='contratos-ai-unidades-review.js?v=20260905-1545',COMPRESS='contratos-pdf-compress.js?v=20260904-2345',UX5='contratos-ux-v5.js?v=20260905-1455',UX6='contratos-ux-v6.js?v=20260905-1515',LIST7='contratos-lista-v7.js?v=20260905-1605',GESTAO8='contratos-gestao-v8.js?v=20260905-1655';
-  const raw=sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'';let user=null;try{user=raw?JSON.parse(raw):null;}catch(e){}
+
+  const KEY='fhsl_session';
+  const VERSION='20260905-2035';
+  const SCRIPTS=[
+    'contratos-clean.js?v='+VERSION,
+    'contratos-aditivos-v2.js?v='+VERSION,
+    'contratos-aditivos-v3.js?v='+VERSION,
+    'contratos-financeiro-pre-v4.js?v='+VERSION,
+    'contratos-financeiro-v4.js?v='+VERSION,
+    'contratos-ai.js?v='+VERSION,
+    'contratos-ai-unidades-review.js?v='+VERSION,
+    'contratos-pdf-compress.js?v='+VERSION,
+    'contratos-ux-v5.js?v='+VERSION,
+    'contratos-ux-v6.js?v='+VERSION,
+    'contratos-lista-v7.js?v='+VERSION,
+    'contratos-gestao-v8.js?v='+VERSION
+  ];
+
+  const raw=sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'';
+  let user=null;try{user=raw?JSON.parse(raw):null;}catch(e){}
   if(!user||!user.tdngoToken){sessionStorage.removeItem(KEY);localStorage.removeItem(KEY);location.replace('index.html');return;}
   const saved=JSON.stringify(user);sessionStorage.setItem(KEY,saved);localStorage.setItem(KEY,saved);
+
   const frame=document.getElementById('frame'),loading=document.getElementById('loading');
+  let retry=0,started=false;
+
+  function isContractsDocument(d){
+    if(!d)return false;
+    const title=String(d.title||'').toLowerCase();
+    return title.indexOf('contratos')>=0 &&
+      !!d.getElementById('page-lista') &&
+      !!d.getElementById('lista-body') &&
+      !!d.getElementById('f-tipo') &&
+      !!d.getElementById('f-status');
+  }
+
+  function fail(msg){
+    frame.style.opacity='0';
+    loading.style.display='grid';
+    loading.innerHTML='<div style="max-width:520px;text-align:center;padding:24px"><strong style="display:block;color:#e6edf3;margin-bottom:8px">Falha ao carregar Contratos</strong><span>'+msg+'</span></div>';
+  }
+
+  function loadScript(d,src){
+    return new Promise(function(resolve,reject){
+      const s=d.createElement('script');s.src=src;s.onload=resolve;s.onerror=function(){reject(new Error('Falha ao carregar '+src));};(d.body||d.documentElement).appendChild(s);
+    });
+  }
+
+  async function boot(w,d){
+    if(started)return;started=true;
+    w.__TDNGO_CONTRATOS_VALIDATED__=true;
+    w.sessionStorage.setItem(KEY,saved);w.localStorage.setItem(KEY,saved);
+    const css=d.createElement('style');css.textContent='#login-screen{display:none!important}';(d.head||d.documentElement).appendChild(css);
+    try{
+      for(const src of SCRIPTS)await loadScript(d,src);
+      try{
+        const app=d.getElementById('app');
+        if(app&&w.getComputedStyle(app).display==='none'){
+          const s=w.sessionStorage.getItem(KEY)||w.localStorage.getItem(KEY);
+          if(s){w.currentUser=JSON.parse(s);if(w.currentUser&&w.currentUser.tdngoToken&&typeof w.startApp==='function')w.startApp();}
+        }
+      }catch(e){console.warn(e);}
+      frame.style.opacity='1';loading.style.display='none';
+    }catch(e){console.error(e);fail('Uma atualização interna do módulo não pôde ser carregada. Recarregue a página.');}
+  }
+
   frame.addEventListener('load',function(){
     try{
-      const w=frame.contentWindow,d=frame.contentDocument;if(!w||!d)throw new Error('Módulo indisponível.');
-      w.sessionStorage.setItem(KEY,saved);w.localStorage.setItem(KEY,saved);
-      const css=d.createElement('style');css.textContent='#login-screen{display:none!important}';(d.head||d.documentElement).appendChild(css);
-      const sc=d.createElement('script');sc.src=PATCH;sc.onload=function(){
-        const sa=d.createElement('script');sa.src=ADITIVOS;sa.onload=function(){
-          const sv=d.createElement('script');sv.src=ADITIVOS3;sv.onload=function(){
-            const sp=d.createElement('script');sp.src=PRE4;sp.onload=function(){
-              const sf=d.createElement('script');sf.src=FINANCEIRO4;sf.onload=function(){
-                const si=d.createElement('script');si.src=AI;si.onload=function(){
-                  const sr=d.createElement('script');sr.src=AIREVIEW;sr.onload=function(){
-                    const sx=d.createElement('script');sx.src=COMPRESS;sx.onload=function(){
-                      const su=d.createElement('script');su.src=UX5;su.onload=function(){
-                        const s6=d.createElement('script');s6.src=UX6;s6.onload=function(){
-                          const sl=d.createElement('script');sl.src=LIST7;sl.onload=function(){
-                            const sg=d.createElement('script');sg.src=GESTAO8;sg.onload=function(){
-                              try{const app=d.getElementById('app');if(app&&w.getComputedStyle(app).display==='none'){const s=w.sessionStorage.getItem(KEY)||w.localStorage.getItem(KEY);if(s){w.currentUser=JSON.parse(s);if(w.currentUser&&w.currentUser.tdngoToken&&typeof w.startApp==='function')w.startApp();}}}catch(e){console.warn(e);}
-                              frame.style.opacity='1';loading.style.display='none';
-                            };sg.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a visão gerencial dos contratos.</div>';};(d.body||d.documentElement).appendChild(sg);
-                          };sl.onerror=function(){loading.innerHTML='<div>Falha ao aplicar paginação fixa dos contratos.</div>';};(d.body||d.documentElement).appendChild(sl);
-                        };s6.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a lógica consolidada de contratos.</div>';};(d.body||d.documentElement).appendChild(s6);
-                      };su.onerror=function(){loading.innerHTML='<div>Falha ao aplicar melhorias de busca e alertas.</div>';};(d.body||d.documentElement).appendChild(su);
-                    };sx.onerror=function(){loading.innerHTML='<div>Falha ao carregar a compressão automática de PDF.</div>';};(d.body||d.documentElement).appendChild(sx);
-                  };sr.onerror=function(){loading.innerHTML='<div>Falha ao carregar a validação das unidades identificadas pela IA.</div>';};(d.body||d.documentElement).appendChild(sr);
-                };si.onerror=function(){loading.innerHTML='<div>Falha ao carregar a leitura GPT de contratos.</div>';};(d.body||d.documentElement).appendChild(si);
-              };sf.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a lógica financeira dos aditivos.</div>';};(d.body||d.documentElement).appendChild(sf);
-            };sp.onerror=function(){loading.innerHTML='<div>Falha ao preparar a lógica financeira.</div>';};(d.body||d.documentElement).appendChild(sp);
-          };sv.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a herança financeira dos aditivos.</div>';};(d.body||d.documentElement).appendChild(sv);
-        };sa.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a lógica de aditivos.</div>';};(d.body||d.documentElement).appendChild(sa);
-      };sc.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a atualização do módulo Contratos.</div>';};(d.body||d.documentElement).appendChild(sc);
-    }catch(e){console.error(e);loading.innerHTML='<div>Falha ao carregar Contratos.</div>';}
+      const w=frame.contentWindow,d=frame.contentDocument;
+      if(!w||!d)throw new Error('Módulo indisponível.');
+      if(!isContractsDocument(d)){
+        started=false;
+        frame.style.opacity='0';
+        if(retry<1){
+          retry++;
+          loading.style.display='grid';
+          loading.innerHTML='<div style="text-align:center"><div class="spin"></div>Validando módulo Contratos...</div>';
+          frame.src='contratos-base-current.html?module=contratos&v='+VERSION+'-r1';
+          return;
+        }
+        fail('O conteúdo recebido não corresponde ao módulo Contratos. Nenhuma alteração foi aplicada sobre a tela incorreta. Recarregue a página.');
+        return;
+      }
+      boot(w,d);
+    }catch(e){console.error(e);fail('Não foi possível validar o conteúdo do módulo.');}
   });
-  frame.src=BASE;
+
+  frame.src='contratos-base-current.html?module=contratos&v='+VERSION;
 })();
 </script>
 </body>

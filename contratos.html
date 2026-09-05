@@ -15,7 +15,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
 <iframe id="frame" title="Módulo Contratos"></iframe>
 <script>
 (function(){
-  const KEY='fhsl_session',BASE='contratos-base-current.html?v=20260904-2250',PATCH='contratos-clean.js?v=20260904-2250',ADITIVOS='contratos-aditivos-v2.js?v=20260904-2250',ADITIVOS3='contratos-aditivos-v3.js?v=20260904-2250',PRE4='contratos-financeiro-pre-v4.js?v=20260904-2250',FINANCEIRO4='contratos-financeiro-v4.js?v=20260904-2250',AI='contratos-ai.js?v=20260904-2250';
+  const KEY='fhsl_session',BASE='contratos-base-current.html?v=20260904-2240',PATCH='contratos-clean.js?v=20260904-2240',ADITIVOS='contratos-aditivos-v2.js?v=20260904-2240',ADITIVOS3='contratos-aditivos-v3.js?v=20260904-2240',PRE4='contratos-financeiro-pre-v4.js?v=20260904-2240',FINANCEIRO4='contratos-financeiro-v4.js?v=20260904-2240',AI='contratos-ai.js?v=20260904-2240',UX5='contratos-ux-v5.js?v=20260904-2240';
   const raw=sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'';let user=null;try{user=raw?JSON.parse(raw):null;}catch(e){}
   if(!user||!user.tdngoToken){sessionStorage.removeItem(KEY);localStorage.removeItem(KEY);location.replace('index.html');return;}
   const saved=JSON.stringify(user);sessionStorage.setItem(KEY,saved);localStorage.setItem(KEY,saved);
@@ -31,8 +31,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
             const sp=d.createElement('script');sp.src=PRE4;sp.onload=function(){
               const sf=d.createElement('script');sf.src=FINANCEIRO4;sf.onload=function(){
                 const si=d.createElement('script');si.src=AI;si.onload=function(){
-                  try{const app=d.getElementById('app');if(app&&w.getComputedStyle(app).display==='none'){const s=w.sessionStorage.getItem(KEY)||w.localStorage.getItem(KEY);if(s){w.currentUser=JSON.parse(s);if(w.currentUser&&w.currentUser.tdngoToken&&typeof w.startApp==='function')w.startApp();}}}catch(e){console.warn(e);}
-                  frame.style.opacity='1';loading.style.display='none';
+                  const su=d.createElement('script');su.src=UX5;su.onload=function(){
+                    try{const app=d.getElementById('app');if(app&&w.getComputedStyle(app).display==='none'){const s=w.sessionStorage.getItem(KEY)||w.localStorage.getItem(KEY);if(s){w.currentUser=JSON.parse(s);if(w.currentUser&&w.currentUser.tdngoToken&&typeof w.startApp==='function')w.startApp();}}}catch(e){console.warn(e);}
+                    frame.style.opacity='1';loading.style.display='none';
+                  };su.onerror=function(){loading.innerHTML='<div>Falha ao aplicar melhorias de busca e alertas.</div>';};(d.body||d.documentElement).appendChild(su);
                 };si.onerror=function(){loading.innerHTML='<div>Falha ao carregar a leitura GPT de contratos.</div>';};(d.body||d.documentElement).appendChild(si);
               };sf.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a lógica financeira dos aditivos.</div>';};(d.body||d.documentElement).appendChild(sf);
             };sp.onerror=function(){loading.innerHTML='<div>Falha ao preparar a lógica financeira.</div>';};(d.body||d.documentElement).appendChild(sp);

@@ -15,6 +15,11 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
 <iframe id="frame" title="Módulo Contratos"></iframe>
 <script>
 (function(){
+  try{
+    const ref=new URL(document.referrer||'',location.href),mark=sessionStorage.getItem('tdngo_explicit_nav')||'';
+    const veioDaCentral=/\/index\.html$/i.test(ref.pathname),foiClique=/\|contratos\.html(?:$|[?#])/i.test(mark)||/\|contratos\.html$/i.test(mark);
+    if(veioDaCentral&&!foiClique){location.replace('index.html');return;}
+  }catch(e){}
   try{if(location.search)history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
   const KEY='fhsl_session',BASE='contratos-base-current.html?v=20260904-2305',PATCH='contratos-clean.js?v=20260904-2305',ADITIVOS='contratos-aditivos-v2.js?v=20260904-2305',ADITIVOS3='contratos-aditivos-v3.js?v=20260904-2305',PRE4='contratos-financeiro-pre-v4.js?v=20260904-2305',FINANCEIRO4='contratos-financeiro-v4.js?v=20260904-2305',AI='contratos-ai.js?v=20260904-2305',AIREVIEW='contratos-ai-unidades-review.js?v=20260905-1545',COMPRESS='contratos-pdf-compress.js?v=20260904-2345',UX5='contratos-ux-v5.js?v=20260905-1455',UX6='contratos-ux-v6.js?v=20260905-1515';
   const raw=sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'';let user=null;try{user=raw?JSON.parse(raw):null;}catch(e){}

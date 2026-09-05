@@ -21,7 +21,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
     if(veioDaCentral&&!foiClique){location.replace('index.html');return;}
   }catch(e){}
   try{if(location.search)history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
-  const KEY='fhsl_session',BASE='contratos-base-current.html?v=20260904-2305',PATCH='contratos-clean.js?v=20260904-2305',ADITIVOS='contratos-aditivos-v2.js?v=20260904-2305',ADITIVOS3='contratos-aditivos-v3.js?v=20260904-2305',PRE4='contratos-financeiro-pre-v4.js?v=20260904-2305',FINANCEIRO4='contratos-financeiro-v4.js?v=20260904-2305',AI='contratos-ai.js?v=20260904-2305',AIREVIEW='contratos-ai-unidades-review.js?v=20260905-1545',COMPRESS='contratos-pdf-compress.js?v=20260904-2345',UX5='contratos-ux-v5.js?v=20260905-1455',UX6='contratos-ux-v6.js?v=20260905-1515';
+  const KEY='fhsl_session',BASE='contratos-base-current.html?v=20260904-2305',PATCH='contratos-clean.js?v=20260904-2305',ADITIVOS='contratos-aditivos-v2.js?v=20260904-2305',ADITIVOS3='contratos-aditivos-v3.js?v=20260904-2305',PRE4='contratos-financeiro-pre-v4.js?v=20260904-2305',FINANCEIRO4='contratos-financeiro-v4.js?v=20260904-2305',AI='contratos-ai.js?v=20260904-2305',AIREVIEW='contratos-ai-unidades-review.js?v=20260905-1545',COMPRESS='contratos-pdf-compress.js?v=20260904-2345',UX5='contratos-ux-v5.js?v=20260905-1455',UX6='contratos-ux-v6.js?v=20260905-1515',LIST7='contratos-lista-v7.js?v=20260905-1605';
   const raw=sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'';let user=null;try{user=raw?JSON.parse(raw):null;}catch(e){}
   if(!user||!user.tdngoToken){sessionStorage.removeItem(KEY);localStorage.removeItem(KEY);location.replace('index.html');return;}
   const saved=JSON.stringify(user);sessionStorage.setItem(KEY,saved);localStorage.setItem(KEY,saved);
@@ -41,8 +41,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
                     const sx=d.createElement('script');sx.src=COMPRESS;sx.onload=function(){
                       const su=d.createElement('script');su.src=UX5;su.onload=function(){
                         const s6=d.createElement('script');s6.src=UX6;s6.onload=function(){
-                          try{const app=d.getElementById('app');if(app&&w.getComputedStyle(app).display==='none'){const s=w.sessionStorage.getItem(KEY)||w.localStorage.getItem(KEY);if(s){w.currentUser=JSON.parse(s);if(w.currentUser&&w.currentUser.tdngoToken&&typeof w.startApp==='function')w.startApp();}}}catch(e){console.warn(e);}
-                          frame.style.opacity='1';loading.style.display='none';
+                          const sl=d.createElement('script');sl.src=LIST7;sl.onload=function(){
+                            try{const app=d.getElementById('app');if(app&&w.getComputedStyle(app).display==='none'){const s=w.sessionStorage.getItem(KEY)||w.localStorage.getItem(KEY);if(s){w.currentUser=JSON.parse(s);if(w.currentUser&&w.currentUser.tdngoToken&&typeof w.startApp==='function')w.startApp();}}}catch(e){console.warn(e);}
+                            frame.style.opacity='1';loading.style.display='none';
+                          };sl.onerror=function(){loading.innerHTML='<div>Falha ao aplicar paginação fixa dos contratos.</div>';};(d.body||d.documentElement).appendChild(sl);
                         };s6.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a lógica consolidada de contratos.</div>';};(d.body||d.documentElement).appendChild(s6);
                       };su.onerror=function(){loading.innerHTML='<div>Falha ao aplicar melhorias de busca e alertas.</div>';};(d.body||d.documentElement).appendChild(su);
                     };sx.onerror=function(){loading.innerHTML='<div>Falha ao carregar a compressão automática de PDF.</div>';};(d.body||d.documentElement).appendChild(sx);

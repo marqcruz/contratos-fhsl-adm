@@ -15,7 +15,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
 <iframe id="frame" title="Módulo Contratos"></iframe>
 <script>
 (function(){
-  const KEY='fhsl_session',BASE='contratos-base-current.html?v=20260904-2020',PATCH='contratos-clean.js?v=20260904-2020',ADITIVOS='contratos-aditivos-v2.js?v=20260904-2020',ADITIVOS3='contratos-aditivos-v3.js?v=20260904-2020',AI='contratos-ai.js?v=20260904-2020';
+  const KEY='fhsl_session',BASE='contratos-base-current.html?v=20260904-2245',PATCH='contratos-clean.js?v=20260904-2245',ADITIVOS='contratos-aditivos-v2.js?v=20260904-2245',ADITIVOS3='contratos-aditivos-v3.js?v=20260904-2245',FINANCEIRO4='contratos-financeiro-v4.js?v=20260904-2245',AI='contratos-ai.js?v=20260904-2245';
   const raw=sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'';let user=null;try{user=raw?JSON.parse(raw):null;}catch(e){}
   if(!user||!user.tdngoToken){sessionStorage.removeItem(KEY);localStorage.removeItem(KEY);location.replace('index.html');return;}
   const saved=JSON.stringify(user);sessionStorage.setItem(KEY,saved);localStorage.setItem(KEY,saved);
@@ -28,10 +28,12 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
       const sc=d.createElement('script');sc.src=PATCH;sc.onload=function(){
         const sa=d.createElement('script');sa.src=ADITIVOS;sa.onload=function(){
           const sv=d.createElement('script');sv.src=ADITIVOS3;sv.onload=function(){
-            const si=d.createElement('script');si.src=AI;si.onload=function(){
-              try{const app=d.getElementById('app');if(app&&w.getComputedStyle(app).display==='none'){const s=w.sessionStorage.getItem(KEY)||w.localStorage.getItem(KEY);if(s){w.currentUser=JSON.parse(s);if(w.currentUser&&w.currentUser.tdngoToken&&typeof w.startApp==='function')w.startApp();}}}catch(e){console.warn(e);}
-              frame.style.opacity='1';loading.style.display='none';
-            };si.onerror=function(){loading.innerHTML='<div>Falha ao carregar a leitura GPT de contratos.</div>';};(d.body||d.documentElement).appendChild(si);
+            const sf=d.createElement('script');sf.src=FINANCEIRO4;sf.onload=function(){
+              const si=d.createElement('script');si.src=AI;si.onload=function(){
+                try{const app=d.getElementById('app');if(app&&w.getComputedStyle(app).display==='none'){const s=w.sessionStorage.getItem(KEY)||w.localStorage.getItem(KEY);if(s){w.currentUser=JSON.parse(s);if(w.currentUser&&w.currentUser.tdngoToken&&typeof w.startApp==='function')w.startApp();}}}catch(e){console.warn(e);}
+                frame.style.opacity='1';loading.style.display='none';
+              };si.onerror=function(){loading.innerHTML='<div>Falha ao carregar a leitura GPT de contratos.</div>';};(d.body||d.documentElement).appendChild(si);
+            };sf.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a lógica financeira dos aditivos.</div>';};(d.body||d.documentElement).appendChild(sf);
           };sv.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a herança financeira dos aditivos.</div>';};(d.body||d.documentElement).appendChild(sv);
         };sa.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a lógica de aditivos.</div>';};(d.body||d.documentElement).appendChild(sa);
       };sc.onerror=function(){loading.innerHTML='<div>Falha ao aplicar a atualização do módulo Contratos.</div>';};(d.body||d.documentElement).appendChild(sc);

@@ -7,15 +7,19 @@ var oldRenderLista=typeof renderLista==='function'?renderLista:null;
 if(oldRenderLista){renderLista=function(){seedSearchAliases();return oldRenderLista()}}
 var search=document.getElementById('search');if(search){search.setAttribute('placeholder','Buscar contrato, aditivo, empresa, CNPJ, objeto...');search.addEventListener('input',function(){window.listaPage=1})}
 
-// Notificações por família contratual: aditivos substituídos nunca geram alerta isolado.
+// Alertas passam a existir por contrato-pai. Termos substituídos ou históricos não contam isoladamente.
 var baseGetVig=typeof getVigStatus==='function'?getVigStatus:null;
 function ignoreAditivoNosAlertas(c){return !!(c&&c.tipo==='Termo Aditivo')}
+function contratosEmAlerta(){if(!baseGetVig)return[];return contracts.filter(function(c){if(!c||c.tipo==='Termo Aditivo'||['Encerrado','Suspenso'].indexOf(c.statusContrato)>=0)return false;var s=baseGetVig(c);return s==='vencendo'||s==='vencido'})}
+function correctAlertBadge(){var badge=document.getElementById('nav-alert-badge');if(!badge)return;var n=contratosEmAlerta().length;badge.textContent=n;badge.style.display=n?'inline':'none'}
 var oldBuild=typeof buildNotifications==='function'?buildNotifications:null;
-if(oldBuild){buildNotifications=function(){oldBuild();try{notifications=notifications.filter(function(n){var c=contracts.find(function(x){return x.id===n.cid});return c&&!ignoreAditivoNosAlertas(c)});if(typeof renderBell==='function')renderBell()}catch(e){console.warn(e)}}}
+if(oldBuild){buildNotifications=function(){oldBuild();try{notifications=notifications.filter(function(n){var c=contracts.find(function(x){return x.id===n.cid});return c&&!ignoreAditivoNosAlertas(c)});if(typeof renderBell==='function')renderBell();correctAlertBadge()}catch(e){console.warn(e)}}}
 var oldAlertas=typeof renderAlertas==='function'?renderAlertas:null;
-if(oldAlertas&&baseGetVig){renderAlertas=function(){var original=getVigStatus;getVigStatus=function(c){if(ignoreAditivoNosAlertas(c))return'ativo';return original(c)};try{return oldAlertas()}finally{getVigStatus=original}}}
+if(oldAlertas&&baseGetVig){renderAlertas=function(){var original=getVigStatus;getVigStatus=function(c){if(ignoreAditivoNosAlertas(c))return'ativo';return original(c)};try{var r=oldAlertas();correctAlertBadge();return r}finally{getVigStatus=original}}}
+var oldRefresh=typeof refreshAll==='function'?refreshAll:null;
+if(oldRefresh){refreshAll=function(){var r=oldRefresh();correctAlertBadge();return r}}
 
-// O sino deixa de existir; a página Alertas continua disponível na navegação.
+// O sino é removido; a página Alertas permanece como a área oficial de acompanhamento.
 var bell=document.querySelector('.bell-wrap');if(bell)bell.style.display='none';
 
 function brDateFromDate(d){if(!d||isNaN(d.getTime()))return'';return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()}
@@ -27,7 +31,7 @@ window.tdngoAvisarFiscal=async function(id){var c=contracts.find(function(x){ret
 var oldShow=typeof showDetail==='function'?showDetail:null;
 if(oldShow){showDetail=function(id){var r=oldShow(id);setTimeout(function(){addFiscalButton(id)},0);return r}}
 
-seedSearchAliases();
+seedSearchAliases();correctAlertBadge();
 try{if(typeof buildNotifications==='function')buildNotifications()}catch(e){}
 try{if(document.querySelector('#page-lista.active')&&typeof renderLista==='function')renderLista()}catch(e){}
 })();

@@ -40,4 +40,5 @@ async function excluirOcorrencia(id){if(!perfilGestor())return;const o=ocorrenci
  const pos=html.lastIndexOf(mark);if(pos<0)throw new Error('Inicialização da Segurança não localizada.');html=html.slice(0,pos)+extra+'\n'+html.slice(pos);
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('loading').textContent='Falha ao carregar Segurança: '+e.message;console.error(e)}})();
-</script></body></html>
+</script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260905-2158"></script>
+</body></html>

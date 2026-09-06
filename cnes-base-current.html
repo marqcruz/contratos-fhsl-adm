@@ -62,4 +62,5 @@ function readCsv(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader(
 async function confirmImport(){if(!importRows.length)return;const btn=$('import-btn');btn.disabled=true;let done=0,errors=[];for(let i=0;i<importRows.length;i+=100){try{const r=await post(API,{action:'import',unidade:unit,linhas:importRows.slice(i,i+100)});done+=r.importados||0;if(r.erros)errors.push(...r.erros);$('csv-info').innerHTML=`Importados: <b>${done}</b> / ${importRows.length}<div class="progress"><div style="width:${Math.min(100,Math.round((i+100)/importRows.length*100))}%"></div></div>`}catch(e){errors.push(e.message);break}}btn.disabled=false;if(errors.length)toast(`Importação concluída com ${errors.length} aviso(s).`,'info');else toast('Importação concluída.');closeModal('import-bg');loadRows()}
 (function(){document.body.dataset.theme=localStorage.getItem('tdngo_theme')||'dark';try{const s=JSON.parse((sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session'))||'null');if(s?.tdngoToken){me=s;token=s.tdngoToken;start()}}catch{}})();
 </script>
+<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260905-2158"></script>
 </body></html>

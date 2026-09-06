@@ -7,4 +7,5 @@
  html=html.replace("sessionStorage.getItem('fhsl_session')||'null'","sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'null'");
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('initial').textContent='Falha ao carregar Acessos: '+(e&&e.message?e.message:String(e));console.error(e)}})();
-</script></body></html>
+</script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260905-2158"></script>
+</body></html>

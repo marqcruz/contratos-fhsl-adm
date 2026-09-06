@@ -32,4 +32,5 @@ async function editItem(kind,id){const item=kindData(kind).find(x=>x.id===id);if
 async function toggleItem(kind,id,ativo){try{const r=await api('toggle',{kind,id,ativo});data=r.data;render()}catch(e){alert(e.message)}}
 async function deleteItem(kind,id){const item=kindData(kind).find(x=>x.id===id);if(!item||!confirm('Excluir definitivamente “'+item.valor+'”?'))return;try{const r=await api('delete',{kind,id});data=r.data;render()}catch(e){alert(e.message)}}
 (async()=>{try{me=JSON.parse(sessionStorage.getItem('fhsl_session')||'null');token=me?.tdngoToken||'';if(!me||!token)throw new Error('Entre novamente pela Administração.');if(me.role!=='admin')throw new Error('Esta área é exclusiva para administradores.');document.getElementById('content').style.display='block';await loadAll()}catch(e){const g=document.getElementById('gate');g.style.display='block';g.innerHTML=esc(e.message)+' <button class="btn" style="margin-left:8px" onclick="location.href=\'admin.html\'">Ir para Administração</button>'}})();
-</script></body></html>
+</script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260905-2158"></script>
+</body></html>

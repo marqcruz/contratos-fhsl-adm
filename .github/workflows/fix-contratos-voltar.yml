@@ -1,4 +1,4 @@
-name: Corrigir botão voltar Contratos
+name: Padronizar Central TDNGo
 on:
   push:
     branches: [layout_gpt]
@@ -12,32 +12,71 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: layout_gpt
-      - name: Inserir botão Voltar ao TDNGo
+          fetch-depth: 0
+      - name: Aplicar botão Central TDNGo em todos os módulos
+        shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          p=Path('contratos.html')
-          s=p.read_text(encoding='utf-8')
-          marker='<!-- ===== FHSL BACK BUTTON ===== -->\n<!-- ===== /FHSL BACK BUTTON ===== -->'
-          button='''<!-- ===== FHSL BACK BUTTON ===== -->
-          <a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo">
-            <span class="tdngo-home-ico">⌂</span>
-            <span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span>
-          </a>
-          <!-- ===== /FHSL BACK BUTTON ===== -->'''
-          if marker not in s:
-              raise SystemExit('Marcador do botão não encontrado')
-          s=s.replace(marker,button,1)
-          p.write_text(s,encoding='utf-8')
+          import re
+
+          VERSION='20260905-2158'
+          tag=f'<script data-tdngo-central-nav src="tdngo-central-nav.js?v={VERSION}"></script>'
+          changed=[]
+
+          for p in sorted(Path('.').glob('*.html')):
+              if p.name.lower()=='index.html':
+                  continue
+              s=p.read_text(encoding='utf-8')
+              original=s
+
+              # Remove injeções anteriores deste componente, se houver.
+              s=re.sub(r'\s*<script\s+data-tdngo-central-nav[^>]*></script>\s*','\n',s,flags=re.I)
+
+              # O componente compartilhado remove em runtime os antigos botões
+              # "Voltar/Retornar" e cria o padrão Central TDNGo.
+              pos=s.lower().rfind('</body>')
+              if pos>=0:
+                  s=s[:pos]+tag+'\n'+s[pos:]
+              else:
+                  pos=s.lower().rfind('</html>')
+                  if pos>=0:
+                      s=s[:pos]+tag+'\n'+s[pos:]
+                  else:
+                      s+='\n'+tag+'\n'
+
+              if s!=original:
+                  p.write_text(s,encoding='utf-8')
+                  changed.append(p.name)
+
+          print('Arquivos atualizados:', len(changed))
+          for f in changed:
+              print(' -',f)
+          if not changed:
+              raise SystemExit('Nenhum HTML foi atualizado')
           PY
-      - name: Validar
+      - name: Validar padronização
+        shell: bash
         run: |
-          grep -q 'href="index.html"' contratos.html
-          grep -q 'Voltar aos módulos' contratos.html
+          test -f tdngo-central-nav.js
+          python - <<'PY'
+          from pathlib import Path
+          faltando=[]
+          for p in Path('.').glob('*.html'):
+              if p.name.lower()=='index.html':
+                  continue
+              s=p.read_text(encoding='utf-8')
+              if 'data-tdngo-central-nav' not in s:
+                  faltando.append(p.name)
+          if faltando:
+              raise SystemExit('Sem Central TDNGo: '+', '.join(faltando))
+          print('Todos os módulos HTML possuem a navegação padronizada.')
+          PY
       - name: Commit
+        shell: bash
         run: |
           git config user.name "TDNGo Automation"
           git config user.email "actions@users.noreply.github.com"
-          git add contratos.html
-          git commit -m "TDNGo: restaura botão voltar em Contratos"
+          git add '*.html'
+          git commit -m "TDNGo: padroniza botão Central em todos os módulos" || exit 0
           git push origin layout_gpt

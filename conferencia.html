@@ -1,13 +1,33 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Conferência Documental — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#loading{min-height:100vh;display:grid;place-items:center;color:#9aa7b8}</style></head><body><div id="loading">Carregando Conferência Documental...</div><script>
-(async()=>{try{
- const url='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/0e6ebb5caf15077fb79db59b708a7f3b26ed6ba9/conferencia.html';
- const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);let src=await r.text();
- const marker='document.open();document.write(html);document.close();';
- const patch=`html=html.replace(/if\\(currentUser\\.role==='admin'\\) acoes\\+=/g,"if(['admin','gestor'].includes(String(currentUser.role||'').toLowerCase())) acoes+=");\n`;
- if(!src.includes(marker))throw new Error('Ponto de injeção da Conferência não localizado.');
- src=src.replace(marker,patch+marker);
- document.open();document.write(src);document.close();
-}catch(e){document.getElementById('loading').textContent='Falha ao carregar Conferência: '+e.message;console.error(e)}})();
-</script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260905-2158"></script>
-</body></html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conferência Documental — TDNGo</title>
+<style>
+html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+#loading{min-height:100vh;display:grid;place-items:center;color:#9aa7b8}
+</style>
+</head>
+<body>
+<div id="loading">Carregando Conferência Documental...</div>
+<script>
+(async()=>{
+  try{
+    const url='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/0e6ebb5caf15077fb79db59b708a7f3b26ed6ba9/conferencia.html';
+    const r=await fetch(url,{cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const src=await r.text();
+    document.open();
+    document.write(src);
+    document.close();
+  }catch(e){
+    const el=document.getElementById('loading');
+    if(el) el.textContent='Falha ao carregar Conferência: '+(e&&e.message?e.message:e);
+    console.error(e);
+  }
+})();
+</script>
+<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260908-1155"></script>
+</body>
+</html>

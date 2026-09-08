@@ -23,7 +23,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
   try{if(location.search)history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
 
   const KEY='fhsl_session';
-  const VERSION='20260905-2155';
+  const VERSION='20260908-0925';
   const SCRIPTS=[
     'contratos-clean.js?v='+VERSION,
     'contratos-aditivos-v2.js?v='+VERSION,
@@ -36,7 +36,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
     'contratos-ux-v5.js?v='+VERSION,
     'contratos-ux-v6.js?v='+VERSION,
     'contratos-lista-v7.js?v='+VERSION,
-    'contratos-gestao-v8.js?v='+VERSION
+    'contratos-gestao-v8.js?v='+VERSION,
+    'contratos-vigencia-v9.js?v='+VERSION
   ];
 
   const raw=sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'';
@@ -137,6 +138,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
   forceContracts('open');
 })();
 </script>
-<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260905-2158"></script>
+<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260908-0925"></script>
 </body>
 </html>

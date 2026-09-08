@@ -23,7 +23,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
   try{if(location.search)history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
 
   const KEY='fhsl_session';
-  const VERSION='20260908-1625';
+  const VERSION='20260908-1638';
   const SCRIPTS=[
     'contratos-clean.js?v='+VERSION,
     'contratos-aditivos-v2.js?v='+VERSION,
@@ -49,96 +49,19 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
   const frame=document.getElementById('frame'),loading=document.getElementById('loading');
   let retry=0,started=false,loadSeq=0;
 
-  function baseUrl(reason){
-    loadSeq++;
-    return 'contratos-base-current.html?module=contratos&v='+VERSION+'&reason='+(reason||'open')+'&n='+Date.now()+'-'+loadSeq;
-  }
-
-  function isContractsDocument(d){
-    if(!d)return false;
-    const title=String(d.title||'').toLowerCase();
-    return title.indexOf('contratos')>=0 &&
-      !!d.getElementById('page-lista') &&
-      !!d.getElementById('lista-body') &&
-      !!d.getElementById('f-tipo') &&
-      !!d.getElementById('f-status');
-  }
-
-  function showLoading(txt){
-    frame.style.opacity='0';
-    loading.style.display='grid';
-    loading.innerHTML='<div style="text-align:center"><div class="spin"></div>'+(txt||'Carregando Contratos...')+'</div>';
-  }
-
-  function fail(msg){
-    frame.style.opacity='0';
-    loading.style.display='grid';
-    loading.innerHTML='<div style="max-width:520px;text-align:center;padding:24px"><strong style="display:block;color:#e6edf3;margin-bottom:8px">Falha ao carregar Contratos</strong><span>'+msg+'</span></div>';
-  }
-
-  function loadScript(d,src){
-    return new Promise(function(resolve,reject){
-      const s=d.createElement('script');s.src=src;s.onload=resolve;s.onerror=function(){reject(new Error('Falha ao carregar '+src));};(d.body||d.documentElement).appendChild(s);
-    });
-  }
-
-  async function boot(w,d){
-    if(started)return;started=true;
-    w.__TDNGO_CONTRATOS_VALIDATED__=true;
-    w.sessionStorage.setItem(KEY,saved);w.localStorage.setItem(KEY,saved);
-    const css=d.createElement('style');css.textContent='#login-screen{display:none!important}';(d.head||d.documentElement).appendChild(css);
-    try{
-      for(const src of SCRIPTS)await loadScript(d,src);
-      try{
-        const app=d.getElementById('app');
-        if(app&&w.getComputedStyle(app).display==='none'){
-          const s=w.sessionStorage.getItem(KEY)||w.localStorage.getItem(KEY);
-          if(s){w.currentUser=JSON.parse(s);if(w.currentUser&&w.currentUser.tdngoToken&&typeof w.startApp==='function')w.startApp();}
-        }
-      }catch(e){console.warn(e);}
-      frame.style.opacity='1';loading.style.display='none';
-    }catch(e){console.error(e);fail('Uma atualização interna do módulo não pôde ser carregada. Recarregue a página.');}
-  }
-
-  function forceContracts(reason){
-    started=false;retry=0;showLoading(reason==='back'?'Retornando para Contratos...':'Carregando Contratos...');
-    try{frame.src=baseUrl(reason);}catch(e){console.error(e);fail('Não foi possível abrir o módulo Contratos.');}
-  }
-
-  frame.addEventListener('load',function(){
-    try{
-      const w=frame.contentWindow,d=frame.contentDocument;
-      if(!w||!d)throw new Error('Módulo indisponível.');
-      if(!isContractsDocument(d)){
-        started=false;frame.style.opacity='0';
-        if(retry<2){
-          retry++;
-          showLoading('Validando módulo Contratos...');
-          frame.src=baseUrl('retry'+retry);
-          return;
-        }
-        fail('O conteúdo recebido não corresponde ao módulo Contratos. Nenhuma alteração foi aplicada sobre a tela incorreta. Recarregue a página.');
-        return;
-      }
-      retry=0;boot(w,d);
-    }catch(e){console.error(e);fail('Não foi possível validar o conteúdo do módulo.');}
-  });
-
-  window.addEventListener('pageshow',function(ev){
-    try{
-      const nav=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];
-      const voltou=!!ev.persisted || (nav&&nav.type==='back_forward');
-      if(voltou){setTimeout(function(){forceContracts('back');},0);}
-    }catch(e){if(ev.persisted)setTimeout(function(){forceContracts('back');},0);}
-  });
-
-  window.addEventListener('popstate',function(){
-    setTimeout(function(){forceContracts('back');},0);
-  });
-
+  function baseUrl(reason){loadSeq++;return 'contratos-base-current.html?module=contratos&v='+VERSION+'&reason='+(reason||'open')+'&n='+Date.now()+'-'+loadSeq;}
+  function isContractsDocument(d){if(!d)return false;const title=String(d.title||'').toLowerCase();return title.indexOf('contratos')>=0&&!!d.getElementById('page-lista')&&!!d.getElementById('lista-body')&&!!d.getElementById('f-tipo')&&!!d.getElementById('f-status');}
+  function showLoading(txt){frame.style.opacity='0';loading.style.display='grid';loading.innerHTML='<div style="text-align:center"><div class="spin"></div>'+(txt||'Carregando Contratos...')+'</div>';}
+  function fail(msg){frame.style.opacity='0';loading.style.display='grid';loading.innerHTML='<div style="max-width:520px;text-align:center;padding:24px"><strong style="display:block;color:#e6edf3;margin-bottom:8px">Falha ao carregar Contratos</strong><span>'+msg+'</span></div>';}
+  function loadScript(d,src){return new Promise(function(resolve,reject){const s=d.createElement('script');s.src=src;s.onload=resolve;s.onerror=function(){reject(new Error('Falha ao carregar '+src));};(d.body||d.documentElement).appendChild(s);});}
+  async function boot(w,d){if(started)return;started=true;w.__TDNGO_CONTRATOS_VALIDATED__=true;w.sessionStorage.setItem(KEY,saved);w.localStorage.setItem(KEY,saved);const css=d.createElement('style');css.textContent='#login-screen{display:none!important}';(d.head||d.documentElement).appendChild(css);try{for(const src of SCRIPTS)await loadScript(d,src);try{const app=d.getElementById('app');if(app&&w.getComputedStyle(app).display==='none'){const s=w.sessionStorage.getItem(KEY)||w.localStorage.getItem(KEY);if(s){w.currentUser=JSON.parse(s);if(w.currentUser&&w.currentUser.tdngoToken&&typeof w.startApp==='function')w.startApp();}}}catch(e){console.warn(e);}frame.style.opacity='1';loading.style.display='none';}catch(e){console.error(e);fail('Uma atualização interna do módulo não pôde ser carregada. Recarregue a página.');}}
+  function forceContracts(reason){started=false;retry=0;showLoading(reason==='back'?'Retornando para Contratos...':'Carregando Contratos...');try{frame.src=baseUrl(reason);}catch(e){console.error(e);fail('Não foi possível abrir o módulo Contratos.');}}
+  frame.addEventListener('load',function(){try{const w=frame.contentWindow,d=frame.contentDocument;if(!w||!d)throw new Error('Módulo indisponível.');if(!isContractsDocument(d)){started=false;frame.style.opacity='0';if(retry<2){retry++;showLoading('Validando módulo Contratos...');frame.src=baseUrl('retry'+retry);return;}fail('O conteúdo recebido não corresponde ao módulo Contratos. Nenhuma alteração foi aplicada sobre a tela incorreta. Recarregue a página.');return;}retry=0;boot(w,d);}catch(e){console.error(e);fail('Não foi possível validar o conteúdo do módulo.');}});
+  window.addEventListener('pageshow',function(ev){try{const nav=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];const voltou=!!ev.persisted||(nav&&nav.type==='back_forward');if(voltou){setTimeout(function(){forceContracts('back');},0);}}catch(e){if(ev.persisted)setTimeout(function(){forceContracts('back');},0);}});
+  window.addEventListener('popstate',function(){setTimeout(function(){forceContracts('back');},0);});
   forceContracts('open');
 })();
 </script>
-<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260908-1625"></script>
+<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260908-1638"></script>
 </body>
 </html>

@@ -14,15 +14,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
 <iframe id="frame" title="Módulo Contratos"></iframe>
 <script>
 (function(){
-  try{
-    const ref=new URL(document.referrer||'',location.href),mark=sessionStorage.getItem('tdngo_explicit_nav')||'';
-    const veioDaCentral=/\/index\.html$/i.test(ref.pathname),foiClique=/\|contratos\.html(?:$|[?#])/i.test(mark)||/\|contratos\.html$/i.test(mark);
-    if(veioDaCentral&&!foiClique){location.replace('index.html');return;}
-  }catch(e){}
+  try{const ref=new URL(document.referrer||'',location.href),mark=sessionStorage.getItem('tdngo_explicit_nav')||'';const veioDaCentral=/\/index\.html$/i.test(ref.pathname),foiClique=/\|contratos\.html(?:$|[?#])/i.test(mark)||/\|contratos\.html$/i.test(mark);if(veioDaCentral&&!foiClique){location.replace('index.html');return;}}catch(e){}
   try{if(location.search)history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
-
   const KEY='fhsl_session';
-  const VERSION='20260908-2255';
+  const VERSION='20260908-2305';
   const SCRIPTS=[
     'contratos-clean.js?v='+VERSION,
     'contratos-aditivos-v2.js?v='+VERSION,
@@ -40,17 +35,11 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
     'contratos-categorias-v10.js?v='+VERSION,
     'contratos-click-fix-v12.js?v='+VERSION,
     'contratos-layout-fix-v13.js?v='+VERSION,
-    'contratos-renovacao-v14.js?v='+VERSION
+    'contratos-renovacao-v14.js?v='+VERSION,
+    'contratos-renovacao-guard-v15.js?v='+VERSION
   ];
-
-  const raw=sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'';
-  let user=null;try{user=raw?JSON.parse(raw):null;}catch(e){}
-  if(!user||!user.tdngoToken){sessionStorage.removeItem(KEY);localStorage.removeItem(KEY);location.replace('index.html');return;}
-  const saved=JSON.stringify(user);sessionStorage.setItem(KEY,saved);localStorage.setItem(KEY,saved);
-
-  const frame=document.getElementById('frame'),loading=document.getElementById('loading');
-  let retry=0,started=false,loadSeq=0;
-
+  const raw=sessionStorage.getItem(KEY)||localStorage.getItem(KEY)||'';let user=null;try{user=raw?JSON.parse(raw):null;}catch(e){}if(!user||!user.tdngoToken){sessionStorage.removeItem(KEY);localStorage.removeItem(KEY);location.replace('index.html');return;}const saved=JSON.stringify(user);sessionStorage.setItem(KEY,saved);localStorage.setItem(KEY,saved);
+  const frame=document.getElementById('frame'),loading=document.getElementById('loading');let retry=0,started=false,loadSeq=0;
   function baseUrl(reason){loadSeq++;return 'contratos-base-current.html?module=contratos&v='+VERSION+'&reason='+(reason||'open')+'&n='+Date.now()+'-'+loadSeq;}
   function isContractsDocument(d){if(!d)return false;const title=String(d.title||'').toLowerCase();return title.indexOf('contratos')>=0&&!!d.getElementById('page-lista')&&!!d.getElementById('lista-body')&&!!d.getElementById('f-tipo')&&!!d.getElementById('f-status');}
   function showLoading(txt){frame.style.opacity='0';loading.style.display='grid';loading.innerHTML='<div style="text-align:center"><div class="spin"></div>'+(txt||'Carregando Contratos...')+'</div>';}
@@ -64,6 +53,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d1117;col
   forceContracts('open');
 })();
 </script>
-<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260908-2255"></script>
+<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260908-2305"></script>
 </body>
 </html>

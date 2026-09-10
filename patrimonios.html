@@ -13,11 +13,11 @@ html,body{margin:0;min-height:100%;background:#0b0f14;color:#eef3f8;font-family:
 (async()=>{
  try{
   const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a42988ce242c4f1afc429edacaad720657ae3e63/patrimonios.html';
-  const r=await fetch(base+'?v=20260910-0025',{cache:'no-store'});
+  const r=await fetch(base+'?v=20260910-0115',{cache:'no-store'});
   if(!r.ok)throw new Error('HTTP '+r.status);
   let html=await r.text();
   html=html.replace('<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">','<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">');
-  const layers='<script src="patrimonios-modern-v2.js?v=20260910-0025"><'+'/script><script src="patrimonios-app-v3.js?v=20260910-0025"><'+'/script></body>';
+  const layers='<script src="patrimonios-modern-v2.js?v=20260910-0115"><'+'/script><script src="patrimonios-app-v3.js?v=20260910-0115"><'+'/script><script src="patrimonios-refine-v4.js?v=20260910-0115"><'+'/script></body>';
   html=html.replace('</body>',layers);
   document.open();document.write(html);document.close();
  }catch(e){

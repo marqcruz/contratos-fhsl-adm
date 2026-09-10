@@ -39,16 +39,27 @@ async function onCode(code){
   const local=(window.items||[]).find(x=>String(x.codigo_patrimonio)===code);
   let found=local;
   if(!found&&window.post){const r=await window.post({action:'scan',codigo:code});found=r.data}
-  if(!found)throw new Error('Patrimônio não localizado.');
+  if(!found)throw new Error('Patrimônio não encontrado.');
   lockedCode=code;missCode='';missUntil=0;
   renderResultLocal(found);
   if(navigator.vibrate)navigator.vibrate(45);
   state(`QR ${code} lido · limpe para nova leitura`,true);
  }catch(e){
+  const msg=String(e?.message||e||'Falha na consulta.');
+  const missing=/não.*(localiz|cadastr|encontr)|nao.*(localiz|cadastr|encontr)|not found|404/i.test(msg);
   missCode=code;missUntil=Date.now()+4000;
   const out=document.getElementById('scan-result');
-  if(out){out.classList.add('show');out.innerHTML=`<div class="empty">${window.esc?esc(e.message):e.message}</div>`}
-  state(`QR ${code} não localizado · procurando outro...`,false);
+  if(out){
+   out.classList.add('show');
+   out.innerHTML=missing?`<div class="empty">Código ${code} sem cadastro na base.<br><span class="muted">O leitor continua ativo para o próximo QR.</span></div>`:`<div class="empty">${window.esc?esc(msg):msg}</div>`;
+  }
+  if(missing){
+   document.dispatchEvent(new CustomEvent('pm:scan-missing',{detail:{code,message:msg}}));
+   state(`QR ${code} sem cadastro · procurando outro...`,false);
+  }else{
+   document.dispatchEvent(new CustomEvent('pm:scan-error',{detail:{code,message:msg}}));
+   state('Falha na consulta · leitor continua ativo',false);
+  }
   setTimeout(()=>{if(!lockedCode&&cameraState==='running')state('Leitor pronto · aponte para outro QR',true)},900);
  }finally{
   processingCode='';

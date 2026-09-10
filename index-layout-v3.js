@@ -1,6 +1,21 @@
 (function(){
 'use strict';
 
+/* Injeta o módulo Patrimônios na Central mantendo o mesmo controle de módulos do TDNGo. */
+try{
+  var grid=document.getElementById('hub-grid');
+  if(grid&&!grid.querySelector('[data-mod="patrimonios"]')){
+    var admin=grid.querySelector('[data-mod="admin"]');
+    var a=document.createElement('a');
+    a.className='hub-card';a.setAttribute('data-mod','patrimonios');a.setAttribute('data-cat','gestao');
+    a.setAttribute('data-search','patrimonio patrimônios bens inventário depreciação qr code equipamentos móveis ativos unidade localização');
+    a.href='patrimonios.html';
+    a.onpointerdown=function(){try{sessionStorage.setItem('tdngo_explicit_nav',Date.now()+'|patrimonios.html')}catch(e){}};
+    a.innerHTML='<span class="hub-ico">🏷️</span><h3>Patrimônios</h3><p>Bens, QR Code, localização, inventário, fotos e depreciação.</p><span class="hub-tag ativo">Disponível</span>';
+    if(admin)grid.insertBefore(a,admin);else grid.appendChild(a);
+  }
+}catch(e){}
+
 /* Remove recursos de recentes/favoritos. A Central fica determinística e limpa. */
 try{
   var q=document.getElementById('hub-quick-section');

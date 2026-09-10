@@ -1,0 +1,20 @@
+{
+  "name": "TDNGo - Gestão Patrimonial em Saúde",
+  "short_name": "TDNGo Patrimônio",
+  "start_url": "./patrimonios.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
+  "background_color": "#0b1118",
+  "theme_color": "#0b1118",
+  "orientation": "portrait-primary",
+  "description": "Gestão patrimonial em saúde, inventário físico e leitura de QR Code.",
+  "icons": [
+    {
+      "src": "assets/fhsl-logo-cabecalho.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

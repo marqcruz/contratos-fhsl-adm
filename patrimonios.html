@@ -17,7 +17,7 @@ html,body{margin:0;min-height:100%;background:#0b0f14;color:#eef3f8;font-family:
   if(!r.ok)throw new Error('HTTP '+r.status);
   let html=await r.text();
   html=html.replace('<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">','<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">');
-  const layers='<script src="patrimonios-modern-v2.js?v=20260910-0115"><'+'/script><script src="patrimonios-app-v3.js?v=20260910-0115"><'+'/script><script src="patrimonios-refine-v4.js?v=20260910-0115"><'+'/script><script src="patrimonios-saude-v5.js?v=20260910-0048"><'+'/script><script src="patrimonios-polish-v6.js?v=20260910-1009"><'+'/script><script src="patrimonios-qr-fast-v7.js?v=20260910-1024"><'+'/script><script src="patrimonios-qr-ios-v8.js?v=20260910-1111"><'+'/script><script src="patrimonios-flow-v9.js?v=20260910-1120"><'+'/script></body>';
+  const layers='<script src="patrimonios-modern-v2.js?v=20260910-0115"><'+'/script><script src="patrimonios-app-v3.js?v=20260910-0115"><'+'/script><script src="patrimonios-refine-v4.js?v=20260910-0115"><'+'/script><script src="patrimonios-saude-v5.js?v=20260910-0048"><'+'/script><script src="patrimonios-polish-v6.js?v=20260910-1009"><'+'/script><script src="patrimonios-qr-fast-v7.js?v=20260910-1024"><'+'/script><script src="patrimonios-qr-ios-v8.js?v=20260910-1134"><'+'/script><script src="patrimonios-flow-v9.js?v=20260910-1120"><'+'/script><script src="patrimonios-sound-v10.js?v=20260910-1134"><'+'/script></body>';
   html=html.replace('</body>',layers);
   document.open();document.write(html);document.close();
  }catch(e){

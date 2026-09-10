@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const SIX=/^\d{6}$/;
-let stream=null,raf=0,video=null,canvas=null,ctx=null,busy=false,lastCode='',lastAt=0,engineReady=null;
+let stream=null,raf=0,video=null,canvas=null,ctx=null,busy=false,lastCode='',lastAt=0,engineReady=null,startSeq=0;
 
 function loadJsQR(){
  if(window.jsQR)return Promise.resolve(true);
@@ -56,35 +56,47 @@ function scanFrame(){
  raf=requestAnimationFrame(scanFrame);
 }
 async function stop(){
+ startSeq++;
  if(raf){cancelAnimationFrame(raf);raf=0}
- if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
- if(video){try{video.srcObject=null}catch(e){}video.remove();video=null}
+ const s=stream;stream=null;
+ if(s&&typeof s.getTracks==='function'){try{s.getTracks().forEach(t=>t.stop())}catch(e){}}
+ if(video){try{video.srcObject=null}catch(e){}try{video.remove()}catch(e){}video=null}
+ canvas=null;ctx=null;
  const host=document.getElementById('qr-reader');if(host)host.innerHTML='<div class="muted">Câmera parada</div>';
  state('Câmera parada',false);
 }
 async function start(){
  const host=document.getElementById('qr-reader');if(!host||stream)return;
+ const seq=++startSeq;
+ let localStream=null,localVideo=null;
  try{
   await loadJsQR();
-  await stop();
+  if(seq!==startSeq)return;
   host.innerHTML='';
-  video=document.createElement('video');video.setAttribute('playsinline','');video.setAttribute('muted','');video.autoplay=true;video.muted=true;video.style.cssText='width:100%;height:100%;object-fit:cover;display:block';host.appendChild(video);
+  localVideo=document.createElement('video');localVideo.setAttribute('playsinline','');localVideo.setAttribute('muted','');localVideo.autoplay=true;localVideo.muted=true;localVideo.style.cssText='width:100%;height:100%;object-fit:cover;display:block';host.appendChild(localVideo);
   const constraints={audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30,max:60}}};
-  stream=await navigator.mediaDevices.getUserMedia(constraints);
-  video.srcObject=stream;await video.play();
-  const track=stream.getVideoTracks()[0];
-  try{const caps=track.getCapabilities?.()||{};const adv={};if(Array.isArray(caps.focusMode)&&caps.focusMode.includes('continuous'))adv.focusMode='continuous';if(caps.exposureMode&&caps.exposureMode.includes?.('continuous'))adv.exposureMode='continuous';if(Object.keys(adv).length)await track.applyConstraints({advanced:[adv]})}catch(e){}
+  localStream=await navigator.mediaDevices.getUserMedia(constraints);
+  if(seq!==startSeq){try{localStream.getTracks().forEach(t=>t.stop())}catch(e){}return}
+  stream=localStream;video=localVideo;video.srcObject=localStream;await video.play();
+  if(seq!==startSeq||stream!==localStream){try{localStream.getTracks().forEach(t=>t.stop())}catch(e){}return}
+  try{const track=localStream.getVideoTracks?.()[0];if(track){const caps=track.getCapabilities?.()||{};const adv={};if(Array.isArray(caps.focusMode)&&caps.focusMode.includes('continuous'))adv.focusMode='continuous';if(caps.exposureMode&&caps.exposureMode.includes?.('continuous'))adv.exposureMode='continuous';if(Object.keys(adv).length)await track.applyConstraints({advanced:[adv]})}}catch(e){}
+  if(seq!==startSeq||stream!==localStream)return;
   canvas=document.createElement('canvas');ctx=canvas.getContext('2d',{willReadFrequently:true});
   state('Leitor rápido ativo · aproxime o QR da área central',true);
   scanFrame();
  }catch(e){
-  stream=null;state('Falha ao iniciar a câmera',false);if(typeof toast==='function')toast(e.message||String(e),'err');
+  if(localStream&&localStream!==stream){try{localStream.getTracks().forEach(t=>t.stop())}catch(_){}}
+  if(seq!==startSeq)return;
+  stream=null;
+  const msg=String(e?.message||e||'');
+  if(/abort|interrupted|cancel/i.test(msg))return;
+  state('Falha ao iniciar a câmera',false);if(typeof toast==='function')toast(msg||'Não foi possível iniciar a câmera.','err');
  }
 }
 function active(){return document.getElementById('p-scanner')?.classList.contains('active')}
 function install(){
  window.startScanner=start;window.stopScanner=stop;
- const oldManual=window.scanManual;window.scanManual=function(){const i=document.getElementById('scan-code');const c=String(i?.value||'').replace(/\D/g,'').slice(0,6);if(!SIX.test(c)){if(typeof toast==='function')toast('Use exatamente 6 dígitos.','err');return}onCode(c)};
+ window.scanManual=function(){const i=document.getElementById('scan-code');const c=String(i?.value||'').replace(/\D/g,'').slice(0,6);if(!SIX.test(c)){if(typeof toast==='function')toast('Use exatamente 6 dígitos.','err');return}onCode(c)};
  document.querySelectorAll('[data-page="scanner"]').forEach(b=>b.addEventListener('click',()=>setTimeout(start,40)));
  const p=document.getElementById('p-scanner');if(p)new MutationObserver(()=>{if(active())setTimeout(start,40);else stop()}).observe(p,{attributes:true,attributeFilter:['class']});
  const nav=document.querySelector('.pm-bottom');if(nav)nav.addEventListener('click',()=>setTimeout(()=>{if(active())start()},50));

@@ -13,11 +13,12 @@ html,body{margin:0;min-height:100%;background:#0b0f14;color:#eef3f8;font-family:
 (async()=>{
  try{
   const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a42988ce242c4f1afc429edacaad720657ae3e63/patrimonios.html';
-  const r=await fetch(base+'?v=20260909-2335',{cache:'no-store'});
+  const r=await fetch(base+'?v=20260909-2345',{cache:'no-store'});
   if(!r.ok)throw new Error('HTTP '+r.status);
   let html=await r.text();
   html=html.replace('<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">','<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">');
-  html=html.replace('</body>','<script src="patrimonios-modern-v2.js?v=20260909-2335"><\\/script></body>');
+  const modern='<script src="patrimonios-modern-v2.js?v=20260909-2345"><'+'/script></body>';
+  html=html.replace('</body>',modern);
   document.open();document.write(html);document.close();
  }catch(e){
   document.getElementById('pat-loading').innerHTML='<div><b>Não foi possível abrir Patrimônios</b><div style="margin-top:6px">'+String(e&&e.message||e)+'</div><button onclick="location.href=\'index.html\'" style="margin-top:14px;padding:9px 13px;border-radius:9px;border:1px solid #253140;background:#111821;color:#eef3f8">Central TDNGo</button></div>';

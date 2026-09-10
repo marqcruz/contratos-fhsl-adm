@@ -1,63 +1,24 @@
 (()=>{
 'use strict';
 const SIX=/^\d{6}$/;
-let reader=null,busy=false,last='';
+let reader=null,invReader=null,busy=false,invBusy=false,last='',lastInv='';
 
 function css(){if(document.getElementById('pat-qr-fast-v7'))return;const s=document.createElement('style');s.id='pat-qr-fast-v7';s.textContent=`
-#p-scanner .scanner-box{max-width:860px!important}.scan-frame{min-height:430px!important;position:relative!important}.scan-frame:after{left:12%!important;right:12%!important;top:18%!important;bottom:18%!important;border-radius:16px!important}.pm-fast-state{display:flex;align-items:center;justify-content:center;gap:7px;margin:8px 0 0;font-size:10px;color:var(--pm-muted)}.pm-fast-state i{width:7px;height:7px;border-radius:99px;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.10)}.pm-fast-state.off i{background:#94a3b8;box-shadow:none}.pm-fast-hint{font-size:11px!important}.scan-manual input,#is-code{font-size:20px!important;text-align:center!important;letter-spacing:.18em!important}.scan-manual input::placeholder,#is-code::placeholder{letter-spacing:.18em!important}.pm-scan-auto{display:none!important}@media(max-width:760px){#p-scanner .scanner-box{max-width:none!important}.scan-frame{min-height:calc(100dvh - 245px)!important;max-height:560px!important}.scan-frame:after{left:8%!important;right:8%!important;top:16%!important;bottom:16%!important}.scanner-box>.actions{display:none!important}.pm-fast-state{font-size:11px!important}.scan-manual{margin-top:10px!important}}
-`;
-document.head.appendChild(s)}
-
-function tuneLibrary(){
- if(typeof window.Html5Qrcode==='undefined'||window.Html5Qrcode.__tdngoFast)return;
- const Original=window.Html5Qrcode;
- const start=Original.prototype.start;
- Original.prototype.start=async function(cam,config,ok,err){
-   const cfg={...(config||{})};
-   cfg.fps=Math.max(24,Number(cfg.fps||0));
-   cfg.disableFlip=false;
-   cfg.qrbox=(vw,vh)=>{const m=Math.min(vw,vh);const side=Math.max(220,Math.floor(m*.74));return{width:side,height:side}};
-   const wrapped=(raw,res)=>{const value=String(raw||'').trim();if(!SIX.test(value))return;ok&&ok(value,res)};
-   const out=await start.call(this,cam,cfg,wrapped,err);
-   try{if(this.applyVideoConstraints)await this.applyVideoConstraints({advanced:[{focusMode:'continuous'}]})}catch(e){}
-   return out;
- };
- Original.__tdngoFast=true;
-}
-
-function state(on,text){const box=document.querySelector('#p-scanner .scanner-box');if(!box)return;let el=box.querySelector('.pm-fast-state');if(!el){el=document.createElement('div');el.className='pm-fast-state';const help=box.querySelector('.scan-help');(help||box).insertAdjacentElement('afterend',el)}el.classList.toggle('off',!on);el.innerHTML=`<i></i><span>${text|| (on?'Leitor rápido ativo · aponte para o QR de 6 dígitos':'Câmera parada')}</span>`}
-async function stop(){if(reader){try{await reader.stop()}catch(e){}try{await reader.clear()}catch(e){}reader=null}state(false,'Câmera parada')}
-async function lookup(code){const input=document.getElementById('scan-code');if(input)input.value=code;if(navigator.vibrate)navigator.vibrate(55);try{window.scanManual&&window.scanManual()}catch(e){}}
-async function startFast(){
- const host=document.getElementById('qr-reader');if(!host||reader)return;
- if(typeof Html5Qrcode==='undefined'){state(false,'Leitor indisponível');return}
- try{
-   host.innerHTML='';
-   reader=new Html5Qrcode('qr-reader');
-   let camera={facingMode:'environment'};
-   try{const cams=await Html5Qrcode.getCameras();const back=cams.find(x=>/back|traseira|rear|environment/i.test(x.label));if(back)camera=back.id;else if(cams[0])camera=cams[0].id}catch(e){}
-   state(true);
-   await reader.start(camera,{fps:30,qrbox:(w,h)=>{const m=Math.min(w,h);const q=Math.max(230,Math.floor(m*.78));return{width:q,height:q}},disableFlip:false},async raw=>{
-     const code=String(raw||'').trim();
-     if(!SIX.test(code)||busy)return;
-     const now=Date.now();if(last===code&&now-(window.__pmLastQrAt||0)<650)return;
-     busy=true;last=code;window.__pmLastQrAt=now;
-     await lookup(code);
-     setTimeout(()=>busy=false,220);
-   },()=>{});
-   try{if(reader.applyVideoConstraints)await reader.applyVideoConstraints({advanced:[{focusMode:'continuous'}]})}catch(e){}
- }catch(e){reader=null;state(false,'Não foi possível iniciar a câmera');if(typeof toast==='function')toast(e.message||String(e),'err')}
-}
-function autoStart(){const p=document.getElementById('p-scanner');if(p?.classList.contains('active'))setTimeout(startFast,60);else if(reader)stop()}
-function install(){
- css();tuneLibrary();
- window.startScanner=startFast;window.stopScanner=stop;
- const input=document.getElementById('scan-code');if(input){input.inputMode='numeric';input.maxLength=6;input.placeholder='999999';input.addEventListener('input',()=>input.value=input.value.replace(/\D/g,'').slice(0,6))}
- document.querySelectorAll('[data-page="scanner"]').forEach(b=>b.addEventListener('click',()=>setTimeout(startFast,80)));
- document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const t=(b.textContent||'').trim().toLowerCase();if(t==='escanear'||t.includes('scan')){setTimeout(autoStart,100)}});
- const p=document.getElementById('p-scanner');if(p)new MutationObserver(autoStart).observe(p,{attributes:true,attributeFilter:['class']});
- const inv=document.getElementById('invscan-modal');if(inv)new MutationObserver(()=>{if(inv.classList.contains('open'))setTimeout(tuneLibrary,0)}).observe(inv,{attributes:true,attributeFilter:['class']});
- autoStart();
-}
+#p-scanner .scanner-box{max-width:860px!important}.scan-frame{min-height:430px!important;position:relative!important}.scan-frame:after{left:12%!important;right:12%!important;top:18%!important;bottom:18%!important;border-radius:16px!important}.pm-fast-state{display:flex;align-items:center;justify-content:center;gap:7px;margin:8px 0 0;font-size:10px;color:var(--pm-muted)}.pm-fast-state i{width:7px;height:7px;border-radius:99px;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.10)}.pm-fast-state.off i{background:#94a3b8;box-shadow:none}.scan-manual input,#is-code{font-size:20px!important;text-align:center!important;letter-spacing:.18em!important}.pm-inv-fast{margin:0 0 10px}.pm-inv-fast-camera{height:300px;border-radius:14px;background:#06090d;border:1px solid var(--pm-border);overflow:hidden;display:grid;place-items:center;color:var(--pm-muted)}.pm-inv-fast-camera video{width:100%!important;height:100%!important;object-fit:cover!important}.pm-inv-fast-note{text-align:center;font-size:10px;color:var(--pm-muted);margin-top:7px}.pm-inv-reader{display:none!important}@media(max-width:760px){#p-scanner .scanner-box{max-width:none!important}.scan-frame{min-height:calc(100dvh - 245px)!important;max-height:560px!important}.scan-frame:after{left:8%!important;right:8%!important;top:16%!important;bottom:16%!important}.scanner-box>.actions{display:none!important}.pm-fast-state{font-size:11px!important}.pm-inv-fast-camera{height:360px;border-radius:16px}}
+`;document.head.appendChild(s)}
+function tuneLibrary(){if(typeof window.Html5Qrcode==='undefined'||window.Html5Qrcode.__tdngoFast)return;const O=window.Html5Qrcode,start=O.prototype.start;O.prototype.start=async function(cam,cfg,ok,err){cfg={...(cfg||{}),fps:Math.max(24,Number(cfg?.fps||0)),disableFlip:false};cfg.qrbox=(w,h)=>{const m=Math.min(w,h),q=Math.max(220,Math.floor(m*.76));return{width:q,height:q}};const out=await start.call(this,cam,cfg,(raw,res)=>{const v=String(raw||'').trim();if(SIX.test(v))ok&&ok(v,res)},err);try{await this.applyVideoConstraints?.({advanced:[{focusMode:'continuous'}]})}catch(e){}return out};O.__tdngoFast=true}
+function state(on,text){const box=document.querySelector('#p-scanner .scanner-box');if(!box)return;let el=box.querySelector('.pm-fast-state');if(!el){el=document.createElement('div');el.className='pm-fast-state';box.querySelector('.scan-help')?.insertAdjacentElement('afterend',el)}if(!el)return;el.classList.toggle('off',!on);el.innerHTML=`<i></i><span>${text||(on?'Leitor rápido ativo · aponte para o QR de 6 dígitos':'Câmera parada')}</span>`}
+function showAsset(x){const el=document.getElementById('scan-result');if(!el)return;el.classList.add('show');el.innerHTML=`<div class="asset-head"><div class="asset-photo">🏷️</div><div><div class="asset-code">${esc(x.codigo_patrimonio)}</div><div class="asset-title">${esc(x.descricao)}</div><div class="muted">${esc(x.unidade_nome)} · ${esc(x.local_nome||'Sem local definido')}</div></div><button class="btn primary" onclick="openDetail('${x.id}')">Abrir ficha</button></div><div class="detail-grid"><div class="kv"><span>Responsável</span><b>${esc(x.responsavel||'—')}</b></div><div class="kv"><span>Situação</span><b>${esc(x.situacao)}</b></div><div class="kv"><span>Valor atual</span><b>${money(x.depreciacao?.valor_atual)}</b></div></div>`}
+async function fastLookup(code){if(!SIX.test(code)){toast('Use exatamente 6 dígitos.','err');return}let x;try{x=items.find(z=>String(z.codigo_patrimonio)===code)}catch(e){}if(x){showAsset(x);if(navigator.vibrate)navigator.vibrate(45);return}try{const r=await post({action:'scan',codigo:code});showAsset(r.data)}catch(e){const el=document.getElementById('scan-result');if(el){el.classList.add('show');el.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}}}
+async function stop(){if(reader){try{await reader.stop()}catch(e){}try{await reader.clear()}catch(e){}reader=null}state(false)}
+async function cameraChoice(){try{const cams=await Html5Qrcode.getCameras(),b=cams.find(x=>/back|traseira|rear|environment/i.test(x.label));return b?.id||cams[0]?.id||{facingMode:'environment'}}catch(e){return{facingMode:'environment'}}}
+async function startFast(){const host=document.getElementById('qr-reader');if(!host||reader||typeof Html5Qrcode==='undefined')return;try{host.innerHTML='';reader=new Html5Qrcode('qr-reader');state(true);await reader.start(await cameraChoice(),{fps:30,disableFlip:false},async raw=>{const code=String(raw||'').trim(),now=Date.now();if(!SIX.test(code)||busy||(last===code&&now-(window.__pmLastQrAt||0)<550))return;busy=true;last=code;window.__pmLastQrAt=now;document.getElementById('scan-code').value=code;await fastLookup(code);setTimeout(()=>busy=false,160)},()=>{});try{await reader.applyVideoConstraints?.({advanced:[{focusMode:'continuous'}]})}catch(e){}}catch(e){reader=null;state(false,'Não foi possível iniciar a câmera');toast(e.message||String(e),'err')}}
+function scanManualFast(){const i=document.getElementById('scan-code'),code=String(i?.value||'').replace(/\D/g,'').slice(0,6);if(!SIX.test(code)){toast('Informe os 6 dígitos do patrimônio.','err');i?.focus();return}fastLookup(code)}
+async function stopInv(){if(invReader){try{await invReader.stop()}catch(e){}try{await invReader.clear()}catch(e){}invReader=null}}
+function ensureInvBox(){const body=document.querySelector('#invscan-modal .modal-b');if(!body)return null;let wrap=body.querySelector('.pm-inv-fast');if(!wrap){wrap=document.createElement('div');wrap.className='pm-inv-fast';wrap.innerHTML='<div id="pm-inv-fast-camera" class="pm-inv-fast-camera"><span>Preparando câmera...</span></div><div class="pm-inv-fast-note">Leitura contínua · QR com 6 dígitos · aproxime a placa da câmera</div>';const title=body.querySelector('#is-title');title?.insertAdjacentElement('afterend',wrap)}return wrap}
+async function startInv(){const host=document.getElementById('pm-inv-fast-camera');if(!host||invReader||typeof Html5Qrcode==='undefined')return;try{host.innerHTML='';invReader=new Html5Qrcode('pm-inv-fast-camera');await invReader.start(await cameraChoice(),{fps:30,disableFlip:false},async raw=>{const code=String(raw||'').trim(),now=Date.now();if(!SIX.test(code)||invBusy||(lastInv===code&&now-(window.__pmLastInvAt||0)<500))return;invBusy=true;lastInv=code;window.__pmLastInvAt=now;const i=document.getElementById('is-code');if(i)i.value=code;if(navigator.vibrate)navigator.vibrate(40);try{await window.inventoryScan()}finally{setTimeout(()=>invBusy=false,140)}},()=>{});try{await invReader.applyVideoConstraints?.({advanced:[{focusMode:'continuous'}]})}catch(e){}}catch(e){host.innerHTML='<span>Não foi possível abrir a câmera. Use o código manual.</span>'}}
+function openInvFast(js){let x;try{x=typeof js==='string'?JSON.parse(js):js}catch(e){x={}};document.getElementById('is-id').value=x.id||'';document.getElementById('is-title').textContent=(x.nome||'Inventário')+(x.unidade?' · '+x.unidade:'');document.getElementById('is-code').value='';document.getElementById('is-msg').innerHTML='';ensureInvBox();openModal('invscan-modal');setTimeout(startInv,60)}
+function activeWatcher(){const p=document.getElementById('p-scanner');if(p?.classList.contains('active'))setTimeout(startFast,50);else if(reader)stop()}
+function install(){css();tuneLibrary();window.startScanner=startFast;window.stopScanner=stop;window.scanManual=scanManualFast;window.lookupCode=fastLookup;window.openInventoryScan=openInvFast;const a=document.getElementById('scan-code'),b=document.getElementById('is-code');[a,b].forEach(i=>{if(!i)return;i.inputMode='numeric';i.maxLength=6;i.pattern='[0-9]{6}';i.placeholder='999999';i.addEventListener('input',()=>i.value=i.value.replace(/\D/g,'').slice(0,6))});document.querySelectorAll('[data-page="scanner"]').forEach(b=>b.addEventListener('click',()=>setTimeout(startFast,60)));const p=document.getElementById('p-scanner');if(p)new MutationObserver(activeWatcher).observe(p,{attributes:true,attributeFilter:['class']});const m=document.getElementById('invscan-modal');if(m){new MutationObserver(()=>{if(!m.classList.contains('open'))stopInv()}).observe(m,{attributes:true,attributeFilter:['class']});m.querySelectorAll('[data-close="invscan-modal"]').forEach(b=>b.addEventListener('click',stopInv))}activeWatcher()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,700));else setTimeout(install,700);
 })();

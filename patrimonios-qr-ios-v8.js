@@ -3,6 +3,7 @@
 const SIX=/^\d{6}$/;
 let stream=null,raf=0,video=null,canvas=null,ctx=null,engineReady=null;
 let cameraState='idle',startPromise=null,stopPromise=null,seq=0,lockedCode='';
+let processingCode='',missCode='',missUntil=0;
 
 function loadJsQR(){
  if(window.jsQR)return Promise.resolve(true);
@@ -29,18 +30,28 @@ function renderResultLocal(x){
 }
 async function onCode(code){
  code=String(code||'').trim();
- if(!SIX.test(code)||lockedCode)return;
- lockedCode=code;
+ const now=Date.now();
+ if(!SIX.test(code)||lockedCode||processingCode)return;
+ if(code===missCode&&now<missUntil)return;
+ processingCode=code;
  const input=document.getElementById('scan-code');if(input)input.value=code;
  try{
   const local=(window.items||[]).find(x=>String(x.codigo_patrimonio)===code);
-  if(local)renderResultLocal(local);
-  else if(window.post){const r=await window.post({action:'scan',codigo:code});renderResultLocal(r.data)}
+  let found=local;
+  if(!found&&window.post){const r=await window.post({action:'scan',codigo:code});found=r.data}
+  if(!found)throw new Error('Patrimônio não localizado.');
+  lockedCode=code;missCode='';missUntil=0;
+  renderResultLocal(found);
   if(navigator.vibrate)navigator.vibrate(45);
   state(`QR ${code} lido · limpe para nova leitura`,true);
  }catch(e){
-  const out=document.getElementById('scan-result');if(out){out.classList.add('show');out.innerHTML=`<div class="empty">${window.esc?esc(e.message):e.message}</div>`}
-  state(`QR ${code} não localizado · limpe para tentar outro`,false);
+  missCode=code;missUntil=Date.now()+4000;
+  const out=document.getElementById('scan-result');
+  if(out){out.classList.add('show');out.innerHTML=`<div class="empty">${window.esc?esc(e.message):e.message}</div>`}
+  state(`QR ${code} não localizado · procurando outro...`,false);
+  setTimeout(()=>{if(!lockedCode&&cameraState==='running')state('Leitor pronto · aponte para outro QR',true)},900);
+ }finally{
+  processingCode='';
  }
 }
 function scanFrame(){
@@ -58,7 +69,7 @@ function scanFrame(){
 async function stop(){
  if(stopPromise)return stopPromise;
  stopPromise=(async()=>{
-  seq++;cameraState='stopping';
+  seq++;cameraState='stopping';processingCode='';
   if(startPromise){try{await startPromise}catch(e){}}
   if(raf){cancelAnimationFrame(raf);raf=0}
   const s=stream;stream=null;
@@ -111,7 +122,7 @@ async function start(){
  })().finally(()=>{startPromise=null});
  return startPromise;
 }
-window.pmScannerReset=function(){lockedCode='';const out=document.getElementById('scan-result');if(out){out.classList.remove('show');out.innerHTML=''}const input=document.getElementById('scan-code');if(input)input.value='';state('Leitor pronto · aponte para o próximo QR',true);if(cameraState!=='running')start()};
+window.pmScannerReset=function(){lockedCode='';processingCode='';missCode='';missUntil=0;const out=document.getElementById('scan-result');if(out){out.classList.remove('show');out.innerHTML=''}const input=document.getElementById('scan-code');if(input)input.value='';state('Leitor pronto · aponte para o próximo QR',true);if(cameraState!=='running')start()};
 window.pmScannerGetLockedCode=()=>lockedCode;
 function active(){return document.getElementById('p-scanner')?.classList.contains('active')}
 function install(){

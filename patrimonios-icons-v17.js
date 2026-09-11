@@ -23,6 +23,19 @@ const I={
  tag:'<svg viewBox="0 0 24 24"><path d="M20 13 13 20 4 11V4h7z"/><circle cx="8.5" cy="8.5" r="1"/></svg>'
 };
 
+const PAGE={
+ dashboard:{label:'Dashboard',icon:I.dashboard},
+ bens:{label:'Bens',icon:I.bens},
+ scanner:{label:'QR',icon:I.scanner},
+ qr:{label:'QR',icon:I.scanner},
+ inventario:{label:'Inventário',icon:I.inventario},
+ manutencao:{label:'Manutenção clínica',icon:I.manutencao},
+ relatorios:{label:'Relatórios',icon:I.relatorios},
+ config:{label:'Config.',icon:I.config},
+ configuracoes:{label:'Config.',icon:I.config},
+ importar:{label:'Importar',icon:I.importar}
+};
+
 function css(){
  if(document.getElementById('pm-icons-v17'))return;
  const s=document.createElement('style');s.id='pm-icons-v17';s.textContent=`
@@ -37,54 +50,37 @@ function css(){
  `;document.head.appendChild(s);
 }
 
-function iconForPage(page){
+function pageDef(page){
  const p=String(page||'').toLowerCase();
- if(p.includes('dashboard'))return I.dashboard;
- if(p.includes('bens')||p.includes('bem'))return I.bens;
- if(p.includes('scanner')||p.includes('qr'))return I.scanner;
- if(p.includes('inventario'))return I.inventario;
- if(p.includes('manutenc'))return I.manutencao;
- if(p.includes('relatorio'))return I.relatorios;
- if(p.includes('config'))return I.config;
- if(p.includes('import'))return I.importar;
- return I.list;
-}
-
-function labelFromButton(b){
- const label=b.querySelector('.pm-label');
- if(label)return label.textContent.trim();
- const clone=b.cloneNode(true);clone.querySelectorAll('svg,.pm-ico,.pm-bottom-icon').forEach(x=>x.remove());
- return clone.textContent.trim();
+ return PAGE[p] || (p.includes('manutenc')?PAGE.manutencao:p.includes('relatorio')?PAGE.relatorios:p.includes('inventario')?PAGE.inventario:p.includes('config')?PAGE.config:p.includes('import')?PAGE.importar:p.includes('scanner')||p.includes('qr')?PAGE.scanner:p.includes('bens')?PAGE.bens:PAGE.dashboard);
 }
 
 function decorateNav(){
  document.querySelectorAll('.nav button[data-page]').forEach(b=>{
-  const page=b.dataset.page||'';
-  let ico=b.querySelector('.pm-ico');
-  if(!ico){ico=document.createElement('span');ico.className='pm-ico';b.prepend(ico)}
-  ico.innerHTML=iconForPage(page);
-  let label=b.querySelector('.pm-label');
-  if(!label){label=document.createElement('span');label.className='pm-label';const text=labelFromButton(b);[...b.childNodes].filter(n=>n.nodeType===3).forEach(n=>n.remove());label.textContent=text;b.appendChild(label)}
+  const d=pageDef(b.dataset.page);
+  b.innerHTML=`<span class="pm-ico">${d.icon}</span><span class="pm-label">${d.label}</span>`;
  });
  const brand=document.querySelector('.brand .ico');if(brand)brand.innerHTML=I.tag;
 }
 
 function decorateBottom(){
  document.querySelectorAll('.pm-bottom button,[data-bottom-page]').forEach(b=>{
-  const page=b.dataset.page||b.dataset.bottomPage||'';
-  let ico=b.querySelector('.pm-bottom-icon,.pm-ico');
-  if(!ico){ico=document.createElement('span');ico.className='pm-bottom-icon';b.prepend(ico)}
-  ico.innerHTML=iconForPage(page||labelFromButton(b));
+  const key=b.dataset.page||b.dataset.bottomPage||'';
+  const d=pageDef(key);
+  const label=b.querySelector('.pm-bottom-label,.pm-label,span:last-child')?.textContent?.trim() || d.label;
+  b.innerHTML=`<span class="pm-bottom-icon">${d.icon}</span><span class="pm-bottom-label">${label}</span>`;
  });
 }
 
 function iconizeButton(btn,icon){
- if(!btn||btn.querySelector('.pm-btn-icon'))return;
+ if(!btn)return;
+ btn.querySelectorAll('.pm-btn-icon').forEach(x=>x.remove());
  btn.classList.add('pm-iconized');const i=document.createElement('span');i.className='pm-btn-icon';i.innerHTML=icon;btn.prepend(i);
 }
 
 function decorateActions(){
  document.querySelectorAll('button').forEach(b=>{
+  if(b.closest('.nav,.pm-bottom'))return;
   const t=(b.textContent||'').trim().toLowerCase();
   if(t.includes('novo inventário')||t.includes('nova manutenção'))iconizeButton(b,I.plus);
   else if(t==='continuar'||t.includes('retomar'))iconizeButton(b,I.play);

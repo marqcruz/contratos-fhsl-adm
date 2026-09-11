@@ -4,25 +4,27 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Patrimônios — TDNGo</title>
 <style>
-html,body{margin:0;min-height:100%;background:#0b0f14;color:#eef3f8;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#pat-loading{min-height:100dvh;display:grid;place-items:center;text-align:center;color:#8f9dad}.spin{width:34px;height:34px;margin:0 auto 12px;border:3px solid #253140;border-top-color:#60a5fa;border-radius:50%;animation:s .75s linear infinite}@keyframes s{to{transform:rotate(360deg)}}
+html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light}#pat-loading{min-height:100dvh;display:grid;place-items:center;text-align:center;color:#667585}.spin{width:34px;height:34px;margin:0 auto 12px;border:3px solid #dbe3eb;border-top-color:#1769d2;border-radius:50%;animation:s .75s linear infinite}@keyframes s{to{transform:rotate(360deg)}}
 </style>
 </head>
-<body>
+<body data-theme="light">
 <div id="pat-loading"><div><div class="spin"></div>Carregando Patrimônios...</div></div>
 <script>
 (async()=>{
  try{
+  localStorage.setItem('tdngo_patrimonio_theme','light');
   const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a42988ce242c4f1afc429edacaad720657ae3e63/patrimonios.html';
   const r=await fetch(base+'?v=20260910-0115',{cache:'no-store'});
   if(!r.ok)throw new Error('HTTP '+r.status);
   let html=await r.text();
   html=html.replace('<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">','<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">');
-  html=html.replace('</head>','<meta name="theme-color" content="#0d1117"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="TDNGo Patrimônio"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="patrimonios.webmanifest?v=20260911-1458"><style>.pm-delete-asset{display:none!important}</style></head>');
-  const layers='<script src="patrimonios-saude-v5.js?v=20260910-0048"><'+'/script><script src="patrimonios-qr-ios-v8.js?v=20260910-1450"><'+'/script><script src="patrimonios-flow-v9.js?v=20260910-1120"><'+'/script><script src="patrimonios-mobile-v13.js?v=20260910-1425"><'+'/script><script src="patrimonios-missing-v14.js?v=20260910-1450"><'+'/script><script src="patrimonios-data-bridge-v24.js?v=20260911-1418"><'+'/script><script src="patrimonios-inventario-v15.js?v=20260910-1623"><'+'/script><script src="patrimonios-admin-actions-v18.js?v=20260911-1458"><'+'/script><script src="patrimonios-ui-v22.js?v=20260911-1249"><'+'/script><script src="patrimonios-mobile-v23.js?v=20260911-1352"><'+'/script></body>';
+  html=html.replace('<body>','<body data-theme="light">');
+  html=html.replace('</head>','<meta name="theme-color" content="#f4f7fa"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="TDNGo Patrimônio"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="patrimonios.webmanifest?v=20260911-1518"><style>.pm-delete-asset{display:none!important}button[onclick*="toggleTheme"]{display:none!important}</style></head>');
+  const layers='<script src="patrimonios-saude-v5.js?v=20260910-0048"><'+'/script><script src="patrimonios-qr-ios-v8.js?v=20260910-1450"><'+'/script><script src="patrimonios-flow-v9.js?v=20260910-1120"><'+'/script><script src="patrimonios-mobile-v13.js?v=20260910-1425"><'+'/script><script src="patrimonios-missing-v14.js?v=20260910-1450"><'+'/script><script src="patrimonios-data-bridge-v24.js?v=20260911-1418"><'+'/script><script src="patrimonios-inventario-v15.js?v=20260910-1623"><'+'/script><script src="patrimonios-admin-actions-v18.js?v=20260911-1458"><'+'/script><script src="patrimonios-ui-v22.js?v=20260911-1249"><'+'/script><script src="patrimonios-mobile-v23.js?v=20260911-1352"><'+'/script><script src="patrimonios-light-readonly-v25.js?v=20260911-1518"><'+'/script></body>';
   html=html.replace('</body>',layers);
   document.open();document.write(html);document.close();
  }catch(e){
-  document.getElementById('pat-loading').innerHTML='<div><b>Não foi possível abrir Patrimônios</b><div style="margin-top:6px">'+String(e&&e.message||e)+'</div><button onclick="location.href=\'index.html\'" style="margin-top:14px;padding:9px 13px;border-radius:9px;border:1px solid #253140;background:#111821;color:#eef3f8">Central TDNGo</button></div>';
+  document.getElementById('pat-loading').innerHTML='<div><b>Não foi possível abrir Patrimônios</b><div style="margin-top:6px">'+String(e&&e.message||e)+'</div><button onclick="location.href=\'index.html\'" style="margin-top:14px;padding:9px 13px;border-radius:9px;border:1px solid #dbe3eb;background:#fff;color:#18222d">Central TDNGo</button></div>';
  }
 })();
 </script>

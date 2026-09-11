@@ -3,6 +3,7 @@
 
 const I={
  dashboard:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+ home:'<svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V21h-6v-6H9v6H3z"/></svg>',
  bens:'<svg viewBox="0 0 24 24"><path d="M4 7.5h16v11H4z"/><path d="M8 7.5V5h8v2.5M9 12h6"/></svg>',
  scanner:'<svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/><rect x="8" y="8" width="3" height="3"/><rect x="13" y="8" width="3" height="3"/><rect x="8" y="13" width="3" height="3"/><path d="M14 14h2v2h-2z"/></svg>',
  inventario:'<svg viewBox="0 0 24 24"><path d="M8 4h8l1 2h3v15H4V6h3z"/><path d="M9 4v3h6V4M8 11h8M8 15h5"/></svg>',
@@ -10,6 +11,7 @@ const I={
  relatorios:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
  config:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.5 1a8 8 0 0 0-1.7-1L14.3 3h-4.6l-.4 3a8 8 0 0 0-1.7 1l-2.5-1-2 3.4 2 1.6a7 7 0 0 0 0 2l-2 1.6 2 3.4 2.5-1a8 8 0 0 0 1.7 1l.4 3h4.6l.4-3a8 8 0 0 0 1.7-1l2.5 1 2-3.4-2-1.6a7 7 0 0 0 .1-1z"/></svg>',
  importar:'<svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M5 14v6h14v-6"/></svg>',
+ more:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>',
  plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
  play:'<svg viewBox="0 0 24 24"><path d="m8 5 11 7-11 7z"/></svg>',
  eye:'<svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.5"/></svg>',
@@ -25,15 +27,18 @@ const I={
 
 const PAGE={
  dashboard:{label:'Dashboard',icon:I.dashboard},
+ inicio:{label:'Início',icon:I.home},
  bens:{label:'Bens',icon:I.bens},
  scanner:{label:'QR',icon:I.scanner},
+ escanear:{label:'Escanear',icon:I.scanner},
  qr:{label:'QR',icon:I.scanner},
  inventario:{label:'Inventário',icon:I.inventario},
  manutencao:{label:'Manutenção clínica',icon:I.manutencao},
  relatorios:{label:'Relatórios',icon:I.relatorios},
  config:{label:'Config.',icon:I.config},
  configuracoes:{label:'Config.',icon:I.config},
- importar:{label:'Importar',icon:I.importar}
+ importar:{label:'Importar',icon:I.importar},
+ mais:{label:'Mais',icon:I.more}
 };
 
 function css(){
@@ -50,10 +55,12 @@ function css(){
  `;document.head.appendChild(s);
 }
 
+function norm(v){return String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 function pageDef(page){
- const p=String(page||'').toLowerCase();
- return PAGE[p] || (p.includes('manutenc')?PAGE.manutencao:p.includes('relatorio')?PAGE.relatorios:p.includes('inventario')?PAGE.inventario:p.includes('config')?PAGE.config:p.includes('import')?PAGE.importar:p.includes('scanner')||p.includes('qr')?PAGE.scanner:p.includes('bens')?PAGE.bens:PAGE.dashboard);
+ const p=norm(page);
+ return PAGE[p] || (p.includes('manutenc')?PAGE.manutencao:p.includes('relatorio')?PAGE.relatorios:p.includes('inventario')?PAGE.inventario:p.includes('config')?PAGE.config:p.includes('import')?PAGE.importar:p.includes('scanner')||p.includes('qr')||p.includes('escan')?PAGE.scanner:p.includes('bens')?PAGE.bens:p.includes('inicio')?PAGE.inicio:p.includes('mais')?PAGE.mais:PAGE.dashboard);
 }
+function defFromLabel(label){const t=norm(label);if(t.includes('inicio'))return PAGE.inicio;if(t.includes('bens'))return PAGE.bens;if(t.includes('escan')||t==='qr')return PAGE.escanear;if(t.includes('invent'))return PAGE.inventario;if(t.includes('mais'))return PAGE.mais;if(t.includes('manut'))return PAGE.manutencao;if(t.includes('relat'))return PAGE.relatorios;if(t.includes('config'))return PAGE.config;if(t.includes('import'))return PAGE.importar;return PAGE.dashboard}
 
 function decorateNav(){
  document.querySelectorAll('.nav button[data-page]').forEach(b=>{
@@ -65,9 +72,10 @@ function decorateNav(){
 
 function decorateBottom(){
  document.querySelectorAll('.pm-bottom button,[data-bottom-page]').forEach(b=>{
+  const currentLabel=(b.querySelector('.pm-bottom-label,.pm-label,span:last-child')?.textContent||b.textContent||'').trim();
   const key=b.dataset.page||b.dataset.bottomPage||'';
-  const d=pageDef(key);
-  const label=b.querySelector('.pm-bottom-label,.pm-label,span:last-child')?.textContent?.trim() || d.label;
+  const d=key?pageDef(key):defFromLabel(currentLabel);
+  const label=currentLabel||d.label;
   b.innerHTML=`<span class="pm-bottom-icon">${d.icon}</span><span class="pm-bottom-label">${label}</span>`;
  });
 }
@@ -81,12 +89,12 @@ function iconizeButton(btn,icon){
 function decorateActions(){
  document.querySelectorAll('button').forEach(b=>{
   if(b.closest('.nav,.pm-bottom'))return;
-  const t=(b.textContent||'').trim().toLowerCase();
-  if(t.includes('novo inventário')||t.includes('nova manutenção'))iconizeButton(b,I.plus);
+  const t=norm(b.textContent);
+  if(t.includes('novo inventario')||t.includes('nova manutencao'))iconizeButton(b,I.plus);
   else if(t==='continuar'||t.includes('retomar'))iconizeButton(b,I.play);
   else if(t==='visualizar'||t.includes('abrir ficha'))iconizeButton(b,I.eye);
   else if(t==='pausar')iconizeButton(b,I.pause);
-  else if(t.includes('relatório')||t.includes('imprimir')||t.includes('pdf'))iconizeButton(b,I.file);
+  else if(t.includes('relatorio')||t.includes('imprimir')||t.includes('pdf'))iconizeButton(b,I.file);
   else if(t.includes('finalizar')||t.includes('concluir'))iconizeButton(b,I.check);
   else if(t.includes('conferir'))iconizeButton(b,I.scanner);
   else if(t.includes('localizar')||t.includes('buscar'))iconizeButton(b,I.search);

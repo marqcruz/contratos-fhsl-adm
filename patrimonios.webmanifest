@@ -5,8 +5,8 @@
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "fullscreen"],
-  "background_color": "#0b1118",
-  "theme_color": "#0b1118",
+  "background_color": "#f4f7fa",
+  "theme_color": "#f4f7fa",
   "orientation": "portrait-primary",
   "description": "Gestão patrimonial em saúde, inventário físico e leitura de QR Code.",
   "icons": [

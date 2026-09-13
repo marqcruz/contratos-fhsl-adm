@@ -1,0 +1,17 @@
+{
+  "name": "TDNGo Manutenção",
+  "short_name": "Manutenção",
+  "description": "Chamados e operação de manutenção da Fundação Hospital Santa Lydia",
+  "start_url": "./manutencao.html?app=1",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f6f9",
+  "theme_color": "#1769d2",
+  "icons": [
+    {"src":"./assets/manutencao-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ],
+  "shortcuts": [
+    {"name":"Meus chamados","short_name":"Meus","url":"./manutencao.html?go=mine","icons":[{"src":"./assets/manutencao-icon.svg","sizes":"any","type":"image/svg+xml"}]},
+    {"name":"Abrir chamado","short_name":"Novo","url":"./manutencao.html?open=1","icons":[{"src":"./assets/manutencao-icon.svg","sizes":"any","type":"image/svg+xml"}]}
+  ]
+}

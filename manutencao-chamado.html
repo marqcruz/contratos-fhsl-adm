@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4f7fa">
+<title>Manutenção — TDNGo</title>
+<style>
+:root{--bg:#f4f7fa;--surface:#fff;--border:#dce4eb;--text:#18222d;--muted:#667585;--primary:#1769d2;--primary-soft:#eaf3ff;--shadow:0 18px 52px rgba(31,47,61,.09)}*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}body{background:radial-gradient(circle at 20% -10%,rgba(23,105,210,.10),transparent 35%),var(--bg)}.wrap{min-height:100dvh;display:grid;place-items:center;padding:28px 18px}.shell{width:min(900px,100%)}.brand{display:flex;align-items:center;gap:13px;margin:0 0 20px}.logo{width:52px;height:52px;border-radius:15px;background:var(--primary);color:#fff;display:grid;place-items:center;font-size:24px;font-weight:900;box-shadow:0 12px 30px rgba(23,105,210,.2)}.brand h1{margin:0;font-size:24px;letter-spacing:-.4px}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.hero{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:26px;box-shadow:var(--shadow)}.hero h2{margin:0;font-size:28px;letter-spacing:-.6px}.hero>p{margin:7px 0 0;color:var(--muted);line-height:1.55;max-width:690px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:22px}.card{display:flex;flex-direction:column;min-height:180px;border:1px solid var(--border);border-radius:17px;padding:18px;background:#fff;color:inherit;text-decoration:none;transition:.15s ease}.card:hover{transform:translateY(-2px);border-color:#9cc2f1;box-shadow:0 12px 32px rgba(23,105,210,.09)}.ico{width:42px;height:42px;border-radius:12px;background:var(--primary-soft);color:var(--primary);display:grid;place-items:center;margin-bottom:18px}.ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.card b{font-size:16px}.card p{font-size:12px;color:var(--muted);line-height:1.5;margin:6px 0 0}.card .go{margin-top:auto;padding-top:16px;color:var(--primary);font-size:11px;font-weight:800}.notice{margin-top:16px;padding:13px 15px;background:#f2f7fd;border:1px solid #cfe0f5;border-radius:13px;color:#40566d;font-size:11px;line-height:1.55}.notice b{color:#1f3a56}.foot{text-align:center;color:#82909d;font-size:10px;margin-top:15px}@media(max-width:720px){.wrap{display:block;padding:20px 12px}.brand{margin:4px 3px 16px}.brand h1{font-size:20px}.brand p{font-size:10px}.hero{padding:18px;border-radius:18px}.hero h2{font-size:22px}.grid{grid-template-columns:1fr}.card{min-height:132px}.ico{margin-bottom:12px}}
+</style>
+</head>
+<body>
+<div class="wrap"><main class="shell">
+<div class="brand"><div class="logo">M</div><div><h1>TDNGo Manutenção</h1><p>Fundação Hospital Santa Lydia · atendimento 24 horas</p></div></div>
+<section class="hero">
+<h2>Como podemos ajudar?</h2><p>Use este portal para registrar um problema de manutenção, acompanhar um chamado existente ou acessar o painel interno da equipe.</p>
+<div class="grid">
+<a class="card" href="manutencao.html?public=open"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="9"/></svg></span><b>Abrir chamado</b><p>Informe unidade, local, problema, contato e registre fotos para auxiliar a equipe.</p><span class="go">Registrar solicitação →</span></a>
+<a class="card" href="manutencao.html?public=track"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/><path d="m16 16 2 2 3-4"/></svg></span><b>Acompanhar chamado</b><p>Consulte o andamento usando o protocolo e o código de acompanhamento recebidos na abertura.</p><span class="go">Consultar protocolo →</span></a>
+<a class="card" id="team-link" href="index.html"><span class="ico"><svg viewBox="0 0 24 24"><path d="M8 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM3 21v-2a5 5 0 0 1 5-5h2"/><path d="M14 18l2 2 5-6"/></svg></span><b>Painel da equipe</b><p>Acesso restrito a gerente, supervisão, administrativo, técnicos e auxiliares de manutenção.</p><span class="go" id="team-go">Entrar no TDNGo →</span></a>
+</div>
+<div class="notice"><b>Segurança e auditoria.</b> As informações devem ser verdadeiras e relacionadas à necessidade de manutenção. O sistema registra data, hora e dados técnicos da origem para segurança, rastreabilidade e auditoria. A localização precisa do aparelho só é coletada mediante autorização.</div>
+</section><div class="foot">TDNGo · Gestão de Chamados de Manutenção</div>
+</main></div>
+<script>
+try{var s=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');if(s){var x=JSON.parse(s);if(x&&x.tdngoToken){document.getElementById('team-link').href='manutencao.html';document.getElementById('team-go').textContent='Ir para o painel →'}}}catch(e){}
+</script>
+</body></html>

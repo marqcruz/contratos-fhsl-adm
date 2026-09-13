@@ -30,7 +30,7 @@
   window.addEventListener('pageshow',check);
 })();
 
-/* Injeta o módulo Patrimônios na Central mantendo o mesmo controle de módulos do TDNGo. */
+/* Injeta módulos próprios na Central mantendo o mesmo padrão visual do TDNGo. */
 try{
   var grid=document.getElementById('hub-grid');
   if(grid&&!grid.querySelector('[data-mod="patrimonios"]')){
@@ -42,6 +42,16 @@ try{
     a.onpointerdown=function(){try{sessionStorage.setItem('tdngo_explicit_nav',Date.now()+'|patrimonios.html')}catch(e){}};
     a.innerHTML='<span class="hub-ico">🏷️</span><h3>Patrimônios</h3><p>Bens, QR Code, localização, inventário, fotos e depreciação.</p><span class="hub-tag ativo">Disponível</span>';
     if(admin)grid.insertBefore(a,admin);else grid.appendChild(a);
+  }
+  if(grid&&!grid.querySelector('[data-mod="manutencao"]')){
+    var ref=grid.querySelector('[data-mod="patrimonios"]')||grid.querySelector('[data-mod="admin"]');
+    var m=document.createElement('a');
+    m.className='hub-card';m.setAttribute('data-mod','manutencao');m.setAttribute('data-cat','operacao');
+    m.setAttribute('data-search','manutencao manutenção chamados ordens serviço predial eletrica hidraulica climatizacao sobreaviso reparos suporte');
+    m.href='manutencao.html';
+    m.onpointerdown=function(){try{sessionStorage.setItem('tdngo_explicit_nav',Date.now()+'|manutencao.html')}catch(e){}};
+    m.innerHTML='<span class="hub-ico">🛠️</span><h3>Manutenção</h3><p>Chamados 24h, triagem, sobreaviso, SLA, fotos e indicadores.</p><span class="hub-tag ativo">Disponível</span>';
+    if(ref&&ref.nextSibling)grid.insertBefore(m,ref.nextSibling);else grid.appendChild(m);
   }
 }catch(e){}
 

@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 
-/* Guarda central de sessão: não confia apenas no objeto salvo no navegador. */
+/* Guarda central de sessão: 401 encerra sessão; 403 representa apenas falta de permissão. */
 (function sessionGuard(){
   var nativeFetch=window.fetch.bind(window);
   var redirecting=false;
@@ -23,7 +23,7 @@
     try{var p=t.split('.')[1];if(!p)return 0;p=p.replace(/-/g,'+').replace(/_/g,'/');while(p.length%4)p+='=';var j=JSON.parse(decodeURIComponent(escape(atob(p))));return Number(j.exp||0)}catch(e){return 0}
   }
   function check(){var t=token();if(!t)return;var exp=jwtExp(t);if(exp&&Date.now()>=exp*1000)expire()}
-  window.fetch=async function(){var r=await nativeFetch.apply(null,arguments);if(r.status===401||r.status===403){expire()}return r};
+  window.fetch=async function(){var r=await nativeFetch.apply(null,arguments);if(r.status===401)expire();return r};
   check();
   setInterval(check,30000);
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')check()});

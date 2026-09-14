@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Indicador Laboratorial — TDNGo</title>
+<style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#boot{min-height:100vh;display:grid;place-items:center;text-align:center;padding:24px;color:#9aa7b8}.box{max-width:520px}.box b{display:block;color:#e6edf3;font-size:18px;margin-bottom:6px}.box a{color:#58a6ff}</style>
+</head>
+<body><div id="boot"><div class="box"><b>Carregando Indicador Laboratorial...</b><span>Validando sessão e preparando o módulo.</span></div></div>
+<script>
+(async()=>{
+ try{
+  const raw=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');
+  if(!raw){location.replace('index.html');return}
+  try{sessionStorage.setItem('fhsl_session',raw);localStorage.setItem('fhsl_session',raw)}catch(e){}
+  const r=await fetch('indicador_laboratorial.html?v=20260914-1555',{cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  let html=await r.text();
+  html=html.replace(/sessionStorage\.getItem\('fhsl_session'\)\|\|'null'/g,"(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session'))||'null'");
+  html=html.replace(/tdngo-central-nav\.js\?v=[^\"']+/g,'tdngo-central-nav.js?v=20260914-1555');
+  document.open();document.write(html);document.close();
+ }catch(e){
+  const el=document.getElementById('boot');
+  if(el)el.innerHTML='<div class="box"><b>Falha ao carregar o Indicador Laboratorial</b><span>'+String(e&&e.message?e.message:e)+'</span><br><br><a href="indicadores.html">Voltar aos indicadores</a></div>';
+  console.error(e);
+ }
+})();
+</script>
+</body>
+</html>

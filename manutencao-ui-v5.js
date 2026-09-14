@@ -1,12 +1,15 @@
 (()=>{
 'use strict';
+if(window.__TDNGO_MANUT_V5__)return;
+window.__TDNGO_MANUT_V5__=true;
+
 const API='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-manutencao-api';
 const STARTED_AT=Date.now();
 const SEEN_KEY='tdngo_manut_alerts_seen_v5';
 const NativeNotification=window.Notification;
-let alertTimer=null,dateSyncTimer=null;
+let alertTimer=null,dateSyncTimer=null,decorateQueued=false;
 
-function toast(msg,type=''){const e=document.getElementById('toast');if(!e)return;e.textContent=String(msg||'').toLocaleUpperCase('pt-BR');e.className='toast '+type;e.style.display='block';clearTimeout(e._v5);e._v5=setTimeout(()=>e.style.display='none',4200)}
+function toast(msg,type=''){const e=document.getElementById('toast');if(!e)return;const next=String(msg||'').toLocaleUpperCase('pt-BR');if(e.textContent!==next)e.textContent=next;e.className='toast '+type;e.style.display='block';clearTimeout(e._v5);e._v5=setTimeout(()=>e.style.display='none',4200)}
 function getSession(){try{const raw=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');return raw?JSON.parse(raw):null}catch{return null}}
 function token(){return getSession()?.tdngoToken||''}
 function isMobile(){return matchMedia('(max-width:760px)').matches||matchMedia('(display-mode:standalone)').matches}
@@ -16,7 +19,8 @@ function saveSeen(){try{const now=Date.now(),fresh={};Object.entries(seen).sort(
 function remember(tag){seen[tag]=Date.now();saveSeen()}
 
 function installNotificationProxy(){
-  if(!NativeNotification)return;
+  if(!NativeNotification||window.__TDNGO_MANUT_NOTIFICATION_PROXY__)return;
+  window.__TDNGO_MANUT_NOTIFICATION_PROXY__=true;
   function ProxyNotification(title,options={}){
     const tag=options.tag||('manut-'+Date.now());
     if(seen[tag])return {close(){}};
@@ -47,13 +51,18 @@ function decorateAlertState(){
   const granted=!!NativeNotification&&NativeNotification.permission==='granted';
   document.querySelectorAll('button').forEach(b=>{
     const t=(b.textContent||'').toLocaleLowerCase('pt-BR');
-    if(t.includes('ativar alertas')||t.includes('alertas ativos')){
-      if(granted){b.textContent='Alertas ativos';b.classList.add('v5-alert-button-active')}else{b.textContent='Ativar alertas';b.classList.remove('v5-alert-button-active')}
-    }
+    if(!t.includes('ativar alertas')&&!t.includes('alertas ativos'))return;
+    const wanted=granted?'Alertas ativos':'Ativar alertas';
+    if(b.textContent!==wanted)b.textContent=wanted;
+    b.classList.toggle('v5-alert-button-active',granted);
   });
   const banner=document.querySelector('#page-dashboard .live-banner');
-  if(banner){let s=banner.querySelector('.v5-alert-live');if(granted&&!s){s=document.createElement('span');s.className='v5-alert-live';s.textContent='ALERTAS DO DISPOSITIVO ATIVOS';banner.appendChild(s)}else if(!granted&&s)s.remove()}
+  if(!banner)return;
+  let s=banner.querySelector('.v5-alert-live');
+  if(granted&&!s){s=document.createElement('span');s.className='v5-alert-live';s.textContent='ALERTAS DO DISPOSITIVO ATIVOS';banner.appendChild(s)}
+  else if(!granted&&s)s.remove();
 }
+function scheduleDecorate(){if(decorateQueued)return;decorateQueued=true;requestAnimationFrame(()=>{decorateQueued=false;decorateAlertState()})}
 
 async function pollAlerts(){
   const t=token();if(!t)return;
@@ -98,7 +107,7 @@ function enhanceDateInput(inp){
   inp.dataset.brEnhanced='1';inp.classList.add('v5-date-native');
   const vis=document.createElement('input');vis.type='text';vis.autocomplete='off';vis.inputMode='numeric';vis.className=((inp.className||'input').replace('v5-date-native','').trim()||'input')+' v5-date-br';vis.placeholder=withTime?'DD/MM/AAAA HH:MM':'DD/MM/AAAA';vis.value=isoToBr(inp.value,withTime);vis.dataset.forDate=inp.id||'';inp.insertAdjacentElement('afterend',vis);
   const commit=()=>{const iso=brToIso(vis.value,withTime);if(iso===null){vis.setCustomValidity('INFORME UMA DATA VÁLIDA NO FORMATO '+vis.placeholder);vis.reportValidity();return false}vis.setCustomValidity('');inp.value=iso;inp.dispatchEvent(new Event('change',{bubbles:true}));return true};
-  vis.addEventListener('input',()=>{const p=vis.selectionStart||0;vis.value=maskDate(vis.value,withTime);try{vis.setSelectionRange(p,p)}catch{}});
+  vis.addEventListener('input',()=>{vis.value=maskDate(vis.value,withTime)});
   vis.addEventListener('blur',commit);vis.addEventListener('keydown',e=>{if(e.key==='Enter')commit()});
 }
 function enhanceDates(root=document){root.querySelectorAll?.('input[type="date"],input[type="datetime-local"]').forEach(enhanceDateInput)}
@@ -114,10 +123,21 @@ function init(){
   window.enableNotifications=requestAlerts;
   document.addEventListener('input',upperInput,true);
   enhanceDates();replaceRawDates();decorateAlertState();
-  const mo=new MutationObserver(muts=>{for(const m of muts)for(const n of m.addedNodes)if(n.nodeType===1){enhanceDates(n);replaceRawDates(n)}decorateAlertState()});
+  const mo=new MutationObserver(muts=>{
+    let changed=false;
+    for(const m of muts){
+      for(const n of m.addedNodes){
+        if(n.nodeType!==1)continue;
+        changed=true;
+        enhanceDates(n);
+        if(/\b\d{4}-\d{2}-\d{2}\b/.test(n.textContent||''))replaceRawDates(n);
+      }
+    }
+    if(changed)scheduleDecorate();
+  });
   mo.observe(document.body,{childList:true,subtree:true});
-  dateSyncTimer=setInterval(syncDates,700);
-  setTimeout(pollAlerts,2500);alertTimer=setInterval(pollAlerts,10000);
+  dateSyncTimer=setInterval(syncDates,2000);
+  setTimeout(pollAlerts,2500);alertTimer=setInterval(pollAlerts,15000);
   window.addEventListener('focus',pollAlerts);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pollAlerts()});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();

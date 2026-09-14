@@ -1,5 +1,9 @@
-const CACHE='tdngo-manut-v7-20260913-stable';
+const CACHE='tdngo-manut-v8-20260913-scoped';
 const SHELL=['./manutencao.html','./manutencao-v3.css','./manutencao-v4.css','./manutencao-v5.css','./manutencao-app.js','./manutencao-ui-v3.js','./manutencao-ui-v4.js','./manutencao-ui-v5.js','./manutencao-recovery.js','./manutencao-chamado.html','./manutencao.webmanifest','./assets/manutencao-icon.svg'];
+function isMaintenanceUrl(u){
+  const p=u.pathname;
+  return p.endsWith('/manutencao.html')||p.endsWith('/manutencao-chamado.html')||/\/manutencao(?:-[\w-]+)?\.(?:js|css|webmanifest)$/.test(p)||p.endsWith('/assets/manutencao-icon.svg');
+}
 function enhanceHtml(html){
   if(!html)return html;
   if(!html.includes('manutencao-v4.css'))html=html.replace('</head>','<link rel="stylesheet" href="manutencao-v4.css?v=20260913-2256"></head>');
@@ -21,13 +25,10 @@ async function navResponse(req){
   try{
     const net=await fetchTimed(req,6500);
     if(!net.ok)return net;
-    if(isMaint){
-      const text=enhanceHtml(await net.text());
-      return cleanHtmlResponse(text,net.status,net.statusText);
-    }
+    if(isMaint)return cleanHtmlResponse(enhanceHtml(await net.text()),net.status,net.statusText);
     return net;
   }catch{
-    const cached=await caches.match(req)||await caches.match('./manutencao.html');
+    const cached=await caches.match(req)||(isMaint?await caches.match('./manutencao.html'):null);
     if(!cached)return cleanHtmlResponse('<!doctype html><meta charset="utf-8"><title>TDNGo Manutenção</title><body style="font-family:system-ui;padding:30px"><h2>Sem conexão</h2><p>Não foi possível carregar o módulo agora. Verifique a internet e tente novamente.</p><button onclick="location.reload()">Tentar novamente</button></body>',503,'Offline');
     if(isMaint)return cleanHtmlResponse(enhanceHtml(await cached.text()));
     return cached;
@@ -40,10 +41,10 @@ async function assetResponse(req){
     return net;
   }catch{return (await caches.match(req))||new Response('',{status:504})}
 }
-self.addEventListener('install',e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE);await Promise.allSettled(SHELL.map(x=>c.add(x)))} )());self.skipWaiting()});
+self.addEventListener('install',e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE);await Promise.allSettled(SHELL.map(x=>c.add(x)))})());self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('tdngo-manut-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim()})())});
 self.addEventListener('fetch',e=>{
-  const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);if(u.origin!==location.origin)return;
+  const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);if(u.origin!==location.origin||!isMaintenanceUrl(u))return;
   if(r.mode==='navigate'){e.respondWith(navResponse(r));return}
   if(/\.(?:js|css)$/.test(u.pathname)){e.respondWith(assetResponse(r));return}
   e.respondWith(caches.match(r).then(cached=>{const net=fetch(r).then(resp=>{if(resp&&resp.ok){const cp=resp.clone();caches.open(CACHE).then(c=>c.put(r,cp)).catch(()=>{})}return resp}).catch(()=>cached);return cached||net}));

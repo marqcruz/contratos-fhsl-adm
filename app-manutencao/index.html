@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0f5bd3">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Manutenção">
+<title>TDNGo Manutenção</title>
+<link rel="manifest" href="manifest.webmanifest?v=1">
+<link rel="icon" href="../assets/manutencao-icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app.css?v=1">
+</head>
+<body>
+<div id="boot" class="boot"><div class="spinner"></div><b>TDNGo Manutenção</b><span>Carregando área técnica...</span></div>
+<div id="app" class="app hide">
+<header class="topbar"><div class="brand"><div class="brandmark">M</div><div><b>TDNGo Manutenção</b><span id="userline">Equipe técnica</span></div></div><button class="iconbtn" id="refreshBtn" aria-label="Atualizar">↻</button></header>
+<main>
+<section id="page-now" class="page active"><div id="oncallBanner"></div><div class="pageTitle"><div><h1>Agora</h1><p>Prioridade do momento e chamados que exigem ação.</p></div><button class="pillBtn" id="alertsBtn">Alertas</button></div><div id="urgent"></div><div class="sectionTitle"><h2>Minha fila</h2><span id="queueCount">0</span></div><div id="queue" class="cards"></div></section>
+<section id="page-mine" class="page"><div class="pageTitle"><div><h1>Meus chamados</h1><p>Todos os chamados atribuídos a você.</p></div></div><div class="filters"><input id="search" placeholder="Buscar protocolo, local ou problema"><select id="statusFilter"><option value="">Todos</option><option>ATRIBUIDO</option><option>EM_ATENDIMENTO</option><option>AGUARDANDO_MATERIAL</option><option>AGUARDANDO_TERCEIRO</option><option>REABERTO</option></select></div><div id="mine" class="cards"></div></section>
+<section id="page-new" class="page"><div class="pageTitle"><div><h1>Novo chamado</h1><p>Abertura interna rápida pela equipe.</p></div></div><form id="newForm" class="formCard"><label>Nome do solicitante<input id="nName" required maxlength="120"></label><div class="cols"><label>CPF<input id="nCpf" inputmode="numeric" required maxlength="14" placeholder="000.000.000-00"></label><label>Telefone<input id="nPhone" inputmode="tel" required maxlength="16" placeholder="(16) 99999-9999"></label></div><label>Unidade<select id="nUnit" required></select></label><label>Setor<input id="nSector" maxlength="120"></label><label>Local exato<input id="nLocal" required maxlength="180"></label><label>Categoria<select id="nCategory" required></select></label><label>Impacto<select id="nImpact"><option value="SEM_IMPACTO">Sem interrupção</option><option value="PARCIAL">Impacto parcial</option><option value="INTERRUPCAO">Serviço interrompido</option><option value="RISCO_SEGURANCA">Risco de segurança</option><option value="RISCO_ASSISTENCIAL">Risco assistencial</option></select></label><label>Resumo<input id="nTitle" required maxlength="160"></label><label>Descrição<textarea id="nDesc" required maxlength="2500"></textarea></label><label>Fotos do problema · 1 a 5<input id="nPhotos" type="file" accept="image/*" capture="environment" multiple required></label><label class="check"><input id="nTake" type="checkbox"><span>Assumir este chamado para mim</span></label><button class="primary big" type="submit" id="newSubmit">Registrar chamado</button></form></section>
+<section id="page-alerts" class="page"><div class="pageTitle"><div><h1>Alertas</h1><p>Notificações ainda não lidas.</p></div><button class="pillBtn" id="markRead">Marcar lidos</button></div><div id="alerts" class="cards"></div></section>
+<section id="page-more" class="page"><div class="pageTitle"><div><h1>Mais</h1><p>Aplicativo e preferências do dispositivo.</p></div></div><div class="menuCard"><button id="pushBtn">Ativar alertas 24h <span>›</span></button><button id="testAlarmBtn">Testar sirene <span>›</span></button><button id="installBtn" class="hide">Instalar aplicativo <span>›</span></button><a href="../manutencao.html">Abrir central web <span>›</span></a><a href="../index.html">Voltar ao TDNGo <span>›</span></a></div><div class="about"><b>TDNGo Manutenção</b><span>Aplicativo de campo · versão 1</span><span id="connection">Online</span></div></section>
+</main>
+<nav class="bottom"><button data-page="now" class="active"><span>●</span>Agora</button><button data-page="mine"><span>☰</span>Meus</button><button data-page="new" class="new"><span>＋</span>Novo</button><button data-page="alerts"><span>!</span>Alertas<i id="alertBadge" class="badge hide">0</i></button><button data-page="more"><span>•••</span>Mais</button></nav>
+</div>
+<div id="modal" class="modalBg"><div class="sheet"><div class="sheetHead"><div><b id="modalTitle">Chamado</b><span id="modalSub"></span></div><button id="modalClose">×</button></div><div id="modalBody" class="sheetBody"></div><div id="modalActions" class="sheetActions"></div></div></div>
+<div id="toast" class="toast"></div>
+<script src="app.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+(()=>{
+'use strict';
+if(window.__TDNGO_MANUT_DECISION_V11__)return;window.__TDNGO_MANUT_DECISION_V11__=true;
+const API='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-manutencao-decision-api';
+let improcedentIds=new Set();
+const $=id=>document.getElementById(id);
+function token(){try{const raw=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');return raw?JSON.parse(raw)?.tdngoToken||'':''}catch{return''}}
+function role(){return String($('user-role')?.textContent||'').trim().toUpperCase()}
+function isMgmt(){return['GERENTE','SUPERVISOR','ADMINISTRATIVO'].includes(role())}
+function canImprocedent(){return['GERENTE','SUPERVISOR','ADMINISTRATIVO','TECNICO','AUXILIAR'].includes(role())}
+function toast(msg,type=''){const e=$('toast');if(!e)return;e.textContent=String(msg||'').toLocaleUpperCase('pt-BR');e.className='toast '+type;e.style.display='block';clearTimeout(e._decision);e._decision=setTimeout(()=>e.style.display='none',4200)}
+async function call(action,p={}){const t=token();if(!t)throw new Error('Sessão não encontrada.');const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({action,...p}),cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok||d.ok===false)throw new Error(d.message||'Falha na operação.');return d}
+function currentTicketId(){const f=$('detail-footer');if(!f)return'';const html=f.innerHTML||'';const m=html.match(/\('([0-9a-f-]{36})'/i);return m?.[1]||''}
+function terminalText(){return String($('detail-body')?.textContent||'').toUpperCase()}
+function isTerminal(){const t=terminalText();return t.includes('CONCLUÍDO')||t.includes('CONCLUIDO')||t.includes('CANCELADO')||t.includes('IMPROCEDENTE')}
+function relabelImprocedent(){if(!improcedentIds.size)return;document.querySelectorAll('tr').forEach(tr=>{const link=tr.querySelector('.row-link[onclick]');if(!link)return;const m=String(link.getAttribute('onclick')||'').match(/'([0-9a-f-]{36})'/i);if(!m||!improcedentIds.has(m[1]))return;tr.querySelectorAll('.pill').forEach(p=>{if(String(p.textContent||'').trim().toUpperCase()==='CANCELADO')p.textContent='IMPROCEDENTE'})});const id=currentTicketId();if(id&&improcedentIds.has(id))$('detail-body')?.querySelectorAll('.pill').forEach(p=>{if(String(p.textContent||'').trim().toUpperCase()==='CANCELADO')p.textContent='IMPROCEDENTE'})}
+function decorateDetail(){const f=$('detail-footer');if(!f||f.querySelector('.decision-v11')||isTerminal())return;const id=currentTicketId();if(!id)return;const wrap=document.createElement('span');wrap.className='decision-v11';wrap.style.display='contents';if(canImprocedent()){const b=document.createElement('button');b.type='button';b.className='btn';b.textContent='Improcedente';b.onclick=()=>finish(id,'improcedente');wrap.appendChild(b)}if(isMgmt()){const b=document.createElement('button');b.type='button';b.className='btn red';b.textContent='Cancelar chamado';b.onclick=()=>finish(id,'cancelar');wrap.appendChild(b)}f.appendChild(wrap)}
+async function finish(id,action){const title=action==='improcedente'?'Marcar chamado como improcedente':'Cancelar chamado';const msg=action==='improcedente'?'Justificativa da improcedência:':'Motivo do cancelamento:';const motivo=prompt(msg,'');if(motivo===null)return;if(String(motivo).trim().length<5)return toast('Informe uma justificativa com pelo menos 5 caracteres.','err');const confirmMsg=action==='improcedente'?'Confirmar como IMPROCEDENTE? O chamado será encerrado, mas continuará no histórico.':'Confirmar CANCELAMENTO? O chamado será encerrado e continuará no histórico.';if(!confirm(confirmMsg))return;try{await call(action,{id,motivo});if(action==='improcedente')improcedentIds.add(id);$('detail-modal')?.classList.remove('open');toast(title+' realizado.','ok');await window.refreshAll?.();setTimeout(()=>{relabelImprocedent();},250)}catch(e){toast(e.message,'err')}}
+async function refreshIds(){try{const d=await call('improcedent_ids');improcedentIds=new Set(d.ids||[]);relabelImprocedent()}catch{}}
+function init(){setTimeout(refreshIds,700);const mo=new MutationObserver(()=>{decorateDetail();relabelImprocedent()});mo.observe(document.body,{childList:true,subtree:true});setInterval(refreshIds,20000);decorateDetail()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();

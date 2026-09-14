@@ -9,8 +9,8 @@ function appVisible(){return !isHidden($id('internal-app'))||!isHidden($id('publ
 function hideLoading(){const l=$id('loading');if(l)l.classList.add('hide')}
 function loadV6(){
   if(!document.querySelector('link[href*="manutencao-v6.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='manutencao-v6.css?v=20260914-0110';document.head.appendChild(l)}
-  if(!document.querySelector('script[src*="manutencao-ui-v6.js"]')){const s=document.createElement('script');s.src='manutencao-ui-v6.js?v=20260914-0110';s.defer=true;document.head.appendChild(s)}
-  if(!document.querySelector('script[src*="manutencao-privacy-v6.js"]')){const s=document.createElement('script');s.src='manutencao-privacy-v6.js?v=20260914-0125';s.defer=true;document.head.appendChild(s)}
+  const scripts=[['manutencao-ui-v6.js','20260914-0110'],['manutencao-privacy-v6.js','20260914-0135'],['manutencao-metrics-v6.js','20260914-0135']];
+  for(const [file,v] of scripts)if(!document.querySelector(`script[src*="${file}"]`)){const s=document.createElement('script');s.src=`${file}?v=${v}`;s.defer=true;document.head.appendChild(s)}
 }
 async function hardRecover(clear=false){
   try{

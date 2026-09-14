@@ -1,0 +1,13 @@
+/* TDNGo Manutenção v5 — padronização visual solicitada */
+#public-app,#internal-app{ text-transform:uppercase; }
+#public-app input,#public-app textarea,#public-app select,#internal-app input,#internal-app textarea,#internal-app select{ text-transform:uppercase; }
+/* Códigos secretos são case-sensitive e não devem ser transformados visualmente. */
+#track-token,.token-box,[data-no-upper="1"]{text-transform:none!important}
+.v5-date-native{display:none!important}
+.v5-date-br{font-variant-numeric:tabular-nums;text-transform:none!important;letter-spacing:.01em}
+.v5-alert-live{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;color:#157347}
+.v5-alert-live:before{content:"";width:7px;height:7px;border-radius:50%;background:#20a66a;box-shadow:0 0 0 4px rgba(32,166,106,.12)}
+.v5-alert-button-active{border-color:#a8d7bd!important;background:#eef9f3!important;color:#12653d!important}
+@media(max-width:760px){
+  .v5-date-br{width:100%}
+}

@@ -1,5 +1,5 @@
-const CACHE='tdngo-manut-v8-20260913-scoped';
-const SHELL=['./manutencao.html','./manutencao-v3.css','./manutencao-v4.css','./manutencao-v5.css','./manutencao-app.js','./manutencao-ui-v3.js','./manutencao-ui-v4.js','./manutencao-ui-v5.js','./manutencao-recovery.js','./manutencao-chamado.html','./manutencao.webmanifest','./assets/manutencao-icon.svg'];
+const CACHE='tdngo-manut-v9-20260914-stability';
+const SHELL=['./manutencao.html','./manutencao-v3.css','./manutencao-v4.css','./manutencao-v5.css','./manutencao-app.js','./manutencao-ui-v3.js','./manutencao-ui-v4.js','./manutencao-ui-v5.js?v=20260914-0005','./manutencao-recovery.js','./manutencao-chamado.html','./manutencao.webmanifest','./assets/manutencao-icon.svg'];
 function isMaintenanceUrl(u){
   const p=u.pathname;
   return p.endsWith('/manutencao.html')||p.endsWith('/manutencao-chamado.html')||/\/manutencao(?:-[\w-]+)?\.(?:js|css|webmanifest)$/.test(p)||p.endsWith('/assets/manutencao-icon.svg');
@@ -9,8 +9,8 @@ function enhanceHtml(html){
   if(!html.includes('manutencao-v4.css'))html=html.replace('</head>','<link rel="stylesheet" href="manutencao-v4.css?v=20260913-2256"></head>');
   if(!html.includes('manutencao-v5.css'))html=html.replace('</head>','<link rel="stylesheet" href="manutencao-v5.css?v=20260913-2315"></head>');
   if(!html.includes('manutencao-ui-v4.js'))html=html.replace('</body>','<script src="manutencao-ui-v4.js?v=20260913-2256"><\/script></body>');
-  if(!html.includes('manutencao-ui-v5.js'))html=html.replace('</body>','<script src="manutencao-ui-v5.js?v=20260913-2315"><\/script></body>');
-  if(!html.includes('manutencao-recovery.js'))html=html.replace('</body>','<script src="manutencao-recovery.js?v=20260913-2335"><\/script></body>');
+  if(!html.includes('manutencao-ui-v5.js'))html=html.replace('</body>','<script src="manutencao-ui-v5.js?v=20260914-0005"><\/script></body>');
+  if(!html.includes('manutencao-recovery.js'))html=html.replace('</body>','<script src="manutencao-recovery.js?v=20260914-0005"><\/script></body>');
   return html;
 }
 function cleanHtmlResponse(text,status=200,statusText='OK'){

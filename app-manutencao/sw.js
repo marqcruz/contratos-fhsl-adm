@@ -1,5 +1,5 @@
-const CACHE='tdngo-tech-v3-20260914-decision';
-const SHELL=['./','./index.html','./app.css?v=1','./app.js?v=1','./app-hotfix.js?v=1','./decision.js?v=1','./manifest.webmanifest?v=1','../assets/manutencao-icon.svg'];
+const CACHE='tdngo-tech-v4-20260914-state-sync';
+const SHELL=['./','./index.html','./app.css?v=1','./app.js?v=1','./app-hotfix.js?v=1','./decision.js?v=1','./state-fix.js?v=1','./manifest.webmanifest?v=1','../assets/manutencao-icon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>Promise.allSettled(SHELL.map(x=>c.add(x)))));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{for(const k of await caches.keys())if(k.startsWith('tdngo-tech-')&&k!==CACHE)await caches.delete(k);await self.clients.claim()})())});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);if(u.origin!==location.origin)return;if(r.mode==='navigate'){e.respondWith((async()=>{try{const net=await fetch(r,{cache:'no-store'});if(net.ok){const c=await caches.open(CACHE);c.put('./index.html',net.clone()).catch(()=>{})}return net}catch{return(await caches.match('./index.html'))||new Response('<h2>Sem conexão</h2>',{status:503,headers:{'Content-Type':'text/html'}})}})());return}if(u.pathname.includes('/app-manutencao/')||u.pathname.endsWith('/assets/manutencao-icon.svg'))e.respondWith(caches.match(r).then(c=>c||fetch(r).then(resp=>{if(resp.ok)caches.open(CACHE).then(x=>x.put(r,resp.clone())).catch(()=>{});return resp}))) });

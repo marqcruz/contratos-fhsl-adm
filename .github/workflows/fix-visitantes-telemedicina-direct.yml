@@ -1,0 +1,38 @@
+name: Fix visitantes telemedicina direct
+on:
+  push:
+    branches: [layout_gpt]
+    paths:
+      - '.github/workflows/fix-visitantes-telemedicina-direct.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: layout_gpt
+      - name: Carregar Telemedicina diretamente
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('visitantes.html')
+          s=p.read_text(encoding='utf-8')
+          tag='<script data-tdngo-telemedicina-direct src="visitantes-telemedicina-v1.js?v=20260915-1135"></script>'
+          if 'data-tdngo-telemedicina-direct' not in s:
+              marker='<a class="tdngo-home"'
+              if marker not in s:
+                  raise SystemExit('marcador do rodape nao encontrado')
+              s=s.replace(marker,tag+'\n\n'+marker,1)
+          # força novo cache-bust também no nav central
+          s=s.replace('tdngo-central-nav.js?v=20260915-1128','tdngo-central-nav.js?v=20260915-1135')
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add visitantes.html
+          git commit -m 'fix: carregar Telemedicina diretamente no Visitantes'
+          git push origin HEAD:layout_gpt

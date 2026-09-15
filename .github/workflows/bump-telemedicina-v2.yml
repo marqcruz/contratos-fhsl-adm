@@ -1,0 +1,34 @@
+name: Publicar Telemedicina v2
+on:
+  push:
+    branches: [layout_gpt]
+    paths:
+      - '.github/workflows/bump-telemedicina-v2.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: layout_gpt
+      - name: Atualizar cache bust da Telemedicina
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('visitantes.html')
+          s=p.read_text(encoding='utf-8')
+          old='visitantes-telemedicina-v1.js?v=20260915-1135'
+          new='visitantes-telemedicina-v1.js?v=20260915-1235'
+          if old not in s:
+              raise SystemExit('referencia antiga nao encontrada')
+          p.write_text(s.replace(old,new),encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add visitantes.html
+          git commit -m 'feat: publicar ajustes da Telemedicina v2'
+          git push origin HEAD:layout_gpt

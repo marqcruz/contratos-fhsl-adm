@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Indicador Laboratorial — TDNGo</title>
-<script src="tdngo-light-theme-v1.js?v=20260914-1845"></script>
+<script src="tdngo-light-theme-v1.js?v=20260915-1602"></script>
 <style>html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light}#boot{min-height:100vh;display:grid;place-items:center;text-align:center;padding:24px;color:#667585}.box{max-width:520px}.box b{display:block;color:#18222d;font-size:18px;margin-bottom:6px}.box a{color:#1769d2}</style>
 </head>
 <body data-theme="light"><div id="boot"><div class="box"><b>Carregando Indicador Laboratorial...</b><span>Validando sessão e preparando o módulo.</span></div></div>
@@ -18,8 +18,8 @@
   if(!r.ok)throw new Error('HTTP '+r.status);
   let html=await r.text();
   html=html.replace(/sessionStorage\.getItem\('fhsl_session'\)\|\|'null'/g,"(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session'))||'null'");
-  html=html.replace('</head>','<script src="tdngo-light-theme-v1.js?v=20260914-1845"><\/script></head>');
-  html=html.replace(/tdngo-central-nav\.js\?v=[^\"']+/g,'tdngo-central-nav.js?v=20260914-1845');
+  html=html.replace('</head>','<script src="tdngo-light-theme-v1.js?v=20260915-1602"><\/script></head>');
+  html=html.replace(/tdngo-central-nav\.js\?v=[^\"']+/g,'tdngo-central-nav.js?v=20260915-1602');
   document.open();document.write(html);document.close();
  }catch(e){
   const el=document.getElementById('boot');

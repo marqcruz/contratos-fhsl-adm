@@ -31,7 +31,7 @@
   html=html.replace(/Apps Script v9/g,'API Supabase');
   html=html.replace(/Apps Script/g,'API Supabase');
   if(html.includes('google.com/macros')||html.includes('SCRIPT'+'_URL')||html.includes('api'+'Fetch('))throw new Error('Referência legada permaneceu no Contratos de Gestão.');
-  html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1552"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1552"><\/script></body>');
+  html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1602"><\/script></body>');
   document.open();document.write(html);document.close();
  }catch(e){document.getElementById('loading').textContent='Falha ao carregar Contratos de Gestão: '+e.message;console.error(e)}
 })();

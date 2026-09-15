@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Visitantes — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#loading-unit{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center}</style></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Visitantes — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light}#loading-unit{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center;color:#667585}</style></head>
 <body><div id="loading-unit">Carregando controle de visitantes...</div>
 <script>
 (async()=>{try{
@@ -21,7 +21,8 @@
  html=html.replace("const p={\n    UnidadeId:document.getElementById('f-unidade')?.value||'',", "const p={\n    UnidadeId:unidadeAtual||document.getElementById('f-unidade')?.value||'',");
  html=html.replace("a.download='visitantes_sede_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv'", "a.download='visitantes_'+(unidadesAcesso.find(x=>String(x.id)===String(unidadeAtual))?.nome||'unidade').replace(/[^a-z0-9]+/gi,'_').toLowerCase()+'_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv'");
  if(!html.includes('trocarUnidadeVisitantes'))throw new Error('Separação por unidade não aplicada.');
+ html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"><\/script></body>');
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('loading-unit').textContent='Falha ao carregar Visitantes: '+e.message;console.error(e)}})();
-</script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260905-2158"></script>
+</script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1602"></script>
 </body></html>

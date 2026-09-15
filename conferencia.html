@@ -18,7 +18,7 @@ html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:
     const r=await fetch(url,{cache:'no-store'});
     if(!r.ok) throw new Error('HTTP '+r.status);
     let src=await r.text();
-    src=src.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1552"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1552"><\/script></body>');
+    src=src.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1602"><\/script></body>');
     document.open();
     document.write(src);
     document.close();

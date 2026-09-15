@@ -24,7 +24,7 @@
   html=html.replace(oldFn,newFn);
   html=html.replace("window.addEventListener('DOMContentLoaded',()=>{const s=sessionStorage.getItem('fhsl_session');if(s)try{currentUser=JSON.parse(s);startApp()}catch(e){}})","window.addEventListener('DOMContentLoaded',()=>{const s=sessionStorage.getItem('fhsl_session');if(s)try{const u=JSON.parse(s);if(u&&u.tdngoToken){currentUser=u;startApp()}else sessionStorage.removeItem('fhsl_session')}catch(e){sessionStorage.removeItem('fhsl_session')}})");
   if(html.includes('google.com/macros')||html.includes('SCRIPT'+'_URL')||html.includes('api'+'Fetch('))throw new Error('Referência legada permaneceu no Malotes.');
-  html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1552"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1552"><\/script></body>');
+  html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1602"><\/script></body>');
   document.open();document.write(html);document.close();
  }catch(e){document.getElementById('loading').textContent='Falha ao carregar Malotes: '+e.message;console.error(e)}
 })();

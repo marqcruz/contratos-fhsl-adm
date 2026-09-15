@@ -5,7 +5,7 @@
  html=html.replace("const API='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-admin-data-api';","const API='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-admin-access-api';");
  html=html.replace("conferencia:'📑 Conferência',admin:'⚙️ Administração'","conferencia:'📑 Conferência',documentos:'📄 Documentos Internos',planejamento_compras:'📦 Planejamento de Compras',admin:'⚙️ Administração'");
  html=html.replace("sessionStorage.getItem('fhsl_session')||'null'","sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'null'");
- html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1552"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1552"><\/script></body>');
+ html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1602"><\/script></body>');
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('initial').textContent='Falha ao carregar Acessos: '+(e&&e.message?e.message:String(e));console.error(e)}})();
 </script>

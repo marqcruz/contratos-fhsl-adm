@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Classificação de Risco — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#eceae3;font-family:system-ui,sans-serif}#loading{min-height:100vh;display:grid;place-items:center;color:#4a5158;padding:24px;text-align:center}</style></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Classificação de Risco — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:system-ui,sans-serif;color-scheme:light}#loading{min-height:100vh;display:grid;place-items:center;color:#667585;padding:24px;text-align:center}</style></head>
 <body><div id="loading">Carregando Classificação de Risco...</div>
 <script>
 (async()=>{
   try{
-    let sess=null;try{sess=JSON.parse(sessionStorage.getItem('fhsl_session')||'null')}catch(e){}
+    let sess=null;try{sess=JSON.parse(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'null')}catch(e){}
     if(!sess){location.replace('index.html');return}
     const mods=Array.isArray(sess.modulos)?sess.modulos:String(sess.modulos||'').split(',').map(x=>x.trim()).filter(Boolean);
     const role=String(sess.role||'').toLowerCase();
@@ -14,26 +14,20 @@
     const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/525fa254ffa22b62110fe84ceb64c3ac313a5d03/risco.html';
     const r=await fetch(base,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);
     let html=await r.text();
-
-    // Corrige as barras percentuais: .fill era span inline e ignorava width.
     html=html.replace('.prio .fill{height:100%;border-radius:6px;width:0;', '.prio .fill{display:block;height:100%;border-radius:6px;width:0;');
-
-    // PDF gerencial: sem destaque da linha selecionada e sem a palavra "indicador".
     html=html.replace("const cls=r.ind===hlKey?' class=\"hl-'+hlKey+'\"':'';", "const cls='';");
     html=html.replace('<th>LIMITE (MIN)</th><th>ATINGE</th><th>% INDICADOR</th><th>META</th>', '<th>LIMITE (MIN)</th><th>ATINGE</th><th>% DESEMPENHO</th><th>META</th>');
     html=html.replace('<div class="pdf-block"><div class="pdf-h2">Indicador de desempenho '+"'+num+'"+'</div>'+"'+pdfIndicadorTabela()+'"+'</div>', '<div class="pdf-block"><div class="pdf-h2">Desempenho por prioridade</div>'+"'+pdfIndicadorTabela()+'"+'</div>');
-
-    // Reforça impressão neutra das linhas de dados no PDF.
     html=html.replace('table.pdf-t tr.hl-1 td{ background:#2f6fb0; color:#fff; }', 'table.pdf-t tr.hl-1 td{ background:#fff; color:#222; }');
     html=html.replace('table.pdf-t tr.hl-2 td{ background:#3f9d6a; color:#fff; }', 'table.pdf-t tr.hl-2 td{ background:#fff; color:#222; }');
     html=html.replace('table.pdf-t tr.hl-3 td{ background:#e0a021; color:#000; }', 'table.pdf-t tr.hl-3 td{ background:#fff; color:#222; }');
-
     const gate=/<script>\s*\(function\(\)\{\s*var SCRIPT_URL='https:\/\/script\.google\.com[\s\S]*?<\/script>/;
     const replacement=`<script>(function(){function libera(){var g=document.getElementById('fhsl-gate');if(g)g.remove();document.body.style.overflow='';var tb=document.getElementById('fhsl-topbar');if(tb)tb.style.display='flex';document.body.classList.add('fhsl-liberado');var b=document.getElementById('fhsl-back-hub');if(b)b.style.display='inline-flex';}window.fhslDoLogin=function(){location.replace('index.html')};libera();})();<\/script>`;
     if(!gate.test(html))throw new Error('Bloco legado de autenticação não localizado.');
     html=html.replace(gate,replacement);
+    html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1602"><\/script></body>');
     document.open();document.write(html);document.close();
   }catch(e){document.getElementById('loading').textContent='Falha ao carregar Classificação de Risco: '+e.message;console.error(e)}
 })();
-</script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260905-2158"></script>
+</script>
 </body></html>

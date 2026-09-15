@@ -1,0 +1,39 @@
+name: Ajustar escopo e configurações manutenção
+on:
+  push:
+    branches: [layout_gpt]
+    paths: ['.github/workflows/manutencao-scope-settings-v2.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: layout_gpt
+      - name: Aplicar ajustes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('manutencao.html')
+          s=p.read_text(encoding='utf-8')
+          # força revisão nova do app para eliminar cache antigo que ainda chamava API sem escopo
+          s=re.sub(r'manutencao-app\.js\?v=[^"\']+', 'manutencao-app.js?v=20260915-1715', s)
+          # adiciona CSS modular de configurações
+          if 'manutencao-settings-organizer-v1.css' not in s:
+              s=s.replace('</head>','<link rel="stylesheet" href="manutencao-settings-organizer-v1.css?v=20260915-1715">\n</head>',1)
+          # adiciona organizador após o app principal
+          if 'manutencao-settings-organizer-v1.js' not in s:
+              s=s.replace('<script src="manutencao-ui-v3.js', '<script src="manutencao-settings-organizer-v1.js?v=20260915-1715"></script>\n<script src="manutencao-ui-v3.js',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/manutencao-scope-settings-v2.yml
+          git add manutencao.html
+          git commit -m 'fix: consolidar escopo e configurações da manutenção'
+          git push origin HEAD:layout_gpt

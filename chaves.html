@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chaves — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}#loading{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center}</style></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chaves — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light}#loading{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center;color:#667585}</style></head>
 <body><div id="loading">Carregando controle de chaves...</div>
 <script>
 (async()=>{
@@ -9,7 +9,7 @@
   const r=await fetch(base,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);
   let html=await r.text();
   html=html.replace("let user=null,chaves=[],locais=[],movs=[],tipos=[],page='painel';","let user=null,chaves=[],locais=[],movs=[],tipos=[],page='painel',unidadesAcesso=[],unidadeAtual=''; const TIPOS_PADRAO=['Porta','Sala','Portão','Armário','Cadeado','Veículo','Carro','Outros'];");
-  html=html.replace('<button class="btn primary" id="topAction" onclick="topAction()">+ Nova chave</button>','<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><select id="unidadeSel" onchange="trocarUnidade()" style="background:#161b22;border:1px solid #2a3140;color:#e6edf3;border-radius:8px;padding:8px 10px;min-width:210px"></select><button class="btn primary" id="topAction" onclick="topAction()">+ Nova chave</button></div>');
+  html=html.replace('<button class="btn primary" id="topAction" onclick="topAction()">+ Nova chave</button>','<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><select id="unidadeSel" onchange="trocarUnidade()" style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;min-width:210px"></select><button class="btn primary" id="topAction" onclick="topAction()">+ Nova chave</button></div>');
   html=html.replace('<input id="ctipo" list="tipos" placeholder="Ex: Sala, Veículo"><datalist id="tipos"></datalist>','<select id="ctipo"><option value="">Selecione...</option></select>');
   html=html.replace('<th>Usuário</th></tr></thead><tbody id="tb-hist">','<th>Usuário</th><th></th></tr></thead><tbody id="tb-hist">');
   const oldLoad="async function load(){const r=await call(API,{action:'bootstrap'});if(!r.ok){alert(r.message||'Falha ao carregar Chaves.');return}chaves=r.chaves||[];locais=(r.locais||[]).filter(x=>x.Ativo!==false);movs=r.movs||[];tipos=r.tipos||[];fill();renderAll()}";
@@ -31,8 +31,9 @@
   html=html.replace("call(API,{action:'deleteLocal',id})","call(API,{action:'deleteLocal',unidadeId:unidadeAtual,id})");
   if(html.includes('script.google.com')||html.includes('LEGACY_URL'))throw new Error('Referência legada encontrada no módulo Chaves.');
   if(html.includes('list="tipos"')||html.includes("function canAdmin(){return user?.role==='admin'}"))throw new Error('Conversão do formulário/perfil não aplicada.');
+  html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1552"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1552"><\/script></body>');
   document.open();document.write(html);document.close();
  }catch(e){document.getElementById('loading').textContent='Falha ao carregar Chaves: '+e.message;console.error(e)}
 })();
-</script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260905-2158"></script>
+</script>
 </body></html>

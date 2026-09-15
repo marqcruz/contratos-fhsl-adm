@@ -8,6 +8,15 @@
 .v5-alert-live{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;color:#157347}
 .v5-alert-live:before{content:"";width:7px;height:7px;border-radius:50%;background:#20a66a;box-shadow:0 0 0 4px rgba(32,166,106,.12)}
 .v5-alert-button-active{border-color:#a8d7bd!important;background:#eef9f3!important;color:#12653d!important}
+/* Ajustes de legibilidade do formulário público */
+#public-open>.notice{margin-bottom:22px!important;line-height:1.6}
+#public-form{margin-top:0!important}
+#public-open .notice+.grid,#public-open .notice+form{margin-top:18px!important}
+#public-open .small.muted{line-height:1.5}
+/* textos auxiliares nunca devem invadir ou deslocar o input */
+.input+small,.input+.small,.fg input+small,.fg input+.small{display:block;position:static!important;margin-top:7px!important;line-height:1.4!important;min-height:1.4em}
 @media(max-width:760px){
   .v5-date-br{width:100%}
+  #public-open>.notice{margin-bottom:20px!important}
+  .input+small,.input+.small,.fg input+small,.fg input+.small{margin-top:8px!important}
 }

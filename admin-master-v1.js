@@ -18,6 +18,7 @@ function patchProfiles(){
   document.querySelectorAll('.ua-guide-item').forEach(card=>{const b=card.querySelector('b');if(/desenvolvedor/i.test(b?.textContent||''))card.remove()});
   const guide=[...document.querySelectorAll('.ua-guide-item')].find(card=>/administrador/i.test(card.querySelector('b')?.textContent||''));
   if(guide){const span=guide.querySelector('span');if(span)span.textContent='Perfil master do TDNGo. Possui acesso total aos módulos, unidades, usuários, auditoria, segurança e configurações globais do sistema.';}
+  const intro=document.querySelector('.ua-intro');if(intro)intro.textContent='Marque os módulos e unidades dos perfis que possuem acesso limitado. O Administrador é o perfil master e possui acesso total ao TDNGo.';
   const roleGuide=document.getElementById('ua-profile-guide');if(roleGuide&&String(sel?.value||'').toLowerCase()==='admin')roleGuide.innerHTML='<b>Administrador</b>Perfil master do TDNGo. Possui acesso total aos módulos, unidades, usuários, auditoria, segurança e configurações globais do sistema.';
   const modbox=document.getElementById('modbox'),info=document.getElementById('ua-admin-info');
   if(String(sel?.value||'').toLowerCase()==='admin'){

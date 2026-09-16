@@ -1,7 +1,19 @@
-(()=>{'use strict';if(window.__TDNGO_MANUT_NOTIF_GUARD_V26__)return;window.__TDNGO_MANUT_NOTIF_GUARD_V26__=true;
-const API_MARK='/functions/v1/tdngo-manutencao-api';
+(()=>{'use strict';if(window.__TDNGO_MANUT_NOTIF_GUARD_V27__)return;window.__TDNGO_MANUT_NOTIF_GUARD_V27__=true;
+const qs=new URLSearchParams(location.search);
+const forcePublic=qs.has('public')||qs.has('force_public');
+if(forcePublic){
+  window.__TDNGO_FORCE_PUBLIC_MANUTENCAO__=true;
+  try{
+    const raw=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');
+    if(raw)sessionStorage.setItem('fhsl_session_backup_public',raw);
+    sessionStorage.removeItem('fhsl_session');
+    localStorage.removeItem('fhsl_session');
+  }catch{}
+  document.addEventListener('click',ev=>{try{const a=ev.target.closest?.('a[href]');if(!a)return;const href=a.getAttribute('href')||'';if(!/public=/.test(href)){const b=sessionStorage.getItem('fhsl_session_backup_public');if(b){sessionStorage.setItem('fhsl_session',b);localStorage.setItem('fhsl_session',b)}}}catch{}},true);
+}
+const API_MARK='/functions/v1/tdngo-manutencao';
 const PAGE_STARTED=Date.now();
-const STORE='tdngo_manut_notif_seen_v26';
+const STORE='tdngo_manut_notif_seen_v27';
 const TTL=7*24*60*60*1000;
 let terminalProtocols=new Set(),baselineId=0;
 function load(){try{const o=JSON.parse(localStorage.getItem(STORE)||'{}'),now=Date.now(),clean={};for(const [k,v] of Object.entries(o||{}))if(Number(v)&&now-Number(v)<TTL)clean[k]=Number(v);localStorage.setItem(STORE,JSON.stringify(clean));return clean}catch{return{}}}

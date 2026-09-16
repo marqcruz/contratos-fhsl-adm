@@ -1,5 +1,6 @@
 (()=>{
 'use strict';
+(function loadRobust(){try{if(!document.querySelector('script[data-tdngo-robustez]')){const s=document.createElement('script');s.src='tdngo-robustez-v1.js?v=20260915-2305';s.dataset.tdngoRobustez='1';s.async=false;(document.head||document.documentElement).appendChild(s)}}catch{}})();
 const $=s=>document.querySelector(s);
 const PUBLIC_CATALOG='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-manutencao-public-catalog';
 function txt(v){return String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}

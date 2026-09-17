@@ -47,4 +47,8 @@ window.fetch=async function(input,init){const url=String(typeof input==='string'
  }
  return r;
 };
+if(!forcePublic){
+ const loadPush=()=>{if(document.querySelector('script[data-tdngo-push]'))return;const s=document.createElement('script');s.src='tdngo-push-v1.js?v=20260917-0615';s.dataset.tdngoPush='1';document.head.appendChild(s)};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadPush,{once:true});else loadPush();
+}
 })();

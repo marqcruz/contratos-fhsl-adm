@@ -24,16 +24,11 @@ function install(){
     const sector=$('p-sector');if(sector&&!String(sector.value||'').trim())sector.value='TESTE DE SISTEMA';
     try{localStorage.setItem('tdngo_manut_sound_enabled_v8','1')}catch{}
     b.disabled=true;b.textContent='CRIANDO CHAMADO...';
-    const reset=()=>{setTimeout(()=>{b.disabled=false;b.textContent='GERAR CHAMADO REAL P1'},1800)};
+    const reset=()=>setTimeout(()=>{b.disabled=false;b.textContent='GERAR CHAMADO REAL P1'},2200);
     try{
-      if(typeof window.submitPublic==='function'){
-        const ev={preventDefault(){},stopImmediatePropagation(){}};
-        Promise.resolve(window.submitPublic(ev)).finally(reset);
-      }else if(typeof form.requestSubmit==='function'){
-        form.requestSubmit($('p-submit')||undefined);reset();
-      }else{
-        $('p-submit')?.click();reset();
-      }
+      if(typeof form.requestSubmit==='function')form.requestSubmit($('p-submit')||undefined);
+      else $('p-submit')?.click();
+      reset();
     }catch(e){reset();const msg=e?.message||'Não foi possível iniciar o chamado de teste.';if(typeof window.toast==='function')window.toast(msg,'err');else alert(msg)}
   });
 }

@@ -1,5 +1,5 @@
 (()=>{'use strict';if(window.__TDNGO_ALERT_CONFIG_V25__)return;window.__TDNGO_ALERT_CONFIG_V25__=true;
-const API='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-manutencao-config-api';let rows=[],canEdit=false;
+const API='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-manutencao-alert-api';let rows=[],canEdit=false;
 function token(){try{return JSON.parse(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'{}').tdngoToken||''}catch{return''}}
 async function post(action,p={}){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token()},body:JSON.stringify({action,...p}),cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok||d.ok===false)throw new Error(d.message||'Falha ao carregar alertas.');return d}
 function cfg(pri){return rows.find(x=>x.prioridade===pri)||{prioridade:pri,atraso_inicial_seg:0,repetir_cada_seg:300,max_repeticoes:1,som:'PERSONALIZADO',volume_percent:100,ativo:true}}

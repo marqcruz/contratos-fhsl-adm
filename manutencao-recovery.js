@@ -10,7 +10,7 @@ function hideLoading(){const l=$id('loading');if(l)l.classList.add('hide')}
 function loadScript(file,v){if(!document.querySelector(`script[src*="${file}"]`)){const s=document.createElement('script');s.src=`${file}?v=${v}`;s.defer=true;document.head.appendChild(s)}}
 function loadV6(){
   if(!document.querySelector('link[href*="manutencao-v6.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='manutencao-v6.css?v=20260914-0110';document.head.appendChild(l)}
-  [['manutencao-ui-v6.js','20260914-0110'],['manutencao-privacy-v6.js','20260914-0135'],['manutencao-metrics-v6.js','20260914-0135'],['manutencao-custom-siren-v14.js','20260916-0915'],['manutencao-siren-presets-v25.js','20260916-0915'],['manutencao-alert-config-v25.js','20260916-0915'],['manutencao-public-fix-v1.js','20260916-0915']].forEach(x=>loadScript(x[0],x[1]));
+  [['manutencao-ui-v6.js','20260914-0110'],['manutencao-privacy-v6.js','20260914-0135'],['manutencao-metrics-v6.js','20260914-0135'],['manutencao-custom-siren-v14.js','20260916-0915'],['manutencao-siren-presets-v25.js','20260916-0915'],['manutencao-alert-config-v25.js','20260916-0915'],['manutencao-public-fix-v1.js','20260916-0915'],['manutencao-public-submit-v2.js','20260916-2348']].forEach(x=>loadScript(x[0],x[1]));
 }
 async function hardRecover(clear=false){
   try{

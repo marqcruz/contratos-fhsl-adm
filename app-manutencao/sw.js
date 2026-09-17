@@ -1,5 +1,5 @@
-const APP_VERSION='20260917-0740';
-const CACHE='tdngo-tech-lite-v5-'+APP_VERSION;
+const APP_VERSION='20260917-0900';
+const CACHE='tdngo-tech-lite-v6-'+APP_VERSION;
 const DEDUP_CACHE='tdngo-tech-push-dedup-v2';
 const STATIC_ALLOW=['./manifest.webmanifest','../assets/manutencao-icon.svg'];
 const OFFLINE='<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Manutenção</title><body style="font-family:system-ui;padding:24px;background:#f4f7fa;color:#18222d"><h2>Sem conexão</h2><p>Não foi possível abrir o aplicativo da manutenção agora.</p><button onclick="location.reload()" style="padding:10px 14px;border-radius:10px;border:1px solid #cfd8e3;background:#1769d2;color:white;font-weight:700">Tentar novamente</button></body>';

@@ -19,13 +19,12 @@ html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:
     if(!r.ok) throw new Error('HTTP '+r.status);
     let src=await r.text();
 
-    // O loader legado contém fechamentos de <script> escapados como <\\/script>.
-    // Ao serem gravados novamente via document.write, esse formato não fecha a tag
-    // no parser HTML (especialmente no Safari/iOS) e parte do JavaScript aparece na tela.
-    // Convertemos o fonte carregado para gerar o fechamento correto apenas em runtime,
-    // sem inserir um fechamento literal desta tag dentro deste próprio script.
+    // O loader legado contém fechamentos de <script> escapados como <\/script>.
+    // Ao serem gravados novamente via document.write, normalizamos esses fechamentos
+    // para evitar que o Safari/iOS renderize parte do JavaScript como texto.
+    const escapedClose='<\\/script>';
     const safeCloseExpr="${'</scr'+'ipt>'}";
-    src=src.split('<\\\\/script>').join(safeCloseExpr);
+    src=src.split(escapedClose).join(safeCloseExpr);
 
     const closeScript='</scr'+'ipt>';
     const extras='<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260917-1215">'+closeScript+

@@ -1,2 +1,0 @@
-self.addEventListener('install',()=>self.skipWaiting());
-self.addEventListener('activate',e=>{e.waitUntil((async()=>{try{await caches.delete('tdngo-global-push-dedup-v1')}catch{}try{const sub=await self.registration.pushManager.getSubscription();if(sub)await sub.unsubscribe()}catch{}try{await self.registration.unregister()}catch{}const ws=await clients.matchAll({type:'window',includeUncontrolled:true});for(const w of ws){try{w.postMessage({type:'TDNGO_ALERTS_DISABLED'})}catch{}}})())});

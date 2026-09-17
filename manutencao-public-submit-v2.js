@@ -1,1 +1,0 @@
-(()=>{'use strict';if(window.__TDNGO_PUBLIC_SUBMIT_V3__)return;const s=document.createElement('script');s.src='manutencao-public-submit-v3.js?v=20260917-0305';s.async=false;(document.head||document.documentElement).appendChild(s)})();

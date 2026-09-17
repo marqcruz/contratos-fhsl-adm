@@ -18,7 +18,20 @@ html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:
     const r=await fetch(url,{cache:'no-store'});
     if(!r.ok) throw new Error('HTTP '+r.status);
     let src=await r.text();
-    src=src.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1602"><\/script></body>');
+
+    // O loader legado contém fechamentos de <script> escapados como <\\/script>.
+    // Ao serem gravados novamente via document.write, esse formato não fecha a tag
+    // no parser HTML (especialmente no Safari/iOS) e parte do JavaScript aparece na tela.
+    // Convertemos o fonte carregado para gerar o fechamento correto apenas em runtime,
+    // sem inserir um fechamento literal desta tag dentro deste próprio script.
+    const safeCloseExpr="${'</scr'+'ipt>'}";
+    src=src.split('<\\\\/script>').join(safeCloseExpr);
+
+    const closeScript='</scr'+'ipt>';
+    const extras='<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260917-1215">'+closeScript+
+      '<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260917-1215">'+closeScript;
+    src=src.replace('</body>',extras+'</body>');
+
     document.open();
     document.write(src);
     document.close();

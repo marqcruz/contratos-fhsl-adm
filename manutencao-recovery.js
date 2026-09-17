@@ -10,7 +10,7 @@ function hideLoading(){const l=$id('loading');if(l)l.classList.add('hide')}
 function loadScript(file,v){if(!document.querySelector(`script[src*="${file}"]`)){const s=document.createElement('script');s.src=`${file}?v=${v}`;s.async=false;s.defer=true;document.head.appendChild(s)}}
 function loadV6(){
   if(!document.querySelector('link[href*="manutencao-v6.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='manutencao-v6.css?v=20260914-0110';document.head.appendChild(l)}
-  [['manutencao-ui-v6.js','20260914-0110'],['manutencao-privacy-v6.js','20260914-0135'],['manutencao-metrics-v6.js','20260914-0135'],['manutencao-custom-siren-v14.js','20260916-0915'],['manutencao-siren-presets-v25.js','20260916-0915'],['manutencao-alert-config-v25.js','20260916-0915'],['manutencao-audio-v8.js','20260917-0115'],['manutencao-public-fix-v1.js','20260916-0915'],['manutencao-public-submit-v2.js','20260916-2350'],['manutencao-public-sound-test-v1.js','20260917-0142'],['manutencao-priority-layout-v1.js','20260917-0005']].forEach(x=>loadScript(x[0],x[1]));
+  [['manutencao-ui-v6.js','20260914-0110'],['manutencao-privacy-v6.js','20260914-0135'],['manutencao-metrics-v6.js','20260914-0135'],['manutencao-custom-siren-v14.js','20260916-0915'],['manutencao-siren-presets-v25.js','20260916-0915'],['manutencao-alert-config-v25.js','20260917-0205'],['manutencao-audio-v8.js','20260917-0205'],['manutencao-alert-poller-v1.js','20260917-0205'],['manutencao-public-fix-v1.js','20260916-0915'],['manutencao-public-submit-v2.js','20260916-2350'],['manutencao-public-sound-test-v1.js','20260917-0142'],['manutencao-priority-layout-v1.js','20260917-0005']].forEach(x=>loadScript(x[0],x[1]));
 }
 async function hardRecover(clear=false){
   try{

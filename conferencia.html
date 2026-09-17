@@ -14,26 +14,38 @@ html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:
 <script>
 (async()=>{
   try{
-    const url='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/0e6ebb5caf15077fb79db59b708a7f3b26ed6ba9/conferencia.html';
-    const r=await fetch(url,{cache:'no-store'});
+    const loaderUrl='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/0e6ebb5caf15077fb79db59b708a7f3b26ed6ba9/conferencia.html';
+    const r=await fetch(loaderUrl,{cache:'no-store'});
     if(!r.ok) throw new Error('HTTP '+r.status);
-    let src=await r.text();
-
-    // O loader legado contém fechamentos de <script> escapados como <\/script>.
-    // Ao serem gravados novamente via document.write, normalizamos esses fechamentos
-    // para evitar que o Safari/iOS renderize parte do JavaScript como texto.
-    const escapedClose='<\\/script>';
-    const safeCloseExpr="${'</scr'+'ipt>'}";
-    src=src.split(escapedClose).join(safeCloseExpr);
+    const src=await r.text();
 
     const closeScript='</scr'+'ipt>';
-    const extras='<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260917-1215">'+closeScript+
-      '<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260917-1215">'+closeScript;
-    src=src.replace('</body>',extras+'</body>');
+    const openTag='<script>';
+    const ini=src.indexOf(openTag);
+    const fim=src.lastIndexOf(closeScript);
+    if(ini<0||fim<=ini) throw new Error('Loader da Conferência inválido.');
 
-    document.open();
-    document.write(src);
-    document.close();
+    const code=src.slice(ini+openTag.length,fim);
+    const nativeWrite=document.write.bind(document);
+    const badClose1='<'+String.fromCharCode(92)+'/script>';
+    const badClose2='<'+String.fromCharCode(92,92)+'/script>';
+
+    document.write=function(chunk){
+      let html=String(chunk==null?'':chunk);
+      html=html.split(badClose2).join(closeScript);
+      html=html.split(badClose1).join(closeScript);
+
+      const extras='<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260917-1445">'+closeScript+
+        '<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260917-1445">'+closeScript;
+      if(html.includes('</body>')) html=html.replace('</body>',extras+'</body>');
+
+      nativeWrite(html);
+    };
+
+    // Executa o JavaScript do loader diretamente, sem fazer o navegador analisar
+    // o HTML intermediário. Assim, strings internas com fechamento de script não
+    // podem encerrar a tag atual nem aparecer como texto na página.
+    new Function(code)();
   }catch(e){
     const el=document.getElementById('loading');
     if(el) el.textContent='Falha ao carregar Conferência: '+(e&&e.message?e.message:e);

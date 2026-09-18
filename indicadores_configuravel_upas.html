@@ -230,6 +230,9 @@ input.metric-input:focus{border-bottom:1px solid #2563eb!important;box-shadow:no
 .disabled-cell{background:#f0f4f9!important;color:#7b8794;text-align:center;font-weight:700}
 .manual-row td:not(.category-cell){background:#fff8ed!important}
 .manual-note{display:block;margin-top:2px;color:#a44717;font-size:6px;font-weight:900;text-transform:uppercase}
+.manual-score-input{width:74px;height:20px;padding:1px 5px;border:1px solid #8f9aa8;border-radius:7px;background:#fff;color:#111;text-align:center;font-size:9px;font-weight:900;box-sizing:border-box}
+.manual-score-input:focus{outline:2px solid rgba(37,99,235,.14);border-color:#2563eb}
+.mq-label{display:block;margin-top:2px;color:#a44717;font-size:6px;font-weight:900;text-transform:uppercase;letter-spacing:.01em}
 .summary-grid{grid-template-columns:repeat(5,1fr);gap:6px;margin-top:7px}
 .summary-card{padding:6px 8px;border-radius:5px}
 .summary-title{font-size:7px}.summary-value{font-size:12px}
@@ -416,9 +419,9 @@ const DESEMPENHO = [
 const QUALIDADE = [
     { id:'qua-insatisfeitos', nome:'Usuários insatisfeitos (ruim/péssimo)', meta:'≤30%', parametro:'≤30%: 15 | >30% e ≤40%: 10 | >40%: 0', max:15, tipo:'insatisfeitos', unidade:'%', verificacao:'Mensal' },
     { id:'qua-documentos', nome:'Pontualidade na entrega de documentos', meta:'100%', parametro:'100%: 15 | ≥80% e <100%: 10 | <80%: 0', max:15, tipo:'documentos', unidade:'%', verificacao:'Mensal' },
-    { id:'qua-comite', nome:'Funcionamento do Comitê Gestor', meta:'3 reuniões', parametro:'3 reuniões: 15 | abaixo da meta: 0', max:15, tipo:'comite', unidade:'', verificacao:'Trimestral' },
-    { id:'qua-educacao', nome:'Educação Permanente', meta:'≥3 ações', parametro:'≥3 ações: 15 | abaixo da meta: 0', max:15, tipo:'educacao', unidade:'', verificacao:'Trimestral' },
-    { id:'qua-comissoes', nome:'Comissões atuantes', meta:'≥16 atas', parametro:'≥16 atas: 15 | abaixo da meta: 0', max:15, tipo:'comissoes', unidade:'', verificacao:'Trimestral' }
+    { id:'qua-comite', nome:'Funcionamento do Comitê Gestor', meta:'3 reuniões', parametro:'3 reuniões: 15 | abaixo da meta: 0', max:15, tipo:'comite', unidade:'', verificacao:'Trimestral', manualMQ:true },
+    { id:'qua-educacao', nome:'Educação Permanente', meta:'≥3 ações', parametro:'≥3 ações: 15 | abaixo da meta: 0', max:15, tipo:'educacao', unidade:'', verificacao:'Trimestral', manualMQ:true },
+    { id:'qua-comissoes', nome:'Comissões atuantes', meta:'≥16 atas', parametro:'≥16 atas: 15 | abaixo da meta: 0', max:15, tipo:'comissoes', unidade:'', verificacao:'Trimestral', manualMQ:true }
 ];
 
 let unidadeAtual = '';
@@ -519,7 +522,7 @@ function renderizar() {
             <td class="param-cell">≥75%: 15 | ≥60% e &lt;75%: 10 | &lt;60%: 0</td>
             <td class="text-center"><input class="metric-input" type="number" min="0" step="1" data-input-id="${item.id}" data-score-type="producao" data-meta="${meta}" oninput="entradaAlterada()"></td>
             <td class="text-center">15</td>
-            <td class="text-center"><span id="res-${item.id}" class="res-display">—</span>${String(item.verificacao).toLowerCase()==='trimestral'?'<span class="manual-note">Pontuação manual</span>':''}</td>
+            <td class="text-center"><span id="res-${item.id}" class="res-display">—</span></td>
         </tr>`);
     });
 
@@ -537,15 +540,17 @@ function renderizar() {
     });
 
     QUALIDADE.forEach((item, idx) => {
-        linhas.push(`<tr class="${String(item.verificacao).toLowerCase()==='trimestral'?'manual-row':''}">
+        linhas.push(`<tr class="${item.manualMQ?'manual-row':''}">
             ${idx === 0 ? `<td rowspan="${QUALIDADE.length}" class="category-cell">Qualidade</td>` : ''}
             <td class="text-center">${idx+1}</td>
-            <td>${esc(item.nome)}<div class="period-badge">${esc(item.verificacao)}</div></td>
+            <td>${esc(item.nome)}<div class="period-badge">${esc(item.verificacao)}</div>${item.manualMQ?'<span class="mq-label">Avaliação trimestral MQ</span>':''}</td>
             <td class="text-center">${esc(item.meta)}</td>
             <td class="param-cell">${item.parametro}</td>
-            <td class="text-center"><input class="metric-input" type="number" min="0" ${item.unidade === '%' ? 'max="100" step="0.01"' : 'step="1"'} data-input-id="${item.id}" data-score-type="${item.tipo}" oninput="entradaAlterada()"> ${esc(item.unidade)}</td>
+            <td class="text-center"><input class="metric-input" type="number" min="0" ${item.unidade === '%' ? 'max="100" step="0.01"' : 'step="1"'} data-input-id="${item.id}" ${item.manualMQ?'data-manual-realizado="1"':`data-score-type="${item.tipo}"`} oninput="entradaAlterada()"> ${esc(item.unidade)}</td>
             <td class="text-center">${item.max}</td>
-            <td class="text-center"><span id="res-${item.id}" class="res-display">—</span></td>
+            <td class="text-center">${item.manualMQ
+              ? `<input class="manual-score-input" type="number" min="0" max="${item.max}" step="1" data-input-id="${item.id}-mq-score" data-manual-score-for="${item.id}" oninput="entradaAlterada()" aria-label="Pontuação manual MQ de ${esc(item.nome)}"><span class="manual-note">Pontuação manual</span>`
+              : `<span id="res-${item.id}" class="res-display">—</span>`}</td>
         </tr>`);
     });
 
@@ -583,9 +588,6 @@ function pontuar(tipo, valor, meta) {
             if (valor >= 100) return 15;
             if (valor >= 80) return 10;
             return 0;
-        case 'comite': return valor >= 3 ? 15 : 0;
-        case 'educacao': return valor >= 3 ? 15 : 0;
-        case 'comissoes': return valor >= 16 ? 15 : 0;
         default: return null;
     }
 }
@@ -618,6 +620,17 @@ function calcular() {
         else if (['risco','transferencia','tempo'].includes(tipo)) desempenho += pts;
         else qualidade += pts;
     });
+
+    document.querySelectorAll('[data-manual-score-for]').forEach(el => {
+        const raw=el.value.trim();
+        if(raw==='') return;
+        let pts=parseFloat(raw);
+        if(Number.isNaN(pts)) return;
+        pts=Math.max(0,Math.min(15,pts));
+        if(String(pts)!==raw) el.value=String(pts);
+        qualidade += pts;
+    });
+
     const total = producao + desempenho + qualidade;
     document.getElementById('sum-producao').textContent = `${producao} / 75`;
     document.getElementById('sum-desempenho').textContent = `${desempenho} / 75`;

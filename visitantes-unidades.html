@@ -32,8 +32,13 @@
    if(d0>=0&&d1>d0) html=html.slice(0,d0)+html.slice(d1);
  }
 
- // Impede qualquer flash escuro na inicialização.
- html=html.replace("document.getElementById('app').style.display='flex';loadUserTheme();","document.getElementById('app').style.display='flex';applyTheme('light');");
+ // Tema claro é o único tema desta página, aplicado antes do primeiro paint.
+ html=html.replace('<body>','<body data-theme="light">');
+ html=html.replace(/<button class="bell-btn" id="theme-btn"[^>]*>[^<]*<\/button>/,'');
+ html=html.replace("document.getElementById('app').style.display='flex';loadUserTheme();","document.getElementById('app').style.display='flex';");
+ html=html.replace(/function themeKey\(\)[\s\S]*?function podeRegistrar\(\)/m,"function podeRegistrar()");
+ const forceLight='<style id="visitantes-unidades-light">html,body{background:#f4f4f2!important;color:#1a1a18!important;color-scheme:light!important}body{--bg:#f4f4f2;--surface:#fff;--surface2:#f0f0ed;--border:#e2e2de;--text:#1a1a18;--text2:#5c5c58;--text3:#9a9a96;--accent:#1d6aad;--accent-bg:#eff6ff;--accent-text:#1558a0;--green:#15803d;--green-bg:#f0fdf4;--green-text:#14693a;--yellow:#a16207;--yellow-bg:#fefce8;--yellow-text:#926008;--red:#b91c1c;--red-bg:#fef2f2;--red-text:#a81818;--purple:#6d28d9;--purple-bg:#f5f3ff;--purple-text:#5b21b6;--orange:#c2410c;--orange-bg:#fff7ed;--orange-text:#9a3412;--shadow:0 1px 3px rgba(0,0,0,.07)}</style>';
+ html=html.replace('</head>',forceLight+'</head>');
 
  // Remove completamente a navegação flutuante antiga.
  {
@@ -72,7 +77,7 @@
  html=html.replace("const p={\n    UnidadeId:document.getElementById('f-unidade')?.value||'',", "const p={\n    UnidadeId:unidadeAtual||document.getElementById('f-unidade')?.value||'',");
  html=html.replace("a.download='visitantes_sede_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv'", "a.download='visitantes_'+(unidadesAcesso.find(x=>String(x.id)===String(unidadeAtual))?.nome||'unidade').replace(/[^a-z0-9]+/gi,'_').toLowerCase()+'_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv'");
  if(!html.includes('trocarUnidadeVisitantes'))throw new Error('Separação por unidade não aplicada.');
- html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260918-0040"><\/script></body>');
+ html=html.replace('</body>','</body>');
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('loading-unit').textContent='Falha ao carregar Visitantes: '+e.message;console.error(e)}})();
 </script>

@@ -11,14 +11,11 @@ var baseGetVig=typeof getVigStatus==='function'?getVigStatus:null;
 function ignoreAditivoNosAlertas(c){return !!(c&&c.tipo==='Termo Aditivo')}
 function contratosEmAlerta(){if(!baseGetVig)return[];return contracts.filter(function(c){if(!c||c.tipo==='Termo Aditivo'||['Encerrado','Suspenso'].indexOf(c.statusContrato)>=0)return false;var s=baseGetVig(c);return s==='vencendo'||s==='vencido'})}
 function correctAlertBadge(){var badge=document.getElementById('nav-alert-badge');if(!badge)return;var n=contratosEmAlerta().length;badge.textContent=n;badge.style.display=n?'inline':'none'}
-var oldBuild=typeof buildNotifications==='function'?buildNotifications:null;
-if(oldBuild){buildNotifications=function(){oldBuild();try{notifications=notifications.filter(function(n){var c=contracts.find(function(x){return x.id===n.cid});return c&&!ignoreAditivoNosAlertas(c)});if(typeof renderBell==='function')renderBell();correctAlertBadge()}catch(e){console.warn(e)}}}
 var oldAlertas=typeof renderAlertas==='function'?renderAlertas:null;
 if(oldAlertas&&baseGetVig){renderAlertas=function(){var original=getVigStatus;getVigStatus=function(c){if(ignoreAditivoNosAlertas(c))return'ativo';return original(c)};try{var r=oldAlertas();correctAlertBadge();return r}finally{getVigStatus=original}}}
 var oldRefresh=typeof refreshAll==='function'?refreshAll:null;
 if(oldRefresh){refreshAll=function(){var r=oldRefresh();correctAlertBadge();return r}}
 
-var bell=document.querySelector('.bell-wrap');if(bell)bell.style.display='none';
 
 function brDateFromDate(d){if(!d||isNaN(d.getTime()))return'';return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()}
 function fiscalFor(c){var p=parentOf(c)||c;var email=(c&&c.fiscalEmail)||p.fiscalEmail||'';var nome=(c&&c.fiscalNome)||p.fiscalNome||'';return{email:String(email||'').trim(),nome:String(nome||'').trim(),contrato:p}}

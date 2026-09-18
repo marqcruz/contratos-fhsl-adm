@@ -38,5 +38,19 @@ window.tdngoCategoriasReload=async function(){await loadCategorias();window.tdng
 
 var oldRender=typeof renderLista==='function'?renderLista:null;
 if(oldRender){renderLista=function(){installSelect();var orig=null;try{if(filtroCategoria&&typeof contracts!=='undefined'&&Array.isArray(contracts)){orig=contracts;var ids=new Set(orig.filter(function(c){return c.tipo==='Contrato'&&String(c.categoriaObjeto||'')===String(filtroCategoria)}).map(function(c){return String(c.id)}));contracts=orig.filter(function(c){return c.tipo==='Contrato'?ids.has(String(c.id)):ids.has(String(c.contratoPai))});}return oldRender.apply(this,arguments)}finally{if(orig)contracts=orig;setTimeout(window.tdngoCategoriasRedecorate,0)}};}
-css();installModal();setTimeout(function(){installSelect();loadCategorias();try{renderLista()}catch(e){}},0);
+css();installModal();
+setTimeout(async function(){
+  installSelect();
+  await loadCategorias();
+  try{
+    // O HTML-base pode carregar os contratos antes deste complemento instalar
+    // o normalizador de CategoriaObjeto. Recarrega uma única vez já com o
+    // normalizador ativo para evitar "A CLASSIFICAR" até o usuário atualizar.
+    await reloadContracts();
+  }catch(e){
+    console.warn('[Categorias carga inicial]',e);
+    try{renderLista()}catch(_){}
+  }
+  try{window.tdngoCategoriasRedecorate()}catch(e){}
+},0);
 })();

@@ -22,7 +22,7 @@
 
   var tb=document.querySelector('#page-lista .toolbar');
   if(tb&&!el('f-order')){
-    var a=document.createElement('select');a.id='f-order';a.innerHTML='<option value="numero">Ordenar: número</option><option value="empresa">Ordenar: empresa</option><option value="vigencia">Ordenar: vencimento</option><option value="valor">Ordenar: valor total</option><option value="status">Ordenar: status</option><option value="ordem">Ordenar: ordem do aditivo</option>';a.onchange=function(){window.listaPage=1;renderLista();};tb.appendChild(a);
+    var a=document.createElement('select');a.id='f-order';a.innerHTML='<option value="numero">Ordenar: número</option><option value="empresa">Ordenar: empresa</option><option value="vigencia">Ordenar: vencimento</option><option value="valor">Ordenar: valor total</option><option value="status">Ordenar: status</option>';a.onchange=function(){window.listaPage=1;renderLista();};tb.appendChild(a);
     var b=document.createElement('select');b.id='f-dir';b.innerHTML='<option value="asc">Crescente</option><option value="desc" selected>Decrescente</option>';b.onchange=function(){window.listaPage=1;renderLista();};tb.appendChild(b);
     var c=document.createElement('select');c.id='f-per';c.innerHTML='<option value="10">10 por página</option><option value="25" selected>25 por página</option><option value="50">50 por página</option><option value="100">100 por página</option>';c.onchange=function(){window.listaPage=1;renderLista();};tb.appendChild(c);
   }

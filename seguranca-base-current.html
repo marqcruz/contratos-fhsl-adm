@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Segurança Institucional — TDNGo</title>
+<style>
+:root{--bg:#f4f7fb;--surface:#fff;--surface2:#f7f9fc;--border:#dfe5ee;--text:#172033;--muted:#657286;--accent:#1769d2;--green:#237746;--yellow:#9a6b16;--red:#b74444;--purple:#6f55b5;--accent-bg:#eaf3ff;--accent-text:#1558a0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:13px system-ui,-apple-system,"Segoe UI",sans-serif}.shell{max-width:1500px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:20px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:800}.top h1{margin:3px 0 4px;font-size:24px}.sub{color:var(--muted);font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer}.btn:hover{background:var(--surface2)}.btn.primary{background:var(--accent);border-color:var(--accent);color:white}.btn.danger{color:#a62e2e;background:#fff5f5;border-color:#f1c7c7}.tabs{display:flex;gap:6px;margin-bottom:14px}.tab{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-weight:700}.tab.active{background:#eaf3ff;color:#1558a0;border-color:#a9c9ee}.panel{display:none}.panel.active{display:block}.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px}.card-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:10px;align-items:center}.card-head b{font-size:13px}.card-body{padding:14px}.filters{display:grid;grid-template-columns:1.4fr repeat(4,minmax(130px,.7fr));gap:8px}.field label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800;margin-bottom:4px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:7px;padding:8px;font:inherit}.field textarea{min-height:72px;resize:vertical}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{padding:9px 11px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}th{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--surface2)}tr:hover td{background:#f8fafc}.link{color:#1769d2;font-weight:800;cursor:pointer}.badge{display:inline-flex;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:800}.b-open{background:#fff7df;color:#805b10}.b-analysis{background:#eaf3ff;color:#1558a0}.b-done,.g-BAIXA{background:#ecf8f0;color:#20663d}.g-MÉDIA{background:#fff7df;color:#805b10}.g-ALTA,.g-CRÍTICA{background:#fff0f0;color:#9f3030}.b-deleted{background:#f3f4f6;color:#6b7280;text-decoration:line-through}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}.stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px}.stat strong{font-size:22px;display:block}.stat span{font-size:10px;color:var(--muted);text-transform:uppercase}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.rank{display:grid;gap:7px}.rank-row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}.modal{position:fixed;inset:0;background:rgba(0,0,0,.68);display:none;align-items:flex-start;justify-content:center;padding:28px 12px;z-index:999;overflow:auto}.modal.open{display:flex}.box{width:min(980px,100%);background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}.box-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}.box-body{padding:16px}.box-foot{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;background:var(--surface2)}.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.full{grid-column:1/-1}.span2{grid-column:span 2}.section-title{margin:17px 0 8px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#1769d2;font-weight:900}.env-list{display:grid;gap:7px}.env-row{display:grid;grid-template-columns:180px 1fr 180px 1fr auto;gap:6px}.env-row button{width:34px}.photo-input{border:1px dashed var(--border);padding:10px;border-radius:8px}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;margin-top:10px}.photo{background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden}.photo img{width:100%;height:120px;object-fit:cover;display:block;cursor:pointer}.photo .meta{padding:6px;font-size:9px;color:var(--muted);word-break:break-word}.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.detail{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px}.detail label{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:3px}.detail.full{grid-column:1/-1}.empty{padding:25px;text-align:center;color:var(--muted)}.notice{border:1px solid #b9d5f3;background:#eef6ff;color:#24496e;border-radius:8px;padding:9px 11px;margin-bottom:12px}.toast{position:fixed;right:18px;bottom:18px;z-index:1100;background:#172033;border:1px solid var(--border);padding:10px 13px;border-radius:8px;display:none}.toast.show{display:block}
+@media(max-width:900px){.filters,.form-grid,.detail-grid,.grid2{grid-template-columns:1fr}.span2,.full{grid-column:auto}.stats{grid-template-columns:repeat(2,1fr)}.env-row{grid-template-columns:1fr 1fr}.env-row .obs{grid-column:1/-1}.top{flex-direction:column}}
+</style>
+
+<style id="seguranca-v2-css">
+html{color-scheme:light}
+.shell{max-width:1500px}
+.top{align-items:center}
+.top h1{font-size:25px;letter-spacing:-.02em}
+.seg-purpose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.seg-purpose strong{display:block;font-size:13px;margin-bottom:3px}.seg-purpose p{margin:0;color:var(--muted);line-height:1.45;font-size:11px}.seg-purpose .audit-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid #cfe0f2;background:#f4f9ff;color:#315a7f;padding:7px 10px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
+.filters{grid-template-columns:minmax(260px,1.5fr) repeat(5,minmax(125px,.7fr))}
+.field input,.field select,.field textarea{background:#fff;min-height:38px;border-color:#cfd8e3}
+.field textarea{min-height:96px}
+.table-wrap{max-height:580px}
+table thead th{position:sticky;top:0;z-index:2;background:#f2f5f8}
+tr.deleted td{opacity:.72;background:#fafafa}
+.row-actions{display:flex;gap:5px}.row-actions .btn{padding:5px 8px;font-size:10px}
+#seg-pager{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
+#seg-pager .pg-actions{display:flex;align-items:center;gap:6px}
+#seg-pager select{height:30px;border:1px solid var(--border);border-radius:7px;background:#fff;padding:3px 7px}
+.box{box-shadow:0 24px 70px rgba(15,23,42,.16)}
+.box-head{background:#fff;position:sticky;top:0;z-index:3}
+.box-foot{background:#f7f9fc;position:sticky;bottom:0;z-index:3}
+.detail-grid{grid-template-columns:repeat(4,1fr)}
+.detail.full{grid-column:1/-1}
+.detail.span2{grid-column:span 2}
+.audit-timeline{display:grid;gap:8px;margin-top:8px}
+.audit-item{display:grid;grid-template-columns:12px 1fr;gap:9px}
+.audit-dot{width:9px;height:9px;border-radius:50%;background:#1769d2;margin-top:5px;box-shadow:0 0 0 3px #eaf3ff}
+.audit-card{border:1px solid var(--border);border-radius:9px;padding:9px 10px;background:#fbfcfe}
+.audit-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.audit-head b{font-size:11px}.audit-time{font-size:9px;color:var(--muted);white-space:nowrap}.audit-user{font-size:9px;color:var(--muted);margin-top:2px}.audit-summary{font-size:11px;line-height:1.45;margin-top:5px;white-space:pre-wrap}
+.gallery{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.file-card{background:#f7f9fc;border:1px solid var(--border);border-radius:9px;padding:10px;display:flex;flex-direction:column;gap:8px}.file-card .file-icon{font-size:28px}.file-card a{font-size:11px;font-weight:750;word-break:break-word}.file-meta{font-size:9px;color:var(--muted)}
+.detail-actions{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto}
+.history-note{font-size:10px;color:var(--muted);padding:8px 10px;background:#f7f9fc;border:1px solid var(--border);border-radius:8px}
+.sidebar-footer{margin-top:18px;padding-top:1rem;border-top:1px solid var(--border)}
+.sidebar-home{display:flex;align-items:center;justify-content:center;width:100%;min-height:36px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text)!important;text-decoration:none!important;font-size:12px;font-weight:700;line-height:1.2;box-sizing:border-box;transition:.15s ease}
+.sidebar-home:hover{border-color:var(--accent);color:#1558a0!important;background:#eff6ff}
+.sidebar-home:active{transform:translateY(1px)}
+@media(max-width:1100px){.filters{grid-template-columns:1fr 1fr 1fr}.detail-grid{grid-template-columns:1fr 1fr}.seg-purpose{grid-template-columns:1fr}}
+@media(max-width:700px){.filters{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}.detail.span2{grid-column:auto}#seg-pager{align-items:flex-start;flex-direction:column}.detail-actions{width:100%}.detail-actions .btn{flex:1}}
+</style></head>
+<body>
+<div class="shell">
+  <div class="top"><div><div class="eyebrow">TDNGo · Segurança Institucional</div><h1>Registro de Segurança Institucional</h1><div class="sub" id="who">Carregando perfil...</div></div><div class="actions"><button class="btn primary" onclick="novaOcorrencia()">+ Nova ocorrência</button><button class="btn" onclick="bootstrap()">Atualizar</button></div></div>
+  <div class="seg-purpose"><div><strong>Registro institucional e rastreabilidade</strong><p>O coordenador registra a ocorrência, pode corrigir ou complementar o próprio processo e toda alteração permanece registrada no histórico. Gestores podem tratar, editar e excluir logicamente registros, sempre com rastreabilidade.</p></div><span class="audit-pill">✓ Histórico auditável</span></div>
+<div class="tabs"><button class="tab active" data-tab="oc" onclick="showTab('oc')">Registros</button><button class="tab" id="tab-gestao" data-tab="gestao" onclick="showTab('gestao')" style="display:none">Painel gerencial</button></div>
+  <section class="panel active" id="panel-oc">
+    <div class="notice" id="scope-note"></div>
+    <div class="card"><div class="card-body"><div class="filters"><div class="field"><label>Busca</label><input id="f-q" placeholder="Número, tipo, local ou descrição" oninput="renderTabela()"></div><div class="field" id="f-unidade-wrap"><label>Unidade</label><select id="f-unidade" onchange="renderTabela()"><option value="">Todas</option></select></div><div class="field"><label>Status</label><select id="f-status" onchange="renderTabela()"><option value="">Todos</option><option>ABERTA</option><option>EM ANÁLISE</option><option>CONCLUÍDA</option></select></div><div class="field"><label>Gravidade</label><select id="f-grav" onchange="renderTabela()"><option value="">Todas</option><option>BAIXA</option><option>MÉDIA</option><option>ALTA</option><option>CRÍTICA</option></select></div><div class="field"><label>Período</label><select id="f-periodo" onchange="renderTabela()"><option value="todos">Todos</option><option value="30">30 dias</option><option value="90">90 dias</option><option value="365">12 meses</option></select></div><div class="field" id="f-registro-wrap" style="display:none"><label>Registros</label><select id="f-registro" onchange="recarregarRegistros()"><option value="ativos">Ativos</option><option value="todos">Incluir excluídos</option><option value="excluidos">Somente excluídos</option></select></div></div></div></div>
+    <div class="card"><div class="card-head"><b>Registros</b><span class="sub" id="count"></span></div><div class="table-wrap"><table><thead><tr><th>Número</th><th>Data</th><th>Unidade</th><th>Tipo</th><th>Gravidade</th><th>Status</th><th>Local</th><th>Atualização</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div><div id="seg-pager"></div></div>
+  </section>
+  <section class="panel" id="panel-gestao"><div class="stats"><div class="stat"><strong id="st-total">0</strong><span>Total</span></div><div class="stat"><strong id="st-abertas">0</strong><span>Abertas</span></div><div class="stat"><strong id="st-analise">0</strong><span>Em análise</span></div><div class="stat"><strong id="st-criticas">0</strong><span>Alta/Crítica</span></div><div class="stat"><strong id="st-concluidas">0</strong><span>Concluídas</span></div></div><div class="grid2"><div class="card"><div class="card-head"><b>Ocorrências por unidade</b></div><div class="card-body rank" id="rank-unidades"></div></div><div class="card"><div class="card-head"><b>Ocorrências por tipo</b></div><div class="card-body rank" id="rank-tipos"></div></div></div></section>
+</div>
+
+
+<div class="modal" id="modal-form"><div class="box"><div class="box-head"><b id="form-title">Nova ocorrência</b><button class="btn" onclick="closeModal('modal-form')">Fechar</button></div><div class="box-body">
+  <div class="form-grid"><div class="field"><label>Data e hora</label><input type="datetime-local" id="n-data"></div><div class="field"><label>Unidade</label><select id="n-unidade"></select></div><div class="field"><label>Gravidade</label><select id="n-grav"><option>BAIXA</option><option>MÉDIA</option><option>ALTA</option><option>CRÍTICA</option></select></div><div class="field"><label>Tipo de ocorrência</label><select id="n-tipo"><option>ACESSO INDEVIDO</option><option>CONFLITO / ALTERCAÇÃO</option><option>DANO AO PATRIMÔNIO</option><option>FURTO / TENTATIVA</option><option>EVASÃO</option><option>AMEAÇA</option><option>APOIO OPERACIONAL</option><option>OUTRO</option></select></div><div class="field"><label>Local / setor</label><input id="n-local" placeholder="Ex.: recepção"></div><div class="field"><label>Acionamento externo</label><select id="n-ext"><option>NÃO</option><option>GCM</option><option>POLÍCIA MILITAR</option><option>SAMU</option><option>CORPO DE BOMBEIROS</option><option>OUTRO</option></select></div><div class="field full"><label>Descrição objetiva</label><textarea id="n-desc"></textarea></div><div class="field"><label>Dano ao patrimônio?</label><select id="n-dano" onchange="document.getElementById('n-valor-wrap').style.display=this.value==='SIM'?'block':'none'"><option>NÃO</option><option>SIM</option></select></div><div class="field" id="n-valor-wrap" style="display:none"><label>Valor estimado</label><input type="number" step="0.01" min="0" id="n-valor" value="0"></div></div>
+  <div class="section-title">Envolvidos</div><div class="sub" style="margin-bottom:7px">Adicione cada pessoa pelo tipo de vínculo. Evite registrar dados além do necessário para a ocorrência.</div><div id="env-list" class="env-list"></div><button class="btn" style="margin-top:7px" onclick="addEnv()">+ Adicionar envolvido</button>
+  <div class="section-title">Anexos / evidências</div><div class="photo-input"><input type="file" id="n-fotos" accept="image/jpeg,image/png,image/webp,application/pdf,.pdf" multiple><div class="sub">Fotos, documentos ou Boletim de Ocorrência. Até 10 anexos; imagens até 5 MB e PDFs até 10 MB.</div></div>
+</div><div class="box-foot"><button class="btn" onclick="closeModal('modal-form')">Cancelar</button><button class="btn primary" id="btn-save-new" onclick="salvarNova()">Registrar ocorrência</button></div></div></div>
+
+<div class="modal" id="modal-detail"><div class="box"><div class="box-head"><b id="d-title">Ocorrência</b><div class="detail-actions"><button class="btn" id="btn-edit-record" style="display:none" onclick="editarAtual()">Editar registro</button><button class="btn" id="btn-complement" style="display:none" onclick="abrirComplemento()">+ Complementar</button><button class="btn danger" id="btn-delete-record" style="display:none" onclick="abrirExclusao()">Excluir</button><button class="btn" id="btn-restore-record" style="display:none" onclick="restaurarAtual()">Restaurar</button><button class="btn" onclick="closeModal('modal-detail')">Fechar</button></div></div><div class="box-body"><div id="d-content"></div><div class="section-title">Anexos / evidências</div><div id="d-gallery" class="gallery"></div><div class="section-title">Histórico auditável</div><div id="d-history" class="audit-timeline"></div><div id="tratativa" style="display:none"><div class="section-title">Tratativa do gestor</div><div class="form-grid"><div class="field"><label>Status</label><select id="t-status"><option>ABERTA</option><option>EM ANÁLISE</option><option>CONCLUÍDA</option></select></div><div class="field"><label>Responsável pela tratativa</label><input id="t-resp"></div><div class="field"><label>Prazo de retorno</label><input type="date" id="t-prazo"></div><div class="field full"><label>Providências</label><textarea id="t-prov"></textarea></div><div class="field full"><label>Conclusão</label><textarea id="t-conc"></textarea></div></div></div></div><div class="box-foot"><button class="btn" onclick="closeModal('modal-detail')">Fechar</button><button class="btn primary" id="btn-tratar" style="display:none" onclick="salvarTratativa()">Salvar tratativa</button></div></div></div>
+<div class="modal" id="modal-complement"><div class="box" style="max-width:680px"><div class="box-head"><b>Adicionar complemento ao registro</b><button class="btn" onclick="closeModal('modal-complement')">Fechar</button></div><div class="box-body"><div class="notice">O complemento será acrescentado ao histórico e não substituirá o texto original.</div><div class="field"><label>Complemento / novidade</label><textarea id="c-texto" placeholder="Registre objetivamente a nova informação, providência ou fato posterior."></textarea></div></div><div class="box-foot"><button class="btn" onclick="closeModal('modal-complement')">Cancelar</button><button class="btn primary" id="btn-save-complement" onclick="salvarComplemento()">Adicionar ao histórico</button></div></div></div>
+<div class="modal" id="modal-delete"><div class="box" style="max-width:620px"><div class="box-head"><b>Excluir registro</b><button class="btn" onclick="closeModal('modal-delete')">Fechar</button></div><div class="box-body"><div class="notice">A exclusão é lógica: o registro e seu histórico não serão apagados do banco. O motivo ficará registrado para auditoria.</div><div class="field"><label>Motivo da exclusão *</label><textarea id="del-motivo" placeholder="Ex.: registro duplicado, unidade incorreta, abertura indevida..."></textarea></div></div><div class="box-foot"><button class="btn" onclick="closeModal('modal-delete')">Cancelar</button><button class="btn danger" id="btn-confirm-delete" onclick="excluirAtual()">Confirmar exclusão</button></div></div></div>
+<div class="toast" id="toast"></div>
+<script>
+const API='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-seguranca-api';
+let sess=null,user=null,ocorrencias=[],unidades=[],atual=null;
+try{sess=JSON.parse(sessionStorage.getItem('fhsl_session')||'null')}catch(e){}
+const token=sess?.tdngoToken||'';
+if(!token){location.replace('index.html')}
+const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+function toast(m){const e=$('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2600)}
+async function api(action,extra={}){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action,...extra})});let d={};try{d=await r.json()}catch{}if(r.status===401){sessionStorage.removeItem('fhsl_session');location.replace('index.html');throw new Error('Sessão expirada.')}if(!r.ok||!d.ok)throw new Error(d.message||'Falha na operação.');return d}
+function fmtDT(v){if(!v)return '—';return new Date(v).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}function money(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+function statusBadge(s){const c=s==='ABERTA'?'b-open':s==='EM ANÁLISE'?'b-analysis':'b-done';return `<span class="badge ${c}">${esc(s)}</span>`}function gravBadge(g){return `<span class="badge g-${esc(g)}">${esc(g)}</span>`}
+async function bootstrap(){try{const r=await api('bootstrap');ocorrencias=r.data.ocorrencias||[];unidades=r.data.unidades||[];user=r.data.user||{};$('who').textContent=`${user.nome||''} · ${user.fullAccess?'Visão gerencial completa':user.unidade||'Unidade não vinculada'}`;$('scope-note').textContent=user.fullAccess?'Você possui visão completa de todas as unidades.':'Acesso restrito às ocorrências da sua unidade: '+(user.unidade||'não vinculada');$('tab-gestao').style.display=user.fullAccess?'inline-block':'none';$('f-unidade-wrap').style.display=user.fullAccess?'block':'none';preencheUnidades();renderTabela();renderGestao()}catch(e){toast(e.message);$('scope-note').textContent=e.message}}
+function preencheUnidades(){const opts=unidades.map(u=>`<option value="${u.id}">${esc(u.nome)}</option>`).join('');$('f-unidade').innerHTML='<option value="">Todas</option>'+opts;$('n-unidade').innerHTML=opts;if(!user.fullAccess&&user.unidadeId){$('n-unidade').value=user.unidadeId;$('n-unidade').disabled=true}else $('n-unidade').disabled=false}
+function showTab(t){if(t==='gestao'&&!user.fullAccess)return;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));$('panel-'+t).classList.add('active');if(t==='gestao')renderGestao()}
+function filtradas(){const q=$('f-q').value.trim().toUpperCase(),un=$('f-unidade').value,st=$('f-status').value,g=$('f-grav').value,p=$('f-periodo').value;let min=0;if(p!=='todos')min=Date.now()-Number(p)*86400000;return ocorrencias.filter(o=>(!q||[o.Numero,o.Tipo,o.Local,o.Descricao,o.Unidade].join(' ').toUpperCase().includes(q))&&(!un||o.UnidadeId===un)&&(!st||o.Status===st)&&(!g||o.Gravidade===g)&&(!min||new Date(o.Data).getTime()>=min))}
+function renderTabela(){const arr=filtradas();$('count').textContent=arr.length+' ocorrência(s)';$('tbody').innerHTML=arr.length?arr.map(o=>`<tr><td><span class="link" onclick="abrirDetalhe('${o.ID}')">${esc(o.Numero)}</span></td><td>${fmtDT(o.Data)}</td><td>${esc(o.Unidade)}</td><td>${esc(o.Tipo)}</td><td>${gravBadge(o.Gravidade)}</td><td>${statusBadge(o.Status)}</td><td>${esc(o.Local)}</td><td>${esc(o.Externo)}</td></tr>`).join(''):'<tr><td colspan="8" class="empty">Nenhuma ocorrência encontrada.</td></tr>'}
+function novaOcorrencia(){const d=new Date(Date.now()-new Date().getTimezoneOffset()*60000);$('n-data').value=d.toISOString().slice(0,16);$('n-grav').value='BAIXA';$('n-tipo').selectedIndex=0;$('n-local').value='';$('n-ext').value='NÃO';$('n-desc').value='';$('n-dano').value='NÃO';$('n-valor').value=0;$('n-valor-wrap').style.display='none';$('n-fotos').value='';$('env-list').innerHTML='';addEnv();if(!user.fullAccess&&user.unidadeId)$('n-unidade').value=user.unidadeId;$('modal-form').classList.add('open')}
+function addEnv(v={}){const row=document.createElement('div');row.className='env-row';row.innerHTML=`<select class="e-tipo"><option>USUÁRIO / PACIENTE</option><option>ACOMPANHANTE</option><option>COLABORADOR</option><option>PRESTADOR</option><option>VISITANTE</option><option>VIGILANTE</option><option>OUTRO</option></select><input class="e-nome" placeholder="Nome, se necessário" value="${esc(v.Nome||'')}"><input class="e-id" placeholder="Identificação opcional" value="${esc(v.Identificacao||'')}"><input class="e-obs obs" placeholder="Observação" value="${esc(v.Observacao||'')}"><button class="btn danger" onclick="this.parentElement.remove()">×</button>`;row.querySelector('.e-tipo').value=v.Tipo||'USUÁRIO / PACIENTE';$('env-list').appendChild(row)}
+function getEnvs(){return [...document.querySelectorAll('#env-list .env-row')].map(r=>({Tipo:r.querySelector('.e-tipo').value,Nome:r.querySelector('.e-nome').value.trim(),Identificacao:r.querySelector('.e-id').value.trim(),Observacao:r.querySelector('.e-obs').value.trim()})).filter(x=>x.Tipo)}
+function file64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)})}
+async function salvarNova(){const b=$('btn-save-new');b.disabled=true;try{const payload={Data:$('n-data').value,UnidadeId:$('n-unidade').value,Gravidade:$('n-grav').value,Tipo:$('n-tipo').value,Local:$('n-local').value.trim(),Externo:$('n-ext').value,Descricao:$('n-desc').value.trim(),Dano:$('n-dano').value,Valor:$('n-valor').value,Envolvidos:getEnvs()};const r=await api('save',{payload});const fs=[...$('n-fotos').files].slice(0,6);for(const f of fs){if(f.size>5*1024*1024)throw new Error(`${f.name}: máximo de 5 MB.`);await api('uploadAttachment',{ocorrenciaId:r.id,nome:f.name,mimeType:f.type,base64:await file64(f)})}closeModal('modal-form');await bootstrap();toast('Ocorrência '+r.numero+' registrada como ABERTA.')}catch(e){toast(e.message)}finally{b.disabled=false}}
+async function abrirDetalhe(id){atual=ocorrencias.find(x=>x.ID===id);if(!atual)return;$('d-title').textContent=atual.Numero+' · '+atual.Unidade;const env=atual.Envolvidos?.length?atual.Envolvidos.map(x=>`<div class="detail"><label>${esc(x.Tipo)}</label>${esc(x.Nome||'—')}${x.Identificacao?'<br><span class="sub">'+esc(x.Identificacao)+'</span>':''}${x.Observacao?'<br><span class="sub">'+esc(x.Observacao)+'</span>':''}</div>`).join(''):(atual.EnvolvidosLegado?`<div class="detail full"><label>Envolvidos</label>${esc(atual.EnvolvidosLegado)}</div>`:'<div class="sub">Nenhum envolvido informado.</div>');$('d-content').innerHTML=`<div class="detail-grid"><div class="detail"><label>Data</label>${fmtDT(atual.Data)}</div><div class="detail"><label>Status</label>${statusBadge(atual.Status)}</div><div class="detail"><label>Gravidade</label>${gravBadge(atual.Gravidade)}</div><div class="detail"><label>Tipo</label>${esc(atual.Tipo)}</div><div class="detail"><label>Local</label>${esc(atual.Local)}</div><div class="detail"><label>Acionamento externo</label>${esc(atual.Externo)}</div><div class="detail full"><label>Descrição</label>${esc(atual.Descricao)}</div>${atual.Dano==='SIM'?`<div class="detail"><label>Dano patrimonial</label>${money(atual.Valor)}</div>`:''}</div><div class="section-title">Envolvidos</div><div class="detail-grid">${env}</div>`;$('tratativa').style.display=user.fullAccess?'block':'none';$('btn-tratar').style.display=user.fullAccess?'inline-flex':'none';if(user.fullAccess){$('t-status').value=atual.Status;$('t-resp').value=atual.Responsavel||'';$('t-prazo').value=atual.Prazo||'';$('t-prov').value=atual.Providencias||'';$('t-conc').value=atual.Conclusao||''}$('d-gallery').innerHTML='<div class="sub">Carregando fotos...</div>';$('modal-detail').classList.add('open');try{const a=await api('listAttachments',{ocorrenciaId:id});renderFotos(a.data||[])}catch(e){$('d-gallery').innerHTML='<div class="sub">'+esc(e.message)+'</div>'}}
+function renderFotos(arr){$('d-gallery').innerHTML=arr.length?arr.map(a=>`<div class="photo"><img src="${a.Url}" alt="Evidência" onclick="window.open(this.src,'_blank')"><div class="meta">${esc(a.Nome)}</div></div>`).join(''):'<div class="sub">Nenhuma foto anexada.</div>'}
+async function salvarTratativa(){if(!atual||!user.fullAccess)return;try{const payload={...atual,Data:new Date(atual.Data).toISOString().slice(0,16),Status:$('t-status').value,Responsavel:$('t-resp').value,Prazo:$('t-prazo').value,Providencias:$('t-prov').value,Conclusao:$('t-conc').value,Envolvidos:atual.Envolvidos||[]};await api('save',{payload});closeModal('modal-detail');await bootstrap();toast('Tratativa atualizada.')}catch(e){toast(e.message)}}
+function renderGestao(){if(!user?.fullAccess)return;const a=ocorrencias;$('st-total').textContent=a.length;$('st-abertas').textContent=a.filter(x=>x.Status==='ABERTA').length;$('st-analise').textContent=a.filter(x=>x.Status==='EM ANÁLISE').length;$('st-criticas').textContent=a.filter(x=>['ALTA','CRÍTICA'].includes(x.Gravidade)).length;$('st-concluidas').textContent=a.filter(x=>x.Status==='CONCLUÍDA').length;rank('rank-unidades',a.map(x=>x.Unidade));rank('rank-tipos',a.map(x=>x.Tipo))}
+function rank(id,vals){const m={};vals.forEach(v=>m[v]=(m[v]||0)+1);const a=Object.entries(m).sort((x,y)=>y[1]-x[1]);$(id).innerHTML=a.length?a.map(([k,v])=>`<div class="rank-row"><span>${esc(k||'—')}</span><b>${v}</b></div>`).join(''):'<div class="sub">Sem dados.</div>'}
+function closeModal(id){$(id).classList.remove('open')}
+/* bootstrap controlado pela camada v2 */
+</script>
+<script id="seguranca-v2-js">
+let editandoId='',segPage=1,segPer=25;
+
+function podeEditarAtual(){return !!atual&&!atual.Excluido&&(user?.fullAccess||String(atual.CriadoPorId||'')===String(user?.id||''))}
+function podeComplementarAtual(){return podeEditarAtual()}
+function dataLocal(v){if(!v)return'';const d=new Date(v);if(isNaN(d))return'';const z=new Date(d.getTime()-d.getTimezoneOffset()*60000);return z.toISOString().slice(0,16)}
+function formatBytes(n){n=Number(n||0);if(n<1024)return n+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB';return(n/1048576).toFixed(1)+' MB'}
+function historyLabel(t){return({CRIACAO:'Criação',EDICAO:'Correção / edição',TRATATIVA:'Tratativa gerencial',COMPLEMENTO:'Complemento',EXCLUSAO:'Exclusão',RESTAURACAO:'Restauração',ANEXO_ADICIONADO:'Anexo adicionado',ANEXO_REMOVIDO:'Anexo removido',LEGADO:'Registro preexistente'})[t]||t||'Registro'}
+
+bootstrap=async function(){
+  try{
+    const r=await api('bootstrap');
+    ocorrencias=r.data.ocorrencias||[];unidades=r.data.unidades||[];user=r.data.user||{};
+    const n=unidades.length;
+    $('who').textContent=(user.nome||'')+' · '+(user.fullAccess?'Visão gerencial completa':n===1?unidades[0].nome:n+' unidades vinculadas');
+    $('scope-note').textContent=user.fullAccess?'Você possui visão completa. Edições, tratativas e exclusões são registradas no histórico auditável.':n?'Você pode registrar ocorrências nas unidades vinculadas e complementar ou corrigir os processos abertos por você.':'Nenhuma unidade vinculada ao módulo Segurança.';
+    $('tab-gestao').style.display=user.fullAccess?'inline-block':'none';
+    $('f-unidade-wrap').style.display=(user.fullAccess||n>1)?'block':'none';
+    $('f-registro-wrap').style.display=user.fullAccess?'block':'none';
+    preencheUnidades();segPage=1;renderTabela();renderGestao();
+  }catch(e){toast(e.message);$('scope-note').textContent=e.message}
+};
+
+preencheUnidades=function(){
+  const opts=unidades.map(u=>'<option value="'+esc(u.id)+'">'+esc(u.nome)+'</option>').join('');
+  $('f-unidade').innerHTML='<option value="">Todas</option>'+opts;
+  $('n-unidade').innerHTML=opts;
+  if(!user.fullAccess&&unidades.length===1){$('n-unidade').value=unidades[0].id;$('n-unidade').disabled=true}else $('n-unidade').disabled=false;
+};
+
+window.recarregarRegistros=async function(){
+  try{
+    const modo=$('f-registro')?.value||'ativos';
+    const extra=modo==='todos'?{includeDeleted:true}:modo==='excluidos'?{includeDeleted:true,onlyDeleted:true}:{};
+    const r=await api('list',extra);ocorrencias=r.data||[];segPage=1;renderTabela();renderGestao();
+  }catch(e){toast(e.message)}
+};
+
+function filtrarLocal(){
+  const q=$('f-q').value.trim().toUpperCase(),un=$('f-unidade').value,st=$('f-status').value,g=$('f-grav').value,p=$('f-periodo').value;let min=0;
+  if(p!=='todos')min=Date.now()-Number(p)*86400000;
+  return ocorrencias.filter(o=>(!q||[o.Numero,o.Tipo,o.Local,o.Descricao,o.Unidade,o.CriadoPor].join(' ').toUpperCase().includes(q))&&(!un||o.UnidadeId===un)&&(!st||o.Status===st)&&(!g||o.Gravidade===g)&&(!min||new Date(o.Data).getTime()>=min));
+}
+
+renderTabela=function(){
+  const arr=filtrarLocal(),pages=Math.max(1,Math.ceil(arr.length/segPer));segPage=Math.min(Math.max(segPage,1),pages);
+  const start=(segPage-1)*segPer,rows=arr.slice(start,start+segPer);
+  $('count').textContent=arr.length+' registro(s)';
+  $('tbody').innerHTML=rows.length?rows.map(o=>'<tr class="'+(o.Excluido?'deleted':'')+'"><td><span class="link" onclick="abrirDetalhe(\''+o.ID+'\')">'+esc(o.Numero)+'</span>'+(o.Excluido?'<div><span class="badge b-deleted">EXCLUÍDO</span></div>':'')+'</td><td>'+fmtDT(o.Data)+'</td><td>'+esc(o.Unidade)+'</td><td>'+esc(o.Tipo)+'</td><td>'+gravBadge(o.Gravidade)+'</td><td>'+statusBadge(o.Status)+'</td><td>'+esc(o.Local)+'</td><td><div>'+fmtDT(o.AtualizadoEm)+'</div><div class="sub">'+esc(o.AtualizadoPor||o.CriadoPor||'')+'</div></td><td><div class="row-actions"><button class="btn" onclick="abrirDetalhe(\''+o.ID+'\')">Abrir</button></div></td></tr>').join(''):'<tr><td colspan="9" class="empty">Nenhum registro encontrado.</td></tr>';
+  const pg=$('seg-pager');if(!pg)return;
+  if(!arr.length){pg.innerHTML='';return}
+  pg.innerHTML='<span>Mostrando '+(start+1)+'–'+Math.min(start+segPer,arr.length)+' de '+arr.length+'</span><div class="pg-actions"><select id="seg-per"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select><button class="btn" '+(segPage<=1?'disabled':'')+' onclick="segGoto('+(segPage-1)+')">‹</button><span>Página '+segPage+' de '+pages+'</span><button class="btn" '+(segPage>=pages?'disabled':'')+' onclick="segGoto('+(segPage+1)+')">›</button></div>';
+  $('seg-per').value=String(segPer);$('seg-per').onchange=function(){segPer=Number(this.value)||25;segPage=1;renderTabela()};
+};
+window.segGoto=function(p){segPage=p;renderTabela()};
+
+novaOcorrencia=function(){
+  editandoId='';
+  $('form-title').textContent='Nova ocorrência';$('btn-save-new').textContent='Registrar ocorrência';
+  const d=new Date(Date.now()-new Date().getTimezoneOffset()*60000);$('n-data').value=d.toISOString().slice(0,16);
+  $('n-grav').value='BAIXA';$('n-tipo').selectedIndex=0;$('n-local').value='';$('n-ext').value='NÃO';$('n-desc').value='';$('n-dano').value='NÃO';$('n-valor').value=0;$('n-valor-wrap').style.display='none';$('n-fotos').value='';$('env-list').innerHTML='';addEnv();
+  if(!user.fullAccess&&unidades.length===1)$('n-unidade').value=unidades[0].id;
+  $('modal-form').classList.add('open');
+};
+
+window.editarAtual=function(){
+  if(!podeEditarAtual()){toast('Você não pode editar este registro.');return}
+  editandoId=atual.ID;$('form-title').textContent='Editar registro '+atual.Numero;$('btn-save-new').textContent='Salvar correção';
+  $('n-data').value=dataLocal(atual.Data);$('n-unidade').value=atual.UnidadeId;$('n-grav').value=atual.Gravidade;$('n-tipo').value=atual.Tipo;$('n-local').value=atual.Local||'';$('n-ext').value=atual.Externo||'NÃO';$('n-desc').value=atual.Descricao||'';$('n-dano').value=atual.Dano||'NÃO';$('n-valor').value=Number(atual.Valor||0);$('n-valor-wrap').style.display=atual.Dano==='SIM'?'block':'none';$('n-fotos').value='';$('env-list').innerHTML='';(atual.Envolvidos||[]).forEach(addEnv);if(!$('env-list').children.length)addEnv();
+  closeModal('modal-detail');$('modal-form').classList.add('open');
+};
+
+salvarNova=async function(){
+  const b=$('btn-save-new');b.disabled=true;
+  try{
+    const payload={ID:editandoId||'',Data:$('n-data').value,UnidadeId:$('n-unidade').value,Gravidade:$('n-grav').value,Tipo:$('n-tipo').value,Local:$('n-local').value.trim(),Externo:$('n-ext').value,Descricao:$('n-desc').value.trim(),Dano:$('n-dano').value,Valor:$('n-valor').value,Envolvidos:getEnvs()};
+    if(editandoId&&atual){payload.Status=atual.Status;payload.Responsavel=atual.Responsavel||'';payload.Prazo=atual.Prazo||'';payload.Providencias=atual.Providencias||'';payload.Conclusao=atual.Conclusao||''}
+    const r=await api('save',{payload});
+    const fs=[...$('n-fotos').files].slice(0,10);
+    for(const f of fs){const max=f.type==='application/pdf'?10*1024*1024:5*1024*1024;if(f.size>max)throw new Error(f.name+': arquivo acima do limite permitido.');await api('uploadAttachment',{ocorrenciaId:r.id,nome:f.name,mimeType:f.type,base64:await file64(f)})}
+    closeModal('modal-form');const wasEdit=!!editandoId;editandoId='';await bootstrap();toast(wasEdit?'Registro corrigido e auditado.':'Ocorrência '+r.numero+' registrada como ABERTA.');
+  }catch(e){toast(e.message)}finally{b.disabled=false}
+};
+
+async function carregarHistorico(id){
+  try{const r=await api('history',{ocorrenciaId:id});renderHistorico(r.data||[])}catch(e){$('d-history').innerHTML='<div class="history-note">'+esc(e.message)+'</div>'}
+}
+function renderHistorico(arr){
+  $('d-history').innerHTML=arr.length?arr.map(h=>'<div class="audit-item"><span class="audit-dot"></span><div class="audit-card"><div class="audit-head"><b>'+esc(historyLabel(h.Tipo))+'</b><span class="audit-time">'+fmtDT(h.CriadoEm)+'</span></div><div class="audit-user">'+esc(h.Usuario||'Sistema')+'</div><div class="audit-summary">'+esc(h.Resumo||'')+'</div></div></div>').join(''):'<div class="history-note">Sem eventos históricos registrados antes da implantação da trilha auditável.</div>';
+}
+
+abrirDetalhe=async function(id){
+  atual=ocorrencias.find(x=>x.ID===id);if(!atual)return;
+  $('d-title').textContent=atual.Numero+' · '+atual.Unidade;
+  const env=atual.Envolvidos?.length?atual.Envolvidos.map(x=>'<div class="detail"><label>'+esc(x.Tipo)+'</label>'+esc(x.Nome||'—')+(x.Identificacao?'<br><span class="sub">'+esc(x.Identificacao)+'</span>':'')+(x.Observacao?'<br><span class="sub">'+esc(x.Observacao)+'</span>':'')+'</div>').join(''):(atual.EnvolvidosLegado?'<div class="detail full"><label>Envolvidos</label>'+esc(atual.EnvolvidosLegado)+'</div>':'<div class="sub">Nenhum envolvido informado.</div>');
+  $('d-content').innerHTML='<div class="detail-grid"><div class="detail"><label>Data</label>'+fmtDT(atual.Data)+'</div><div class="detail"><label>Status</label>'+statusBadge(atual.Status)+'</div><div class="detail"><label>Gravidade</label>'+gravBadge(atual.Gravidade)+'</div><div class="detail"><label>Tipo</label>'+esc(atual.Tipo)+'</div><div class="detail"><label>Local</label>'+esc(atual.Local)+'</div><div class="detail"><label>Acionamento externo</label>'+esc(atual.Externo)+'</div><div class="detail"><label>Registrado por</label>'+esc(atual.CriadoPor||'—')+'<br><span class="sub">'+fmtDT(atual.CriadoEm)+'</span></div><div class="detail"><label>Última atualização</label>'+esc(atual.AtualizadoPor||atual.CriadoPor||'—')+'<br><span class="sub">'+fmtDT(atual.AtualizadoEm)+'</span></div><div class="detail full"><label>Descrição original / vigente</label>'+esc(atual.Descricao)+'</div>'+(atual.Dano==='SIM'?'<div class="detail"><label>Dano patrimonial</label>'+money(atual.Valor)+'</div>':'')+(atual.Excluido?'<div class="detail full"><label>Registro excluído</label><b>'+esc(atual.MotivoExclusao||'Motivo não informado')+'</b><br><span class="sub">'+esc(atual.ExcluidoPor||'')+' · '+fmtDT(atual.ExcluidoEm)+'</span></div>':'')+'</div><div class="section-title">Envolvidos</div><div class="detail-grid">'+env+'</div>';
+  const own=podeEditarAtual();$('btn-edit-record').style.display=own?'inline-flex':'none';$('btn-complement').style.display=own?'inline-flex':'none';$('btn-delete-record').style.display=user.fullAccess&&!atual.Excluido?'inline-flex':'none';$('btn-restore-record').style.display=user.fullAccess&&atual.Excluido?'inline-flex':'none';
+  $('tratativa').style.display=user.fullAccess&&!atual.Excluido?'block':'none';$('btn-tratar').style.display=user.fullAccess&&!atual.Excluido?'inline-flex':'none';
+  if(user.fullAccess&&!atual.Excluido){$('t-status').value=atual.Status;$('t-resp').value=atual.Responsavel||'';$('t-prazo').value=atual.Prazo||'';$('t-prov').value=atual.Providencias||'';$('t-conc').value=atual.Conclusao||''}
+  $('d-gallery').innerHTML='<div class="sub">Carregando anexos...</div>';$('d-history').innerHTML='<div class="history-note">Carregando histórico...</div>';$('modal-detail').classList.add('open');
+  const tasks=[api('listAttachments',{ocorrenciaId:id}).then(r=>renderFotos(r.data||[])).catch(e=>$('d-gallery').innerHTML='<div class="sub">'+esc(e.message)+'</div>'),carregarHistorico(id)];await Promise.all(tasks);
+};
+
+renderFotos=function(arr){
+  $('d-gallery').innerHTML=arr.length?arr.map(a=>a.Mime==='application/pdf'?'<div class="file-card"><div class="file-icon">📄</div><a href="'+a.Url+'" target="_blank" rel="noopener">'+esc(a.Nome)+'</a><div class="file-meta">'+formatBytes(a.Tamanho)+' · '+fmtDT(a.CriadoEm)+'</div>'+(user.fullAccess?'<button class="btn danger" onclick="removerAnexo(\''+a.ID+'\')">Remover</button>':'')+'</div>':'<div class="photo"><img src="'+a.Url+'" alt="Evidência" onclick="window.open(this.src,\'_blank\')"><div class="meta">'+esc(a.Nome)+' · '+formatBytes(a.Tamanho)+'</div>'+(user.fullAccess?'<div style="padding:0 6px 7px"><button class="btn danger" onclick="removerAnexo(\''+a.ID+'\')">Remover</button></div>':'')+'</div>').join(''):'<div class="sub">Nenhum anexo registrado.</div>';
+};
+window.removerAnexo=async function(id){if(!user.fullAccess)return;if(!confirm('Remover este anexo? A remoção ficará registrada no histórico.'))return;try{await api('deleteAttachment',{id});await abrirDetalhe(atual.ID);toast('Anexo removido e auditado.')}catch(e){toast(e.message)}};
+
+window.abrirComplemento=function(){if(!podeComplementarAtual())return;$('c-texto').value='';$('modal-complement').classList.add('open');setTimeout(()=>$('c-texto').focus(),50)};
+window.salvarComplemento=async function(){if(!atual)return;const texto=$('c-texto').value.trim();if(!texto){toast('Informe o complemento.');return}const b=$('btn-save-complement');b.disabled=true;try{await api('addComplement',{ocorrenciaId:atual.ID,texto});closeModal('modal-complement');await bootstrap();atual=ocorrencias.find(x=>x.ID===atual.ID)||atual;await abrirDetalhe(atual.ID);toast('Complemento incluído no histórico.')}catch(e){toast(e.message)}finally{b.disabled=false}};
+
+window.abrirExclusao=function(){if(!user.fullAccess||!atual)return;$('del-motivo').value='';$('modal-delete').classList.add('open');setTimeout(()=>$('del-motivo').focus(),50)};
+window.excluirAtual=async function(){if(!user.fullAccess||!atual)return;const motivo=$('del-motivo').value.trim();if(motivo.length<5){toast('Informe o motivo da exclusão.');return}const b=$('btn-confirm-delete');b.disabled=true;try{await api('delete',{id:atual.ID,motivo});closeModal('modal-delete');closeModal('modal-detail');await bootstrap();toast('Registro excluído logicamente e preservado para auditoria.')}catch(e){toast(e.message)}finally{b.disabled=false}};
+window.restaurarAtual=async function(){if(!user.fullAccess||!atual)return;if(!confirm('Restaurar este registro?'))return;try{await api('restore',{id:atual.ID});closeModal('modal-detail');await recarregarRegistros();toast('Registro restaurado.')}catch(e){toast(e.message)}};
+
+salvarTratativa=async function(){
+  if(!atual||!user.fullAccess)return;
+  try{const payload={...atual,ID:atual.ID,Data:dataLocal(atual.Data),Status:$('t-status').value,Responsavel:$('t-resp').value,Prazo:$('t-prazo').value,Providencias:$('t-prov').value,Conclusao:$('t-conc').value,Envolvidos:atual.Envolvidos||[]};await api('save',{payload});closeModal('modal-detail');await bootstrap();toast('Tratativa atualizada e auditada.')}catch(e){toast(e.message)}
+};
+
+renderGestao=function(){if(!user?.fullAccess)return;const a=ocorrencias.filter(x=>!x.Excluido);$('st-total').textContent=a.length;$('st-abertas').textContent=a.filter(x=>x.Status==='ABERTA').length;$('st-analise').textContent=a.filter(x=>x.Status==='EM ANÁLISE').length;$('st-criticas').textContent=a.filter(x=>['ALTA','CRÍTICA'].includes(x.Gravidade)).length;$('st-concluidas').textContent=a.filter(x=>x.Status==='CONCLUÍDA').length;rank('rank-unidades',a.map(x=>x.Unidade));rank('rank-tipos',a.map(x=>x.Tipo))};
+
+bootstrap();
+</script>
+</body>
+</html>

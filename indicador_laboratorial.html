@@ -9,26 +9,26 @@
 <style>
 *{box-sizing:border-box}
 :root{
-  --bg:#0d1117;--card:#161b22;--card2:#1c2230;--border:#30363d;
-  --txt:#e6edf3;--muted:#8b949e;--blue:#2f81f7;--blue2:#58a6ff;
+  --bg:#f4f7fa;--card:#ffffff;--card2:#f7f9fb;--border:#dce4eb;
+  --txt:#18222d;--muted:#667585;--blue:#2f81f7;--blue2:#58a6ff;
   --green:#238636;--red:#da3633;--yellow:#d29922;
 }
 body{margin:0;background:var(--bg);color:var(--txt);font-family:Calibri,'Segoe UI',Arial,sans-serif}
 .app{display:grid;grid-template-columns:340px 1fr;min-height:100vh}
-.side{background:#11161d;border-right:1px solid var(--border);padding:20px;position:sticky;top:0;height:100vh;overflow:auto}
+.side{background:#ffffff;border-right:1px solid var(--border);padding:20px;position:sticky;top:0;height:100vh;overflow:auto}
 .brand{display:flex;gap:10px;align-items:center;margin-bottom:20px}
 .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1f6feb,#58a6ff);display:grid;place-items:center;font-weight:900}
 .brand h1{font-size:16px;margin:0}.brand p{font-size:11px;color:var(--muted);margin:2px 0 0}
-.drop{border:1.5px dashed #536174;border-radius:12px;padding:18px;text-align:center;background:#0d131a;transition:.2s}
-.drop:hover,.drop.drag{border-color:var(--blue2);background:#111d2c}
+.drop{border:1.5px dashed #536174;border-radius:12px;padding:18px;text-align:center;background:#f7f9fb;transition:.2s}
+.drop:hover,.drop.drag{border-color:var(--blue2);background:#eef5fb}
 .drop-icon{font-size:28px;line-height:1;margin-bottom:8px}
 .drop b{display:block;font-size:13px;margin-bottom:5px}
 .drop span{display:block;font-size:11px;color:var(--muted);margin-bottom:12px}
-.file-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #3a4656;background:#21262d;color:#e6edf3;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer}
-.file-btn:hover{background:#30363d;border-color:#536174}
-.file-name{margin-top:9px;font-size:10px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #3a4656;background:#ffffff;color:#18222d;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer}
+.file-btn:hover{background:#eef2f6;border-color:#b8c5d1}
+.file-name{margin-top:9px;font-size:10px;color:#667585;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-.status{font-size:11px;margin-top:9px;padding:8px 10px;border-radius:8px;background:#0d131a;color:var(--muted);display:none}
+.status{font-size:11px;margin-top:9px;padding:8px 10px;border-radius:8px;background:#f7f9fb;color:var(--muted);display:none}
 .status.ok{display:block;color:#7ee787;border:1px solid #265d38}.status.err{display:block;color:#ff7b72;border:1px solid #7d2d2a}
 .section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:20px 0 8px}
 .field{margin-bottom:9px}.field label{display:block;font-size:10px;color:var(--muted);margin-bottom:4px}
@@ -39,8 +39,8 @@ body{margin:0;background:var(--bg);color:var(--txt);font-family:Calibri,'Segoe U
 .actions{display:grid;gap:8px;margin-top:16px}
 button{border:0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer;font-size:12px}
 .primary{background:var(--blue);color:white}.primary:hover{background:#388bfd}
-.secondary{background:#21262d;color:var(--txt);border:1px solid var(--border)}
-.secondary:hover{background:#30363d}
+.secondary{background:#ffffff;color:var(--txt);border:1px solid var(--border)}
+.secondary:hover{background:#eef2f6}
 .main{padding:22px;overflow:auto}
 .toolbar{max-width:1320px;margin:0 auto 12px;display:flex;justify-content:space-between;align-items:center}
 .toolbar h2{font-size:15px;margin:0}.toolbar span{font-size:11px;color:var(--muted)}
@@ -156,9 +156,10 @@ table{border-collapse:collapse;border-spacing:0;width:100%}
  }
 }
 </style>
-<style id="tdngo-standard-nav-style">
-.tdngo-home{position:fixed;left:14px;bottom:14px;z-index:2147483600;display:inline-flex;align-items:center;gap:9px;min-height:40px;padding:7px 12px 7px 8px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(18,24,32,.94);color:#fff!important;text-decoration:none!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.28);backdrop-filter:blur(10px);transition:.15s}
-.tdngo-home:hover{transform:translateY(-2px);border-color:#58a6ff;background:#15243a}.tdngo-home .tdngo-home-ico{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;background:#1d6aad;font-size:14px;font-weight:800;flex:none}.tdngo-home .tdngo-home-copy{display:flex;flex-direction:column;line-height:1.05}.tdngo-home b{font-size:12px}.tdngo-home small{font-size:9px;color:#aab6c5;margin-top:3px}@media(max-width:560px){.tdngo-home{padding:7px;bottom:10px;left:10px}.tdngo-home .tdngo-home-copy{display:none}}@media print{.tdngo-home{display:none!important}}</style><script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"></script></head>
+<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"></script><style id="tdngo-sidebar-home-standard">:root{color-scheme:light;--surface:#fff;--surface2:#f7f9fb;--border:#dce4eb;--text:#18222d;--text2:#667585;--accent:#1769d2;--accent-text:#1558a0;--accent-bg:#eff6ff}.sidebar-footer{margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)}
+.sidebar-home{display:flex;align-items:center;justify-content:center;width:100%;min-height:36px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text)!important;text-decoration:none!important;font-size:12px;font-weight:700;line-height:1.2;box-sizing:border-box;transition:.15s ease}
+.sidebar-home:hover{border-color:var(--accent);color:var(--accent-text)!important;background:var(--accent-bg)}
+.sidebar-home:active{transform:translateY(1px)}.side{display:flex;flex-direction:column}</style></head>
 <body><script id="tdngo-indicadores-gate">(function(){let u=null;try{u=JSON.parse(sessionStorage.getItem('fhsl_session')||'null')}catch(e){}if(!u){location.replace('index.html');return}if(String(u.role||'').toLowerCase()==='admin')return;const raw=u.modulos;if(raw===undefined||raw===null||String(raw).trim()==='')return;const m=Array.isArray(raw)?raw.map(String):String(raw).split(',').map(x=>x.trim());if(!(m.includes('indicadores')||m.includes('risco')))location.replace('index.html')})();</script>
 <div class="app">
 <aside class="side">
@@ -209,7 +210,7 @@ table{border-collapse:collapse;border-spacing:0;width:100%}
       Para melhor qualidade, use o botão azul e escolha <b>Salvar como PDF</b> na janela de impressão.
     </div>
   </div>
-</aside>
+<div class="sidebar-footer"><a href="indicadores.html" target="_top" class="sidebar-home">Central TDNGo</a></div></aside>
 
 <main class="main">
   <div class="toolbar"><div><h2>Prévia do indicador</h2><span>O relatório é recalculado automaticamente após a leitura da planilha.</span></div><span id="periodBadge"></span></div>
@@ -574,6 +575,6 @@ async function gerarPDFImagem(){
  }catch(e){console.error(e);window.print()}
 }
 </script>
-<a class="tdngo-home" href="index.html" title="Voltar ao painel principal do TDNGo" aria-label="Voltar ao TDNGo"><span class="tdngo-home-ico">⌂</span><span class="tdngo-home-copy"><b>TDNGo</b><small>Voltar aos módulos</small></span></a><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1602"></script>
+
 </body>
 </html>

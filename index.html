@@ -7,7 +7,19 @@
  function validCached(){try{const s=cachedSession(),t=s&&(s.tdngoToken||s.token);if(!t)return false;let p=String(t).split('.')[0].replace(/-/g,'+').replace(/_/g,'/');while(p.length%4)p+='=';const j=JSON.parse(decodeURIComponent(escape(atob(p)))),e=Number(j.exp||0);return !e||e>(e<1e12?Date.now()/1000:Date.now())}catch(e){return false}}
  const preauth=validCached();
  const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a3a45ed9045cb27c196e05409660ff6fcca326e1/index.html';
- const r=await fetch(base+'?v=20260916-0945',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);let html=await r.text();
+ const r=await fetch(base+'?v=20260918-0205',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);let html=await r.text();
+
+ // A Central deve nascer em tema claro antes do primeiro paint.
+ html=html.replace(
+   ':root{\n  --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#2a3140;\n  --text:#e6edf3;--text2:#9aa7b8;--text3:#6b7888;\n  --accent:#3b9eff;--accent-bg:#15243a;--accent-text:#79c0ff;\n  --green:#3fb950;--green-bg:#11271a;--green-text:#56d364;\n  --yellow:#d29922;--yellow-bg:#2b2310;--yellow-text:#e3b341;\n  --red:#f85149;--red-bg:#2d1416;--red-text:#ff7b72;\n  --purple:#a371f7;--purple-bg:#21193a;--purple-text:#bc8cff;\n  --orange:#db6d28;--orange-bg:#2c1a0e;--orange-text:#f0883e;\n  --radius:9px;--shadow:0 1px 3px rgba(0,0,0,.4);\n}',
+   ':root{\n  --bg:#f4f4f2;--surface:#fff;--surface2:#f0f0ed;--border:#e2e2de;\n  --text:#1a1a18;--text2:#5c5c58;--text3:#9a9a96;\n  --accent:#1d6aad;--accent-bg:#eff6ff;--accent-text:#1558a0;\n  --green:#15803d;--green-bg:#f0fdf4;--green-text:#14693a;\n  --yellow:#a16207;--yellow-bg:#fefce8;--yellow-text:#926008;\n  --red:#b91c1c;--red-bg:#fef2f2;--red-text:#a81818;\n  --purple:#6d28d9;--purple-bg:#f5f3ff;--purple-text:#5b21b6;\n  --orange:#c2410c;--orange-bg:#fff7ed;--orange-text:#9a3412;\n  --radius:9px;--shadow:0 1px 3px rgba(0,0,0,.07);\n}'
+ );
+ html=html.replace('.login-screen{position:fixed;inset:0;background:radial-gradient(circle at 30% 20%,#16314f 0%,#0d1117 60%);',
+                   '.login-screen{position:fixed;inset:0;background:#f4f7fa;');
+ html=html.replace("function loadUserTheme(){ let t='dark'; try{t=localStorage.getItem(themeKey())||'dark';}catch(e){} applyTheme(t); }",
+                   "function loadUserTheme(){ applyTheme('light'); }");
+ html=html.replace("loadUserTheme();","applyTheme('light');");
+ html=html.replace('<body>','<body data-theme="light">');
  html=html.replace('</head>',`<link rel="icon" type="image/svg+xml" href="tdngo-favicon.svg?v=20260916-0945"><style>.hub-filters,.hub-category-label{display:none!important}${preauth?'.login-screen{visibility:hidden!important}':''}.user-logout svg{display:block}</style></head>`);
  html=html.replace('.login-btn:hover{background:#2b8ae6}',`.login-btn:hover{background:#2b8ae6}\n.login-btn:disabled{opacity:.72;cursor:wait}.login-btn.busy{position:relative}.login-btn.busy::before{content:'';display:inline-block;width:13px;height:13px;margin-right:8px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;vertical-align:-2px;animation:loginSpin .7s linear infinite}.login-status{font-size:11px;text-align:center;color:var(--text2);min-height:17px;margin-top:9px}.login-status.ok{color:var(--green)}@keyframes loginSpin{to{transform:rotate(360deg)}}.tdngo-loading{position:fixed;inset:0;z-index:12000;background:radial-gradient(circle at 30% 20%,#eaf3ff 0%,#f4f7fa 65%);display:flex;align-items:center;justify-content:center}.tdngo-loading-box{text-align:center;color:#18222d}.tdngo-spinner{width:36px;height:36px;margin:0 auto 14px;border:3px solid #dce4eb;border-top-color:#1769d2;border-radius:50%;animation:loginSpin .75s linear infinite}.tdngo-loading-box b{display:block;font-size:15px}.tdngo-loading-box span{display:block;margin-top:5px;font-size:11px;color:#667585}`);
  html=html.replace('<button class="login-btn" onclick="doLogin()">Entrar</button>','<button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button><div class="login-status" id="login-status"></div>');

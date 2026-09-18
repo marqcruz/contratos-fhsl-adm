@@ -45,6 +45,16 @@ html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:
         html=html.replace("document.getElementById('login-screen').style.display='none';",'');
         html=html.replace('<body>','<body data-theme="light">');
 
+        // Remove o botão flutuante legado antes da página ser renderizada.
+        html=html.replace(/<style id="tdngo-standard-nav-style">[\\s\\S]*?<\\/style>/m,'');
+        html=html.replace(/<a class="tdngo-home"[\\s\\S]*?<\\/a>/m,'');
+
+        // Evita o aviso vermelho transitório durante o bootstrap.
+        html=html.replace("}catch(e){ showNotif('Erro ao carregar. Verifique a conexão.','err'); }","}catch(e){ console.warn('[Conferência] falha ao carregar',e); }");
+
+        // Mantém a tela oculta até o carregamento real terminar.
+        html=html.replace('<div class="app" id="app"','<div class="app" id="app" style="visibility:hidden"');
+
         const listaCss='<style id="conf-lista-v2-style">'+
           '.conf-toolbar{display:grid!important;grid-template-columns:minmax(280px,2fr) repeat(4,minmax(150px,1fr));gap:8px!important;align-items:center;margin-bottom:8px!important}'+
           '.conf-toolbar input,.conf-toolbar select{width:100%;min-width:0;height:36px;border-radius:8px}'+
@@ -59,9 +69,8 @@ html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:
         html=html.replace('</head>',listaCss+'</head>');
       }
 
-      const extras='<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260918-0010">'+closeScript+
-        '<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260918-0010">'+closeScript+
-        '<script src="conferencia-lista-v2.js?v=20260918-0010">'+closeScript;
+      const extras='<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260918-0025">'+closeScript+
+        '<script src="conferencia-lista-v2.js?v=20260918-0025">'+closeScript;
       if(html.includes('</body>')) html=html.replace('</body>',extras+'</body>');
 
       nativeWrite(html);

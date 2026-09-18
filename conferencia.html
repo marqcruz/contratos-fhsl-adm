@@ -41,8 +41,7 @@ html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:
       // O HTML final da Conferência ainda trazia uma segunda tela de login.
       // A autenticação é exclusivamente pela sessão central do TDNGo.
       if(html.includes('id="page-lista"')){
-        html=html.replace(/<div class="login-screen" id="login-screen">[\\s\\S]*?<div class="app" id="app"/m,'<div class="app" id="app"');
-        html=html.replace(/\\/\\* LOGIN \\*\\/[\\s\\S]*?\\/\\* APP \\*\\//m,'/* APP */');
+        html=html.replace(/<div class="login-screen" id="login-screen">[\s\S]*?<div class="app" id="app"/m,'<div class="app" id="app"');
         html=html.replace("document.getElementById('login-screen').style.display='none';",'');
         html=html.replace('<body>','<body data-theme="light">');
 

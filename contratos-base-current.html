@@ -722,8 +722,6 @@ const HEADERS = [
   'Observacoes','Historico','PdfNome','PdfUrl','CriadoEm','AtualizadoEm'
 ];
 const UHEADERS = ['ID','Nome','Email','Senha','Role','Ativo','Modulos','CriadoEm'];
-const LOG_SHEET = 'Auditoria';
-const LHEADERS = ['DataHora','Usuario','Email','Acao','Detalhe','Alvo'];
 const UNITS_SHEET = 'Unidades';
 const UNHEADERS = ['ID','Nome','Tipo','CEP','Logradouro','Numero','Bairro','Cidade','UF','Lat','Lng','Telefone','Responsavel','Ativo','CriadoEm'];
 const UNIDADES_PADRAO = ['Hospital Santa Lydia','UPA Norte','UPA Sul','UPA Leste','UBS Central','CAPS','SAMU','Administração / Sede'];
@@ -745,8 +743,6 @@ function handle(e) {
     else if (action === 'authuser')   result = authUser(JSON.parse(e.postData.contents));
     else if (action === 'uploadpdf')  result = uploadPdf(JSON.parse(e.postData.contents));
     else if (action === 'extractpdf') result = extrairPdfComIA(JSON.parse(e.postData.contents));
-    else if (action === 'getlog')     result = getLog();
-    else if (action === 'logevent')   result = logEvent(JSON.parse(e.postData.contents));
     else if (action === 'getunits')   result = getUnits();
     else if (action === 'saveunit')   result = saveUnit(JSON.parse(e.postData.contents));
     else if (action === 'deleteunit') result = deleteUnit(JSON.parse(e.postData.contents));
@@ -797,22 +793,6 @@ function checkPassword(senha, armazenada) {
   return String(senha) === armazenada; // compatibilidade com senhas antigas em texto puro
 }
 
-// ── AUDITORIA ────────────────────────────────────────────
-function audit(actor, acao, detalhe, alvo) {
-  try {
-    const sh = sheetOf(LOG_SHEET, LHEADERS);
-    const now = Utilities.formatDate(new Date(),'America/Sao_Paulo','dd/MM/yyyy HH:mm:ss');
-    sh.appendRow([now, (actor&&actor.nome)||'—', (actor&&actor.email)||'—', acao||'', detalhe||'', alvo||'']);
-  } catch(err) {}
-}
-function logEvent(p) { audit(p.actor, p.acao, p.detalhe, p.alvo); return { ok:true }; }
-function getLog() {
-  const sh = sheetOf(LOG_SHEET, LHEADERS);
-  const data = sh.getDataRange().getValues();
-  if (data.length <= 1) return { ok:true, data:[] };
-  const h = data[0];
-  return { ok:true, data: data.slice(1).map(function(r){ var o={}; h.forEach(function(k,i){o[k]=r[i];}); return o; }).reverse().slice(0,500) };
-}
 
 // ── DIAGNÓSTICO E REPARO MANUAL ──────────────────────────
 function diag() {
@@ -876,18 +856,14 @@ function saveUnit(p) {
         const atual = {}; h.forEach(function(k,j){ atual[k] = data[i][j]; });
         const novo = {}; h.forEach(function(k){ novo[k] = (p[k]!==undefined && p[k]!==null) ? p[k] : (atual[k]!==undefined?atual[k]:''); });
         novo.ID = p.ID; novo.Nome = nome;
-        sh.getRange(i+1,1,1,h.length).setValues([h.map(function(k){ return novo[k]; })]);
-        audit(actor, 'Editou unidade', nome, p.ID);
-        return { ok:true, id:p.ID };
+        sh.getRange(i+1,1,1,h.length).setValues([h.map(function(k){ return novo[k]; })]); return { ok:true, id:p.ID };
       }
     }
   }
   const id = String(Date.now());
   p.ID = id; p.Nome = nome; p.CriadoEm = now;
   if (p.Ativo === undefined) p.Ativo = true;
-  sh.appendRow(h.map(function(k){ return p[k]!==undefined && p[k]!==null ? p[k] : ''; }));
-  audit(actor, 'Criou unidade', nome, id);
-  return { ok:true, id:id };
+  sh.appendRow(h.map(function(k){ return p[k]!==undefined && p[k]!==null ? p[k] : ''; })); return { ok:true, id:id };
 }
 function deleteUnit(p) {
   const id = (typeof p === 'object' && p !== null) ? p.id : p;
@@ -897,9 +873,7 @@ function deleteUnit(p) {
   for (var i=1;i<data.length;i++) {
     if (String(data[i][0]) === String(id)) {
       const nome = data[i][1];
-      sh.deleteRow(i+1);
-      audit(actor, 'Removeu unidade', nome, id);
-      return { ok:true };
+      sh.deleteRow(i+1); return { ok:true };
     }
   }
   return { ok:false, message:'Não encontrada' };
@@ -950,17 +924,13 @@ function save(p) {
       if (String(data[i][0]) === String(p.ID)) {
         p.AtualizadoEm = now;
         if (!p.CriadoEm) { var ci=h.indexOf('CriadoEm'); p.CriadoEm = ci>=0 ? data[i][ci] : now; }
-        sh.getRange(i+1,1,1,h.length).setValues([buildRow()]);
-        audit(actor, 'Editou contrato', (p.Numero||'')+' — '+(p.Empresa||''), p.ID);
-        return { ok:true, message:'Atualizado', id:p.ID };
+        sh.getRange(i+1,1,1,h.length).setValues([buildRow()]); return { ok:true, message:'Atualizado', id:p.ID };
       }
     }
   }
   p.ID = String(Date.now());
   p.CriadoEm = now; p.AtualizadoEm = now;
-  sh.appendRow(buildRow());
-  audit(actor, 'Criou contrato', (p.Numero||'')+' — '+(p.Empresa||''), p.ID);
-  return { ok:true, message:'Inserido', id:p.ID };
+  sh.appendRow(buildRow()); return { ok:true, message:'Inserido', id:p.ID };
 }
 
 function deleteRow(p) {
@@ -973,9 +943,7 @@ function deleteRow(p) {
   for (var i=1;i<data.length;i++) {
     if (String(data[i][0]) === String(id)) {
       const num = cNum>=0?data[i][cNum]:'', emp = cEmp>=0?data[i][cEmp]:'';
-      sh.deleteRow(i+1);
-      audit(actor, 'Excluiu contrato', (num||'')+' — '+(emp||''), id);
-      return { ok:true, message:'Excluído' };
+      sh.deleteRow(i+1); return { ok:true, message:'Excluído' };
     }
   }
   return { ok:false, message:'Registro não encontrado' };
@@ -1008,17 +976,13 @@ function saveUser(p) {
       if (String(data[i][0]) === String(p.ID)) {
         if (!p.Senha) p.Senha = data[i][3];            // mantém senha se vier vazia
         else p.Senha = hashPassword(p.Senha);          // nova senha → hash
-        sh.getRange(i+1,1,1,h.length).setValues([h.map(function(k){return p[k]!==undefined?p[k]:'';})]);
-        audit(actor, 'Editou usuário', (p.Nome||'')+' ('+(p.Email||'')+') · perfil '+(p.Role||''), p.ID);
-        return { ok:true, id:p.ID };
+        sh.getRange(i+1,1,1,h.length).setValues([h.map(function(k){return p[k]!==undefined?p[k]:'';})]); return { ok:true, id:p.ID };
       }
     }
   }
   p.ID = String(Date.now()); p.CriadoEm = now; if (p.Ativo===undefined) p.Ativo = true;
   p.Senha = hashPassword(p.Senha);
-  sh.appendRow(h.map(function(k){return p[k]!==undefined?p[k]:'';}));
-  audit(actor, 'Criou usuário', (p.Nome||'')+' ('+(p.Email||'')+') · perfil '+(p.Role||''), p.ID);
-  return { ok:true, id:p.ID };
+  sh.appendRow(h.map(function(k){return p[k]!==undefined?p[k]:'';})); return { ok:true, id:p.ID };
 }
 function deleteUser(p) {
   const id = (typeof p === 'object' && p !== null) ? p.id : p;
@@ -1028,9 +992,7 @@ function deleteUser(p) {
   for (var i=1;i<data.length;i++) {
     if (String(data[i][0]) === String(id)) {
       const nome = data[i][1], email = data[i][2];
-      sh.deleteRow(i+1);
-      audit(actor, 'Excluiu usuário', (nome||'')+' ('+(email||'')+')', id);
-      return { ok:true };
+      sh.deleteRow(i+1); return { ok:true };
     }
   }
   return { ok:false, message:'Não encontrado' };
@@ -1044,15 +1006,13 @@ function authUser(p) {
       && checkPassword(p.senha, x.Senha)
       && String(x.Ativo) !== 'false' && String(x.Ativo) !== 'FALSE';
   });
-  if (!u) { audit({nome:'—',email:email}, 'Tentativa de login falha', 'E-mail ou senha incorretos', ''); return { ok:false, message:'E-mail ou senha incorretos' }; }
+  if (!u) { return { ok:false, message:'E-mail ou senha incorretos' }; }
   // Migração suave: se a senha ainda estava em texto puro, regrava como hash
   if (String(u.Senha).indexOf('sha256$') !== 0) {
     const sh = sheetOf(USERS_SHEET, UHEADERS);
     const data = sh.getDataRange().getValues();
     for (var i=1;i<data.length;i++) { if (String(data[i][0])===String(u.ID)) { sh.getRange(i+1,4).setValue(hashPassword(p.senha)); break; } }
-  }
-  audit({nome:u.Nome,email:u.Email}, 'Login', 'Acesso ao sistema', u.ID);
-  return { ok:true, user:{ id:u.ID, nome:u.Nome, email:u.Email, role:u.Role, modulos:(u.Modulos||'') } };
+  } return { ok:true, user:{ id:u.ID, nome:u.Nome, email:u.Email, role:u.Role, modulos:(u.Modulos||'') } };
 }
 
 // ── UPLOAD DE PDF NO DRIVE ───────────────────────────────
@@ -1217,7 +1177,6 @@ function doLogout(){
 }
 
 function startApp(){
-  try{ localStorage.removeItem('fhsl_theme_'+((currentUser&&currentUser.email)||'default')); localStorage.removeItem('tdngo_theme'); }catch(e){}
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   const initials = (currentUser.nome||'?').split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();

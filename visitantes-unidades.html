@@ -25,6 +25,16 @@
    "function doLogout(){sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');currentUser=null;location.replace('index.html')}"
  );
 
+ // Elimina o código de login interno; a autenticação é exclusiva da Central.
+ {
+   const d0=html.indexOf('async function doLogin(){');
+   const d1=html.indexOf('function doLogout(){',d0);
+   if(d0>=0&&d1>d0) html=html.slice(0,d0)+html.slice(d1);
+ }
+
+ // Impede qualquer flash escuro na inicialização.
+ html=html.replace("document.getElementById('app').style.display='flex';loadUserTheme();","document.getElementById('app').style.display='flex';applyTheme('light');");
+
  // Remove completamente a navegação flutuante antiga.
  {
    const s0=html.indexOf('<style id="tdngo-standard-nav-style">');
@@ -32,7 +42,7 @@
    const a0=html.indexOf('<a class="tdngo-home"');
    if(a0>=0){const a1=html.indexOf('</a>',a0);if(a1>=0)html=html.slice(0,a0)+html.slice(a1+4);}
    const n0=html.indexOf('<script data-tdngo-central-nav');
-   if(n0>=0){const n1=html.indexOf('</script>',n0);if(n1>=0)html=html.slice(0,n0)+html.slice(n1+9);}
+   if(n0>=0){const n1=html.indexOf('</scr'+'ipt>',n0);if(n1>=0)html=html.slice(0,n0)+html.slice(n1+9);}
  }
 
  // Componente padronizado de retorno à Central.

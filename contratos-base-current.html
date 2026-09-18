@@ -2802,6 +2802,36 @@ async function deleteUserRow(id){
 
 
 // ═══════════════════════════════════════════════════════════════════
+// NOTIFICAÇÕES
+// ═══════════════════════════════════════════════════════════════════
+function buildNotifications(){
+  const read = JSON.parse(localStorage.getItem('fhsl_notif_read')||'[]');
+  notifications = [];
+  contracts.filter(function(c){ return getVigStatus(c)==='vencendo' && ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0; }).forEach(function(c){
+    notifications.push({ id:'v_'+c.id, title:'⚠ Vence em breve', sub:(c.numero||'')+' — '+(c.empresa||'')+' · '+(c.vigenciaFim||''), read:read.indexOf('v_'+c.id)>=0, cid:c.id });
+  });
+  contracts.filter(function(c){ return getVigStatus(c)==='vencido' && ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0; }).forEach(function(c){
+    notifications.push({ id:'x_'+c.id, title:'✗ Contrato vencido', sub:(c.numero||'')+' — '+(c.empresa||'')+' · venceu '+(c.vigenciaFim||''), read:read.indexOf('x_'+c.id)>=0, cid:c.id });
+  });
+  renderBell();
+}
+function renderBell(){
+  const unread = notifications.filter(function(n){ return !n.read; }).length;
+  const dot = document.getElementById('bell-dot');
+  if(dot){ dot.textContent = unread; dot.style.display = unread ? 'flex' : 'none'; }
+  const list = document.getElementById('bell-list');
+  if(!list) return;
+  list.innerHTML = notifications.length ? notifications.map(function(n){
+    return '<div class="notif-item'+(n.read?'':' unread')+'" onclick="clickNotif(\''+n.id+'\',\''+n.cid+'\')"><div class="ni-title">'+n.title+'</div><div class="ni-sub">'+n.sub+'</div></div>';
+  }).join('') : '<div style="padding:1.5rem;text-align:center;color:var(--text3);font-size:13px">Nenhuma notificação</div>';
+}
+function toggleBell(e){ if(e)e.stopPropagation(); const d=document.getElementById('bell-dropdown'); if(d)d.classList.toggle('open'); }
+function clickNotif(id,cid){ markRead(id); const d=document.getElementById('bell-dropdown'); if(d)d.classList.remove('open'); showDetail(cid); }
+function markRead(id){ const n=notifications.find(function(x){ return x.id===id; }); if(n)n.read=true; localStorage.setItem('fhsl_notif_read', JSON.stringify(notifications.filter(function(x){return x.read;}).map(function(x){return x.id;}))); renderBell(); }
+function markAllRead(){ notifications.forEach(function(n){ n.read=true; }); localStorage.setItem('fhsl_notif_read', JSON.stringify(notifications.map(function(x){return x.id;}))); renderBell(); }
+document.addEventListener('click', function(e){ const b=e.target.closest&&e.target.closest('.bell-wrap'); if(!b){ const d=document.getElementById('bell-dropdown'); if(d)d.classList.remove('open'); } });
+
+// ═══════════════════════════════════════════════════════════════════
 // EXPORT CSV
 // ═══════════════════════════════════════════════════════════════════
 function exportCSV(){

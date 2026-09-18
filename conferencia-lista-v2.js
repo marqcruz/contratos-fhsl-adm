@@ -170,5 +170,13 @@ window.doLogout=function(){
   location.replace('index.html');
 };
 
+const originalCarregar=carregar;
+window.carregar=async function(){
+  const app=byId('app');
+  try{ await originalCarregar(); }
+  catch(e){ console.warn('[Conferência] falha transitória no carregamento',e); }
+  finally{ if(app)app.style.visibility='visible'; }
+};
+
 prepararLista();
 })();

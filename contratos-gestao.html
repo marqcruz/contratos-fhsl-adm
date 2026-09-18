@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contratos de Gestão — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light}#loading{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center;color:#667585}</style></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contratos de Gestão — TDNGo</title><style>html,body{margin:0;min-height:100%;background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark}#loading{min-height:100vh;display:grid;place-items:center;padding:20px;text-align:center;color:#9aa7b8}</style></head>
 <body><div id="loading">Carregando Contratos de Gestão...</div>
 <script>
 (async()=>{
@@ -30,10 +30,17 @@
   html=html.replace(oldFn,newFn);
   html=html.replace(/Apps Script v9/g,'API Supabase');
   html=html.replace(/Apps Script/g,'API Supabase');
+
+  // Contratos de Gestão é exclusivamente escuro: remove CSS, botão e persistência do tema claro.
+  html=html.replace(/body\\[data-theme="light"\\]\\{[\\s\\S]*?\\}\\s*:root\\{/m,':root{');
+  html=html.replace('<div class="topbar-right"><button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema">🌙</button></div>','<div class="topbar-right"><a class="btn" href="index.html">Central TDNGo</a></div>');
+  html=html.replace(/function themeKey\\(\\)\\{[\\s\\S]*?function initials\\(n\\)\\{/m,"function applyTheme(){document.body.removeAttribute('data-theme');}\\nfunction toggleTheme(){applyTheme();}\\nfunction loadUserTheme(){applyTheme();}\\nfunction initials(n){");
+  html=html.replace('<div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">\\n    </div>','<div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)"><a href="index.html" class="btn" style="width:100%;justify-content:center;text-decoration:none">Central TDNGo</a></div>');
+  html=html.replace(/<body([^>]*)data-theme="light"([^>]*)>/gi,'<body$1$2>');
   if(html.includes('google.com/macros')||html.includes('SCRIPT'+'_URL')||html.includes('api'+'Fetch('))throw new Error('Referência legada permaneceu no Contratos de Gestão.');
   const bodyClose=html.lastIndexOf('</body>');
   if(bodyClose<0)throw new Error('Fechamento </body> não localizado.');
-  const addons='<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260917-2105"><\\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260917-2105"><\\/script>';
+  const addons='';
   html=html.slice(0,bodyClose)+addons+html.slice(bodyClose);
   document.open();document.write(html);document.close();
  }catch(e){document.getElementById('loading').textContent='Falha ao carregar Contratos de Gestão: '+e.message;console.error(e)}

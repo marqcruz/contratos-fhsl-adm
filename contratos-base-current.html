@@ -8,7 +8,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body[data-theme="light"]{
+:root{
   --bg:#f4f4f2;--surface:#fff;--surface2:#f0f0ed;--border:#e2e2de;
   --text:#1a1a18;--text2:#5c5c58;--text3:#9a9a96;
   --accent:#1d6aad;--accent-bg:#eff6ff;--accent-text:#1558a0;
@@ -18,17 +18,8 @@ body[data-theme="light"]{
   --purple:#6d28d9;--purple-bg:#f5f3ff;--purple-text:#5b21b6;
   --orange:#c2410c;--orange-bg:#fff7ed;--orange-text:#9a3412;
   --shadow:0 1px 3px rgba(0,0,0,.07);
-}
-:root{
-  --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#2a3140;
-  --text:#e6edf3;--text2:#9aa7b8;--text3:#6b7888;
-  --accent:#3b9eff;--accent-bg:#15243a;--accent-text:#79c0ff;
-  --green:#3fb950;--green-bg:#11271a;--green-text:#56d364;
-  --yellow:#d29922;--yellow-bg:#2b2310;--yellow-text:#e3b341;
-  --red:#f85149;--red-bg:#2d1416;--red-text:#ff7b72;
-  --purple:#a371f7;--purple-bg:#21193a;--purple-text:#bc8cff;
-  --orange:#db6d28;--orange-bg:#2c1a0e;--orange-text:#f0883e;
-  --radius:9px;--shadow:0 1px 3px rgba(0,0,0,.4);
+
+  --radius:9px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
 a{color:var(--accent)}
@@ -331,9 +322,7 @@ tr:hover td{background:var(--surface2)}
     <button class="nav-item" data-page="relatorio" onclick="showPage('relatorio',this)">🖨️ Relatório PDF</button>
     <button class="nav-item" onclick="exportCSV()">📥 Exportar CSV</button>
   </div>
-  <div class="nav-group perm-admin"><div class="nav-label">Controle</div><button class="nav-item" data-page="auditoria" onclick="showPage('auditoria',this)">🛡️ Auditoria</button></div>
   <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">
-    <div class="conf-status" id="conn-status" style="font-size:11px;color:var(--text3)">● Verificando conexão...</div>
     <a href="index.html" target="_top" class="sidebar-home">Central TDNGo</a>
   </div>
 </aside>
@@ -343,7 +332,6 @@ tr:hover td{background:var(--surface2)}
   <div class="topbar">
     <div class="topbar-left"><div class="page-title" id="pg-title">Dashboard</div><div class="page-sub" id="pg-sub">Visão geral dos contratos</div></div>
     <div class="topbar-right">
-      <button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Alternar tema claro/escuro" style="margin-right:2px">🌙</button>
       <div class="bell-wrap">
         <button class="bell-btn" onclick="toggleBell(event)">🔔<span class="bell-dot" id="bell-dot">0</span></button>
         <div class="bell-dropdown" id="bell-dropdown">
@@ -590,18 +578,6 @@ tr:hover td{background:var(--surface2)}
     </div>
   </div>
 
-  <!-- AUDITORIA -->
-  <div class="page" id="page-auditoria">
-    <div class="toolbar">
-      <input type="text" id="audit-search" placeholder="🔍 Filtrar por usuário, ação ou detalhe..." oninput="renderAuditoria()">
-      <button class="btn" onclick="loadLog()">🔄 Atualizar</button>
-    </div>
-    <div class="table-wrap">
-      <table><thead><tr><th>Data/Hora</th><th>Usuário</th><th>Ação</th><th>Detalhe</th></tr></thead><tbody id="audit-body"></tbody></table>
-      <div class="empty-state" id="audit-empty" style="display:none"><span class="empty-icon">🛡️</span>Nenhum registro de auditoria ainda</div>
-    </div>
-  </div>
-
   <!-- SETUP -->
   <div class="page" id="page-setup">
     <div class="setup-card">
@@ -719,7 +695,6 @@ let pendingPdfB64 = '';
 let pendingPdfName = '';
 let calRef = new Date();
 let notifications = [];
-let auditLog = [];
 let unitList = [];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1207,14 +1182,6 @@ async function contratosApi(action, payload, autenticado){
   return j;
 }
 
-async function checkConnection() {
-  const el = document.getElementById('conn-status');
-  try {
-    const r = await contratosApi('ping',{});
-    if (r.ok){ el.textContent='● Conectado ao Supabase'; el.style.color='var(--green)'; return true; }
-  } catch(e){}
-  el.textContent='● Offline (cache local)'; el.style.color='var(--red)'; return false;
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // LOGIN / SESSÃO
@@ -1242,7 +1209,6 @@ async function doLogin(){
 }
 
 function doLogout(){
-  if (currentUser){ try { contratosApi('logevent', { acao:'Logout', detalhe:'Saída do sistema', alvo:currentUser.id||'' }); } catch(e){} }
   sessionStorage.removeItem('fhsl_session');
   currentUser = null;
   document.getElementById('app').style.display = 'none';
@@ -1251,9 +1217,9 @@ function doLogout(){
 }
 
 function startApp(){
+  try{ localStorage.removeItem('fhsl_theme_'+((currentUser&&currentUser.email)||'default')); localStorage.removeItem('tdngo_theme'); }catch(e){}
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  loadUserTheme();
   const initials = (currentUser.nome||'?').split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
   const colors = { admin:'#86198f', gestor:'#1d6aad', visualizador:'#5c5c58' };
   document.getElementById('side-avatar').textContent = initials;
@@ -1262,7 +1228,6 @@ function startApp(){
   document.getElementById('side-role').textContent = ({admin:'Administrador',gestor:'Gestor',visualizador:'Visualizador'})[currentUser.role] || currentUser.role;
   applyPermissions();
   startSessionTimer();
-  checkConnection();
   loadAll();
 }
 
@@ -1310,7 +1275,6 @@ const PAGE_META = {
   relatorio:['Relatório PDF','Imprima ou salve em PDF'],
   usuarios:['Usuários','Controle de acesso ao sistema'],
   cadunidades:['Cadastro de Unidades','Unidades da Fundação, endereços e mapa'],
-  auditoria:['Auditoria','Registro de todas as ações no sistema'],
   setup:['Configurar Sheets','Conexão com o Google Sheets']
 };
 function showPage(id, btn){
@@ -1339,7 +1303,6 @@ function showPage(id, btn){
   if (id==='relatorio') renderRelatorio();
   if (id==='usuarios') renderUsers();
   if (id==='cadunidades') renderCadUnidades();
-  if (id==='auditoria') loadLog();
   if (id==='novo') populatePaiSelect();
   if (id==='importar') batchInit();
 }
@@ -2877,67 +2840,6 @@ async function deleteUserRow(id){
   await loadUsers(); renderUsers(); showNotif('✓ Usuário excluído','ok'); hideLoading();
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// AUDITORIA
-// ═══════════════════════════════════════════════════════════════════
-async function loadLog(){
-  showLoading('Carregando auditoria...');
-  try { const r = await contratosApi('getlog',{}); if (r.ok) auditLog = r.data || []; }
-  catch(e){ auditLog = []; showNotif('Sem conexão para carregar auditoria','info'); }
-  renderAuditoria();
-  hideLoading();
-}
-function renderAuditoria(){
-  const q = (document.getElementById('audit-search').value||'').toLowerCase();
-  const list = auditLog.filter(function(l){ return !q || JSON.stringify(l).toLowerCase().indexOf(q)>=0; });
-  const body = document.getElementById('audit-body'), empty = document.getElementById('audit-empty');
-  if (!list.length){ body.innerHTML=''; empty.style.display='block'; return; }
-  empty.style.display='none';
-  const icon = function(acao){
-    acao = String(acao||'');
-    if (acao.indexOf('Login')>=0 && acao.indexOf('falha')<0) return '🔓';
-    if (acao.indexOf('falha')>=0) return '⛔';
-    if (acao.indexOf('Criou')>=0) return '➕';
-    if (acao.indexOf('Editou')>=0) return '✏️';
-    if (acao.indexOf('Excluiu')>=0) return '🗑️';
-    return '•';
-  };
-  body.innerHTML = list.map(function(l){
-    return '<tr><td style="white-space:nowrap;font-size:12px;color:var(--text2)">'+(l.DataHora||'—')+'</td>'
-      + '<td><div style="font-weight:600">'+(l.Usuario||'—')+'</div><div style="font-size:11px;color:var(--text3)">'+(l.Email||'')+'</div></td>'
-      + '<td style="white-space:nowrap">'+icon(l.Acao)+' '+(l.Acao||'—')+'</td>'
-      + '<td style="color:var(--text2)">'+(l.Detalhe||'—')+'</td></tr>';
-  }).join('');
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// NOTIFICAÇÕES (sino)
-// ═══════════════════════════════════════════════════════════════════
-function buildNotifications(){
-  const read = JSON.parse(localStorage.getItem('fhsl_notif_read')||'[]');
-  notifications = [];
-  contracts.filter(function(c){ return getVigStatus(c)==='vencendo' && ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0; }).forEach(function(c){
-    notifications.push({ id:'v_'+c.id, title:'⚠ Vence em breve', sub:(c.numero||'')+' — '+(c.empresa||'')+' · '+(c.vigenciaFim||''), read:read.indexOf('v_'+c.id)>=0, cid:c.id });
-  });
-  contracts.filter(function(c){ return getVigStatus(c)==='vencido' && ['Encerrado','Suspenso'].indexOf(c.statusContrato)<0; }).forEach(function(c){
-    notifications.push({ id:'x_'+c.id, title:'✗ Contrato vencido', sub:(c.numero||'')+' — '+(c.empresa||'')+' · venceu '+(c.vigenciaFim||''), read:read.indexOf('x_'+c.id)>=0, cid:c.id });
-  });
-  renderBell();
-}
-function renderBell(){
-  const unread = notifications.filter(function(n){ return !n.read; }).length;
-  const dot = document.getElementById('bell-dot');
-  dot.textContent = unread; dot.style.display = unread ? 'flex' : 'none';
-  const list = document.getElementById('bell-list');
-  list.innerHTML = notifications.length ? notifications.map(function(n){
-    return '<div class="notif-item'+(n.read?'':' unread')+'" onclick="clickNotif(\''+n.id+'\',\''+n.cid+'\')"><div class="ni-title">'+n.title+'</div><div class="ni-sub">'+n.sub+'</div></div>';
-  }).join('') : '<div style="padding:1.5rem;text-align:center;color:var(--text3);font-size:13px">Nenhuma notificação</div>';
-}
-function toggleBell(e){ e.stopPropagation(); document.getElementById('bell-dropdown').classList.toggle('open'); }
-function clickNotif(id,cid){ markRead(id); document.getElementById('bell-dropdown').classList.remove('open'); showDetail(cid); }
-function markRead(id){ const n=notifications.find(function(x){ return x.id===id; }); if(n)n.read=true; localStorage.setItem('fhsl_notif_read', JSON.stringify(notifications.filter(function(x){return x.read;}).map(function(x){return x.id;}))); renderBell(); }
-function markAllRead(){ notifications.forEach(function(n){ n.read=true; }); localStorage.setItem('fhsl_notif_read', JSON.stringify(notifications.map(function(x){return x.id;}))); renderBell(); }
-document.addEventListener('click', function(e){ if (!e.target.closest('.bell-wrap')) document.getElementById('bell-dropdown').classList.remove('open'); });
 
 // ═══════════════════════════════════════════════════════════════════
 // EXPORT CSV
@@ -2948,7 +2850,6 @@ function exportCSV(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+cols.join(';')+'\n'+rows.join('\n')],{type:'text/csv'}));
   a.download='contratos_fhsl_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
-  if (currentUser){ try { contratosApi('logevent', { acao:'Exportou CSV', detalhe:contracts.length+' contratos', alvo:'' }); } catch(e){} }
   showNotif('✓ CSV exportado','ok');
 }
 
@@ -2975,21 +2876,6 @@ function showLoading(msg){ document.getElementById('loading-text').textContent=m
 function hideLoading(){ document.getElementById('loading').classList.remove('open'); }
 function showNotif(msg,type){ const el=document.getElementById('notif'); el.textContent=msg; el.className='notif-toast '+(type||'ok'); el.style.display='block'; setTimeout(function(){ el.style.display='none'; },3500); }
 function copyScript(){ navigator.clipboard.writeText(SCRIPT_CODE).then(function(){ showNotif('✓ Código copiado!','ok'); }); }
-function themeKey(){ return 'fhsl_theme_'+((currentUser&&currentUser.email)||'default'); }
-function applyTheme(t){
-  document.body.setAttribute('data-theme', t==='light'?'light':'dark');
-  const btn=document.getElementById('theme-btn'); if(btn) btn.textContent = t==='light'?'☀️':'🌙';
-}
-function toggleTheme(){
-  const cur = document.body.getAttribute('data-theme')==='light'?'light':'dark';
-  const novo = cur==='light'?'dark':'light';
-  applyTheme(novo);
-  try{ localStorage.setItem(themeKey(), novo); }catch(e){}
-}
-function loadUserTheme(){
-  let t='dark'; try{ t=localStorage.getItem(themeKey())||'dark'; }catch(e){}
-  applyTheme(t);
-}
 // ── Sessão: logout automático por inatividade (30 min) ──
 let sessionTimer=null;
 const SESSION_MINUTES=30;

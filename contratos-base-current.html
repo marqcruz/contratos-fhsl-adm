@@ -1105,11 +1105,12 @@ window.addEventListener('DOMContentLoaded', function(){
   const pg = document.getElementById('page-novo');
   if (pg) pg.addEventListener('input', function(){ window.formDirty = true; });
   const sess = sessionStorage.getItem('fhsl_session');
+  const wrapperMode = new URLSearchParams(location.search).get('module') === 'contratos';
   if (sess) {
     try {
       currentUser = JSON.parse(sess);
-      if (currentUser && currentUser.tdngoToken) startApp();
-      else currentUser = null;
+      if (currentUser && currentUser.tdngoToken && !wrapperMode) startApp();
+      else if (!currentUser || !currentUser.tdngoToken) currentUser = null;
     } catch(e){ currentUser=null; }
   }
 });

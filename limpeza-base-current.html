@@ -366,9 +366,15 @@ tr:hover td{background:var(--surface2)}
 .notif-toast.info{background:var(--accent);color:#fff}
 </style>
 
+<style id="tdngo-sidebar-home-standard">
+.sidebar-footer{margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)}
+.sidebar-home{display:flex;align-items:center;justify-content:center;width:100%;min-height:36px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text)!important;text-decoration:none!important;font-size:12px;font-weight:700;line-height:1.2;box-sizing:border-box;transition:.15s ease}
+.sidebar-home:hover{border-color:var(--accent);color:var(--accent-text)!important;background:var(--accent-bg)}
+.sidebar-home:active{transform:translateY(1px)}
+</style>
 </head>
 
-<body>
+<body data-theme="light">
 <div class="app" id="app" style="display:flex">
 <aside class="sidebar">
   <div class="logo">

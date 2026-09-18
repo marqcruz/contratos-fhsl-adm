@@ -42,15 +42,6 @@ css();installModal();
 setTimeout(async function(){
   installSelect();
   await loadCategorias();
-  try{
-    // O HTML-base pode carregar os contratos antes deste complemento instalar
-    // o normalizador de CategoriaObjeto. Recarrega uma única vez já com o
-    // normalizador ativo para evitar "A CLASSIFICAR" até o usuário atualizar.
-    await reloadContracts();
-  }catch(e){
-    console.warn('[Categorias carga inicial]',e);
-    try{renderLista()}catch(_){}
-  }
   try{window.tdngoCategoriasRedecorate()}catch(e){}
 },0);
 })();

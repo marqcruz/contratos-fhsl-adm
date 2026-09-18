@@ -25,7 +25,14 @@
     const replacement=`<script>(function(){function libera(){var g=document.getElementById('fhsl-gate');if(g)g.remove();document.body.style.overflow='';var tb=document.getElementById('fhsl-topbar');if(tb)tb.style.display='flex';document.body.classList.add('fhsl-liberado');var b=document.getElementById('fhsl-back-hub');if(b)b.style.display='inline-flex';}window.fhslDoLogin=function(){location.replace('index.html')};libera();})();<\/script>`;
     if(!gate.test(html))throw new Error('Bloco legado de autenticação não localizado.');
     html=html.replace(gate,replacement);
-    html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1602"><\/script></body>');
+    html=html.replace('</head>','<style id="tdngo-standard-return-style">.sidebar-footer{margin-top:auto;padding-top:1rem;border-top:1px solid var(--border,#ddd9cd)}.sidebar-home{display:flex;align-items:center;justify-content:center;width:100%;min-height:36px;padding:8px 12px;border:1px solid var(--border,#ddd9cd);border-radius:8px;background:var(--surface2,#f7f9fb);color:var(--text,#18222d)!important;text-decoration:none!important;font-size:12px;font-weight:700;line-height:1.2;box-sizing:border-box;transition:.15s ease}.sidebar-home:hover{border-color:var(--accent,#1769d2);color:var(--accent-text,#1558a0)!important;background:var(--accent-bg,#eff6ff)}.sidebar-home:active{transform:translateY(1px)}.tdngo-standard-return{position:fixed;left:8px;bottom:12px;z-index:2147483000;width:136px}.tdngo-standard-return .sidebar-footer{padding-top:0;border-top:0;margin-top:0}</style></head>');
+    {
+      const s0=html.indexOf('<style id="tdngo-standard-nav-style">');
+      if(s0>=0){const s1=html.indexOf('</style>',s0);if(s1>=0)html=html.slice(0,s0)+html.slice(s1+8);}
+      const a0=html.indexOf('<a class="tdngo-home"');
+      if(a0>=0){const a1=html.indexOf('</a>',a0);if(a1>=0)html=html.slice(0,a0)+html.slice(a1+4);}
+    }
+    html=html.replace('</body>','<div class="tdngo-standard-return"><div class="sidebar-footer"><a href="indicadores.html" target="_top" class="sidebar-home">Central TDNGo</a></div></div></body>');
     document.open();document.write(html);document.close();
   }catch(e){document.getElementById('loading').textContent='Falha ao carregar Classificação de Risco: '+e.message;console.error(e)}
 })();

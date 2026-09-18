@@ -38,7 +38,7 @@ function prepararLista(){
   const stats=page.querySelector('.stats-grid');if(stats)stats.remove();
 
   const toolbar=page.querySelector('.toolbar');
-  if(toolbar){
+  if(toolbar && !byId('busca-lista')){
     toolbar.classList.add('conf-toolbar');
     toolbar.innerHTML=
       '<input type="text" id="busca-lista" placeholder="🔍 Buscar nº, empresa, unidade, competência ou NF..." oninput="confResetPage()">'+

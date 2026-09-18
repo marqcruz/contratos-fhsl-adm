@@ -44,7 +44,20 @@ window.saveUser=async function(){
   }catch(e){toast(e.message||'Falha ao salvar usuário.','err')}
 };
 window.theme=function(){forceLight()};
-const mo=new MutationObserver(patchDom);mo.observe(document.documentElement,{childList:true,subtree:true});
+
+const oldOpenUser=window.openUser;
+if(typeof oldOpenUser==='function')window.openUser=function(){
+  const r=oldOpenUser.apply(this,arguments);
+  queueMicrotask(patchDom);
+  return r;
+};
+const oldRenderMods=window.renderMods;
+if(typeof oldRenderMods==='function')window.renderMods=function(){
+  const r=oldRenderMods.apply(this,arguments);
+  queueMicrotask(patchProfiles);
+  return r;
+};
+
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patchDom,{once:true});else patchDom();
 setTimeout(patchDom,200);setTimeout(patchDom,800);
 })();

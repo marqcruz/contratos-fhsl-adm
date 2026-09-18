@@ -207,21 +207,57 @@ input.metric-input:focus { outline: 2px solid #bfdbfe; border-color: #2563eb; }
 .tdngo-standard-return .sidebar-home:active{transform:translateY(1px)}
 @media print{.tdngo-standard-return{display:none!important}}
 </style>
+<style id="layout-print-reference">
+body{background:#fff;padding:10px}
+.container{max-width:none;width:100%;margin:0;background:#fff;border-radius:0;box-shadow:none;padding:0}
+.doc-header{border-bottom:2px solid #202020;padding-bottom:5px;margin-bottom:6px}
+.doc-header h1{margin:0 0 2px;font-size:18px;line-height:1.05;font-weight:900;letter-spacing:-.02em}
+.doc-header p{margin:0;font-size:10px;color:#64748b}
+.sel-print{display:block!important;font-size:10px;line-height:1.28;margin:0 0 6px;padding:0 0 5px;border-bottom:1px solid #d7dde5;color:#111}
+.sel-print strong{font-weight:800}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:9px;line-height:1.1}
+th{background:#11192c!important;color:#fff!important;padding:4px 4px;font-size:8px;border:1px solid #223047;text-align:center;white-space:nowrap}
+td{padding:3px 5px;border:1px solid #cfd8e3;vertical-align:middle;color:#111}
+tr:nth-child(even){background:#f7f9fc!important}
+.category-cell{background:#e3e9f2!important;font-size:8px;width:104px}
+.param-cell{font-size:8px;color:#334155}
+.period-badge{display:inline-block;margin-left:4px;margin-top:0;padding:0 3px;border-radius:3px;background:#edf4ff;border:0;color:#355b8b;font-size:6px;vertical-align:1px}
+.badge-monit{background:#eef2f7;color:#475569;padding:1px 5px;border-radius:3px;font-size:7px}
+input.metric-input{width:72px;max-width:100%;padding:0;border:0!important;border-bottom:1px dotted #aeb8c5!important;border-radius:0;background:transparent!important;text-align:center;font-size:9px;font-weight:800;color:#111;outline:none}
+input.metric-input:focus{border-bottom:1px solid #2563eb!important;box-shadow:none}
+.res-display{display:inline-block;min-width:74px;padding:1px 5px;border:1px solid #8f9aa8;border-radius:7px;background:#fff!important;color:#111!important;font-size:8px;font-weight:800;white-space:nowrap}
+.disabled-cell{background:#f0f4f9!important;color:#7b8794;text-align:center;font-weight:700}
+.manual-row td:not(.category-cell){background:#fff8ed!important}
+.manual-note{display:block;margin-top:2px;color:#a44717;font-size:6px;font-weight:900;text-transform:uppercase}
+.summary-grid{grid-template-columns:repeat(5,1fr);gap:6px;margin-top:7px}
+.summary-card{padding:6px 8px;border-radius:5px}
+.summary-title{font-size:7px}.summary-value{font-size:12px}
+.footer-note{font-size:7px;margin-top:5px}
+.action-bar,.sel-bar{display:none!important}
+.report-config-btn{position:fixed;right:10px;bottom:12px;z-index:2147482500;border:1px solid #d8e0e8;background:#fff;color:#334155;border-radius:8px;padding:8px 11px;font:700 11px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 4px 14px rgba(15,23,42,.10);cursor:pointer}
+.report-config-btn:hover{background:#f8fafc;border-color:#94a3b8}
+.config-overlay{position:fixed;inset:0;background:rgba(15,23,42,.26);z-index:2147482600;display:none;align-items:center;justify-content:center;padding:20px}
+.config-overlay.open{display:flex}
+.config-card{width:min(760px,100%);background:#fff;border:1px solid #d8e0e8;border-radius:14px;box-shadow:0 24px 70px rgba(15,23,42,.20);padding:18px}
+.config-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.config-card-head b{font-size:15px}.config-close{border:1px solid #d8e0e8;background:#fff;border-radius:7px;padding:6px 9px;cursor:pointer}
+.config-card .action-bar,.config-card .sel-bar{display:flex!important;margin:0}.config-card .action-bar{margin-bottom:10px}.config-card .sel-bar{background:#f8fafc}
+@media print{.report-config-btn,.config-overlay,.tdngo-standard-return{display:none!important}}
+</style>
 </head>
 <body><script id="tdngo-indicadores-gate">(function(){let u=null;try{u=JSON.parse(sessionStorage.getItem('fhsl_session')||'null')}catch(e){}if(!u){location.replace('index.html');return}if(String(u.role||'').toLowerCase()==='admin')return;const raw=u.modulos;if(raw===undefined||raw===null||String(raw).trim()==='')return;const m=Array.isArray(raw)?raw.map(String):String(raw).split(',').map(x=>x.trim());if(!(m.includes('indicadores')||m.includes('risco')))location.replace('index.html')})();</script>
 <div class="container">
-    <div class="action-bar">
-        <div class="action-bar-info">Painel configurável por unidade. As metas e indicadores são ajustados automaticamente conforme o Plano de Trabalho selecionado.</div>
-        <div class="action-buttons">
-            <button type="button" class="btn-secondary" onclick="limparFormulario()">Limpar</button>
-            <button type="button" class="btn-primary" onclick="window.print()">Imprimir / Guardar em PDF</button>
+    <button type="button" class="report-config-btn" onclick="abrirConfigIndicadores()">⚙ Configurar</button>
+    <div class="config-overlay" id="config-overlay" onclick="if(event.target===this)fecharConfigIndicadores()">
+      <div class="config-card">
+        <div class="config-card-head"><b>Configurar relatório</b><button type="button" class="config-close" onclick="fecharConfigIndicadores()">Fechar</button></div>
+        <div class="action-bar">
+            <div class="action-bar-info">Painel configurável por unidade. As metas e indicadores são ajustados automaticamente conforme o Plano de Trabalho selecionado.</div>
+            <div class="action-buttons">
+                <button type="button" class="btn-secondary" onclick="limparFormulario()">Limpar</button>
+                <button type="button" class="btn-primary" onclick="window.print()">Imprimir / Guardar em PDF</button>
+            </div>
         </div>
-    </div>
-
-    <div class="doc-header">
-        <h1>Acompanhamento de Indicadores e Metas</h1>
-        <p>Relatório de Avaliação do Desempenho e Qualidade Operacional — UPAs / UBDS</p>
-    </div>
 
     <div class="sel-bar">
         <div class="sel-field sel-grow">
@@ -248,6 +284,13 @@ input.metric-input:focus { outline: 2px solid #bfdbfe; border-color: #2563eb; }
             </select>
         </div>
     </div>
+      </div>
+    </div>
+
+    <div class="doc-header">
+        <h1>ACOMPANHAMENTO PARCIAL DE INDICADORES E METAS</h1>
+        <p>Relatório Parcial de Avaliação do Desempenho e Qualidade Operacional — UPAs / UBDS</p>
+    </div>
 
     <div class="sel-print" id="sel-print"></div>
 
@@ -264,7 +307,7 @@ input.metric-input:focus { outline: 2px solid #bfdbfe; border-color: #2563eb; }
                         <th style="width:240px;">Parâmetro de pontuação</th>
                         <th style="width:105px;">Realizado</th>
                         <th style="width:50px;">Máx</th>
-                        <th style="width:60px;">Resultado</th>
+                        <th style="width:118px;">Resultado Parcial</th>
                     </tr>
                 </thead>
                 <tbody id="tbody-indicadores"></tbody>
@@ -406,6 +449,7 @@ function trocarUnidade() {
     document.getElementById('sel-end').textContent = unidade ? unidade.endereco : '';
     renderizar();
     atualizarCabecalhoImpressao();
+    if(unidadeAtual) fecharConfigIndicadores();
 }
 
 function trocarPeriodo() {
@@ -428,7 +472,7 @@ function atualizarCabecalhoImpressao() {
     const periodo = document.getElementById('sel-periodo').selectedOptions[0]?.textContent || '';
     const box = document.getElementById('sel-print');
     if (!unidade) { box.innerHTML = ''; return; }
-    box.innerHTML = `<strong>Unidade:</strong> ${esc(unidade.nome)}<br><span>${esc(unidade.endereco)}</span>` +
+    box.innerHTML = `<strong>Unidade:</strong> ${esc(unidade.nome)}<br><strong>Estr.:</strong> ${esc(unidade.endereco)}` +
         (comp ? `<br><strong>Competência:</strong> ${esc(comp)}` : '') +
         `<br><strong>Meta de produção:</strong> ${esc(periodo)} | <strong>Base:</strong> ${esc(unidade.fonte)}`;
 }
@@ -475,7 +519,7 @@ function renderizar() {
             <td class="param-cell">≥75%: 15 | ≥60% e &lt;75%: 10 | &lt;60%: 0</td>
             <td class="text-center"><input class="metric-input" type="number" min="0" step="1" data-input-id="${item.id}" data-score-type="producao" data-meta="${meta}" oninput="entradaAlterada()"></td>
             <td class="text-center">15</td>
-            <td class="text-center"><span id="res-${item.id}" class="res-display">—</span></td>
+            <td class="text-center"><span id="res-${item.id}" class="res-display">—</span>${String(item.verificacao).toLowerCase()==='trimestral'?'<span class="manual-note">Pontuação manual</span>':''}</td>
         </tr>`);
     });
 
@@ -493,7 +537,7 @@ function renderizar() {
     });
 
     QUALIDADE.forEach((item, idx) => {
-        linhas.push(`<tr>
+        linhas.push(`<tr class="${String(item.verificacao).toLowerCase()==='trimestral'?'manual-row':''}">
             ${idx === 0 ? `<td rowspan="${QUALIDADE.length}" class="category-cell">Qualidade</td>` : ''}
             <td class="text-center">${idx+1}</td>
             <td>${esc(item.nome)}<div class="period-badge">${esc(item.verificacao)}</div></td>
@@ -556,7 +600,19 @@ function calcular() {
         const meta = parseFloat(el.dataset.meta || '0');
         const pts = pontuar(tipo, valor, meta);
         const res = document.getElementById(`res-${el.dataset.inputId}`);
-        if (res) res.textContent = pts === null ? '—' : pts;
+        if (res) {
+            if (pts === null) res.textContent = '—';
+            else if (tipo === 'producao') {
+                const pct = meta > 0 ? (valor/meta)*100 : 0;
+                res.textContent = pct.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) + '% - ' + pts;
+            } else if (['risco','transferencia','insatisfeitos','documentos'].includes(tipo)) {
+                res.textContent = valor.toLocaleString('pt-BR',{maximumFractionDigits:1}) + '% - ' + pts;
+            } else if (tipo === 'tempo') {
+                res.textContent = valor.toLocaleString('pt-BR',{maximumFractionDigits:1}) + ' min - ' + pts;
+            } else {
+                res.textContent = String(pts);
+            }
+        }
         if (pts === null) return;
         if (tipo === 'producao') producao += pts;
         else if (['risco','transferencia','tempo'].includes(tipo)) desempenho += pts;
@@ -588,9 +644,12 @@ function limparFormulario() {
     calcular();
 }
 
+function abrirConfigIndicadores(){document.getElementById('config-overlay')?.classList.add('open')}
+function fecharConfigIndicadores(){document.getElementById('config-overlay')?.classList.remove('open')}
 document.addEventListener('DOMContentLoaded', () => {
     periodoAtual = document.getElementById('sel-periodo').value;
     atualizarCabecalhoImpressao();
+    if(!document.getElementById('sel-upa').value) abrirConfigIndicadores();
 });
 </script>
 

@@ -116,6 +116,7 @@ function fmtDT(v){`);
  html=html.replace("a.download='visitantes_sede_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv'", "a.download='visitantes_'+(unidadesAcesso.find(x=>String(x.id)===String(unidadeAtual))?.nome||'unidade').replace(/[^a-z0-9]+/gi,'_').toLowerCase()+'_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv'");
  html=html.replace(/visitantes-telemedicina-v1\.js\?v=[^"']+/g,'visitantes-telemedicina-v1.js?v=20260918-0115');
  html=html.replace(/visitantes-telemedicina-v3-overrides\.js\?v=[^"']+/g,'visitantes-telemedicina-v3-overrides.js?v=20260918-0115');
+ html=html.replace('</body>','<script src="visitantes-relatorio-v2.js?v=20260918-0240"><\\/script></body>');
  if(!html.includes('trocarUnidadeVisitantes'))throw new Error('Separação por unidade não aplicada.');
  html=html.replace('</body>','</body>');
  document.open();document.write(html);document.close();

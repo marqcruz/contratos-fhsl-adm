@@ -7,7 +7,7 @@
  let sess=null;
  try{sess=JSON.parse(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'null')}catch(e){}
  if(!sess||!(sess.tdngoToken||sess.token)){location.replace('index.html');return;}
- const r=await fetch('visitantes.html?v=20260918-0040',{cache:'no-store'});if(!r.ok)throw new Error('visitantes.html HTTP '+r.status);let html=await r.text();
+ const r=await fetch('visitantes.html?v=20260918-0145',{cache:'no-store'});if(!r.ok)throw new Error('visitantes.html HTTP '+r.status);let html=await r.text();
 
  // Remove a tela de login e estilos de autenticação antes de qualquer renderização.
  {
@@ -71,6 +71,38 @@
  html=html.replace('<div><div class="logo-text">Controle de Acesso</div><div class="logo-sub">Sede Administrativa</div></div>','<div><div class="logo-text">Controle de Acesso</div><div class="logo-sub" id="side-unit-name">Unidade</div></div>');
  html=html.replace('<div class="topbar-right">\n      <button class="bell-btn" id="theme-btn"',`<div class="topbar-right">\n      <select id="unidade-top" class="unit-access-select" onchange="trocarUnidadeVisitantes()" title="Unidade ativa"></select>\n      <button class="bell-btn" id="theme-btn"`);
  html=html.replace("let currentUser=null, visitantes=[], config={tipos:[],locais:[],setores:[],motivos:[]}, relDados=[], unidadesAcesso=[];","let currentUser=null, visitantes=[], config={tipos:[],locais:[],setores:[],motivos:[]}, relDados=[], unidadesAcesso=[], unidadeAtual=new URLSearchParams(location.search).get('unidade')||'';");
+
+ // Datas visíveis sempre em padrão brasileiro DD/MM/AAAA.
+ html=html.replace('<input type="date" id="filtro-data" onchange="renderLista(true)">','<input type="text" id="filtro-data" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraDataBR(this);renderLista(true)">');
+ html=html.replace('<input type="date" id="rel-ini">','<input type="text" id="rel-ini" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraDataBR(this)">');
+ html=html.replace('<input type="date" id="rel-fim">','<input type="text" id="rel-fim" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraDataBR(this)">');
+ html=html.replace('<input type="date" id="f-agenda-data">','<input type="text" id="f-agenda-data" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" oninput="mascaraDataBR(this)">');
+
+ html=html.replace("function fmtDT(v){",`function mascaraDataBR(el){
+  let v=String(el.value||'').replace(/\\D/g,'').slice(0,8);
+  if(v.length>4)v=v.replace(/^(\\d{2})(\\d{2})(\\d{0,4}).*/,'$1/$2/$3');
+  else if(v.length>2)v=v.replace(/^(\\d{2})(\\d{0,2}).*/,'$1/$2');
+  el.value=v;
+}
+function dataBrParaIso(v){
+  const m=String(v||'').match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
+  if(!m)return'';
+  const d=Number(m[1]),mo=Number(m[2]),y=Number(m[3]);
+  const dt=new Date(Date.UTC(y,mo-1,d));
+  if(dt.getUTCFullYear()!==y||dt.getUTCMonth()!==mo-1||dt.getUTCDate()!==d)return'';
+  return m[3]+'-'+m[2]+'-'+m[1];
+}
+function isoParaDataBr(v){
+  const m=String(v||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+  return m?m[3]+'/'+m[2]+'/'+m[1]:'';
+}
+function fmtDT(v){`);
+
+ html=html.replace("data=document.getElementById('filtro-data').value;","data=dataBrParaIso(document.getElementById('filtro-data').value);");
+ html=html.replace("const ag=paraInputLocal(v.Agendamento);setVal('f-agenda-data',ag.slice(0,10));","const ag=paraInputLocal(v.Agendamento);setVal('f-agenda-data',isoParaDataBr(ag.slice(0,10)));");
+ html=html.replace("? comFusoSaoPaulo(document.getElementById('f-agenda-data').value+'T'+document.getElementById('f-agenda-hora').value) : ''","? comFusoSaoPaulo(dataBrParaIso(document.getElementById('f-agenda-data').value)+'T'+document.getElementById('f-agenda-hora').value) : ''");
+ html=html.replace("document.getElementById('rel-ini').value=ini;document.getElementById('rel-fim').value=fim","document.getElementById('rel-ini').value=isoParaDataBr(ini);document.getElementById('rel-fim').value=isoParaDataBr(fim)");
+ html=html.replace("const ini=document.getElementById('rel-ini').value,fim=document.getElementById('rel-fim').value,tipo=document.getElementById('rel-tipo').value","const ini=dataBrParaIso(document.getElementById('rel-ini').value),fim=dataBrParaIso(document.getElementById('rel-fim').value),tipo=document.getElementById('rel-tipo').value");
  html=html.replace("function podeExcluir(){return currentUser&&String(currentUser.role||'').toLowerCase()==='admin'}","function podeExcluir(){return currentUser&&['admin','gestor'].includes(String(currentUser.role||'').toLowerCase())}");
  html=html.replace("const r=await visitantesApi('bootstrap',{limit:800});", "const r=await visitantesApi('bootstrap',{limit:800,unidadeId:unidadeAtual||undefined});");
  html=html.replace("visitantes=d.visitantes||[];\n    unidadesAcesso=d.unidades||[];\n    if(d.config)config=d.config;\n    preencherSelecoes();atualizarSugestoes();renderTudo()",`visitantes=d.visitantes||[];\n    unidadesAcesso=d.unidades||[];\n    if(d.config)config=d.config;\n    if(!unidadeAtual&&unidadesAcesso[0]){unidadeAtual=unidadesAcesso[0].id;const rr=await visitantesApi('list',{limit:800,unidadeId:unidadeAtual});if(rr.ok)visitantes=rr.data||[];}\n    if(unidadeAtual&&!unidadesAcesso.some(u=>String(u.id)===String(unidadeAtual))&&unidadesAcesso[0]){unidadeAtual=unidadesAcesso[0].id;const rr=await visitantesApi('list',{limit:800,unidadeId:unidadeAtual});if(rr.ok)visitantes=rr.data||[];}\n    atualizarSeletorUnidade();preencherSelecoes();atualizarSugestoes();renderTudo()`);

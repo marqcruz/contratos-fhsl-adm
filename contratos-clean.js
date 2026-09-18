@@ -65,5 +65,5 @@
   var sd=showDetail;showDetail=function(id){sd(id);var x=contracts.find(function(z){return z.id===String(id);});if(x&&x.tipo==='Termo Aditivo'&&ordem(x)&&el('modal-title'))el('modal-title').innerHTML+=' <span class="badge aditivo">'+ordem(x)+'º aditivo</span>';var f=el('modal-footer');if(f)f.querySelectorAll('button').forEach(function(b){if(/imprimir/i.test(b.textContent))b.remove();});};
   if(typeof apiFetch==='function'){var oldApi=apiFetch;apiFetch=function(action,payload){if(action==='extractpdf'||action==='uploadpdf')return Promise.resolve({ok:false,message:'PDF e IA desativados.'});return oldApi(action,payload);};}
   doLogout=function(){sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');window.top.location.replace('index.html');};
-  try{loadContracts();}catch(e){console.error('Patch Contratos',e);}
+
 })();

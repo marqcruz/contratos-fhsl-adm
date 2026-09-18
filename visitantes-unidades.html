@@ -4,7 +4,48 @@
 <body><div id="loading-unit">Carregando controle de visitantes...</div>
 <script>
 (async()=>{try{
- const r=await fetch('visitantes.html?v=20260905-1345',{cache:'no-store'});if(!r.ok)throw new Error('visitantes.html HTTP '+r.status);let html=await r.text();
+ let sess=null;
+ try{sess=JSON.parse(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'null')}catch(e){}
+ if(!sess||!(sess.tdngoToken||sess.token)){location.replace('index.html');return;}
+ const r=await fetch('visitantes.html?v=20260918-0040',{cache:'no-store'});if(!r.ok)throw new Error('visitantes.html HTTP '+r.status);let html=await r.text();
+
+ // Remove a tela de login e estilos de autenticação antes de qualquer renderização.
+ {
+   const l0=html.indexOf('<div class="login-screen" id="login-screen">');
+   const app0=html.indexOf('<div class="app" id="app"',l0);
+   if(l0>=0&&app0>l0) html=html.slice(0,l0)+html.slice(app0);
+   const css0=html.indexOf('/* LOGIN */');
+   const css1=html.indexOf('/* APP */',css0);
+   if(css0>=0&&css1>css0) html=html.slice(0,css0)+html.slice(css1);
+ }
+
+ html=html.replace("document.getElementById('login-screen').style.display='none';",'');
+ html=html.replace(
+   "function doLogout(){sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');currentUser=null;document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('login-pass').value=''}",
+   "function doLogout(){sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');currentUser=null;location.replace('index.html')}"
+ );
+
+ // Remove completamente a navegação flutuante antiga.
+ {
+   const s0=html.indexOf('<style id="tdngo-standard-nav-style">');
+   if(s0>=0){const s1=html.indexOf('</style>',s0);if(s1>=0)html=html.slice(0,s0)+html.slice(s1+8);}
+   const a0=html.indexOf('<a class="tdngo-home"');
+   if(a0>=0){const a1=html.indexOf('</a>',a0);if(a1>=0)html=html.slice(0,a0)+html.slice(a1+4);}
+   const n0=html.indexOf('<script data-tdngo-central-nav');
+   if(n0>=0){const n1=html.indexOf('</script>',n0);if(n1>=0)html=html.slice(0,n0)+html.slice(n1+9);}
+ }
+
+ // Componente padronizado de retorno à Central.
+ const sidebarCss='<style id="tdngo-sidebar-home-standard">'+
+ '.sidebar-footer{margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)}'+
+ '.sidebar-home{display:flex;align-items:center;justify-content:center;width:100%;min-height:36px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text)!important;text-decoration:none!important;font-size:12px;font-weight:700;line-height:1.2;box-sizing:border-box;transition:.15s ease}'+
+ '.sidebar-home:hover{border-color:var(--accent);color:var(--accent-text)!important;background:var(--accent-bg)}'+
+ '.sidebar-home:active{transform:translateY(1px)}'+
+ '</style>';
+ html=html.replace('</head>',sidebarCss+'</head>');
+ if(!html.includes('class="sidebar-footer"')){
+   html=html.replace('</aside>','<div class="sidebar-footer"><a href="index.html" target="_top" class="sidebar-home">Central TDNGo</a></div></aside>');
+ }
  html=html.replace('</style>\n\n\n<style>\n/* ===== VISITANTES SEDE — v2 funcional ===== */',`.unit-access-select{min-width:230px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-weight:650}.unit-access-badge{font-size:10px;color:var(--text2);margin-top:2px}\n</style>\n\n\n<style>\n/* ===== VISITANTES SEDE — v2 funcional ===== */`);
  html=html.replace('<div><div class="logo-text">Controle de Acesso</div><div class="logo-sub">Sede Administrativa</div></div>','<div><div class="logo-text">Controle de Acesso</div><div class="logo-sub" id="side-unit-name">Unidade</div></div>');
  html=html.replace('<div class="topbar-right">\n      <button class="bell-btn" id="theme-btn"',`<div class="topbar-right">\n      <select id="unidade-top" class="unit-access-select" onchange="trocarUnidadeVisitantes()" title="Unidade ativa"></select>\n      <button class="bell-btn" id="theme-btn"`);
@@ -21,8 +62,8 @@
  html=html.replace("const p={\n    UnidadeId:document.getElementById('f-unidade')?.value||'',", "const p={\n    UnidadeId:unidadeAtual||document.getElementById('f-unidade')?.value||'',");
  html=html.replace("a.download='visitantes_sede_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv'", "a.download='visitantes_'+(unidadesAcesso.find(x=>String(x.id)===String(unidadeAtual))?.nome||'unidade').replace(/[^a-z0-9]+/gi,'_').toLowerCase()+'_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv'");
  if(!html.includes('trocarUnidadeVisitantes'))throw new Error('Separação por unidade não aplicada.');
- html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"><\/script></body>');
+ html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260918-0040"><\/script></body>');
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('loading-unit').textContent='Falha ao carregar Visitantes: '+e.message;console.error(e)}})();
-</script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1602"></script>
+</script>
 </body></html>

@@ -32,7 +32,13 @@
    if(d0>=0&&d1>d0) html=html.slice(0,d0)+html.slice(d1);
  }
 
- // Tema claro é o único tema desta página, aplicado antes do primeiro paint.
+ // Tema claro é o único tema desta página.
+ // Substitui a paleta raiz escura antes do document.write para impedir qualquer paint preto.
+ html=html.replace(
+   ':root{\n  --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--border:#2a3140;\n  --text:#e6edf3;--text2:#9aa7b8;--text3:#6b7888;\n  --accent:#3b9eff;--accent-bg:#15243a;--accent-text:#79c0ff;\n  --green:#3fb950;--green-bg:#11271a;--green-text:#56d364;\n  --yellow:#d29922;--yellow-bg:#2b2310;--yellow-text:#e3b341;\n  --red:#f85149;--red-bg:#2d1416;--red-text:#ff7b72;\n  --purple:#a371f7;--purple-bg:#21193a;--purple-text:#bc8cff;\n  --orange:#db6d28;--orange-bg:#2c1a0e;--orange-text:#f0883e;\n  --radius:9px;--shadow:0 1px 3px rgba(0,0,0,.4);\n}',
+   ':root{\n  --bg:#f4f4f2;--surface:#fff;--surface2:#f0f0ed;--border:#e2e2de;\n  --text:#1a1a18;--text2:#5c5c58;--text3:#9a9a96;\n  --accent:#1d6aad;--accent-bg:#eff6ff;--accent-text:#1558a0;\n  --green:#15803d;--green-bg:#f0fdf4;--green-text:#14693a;\n  --yellow:#a16207;--yellow-bg:#fefce8;--yellow-text:#926008;\n  --red:#b91c1c;--red-bg:#fef2f2;--red-text:#a81818;\n  --purple:#6d28d9;--purple-bg:#f5f3ff;--purple-text:#5b21b6;\n  --orange:#c2410c;--orange-bg:#fff7ed;--orange-text:#9a3412;\n  --radius:9px;--shadow:0 1px 3px rgba(0,0,0,.07);\n}'
+ );
+ html=html.replace('.loading-overlay{position:fixed;inset:0;background:rgba(13,17,23,.8);','.loading-overlay{position:fixed;inset:0;background:rgba(244,247,250,.88);');
  html=html.replace('<body>','<body data-theme="light">');
  html=html.replace(/<button class="bell-btn" id="theme-btn"[^>]*>[^<]*<\/button>/,'');
  html=html.replace("document.getElementById('app').style.display='flex';loadUserTheme();","document.getElementById('app').style.display='flex';");
@@ -76,6 +82,8 @@
  html=html.replace("const m=PAGE_META[id]||['',''];document.getElementById('pg-title').textContent=m[0];document.getElementById('pg-sub').textContent=m[1];", "const m=PAGE_META[id]||['',''];document.getElementById('pg-title').textContent=m[0];const u=unidadesAcesso.find(x=>String(x.id)===String(unidadeAtual));document.getElementById('pg-sub').textContent=u?u.nome:m[1];");
  html=html.replace("const p={\n    UnidadeId:document.getElementById('f-unidade')?.value||'',", "const p={\n    UnidadeId:unidadeAtual||document.getElementById('f-unidade')?.value||'',");
  html=html.replace("a.download='visitantes_sede_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv'", "a.download='visitantes_'+(unidadesAcesso.find(x=>String(x.id)===String(unidadeAtual))?.nome||'unidade').replace(/[^a-z0-9]+/gi,'_').toLowerCase()+'_'+(ini||'inicio')+'_'+(fim||'fim')+'.csv'");
+ html=html.replace(/visitantes-telemedicina-v1\.js\?v=[^"']+/g,'visitantes-telemedicina-v1.js?v=20260918-0115');
+ html=html.replace(/visitantes-telemedicina-v3-overrides\.js\?v=[^"']+/g,'visitantes-telemedicina-v3-overrides.js?v=20260918-0115');
  if(!html.includes('trocarUnidadeVisitantes'))throw new Error('Separação por unidade não aplicada.');
  html=html.replace('</body>','</body>');
  document.open();document.write(html);document.close();

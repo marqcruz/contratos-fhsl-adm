@@ -14,6 +14,9 @@ html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:
 <script>
 (async()=>{
   try{
+    let sess=null;
+    try{sess=JSON.parse(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'null')}catch(e){}
+    if(!sess||!(sess.tdngoToken||sess.token)){location.replace('index.html');return;}
     const loaderUrl='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/0e6ebb5caf15077fb79db59b708a7f3b26ed6ba9/conferencia.html';
     const r=await fetch(loaderUrl,{cache:'no-store'});
     if(!r.ok) throw new Error('HTTP '+r.status);
@@ -35,8 +38,31 @@ html,body{margin:0;min-height:100%;background:#f4f7fa;color:#18222d;font-family:
       html=html.split(badClose2).join(closeScript);
       html=html.split(badClose1).join(closeScript);
 
-      const extras='<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260917-1445">'+closeScript+
-        '<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260917-1445">'+closeScript;
+      // O HTML final da Conferência ainda trazia uma segunda tela de login.
+      // A autenticação é exclusivamente pela sessão central do TDNGo.
+      if(html.includes('id="page-lista"')){
+        html=html.replace(/<div class="login-screen" id="login-screen">[\\s\\S]*?<div class="app" id="app"/m,'<div class="app" id="app"');
+        html=html.replace(/\\/\\* LOGIN \\*\\/[\\s\\S]*?\\/\\* APP \\*\\//m,'/* APP */');
+        html=html.replace("document.getElementById('login-screen').style.display='none';",'');
+        html=html.replace('<body>','<body data-theme="light">');
+
+        const listaCss='<style id="conf-lista-v2-style">'+
+          '.conf-toolbar{display:grid!important;grid-template-columns:minmax(280px,2fr) repeat(4,minmax(150px,1fr));gap:8px!important;align-items:center;margin-bottom:8px!important}'+
+          '.conf-toolbar input,.conf-toolbar select{width:100%;min-width:0;height:36px;border-radius:8px}'+
+          '.conf-toolbar .btn{height:36px;white-space:nowrap}'+
+          '.pdf-retention-tag{display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;padding:6px 10px;border:1px solid #cfe0f2;border-radius:999px;background:#eef6ff;color:#285d8f;font-size:11px;font-weight:700}'+
+          '.conf-pager{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 2px 0;color:var(--text2);font-size:12px}'+
+          '.pager-actions{display:flex;align-items:center;gap:6px}.pager-actions select{height:30px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);padding:3px 8px}'+
+          '.conf-actions{white-space:nowrap}.pdf-empty{opacity:.45}.danger-soft{background:var(--red-bg);color:var(--red-text);border-color:var(--red-bg)}'+
+          '@media(max-width:1250px){.conf-toolbar{grid-template-columns:minmax(240px,2fr) repeat(3,minmax(145px,1fr))}}'+
+          '@media(max-width:850px){.conf-toolbar{grid-template-columns:1fr 1fr}.conf-toolbar input{grid-column:1/-1}.conf-pager{align-items:flex-start;flex-direction:column}}'+
+          '</style>';
+        html=html.replace('</head>',listaCss+'</head>');
+      }
+
+      const extras='<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260918-0010">'+closeScript+
+        '<script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260918-0010">'+closeScript+
+        '<script src="conferencia-lista-v2.js?v=20260918-0010">'+closeScript;
       if(html.includes('</body>')) html=html.replace('</body>',extras+'</body>');
 
       nativeWrite(html);

@@ -17,7 +17,6 @@
   if(!r.ok)throw new Error('HTTP '+r.status);
   let html=await r.text();
   html=html.replace(/sessionStorage\.getItem\('fhsl_session'\)\|\|'null'/g,"(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session'))||'null'");
-  html=html.replace(/tdngo-central-nav\.js\?v=[^\"']+/g,'tdngo-central-nav.js?v=20260915-1602');
   document.open();document.write(html);document.close();
  }catch(e){
   const el=document.getElementById('boot');

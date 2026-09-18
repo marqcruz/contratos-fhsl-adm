@@ -8,7 +8,7 @@
     let sess=null;
     try{sess=JSON.parse(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'null')}catch(e){}
     if(!sess||!(sess.tdngoToken||sess.token)){location.replace('index.html');return;}
-    const r=await fetch('admin-base-current.html?v=20260918-0415',{cache:'no-store'});
+    const r=await fetch('admin-base-current.html?v=20260918-0435',{cache:'no-store'});
     if(!r.ok)throw new Error('HTTP '+r.status);
     let html=await r.text();
     html=html.replace('id="tb-users"','id="tb_users"').replace('id="tb-units"','id="tb_units"').replace('id="tb-locals"','id="tb_locals"').replace('id="tb-audit"','id="tb_audit"').replace(/\blogin\(\)/g,'doLogin()');
@@ -23,7 +23,6 @@
     html=html.replace('<button class="btn" onclick="theme()">◐ Tema</button>','');
     html=html.replace("document.body.dataset.theme=localStorage.getItem('tdngo_theme')||'dark'","document.body.dataset.theme='light';localStorage.setItem('tdngo_theme','light')");
     html=html.replace('<button class="active" data-page="usuarios" onclick="show(\'usuarios\',this)">👤 Usuários</button>','<button class="active" data-page="usuarios" onclick="show(\'usuarios\',this)">👤 Usuários e acessos</button><a href="admin-visitantes.html">🪪 Config. Visitantes</a>');
-    html=html.replace('<a class="home" href="index.html">⌂ TDNGo</a>','<a class="home" href="index.html">← Voltar ao TDNGo</a>');
     html=html.replace("['conferencia','📑 Conferência'],['admin','⚙️ Administração']","['conferencia','📑 Conferência'],['documentos','📄 Documentos Internos'],['planejamento_compras','📦 Planejamento de Compras'],['patrimonios','🏷️ Patrimônios'],['risco','🏷️ Classificação de Risco'],['manutencao','🛠️ Manutenção'],['admin','⚙️ Administração']");
     html=html.replace(/<div class="full"><label style="text-transform:none"><input id="uaprova"[\s\S]*?<\/label><\/div>/,'');
     html=html.replace(/uaprova\.checked=bool\(u\?\.AprovaConf\);?/g,'');

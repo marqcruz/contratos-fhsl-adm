@@ -5,6 +5,9 @@
 <script>
 (async()=>{
  try{
+  let sess=null;
+  try{sess=JSON.parse(sessionStorage.getItem('fhsl_session')||'null')}catch(e){}
+  if(!sess||!sess.tdngoToken){location.replace('index.html');return;}
   const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/4a6f1f45767a06a6dd14ba9d9ea04472b609ab9c/contratos-gestao.html';
   const r=await fetch(base,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);
   let html=await r.text();
@@ -30,6 +33,13 @@
   html=html.replace(oldFn,newFn);
   html=html.replace(/Apps Script v9/g,'API Supabase');
   html=html.replace(/Apps Script/g,'API Supabase');
+
+  // A autenticação é feita pela sessão central do TDNGo.
+  // Não renderizar uma segunda tela de login dentro do módulo.
+  html=html.replace(/<div class="login-screen" id="login-screen">[\s\S]*?<\/div>\s*<div class="app" id="app"/m,'<div class="app" id="app"');
+  html=html.replace("document.getElementById('login-screen').style.display='none';",'');
+  html=html.replace(/function doLogout\(\)\{[\s\S]*?\n\}/m,"function doLogout(){sessionStorage.removeItem('fhsl_session');currentUser=null;location.replace('index.html');}");
+
 
   // Contratos de Gestão é exclusivamente escuro: remove CSS, botão e persistência do tema claro.
   html=html.replace(/body\\[data-theme="light"\\]\\{[\\s\\S]*?\\}\\s*:root\\{/m,':root{');

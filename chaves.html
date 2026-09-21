@@ -5,7 +5,7 @@
 <script>
 (async()=>{
  try{
-  const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/5c2f6e804cd88bd7671cd04b03b6e962bcd45021/chaves.html';
+  const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/5c2f6e804cd88bd7671cd04b03b6e962bcd45021/chaves.html?v=20260921-0945';
   const r=await fetch(base,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);
   let html=await r.text();
   html=html.replace("let user=null,chaves=[],locais=[],movs=[],tipos=[],page='painel';","let user=null,chaves=[],locais=[],movs=[],tipos=[],page='painel',unidadesAcesso=[],unidadeAtual=''; const TIPOS_PADRAO=['Porta','Sala','Portão','Armário','Cadeado','Veículo','Carro','Outros'];");
@@ -31,7 +31,51 @@
   html=html.replace("call(API,{action:'deleteLocal',id})","call(API,{action:'deleteLocal',unidadeId:unidadeAtual,id})");
   if(html.includes('script.google.com')||html.includes('LEGACY_URL'))throw new Error('Referência legada encontrada no módulo Chaves.');
   if(html.includes('list="tipos"')||html.includes("function canAdmin(){return user?.role==='admin'}"))throw new Error('Conversão do formulário/perfil não aplicada.');
-  html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260915-1602"><\/script><script data-tdngo-central-nav src="tdngo-central-nav.js?v=20260915-1602"><\/script></body>');
+
+  // Tema claro nativo do módulo Chaves. Aplicado antes do document.write para não haver mistura de temas.
+  const lightCss=`<style id="chaves-light-native">
+  :root{color-scheme:light;--bg:#f4f7fa;--surface:#fff;--surface2:#f7f9fb;--border:#dce4eb;--text:#18222d;--muted:#667585;--accent:#1769d2;--accent-bg:#eaf3ff;--accent-text:#1558a0}
+  html,body{background:#f4f7fa!important;color:#18222d!important;color-scheme:light!important}
+  body{background:#f4f7fa!important;color:#18222d!important}
+  .app{background:#f4f7fa!important;color:#18222d!important}
+  .side{background:#fff!important;border-right-color:#dce4eb!important}
+  .brand{border-bottom-color:#dce4eb!important}
+  .brand b,.title,.num,td{color:#18222d!important}
+  .brand small,.muted,.sub,.lbl,.fg label{color:#667585!important}
+  .user{background:#f7f9fb!important;color:#18222d!important}
+  .nav{color:#5f6f80!important;background:transparent!important}
+  .nav:hover,.nav.on{background:#eaf3ff!important;color:#1558a0!important}
+  .btn{background:#fff!important;color:#18222d!important;border-color:#dce4eb!important}
+  .btn:hover{background:#f7f9fb!important}
+  .btn.primary,.primary{background:#1769d2!important;color:#fff!important;border-color:#1769d2!important}
+  .btn.danger,.danger{color:#a62e2e!important;background:#fff5f5!important;border-color:#f1c7c7!important}
+  .card,.table,.modal,.loginbox{background:#fff!important;color:#18222d!important;border-color:#dce4eb!important;box-shadow:0 1px 3px rgba(15,23,42,.06)!important}
+  .toolbar input,.toolbar select,.fg input,.fg select,.fg textarea,#unidadeSel,.loginbox input{background:#fff!important;color:#18222d!important;border-color:#cfd8e3!important}
+  .table{overflow:auto}
+  table{background:#fff!important}
+  th{background:#f2f5f8!important;color:#596879!important;border-color:#dce4eb!important}
+  td{background:#fff!important;border-top-color:#e5eaf0!important}
+  tr:hover td{background:#f8fafc!important}
+  .empty{color:#667585!important;background:#fff!important}
+  .disp{background:#ecf8f0!important;color:#20663d!important}
+  .uso{background:#fff7df!important;color:#805b10!important}
+  .perd{background:#fff0f0!important;color:#9f3030!important}
+  .man{background:#f3efff!important;color:#6247a4!important}
+  .modalbg{background:rgba(24,34,45,.42)!important;backdrop-filter:blur(2px)}
+  .mh{border-bottom-color:#dce4eb!important}
+  .login{background:#eef3f7!important}
+  .loginbox h1{color:#18222d!important}
+  .loginerr{color:#b74444!important}
+  .loginstatus{color:#667585!important}
+  .home{display:none!important}
+  .sidebar-footer{margin-top:auto;padding-top:1rem;border-top:1px solid #dce4eb}
+  .sidebar-home{display:flex;align-items:center;justify-content:center;width:100%;min-height:36px;padding:8px 12px;border:1px solid #dce4eb;border-radius:8px;background:#f7f9fb;color:#18222d!important;text-decoration:none!important;font-size:12px;font-weight:700;line-height:1.2;box-sizing:border-box;transition:.15s ease}
+  .sidebar-home:hover{border-color:#1769d2;color:#1558a0!important;background:#eaf3ff}
+  .sidebar-home:active{transform:translateY(1px)}
+  </style>`;
+  html=html.replace('</head>',lightCss+'</head>');
+  html=html.replace('<a class="home" href="index.html">⌂ <span>TDNGo · Voltar aos módulos</span></a>','');
+  html=html.replace('</aside>','<div class="sidebar-footer"><a href="index.html" target="_top" class="sidebar-home">Central TDNGo</a></div></aside>');
   document.open();document.write(html);document.close();
  }catch(e){document.getElementById('loading').textContent='Falha ao carregar Chaves: '+e.message;console.error(e)}
 })();

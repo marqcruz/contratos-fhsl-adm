@@ -30,7 +30,7 @@ function css(){
 #page-dashboard .kpi.tv-info:before{background:#1769d2}
 #page-dashboard .ops-grid{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:10px!important;margin-top:12px!important}
 #page-dashboard .ops-card{min-height:92px!important;padding:14px 15px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;position:relative!important;overflow:hidden!important;border:1px solid var(--tv-border)!important;border-radius:14px!important;box-shadow:0 2px 8px rgba(15,23,42,.04)!important}
-#page-dashboard .ops-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#1769d2}
+#page-dashboard .ops-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#1769d2}#page-dashboard .ops-card.tv-danger{background:#fff7f7!important;border-color:#efc8c5!important}#page-dashboard .ops-card.tv-danger:before{background:#d92d20}#page-dashboard .ops-card.tv-danger b{color:#b42318!important}#page-dashboard .ops-card.tv-warning{background:#fffaf0!important;border-color:#edd6a6!important}#page-dashboard .ops-card.tv-warning:before{background:#d97706}#page-dashboard .ops-card.tv-warning b{color:#9a5b00!important}#page-dashboard .ops-card.tv-success{background:#f4fbf7!important;border-color:#c7e6d2!important}#page-dashboard .ops-card.tv-success:before{background:#22915a}#page-dashboard .ops-card.tv-success b{color:#18794e!important}
 #page-dashboard .ops-card b{font-size:30px!important;line-height:1!important;font-variant-numeric:tabular-nums}
 #page-dashboard .ops-card span{margin-top:7px!important;font-size:9px!important;letter-spacing:.04em;text-transform:uppercase;font-weight:850!important;color:#526173!important}
 #page-dashboard .ops-columns{display:grid!important;grid-template-columns:minmax(0,2fr) minmax(280px,.8fr)!important;gap:12px!important;align-items:stretch!important}
@@ -74,7 +74,7 @@ function css(){
 `;document.head.appendChild(s);
 }
 function classifyKpis(){
- $$('#page-dashboard .kpi').forEach(card=>{
+ $('#page-dashboard .kpi,#page-dashboard .ops-card').forEach(card=>{
    card.classList.remove('tv-danger','tv-warning','tv-success','tv-info','tv-live-pulse');
    const label=(card.querySelector('span')?.textContent||'').toUpperCase();
    const n=Number((card.querySelector('b')?.textContent||'0').replace(/\D/g,''))||0;

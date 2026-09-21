@@ -36,8 +36,8 @@ function addCard(def,before){
   var ref=before?grid.querySelector(before):null;if(ref)grid.insertBefore(a,ref);else grid.appendChild(a);
 }
 function completeModules(){
+  document.querySelectorAll('#hub-grid [data-mod="risco"],#hub-grid a[href="risco.html"]').forEach(function(x){x.remove()});
   addCard({mod:'admin',href:'admin.html',ico:'⚙️',title:'Administração',desc:'Usuários, permissões, unidades, listas e auditoria.',cat:'gestao',search:'administracao administração admin usuarios usuários acessos permissões unidades auditoria'},'[data-mod="contratos"]');
-  addCard({mod:'risco',href:'risco.html',ico:'🏷️',title:'Classificação de Risco',desc:'Acompanhamento de risco, prioridade e tempos assistenciais.',cat:'assistencial',search:'risco classificacao classificação prioridade acolhimento tempos atendimento'},'[data-mod="manutencao"]');
   addCard({mod:'patrimonios',href:'patrimonios.html',ico:'🏷️',title:'Patrimônios',desc:'Bens, QR Code, localização, inventário, fotos e depreciação.',cat:'gestao',search:'patrimonio patrimônios bens inventário depreciação qr code equipamentos móveis ativos unidade localização'},'[data-mod="manutencao"]');
   addCard({mod:'manutencao',href:'manutencao.html',ico:'🛠️',title:'Manutenção',desc:'Chamados 24h, triagem, sobreaviso, SLA, fotos e indicadores.',cat:'operacao',search:'manutencao manutenção chamados ordens serviço predial eletrica hidraulica climatizacao sobreaviso reparos suporte'});
   updateCount();

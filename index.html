@@ -107,6 +107,15 @@
  html=html.replace(/<a class="hub-card"/g,'<a onpointerdown="try{sessionStorage.setItem(\'tdngo_explicit_nav\',Date.now()+\'|\'+(this.getAttribute(\'href\')||\'\'))}catch(e){}" onkeydown="if(event.key===\'Enter\'){try{sessionStorage.setItem(\'tdngo_explicit_nav\',Date.now()+\'|\'+(this.getAttribute(\'href\')||\'\'))}catch(e){}}" class="hub-card"');
  html=html.replace('>⏻</button>','><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="display:block"><path d="M10 5H6.8A2.8 2.8 0 0 0 4 7.8v8.4A2.8 2.8 0 0 0 6.8 19H10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14 8l4 4-4 4M18 12H9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>');
  html=html.replace('</body>','<script data-tdngo-light src="tdngo-light-theme-v1.js?v=20260916-0945"><\/script><script src="index-force-modules-v2.js?v=20260921-1345"><\/script><script src="index-layout-v3.js?v=20260921-1345"><\/script><script src="index-account-v1.js?v=20260916-0945"><\/script><script src="tdngo-robustez-v1.js?v=20260916-0945"><\/script><script>setTimeout(function(){var s=document.querySelector(\'.login-screen\');if(s)s.style.visibility=\'\';var st=document.getElementById(\'login-status\');if(st){st.textContent=\'\';st.className=\'login-status\'}var er=document.getElementById(\'login-err\');if(er){er.textContent=\'\';er.style.display=\'none\'}if(!sessionStorage.getItem(\'fhsl_session\')&&!localStorage.getItem(\'fhsl_session\')){var p=document.getElementById(\'login-pass\');if(p)p.value=\'\'}},250)<\/script></body>');
+ // Normalização final do fluxo de autenticação/logout, aplicada sobre o HTML já transformado.
+ html=html.replace(/function doLogout\(\)\{[\s\S]*?\n\}/,
+   "function doLogout(){\n  sessionStorage.removeItem('fhsl_session');\n  localStorage.removeItem('fhsl_session');\n  sessionStorage.setItem('tdngo_logged_out','1');\n  currentUser=null;\n  location.replace('index.html?logout=1');\n}"
+ );
+ if(new URLSearchParams(location.search).get('logout')==='1'){
+   try{sessionStorage.removeItem('tdngo_logged_out')}catch(e){}
+   try{history.replaceState({tdngo:'login'},'',location.pathname)}catch(e){}
+ }
+ html=html.replace('</body>','<script>(function(){var st=document.getElementById("login-status");if(st){st.textContent="";st.className="login-status"}var er=document.getElementById("login-err");if(er){er.textContent="";er.style.display="none"}if(!sessionStorage.getItem("fhsl_session")&&!localStorage.getItem("fhsl_session")){var p=document.getElementById("login-pass");if(p)p.value=""}})();<\/script></body>');
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('initial').textContent='Falha ao carregar TDNGo: '+e.message;console.error(e)}})();
 </script></body></html>

@@ -130,7 +130,7 @@ function stopHeartbeat(){if(S.heartbeatTimer){clearInterval(S.heartbeatTimer);S.
 function onVisibility(){if(document.visibilityState==='visible')heartbeat()}
 
 function initMasks(){$('p-cpf')?.addEventListener('input',e=>{e.target.value=maskCpf(e.target.value);clearPublicError()});$('p-phone')?.addEventListener('input',e=>{e.target.value=maskPhone(e.target.value);clearPublicError()});document.querySelectorAll('#public-form input,#public-form select,#public-form textarea').forEach(e=>{e.addEventListener('change',clearPublicError)});try{const r=JSON.parse(localStorage.getItem('manut_recent_ticket')||'null');if(r&&Date.now()-r.ts<30*86400000){$('track-protocol').value=r.protocolo||'';$('track-token').value=r.token||''}}catch{}}
-async function init(){initMasks();defaultReportDates();const s=session();if(!s)return showPublic();S.token=s.tdngoToken;showLoading(true);try{await bootstrapInternal()}catch(e){if(e.code===401)return showPublic('Sua sessão expirou.');if(e.code===403)return showPublic('Seu usuário TDNGo não possui perfil de manutenção.');showPublic(e.message||'Não foi possível abrir o painel da manutenção.')}}
+async function init(){initMasks();defaultReportDates();const qs=new URLSearchParams(location.search);const forcePublic=qs.has('public')||qs.has('force_public');if(forcePublic){S.token='';return showPublic()}const s=session();if(!s)return showPublic();S.token=s.tdngoToken;showLoading(true);try{await bootstrapInternal()}catch(e){if(e.code===401)return showPublic('Sua sessão expirou.');if(e.code===403)return showPublic('Seu usuário TDNGo não possui perfil de manutenção.');showPublic(e.message||'Não foi possível abrir o painel da manutenção.')}}
 window.addEventListener('beforeunload',stopHeartbeat);
 init();
 })();

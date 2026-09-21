@@ -7,11 +7,6 @@ function isHidden(el){return !el||el.classList.contains('hide')||getComputedStyl
 function loadingVisible(){const l=$id('loading');return !!l&&!isHidden(l)}
 function appVisible(){return !isHidden($id('internal-app'))||!isHidden($id('public-app'))}
 function hideLoading(){const l=$id('loading');if(l)l.classList.add('hide')}
-function loadScript(file,v){if(!document.querySelector(`script[src*="${file}"]`)){const s=document.createElement('script');s.src=`${file}?v=${v}`;s.defer=true;document.head.appendChild(s)}}
-function loadV6(){
-  if(!document.querySelector('link[href*="manutencao-v6.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='manutencao-v6.css?v=20260914-0110';document.head.appendChild(l)}
-  [['manutencao-ui-v6.js','20260914-0110'],['manutencao-privacy-v6.js','20260914-0135'],['manutencao-metrics-v6.js','20260914-0135'],['manutencao-custom-siren-v14.js','20260916-0915'],['manutencao-siren-presets-v25.js','20260916-0915'],['manutencao-alert-config-v25.js','20260916-0915'],['manutencao-public-fix-v1.js','20260916-0915']].forEach(x=>loadScript(x[0],x[1]));
-}
 async function hardRecover(clear=false){
   try{
     if(clear&&'caches'in window){const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('tdngo-manut-')).map(k=>caches.delete(k)))}
@@ -27,9 +22,6 @@ function showRecovery(reason='O CARREGAMENTO DEMOROU MAIS QUE O ESPERADO.'){
   $id('mn-clear')?.addEventListener('click',()=>hardRecover(true));
 }
 function check(){if(appVisible()){hideLoading();return}if(loadingVisible())showRecovery()}
-window.addEventListener('error',()=>{if(loadingVisible())setTimeout(()=>showRecovery('OCORREU UMA FALHA AO CARREGAR UM DOS ARQUIVOS DO MÓDULO.'),500)});
-window.addEventListener('unhandledrejection',()=>{if(loadingVisible())setTimeout(()=>showRecovery('A CONEXÃO COM O MÓDULO NÃO RESPONDEU COMO ESPERADO.'),500)});
 window.addEventListener('pageshow',()=>{setTimeout(()=>{if(appVisible())hideLoading()},100)});
-loadV6();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(check,WAIT_MS),{once:true});else setTimeout(check,WAIT_MS);
 })();

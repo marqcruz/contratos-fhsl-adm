@@ -17,7 +17,7 @@
 <script>
 (()=>{try{const q=new URLSearchParams(location.search),raw=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session'),s=raw?JSON.parse(raw):null;if(!s?.tdngoToken&&!q.get('public')&&!location.pathname.endsWith('manutencao-chamado.html'))location.replace('manutencao-chamado.html')}catch(e){}})();
 </script>
-<link rel="stylesheet" href="manutencao-settings-organizer-v1.css?v=20260915-1715">
+<link rel="stylesheet" href="manutencao-settings-organizer-v1.css?v=20260915-1715"><style>.public-form-error{margin:0 0 14px;padding:11px 13px;border:1px solid #efb8b8;background:#fff4f4;color:#8d2929;border-radius:10px;font-size:12px;font-weight:700;line-height:1.4}.public-form-error.hide{display:none}.field-error{border-color:#c62828!important;box-shadow:0 0 0 3px rgba(198,40,40,.10)!important}.btn[aria-busy="true"]{opacity:.75;cursor:wait}</style>
 </head>
 <body>
 <div id="loading" class="loading"><div style="text-align:center"><div class="spinner"></div>Carregando manutenção...</div></div>
@@ -28,7 +28,7 @@
     <div class="tabs"><button id="tab-open" class="active" onclick="pubTab('open')">Abrir chamado</button><button id="tab-track" onclick="pubTab('track')">Acompanhar chamado</button></div>
     <section id="public-open" class="card public-form">
       <div class="notice"><strong>Responsabilidade e auditoria.</strong> Para segurança operacional, prevenção de uso indevido e rastreabilidade, o sistema registra data/hora, identificadores técnicos da conexão e navegador. A localização precisa do aparelho é opcional e somente será coletada se você autorizar. Informe apenas dados verdadeiros e relacionados ao serviço.</div>
-      <form id="public-form" onsubmit="submitPublic(event)" style="margin-top:14px">
+      <form id="public-form" onsubmit="submitPublic(event)" style="margin-top:14px"><div id="public-form-error" class="public-form-error hide" role="alert"></div>
         <div class="honeypot"><label>Website<input id="website" autocomplete="off" tabindex="-1"></label></div>
         <div class="grid">
           <div><label class="label">Nome completo <span class="req">*</span></label><input id="p-name" class="input" autocomplete="name" required maxlength="120"></div>
@@ -74,7 +74,7 @@
 <div id="more-modal" class="modal-bg"><div class="modal" style="width:min(520px,100vw)"><div class="modal-h"><b>Mais opções</b><span style="flex:1"></span><button class="btn sm" onclick="closeModal('more-modal')">Fechar</button></div><div class="modal-b"><div class="list"><button class="btn" onclick="closeModal('more-modal');openInternalTicket()">Abrir chamado</button><button class="btn cfg-only" onclick="closeModal('more-modal');showPage('oncall')">Sobreaviso</button><button class="btn cfg-only" onclick="closeModal('more-modal');showPage('settings')">Configurações</button><a class="btn" href="index.html">Central TDNGo</a></div></div></div></div>
 <div id="toast" class="toast"></div>
 <script src="manutencao-notification-guard-v26.js?v=20260916-0945"></script>
-<script src="manutencao-app.js?v=20260915-1715"></script>
+<script src="manutencao-app.js?v=20260921-1415"></script>
 <script src="manutencao-settings-organizer-v1.js?v=20260915-1715"></script>
 <script src="manutencao-ui-v3.js?v=20260913-1740"></script>
 <script src="manutencao-ui-v4.js?v=20260913-2256"></script>

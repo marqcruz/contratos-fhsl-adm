@@ -89,7 +89,7 @@ function classifyKpis(){
 function ensureClock(){
  const actions=$('#page-dashboard .page-head .actions');if(!actions)return;
  let box=$('#page-dashboard .tv-clock');
- $('#page-dashboard .tv-clock').slice(1).forEach(x=>x.remove());
+ $$('#page-dashboard .tv-clock').slice(1).forEach(x=>x.remove());
  if(!box){
    box=document.createElement('div');
    box.className='tv-clock';

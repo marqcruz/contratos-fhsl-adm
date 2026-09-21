@@ -28,6 +28,25 @@ function css(){
 #page-dashboard .kpi.tv-success{background:#f4fbf7!important;border-color:#c7e6d2!important}
 #page-dashboard .kpi.tv-success:before{background:#22915a}
 #page-dashboard .kpi.tv-info:before{background:#1769d2}
+#page-dashboard .ops-grid{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:10px!important;margin-top:12px!important}
+#page-dashboard .ops-card{min-height:92px!important;padding:14px 15px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;position:relative!important;overflow:hidden!important;border:1px solid var(--tv-border)!important;border-radius:14px!important;box-shadow:0 2px 8px rgba(15,23,42,.04)!important}
+#page-dashboard .ops-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#1769d2}
+#page-dashboard .ops-card b{font-size:30px!important;line-height:1!important;font-variant-numeric:tabular-nums}
+#page-dashboard .ops-card span{margin-top:7px!important;font-size:9px!important;letter-spacing:.04em;text-transform:uppercase;font-weight:850!important;color:#526173!important}
+#page-dashboard .ops-columns{display:grid!important;grid-template-columns:minmax(0,2fr) minmax(280px,.8fr)!important;gap:12px!important;align-items:stretch!important}
+#page-dashboard .ops-panel{border-radius:14px!important;border:1px solid var(--tv-border)!important;box-shadow:0 2px 10px rgba(15,23,42,.05)!important;padding:14px!important}
+#page-dashboard .ops-panel>h3{font-size:14px!important;margin:0 0 12px!important;text-transform:uppercase;letter-spacing:.02em}
+#page-dashboard .decision-list{display:grid!important;gap:9px!important}
+#page-dashboard .field-ticket{border:1px solid #d9e3ee!important;border-left:5px solid #1769d2!important;border-radius:12px!important;background:#fff!important;padding:12px 13px!important}
+#page-dashboard .field-ticket:has(.p1),#page-dashboard .field-ticket:has(.bad){border-left-color:#d92d20!important;background:#fff9f9!important}
+#page-dashboard .field-ticket:has(.p2){border-left-color:#e58a00!important;background:#fffaf1!important}
+#page-dashboard .field-ticket h4{font-size:13px!important;margin:7px 0 5px!important}
+#page-dashboard .field-sub{font-size:10px!important;line-height:1.45!important}
+#page-dashboard .field-actions .btn{min-height:34px!important;font-weight:800!important}
+#page-dashboard .team-list{display:grid!important;gap:8px!important}
+#page-dashboard .team-row{min-height:52px!important;padding:9px 10px!important;border:1px solid #e0e6ed!important;border-radius:10px!important;background:#fafcfe!important}
+#page-dashboard .team-row b{font-size:11px!important}
+#page-dashboard .team-state{font-size:8px!important;font-weight:900!important}
 #page-dashboard .section{margin-top:18px}
 #page-dashboard .section-title h3{font-size:14px!important;letter-spacing:.01em}
 #page-dashboard .table-wrap{border-radius:14px!important;border:1px solid var(--tv-border)!important;box-shadow:0 2px 10px rgba(15,23,42,.04)}
@@ -46,9 +65,9 @@ function css(){
  #page-dashboard .kpi b{font-size:36px!important}
  #page-dashboard .main{font-size:13px}
 }
-@media(max-width:1250px){#page-dashboard .kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(max-width:1250px){#page-dashboard .kpis,#page-dashboard .ops-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}#page-dashboard .ops-columns{grid-template-columns:1fr!important}}
 @media(max-width:760px){
- #page-dashboard .kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #page-dashboard .kpis,#page-dashboard .ops-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  #page-dashboard .tv-clock{display:none}
  #page-dashboard .live-banner .tv-last-update{display:none}
 }
@@ -86,7 +105,7 @@ function enhance(){
 }
 function start(){
  enhance();tick();setInterval(tick,1000);
- let t;const page=$('#page-dashboard');if(page){const mo=new MutationObserver(()=>{clearTimeout(t);t=setTimeout(enhance,80)});mo.observe(page,{childList:true,subtree:true})}
+ let t;const watch=()=>{clearTimeout(t);t=setTimeout(()=>{classifyKpis();markUpdated()},80)};['#dash-kpis','#dash-table','#ops-desktop'].forEach(sel=>{const x=$(sel);if(x){const mo=new MutationObserver(watch);mo.observe(x,{childList:true,subtree:true})}})
  const old=window.refreshAll;if(typeof old==='function'&&!old.__tv27){const fn=async function(...a){const r=await old.apply(this,a);setTimeout(enhance,50);return r};fn.__tv27=true;window.refreshAll=fn}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();

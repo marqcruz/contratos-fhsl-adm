@@ -74,25 +74,51 @@
 <div id="more-modal" class="modal-bg"><div class="modal" style="width:min(520px,100vw)"><div class="modal-h"><b>Mais opções</b><span style="flex:1"></span><button class="btn sm" onclick="closeModal('more-modal')">Fechar</button></div><div class="modal-b"><div class="list"><button class="btn" onclick="closeModal('more-modal');openInternalTicket()">Abrir chamado</button><button class="btn cfg-only" onclick="closeModal('more-modal');showPage('oncall')">Sobreaviso</button><button class="btn cfg-only" onclick="closeModal('more-modal');showPage('settings')">Configurações</button><a class="btn" href="index.html">Central TDNGo</a></div></div></div></div>
 <div id="toast" class="toast"></div>
 <script>
-(function(){
+(async function(){
   const q=new URLSearchParams(location.search);
   const publicMode=q.has('public')||q.has('force_public');
-  const load=(src)=>{const s=document.createElement('script');s.src=src;s.defer=false;document.body.appendChild(s)};
-  if(!publicMode)load('manutencao-notification-guard-v26.js?v=20260921-1445');
-  load('manutencao-app.js?v=20260921-1555');
-  if(!publicMode){
-    load('manutencao-custom-siren-v14.js?v=20260921-1605');
-    load('manutencao-siren-presets-v25.js?v=20260921-1605');
-    load('manutencao-alert-config-v25.js?v=20260921-1645');
-    load('manutencao-audio-v8.js?v=20260921-1605');
-    load('manutencao-categories-v12.js?v=20260921-1645');
-    load('manutencao-settings-organizer-v1.js?v=20260915-1715');
-    load('manutencao-settings-fix-v28.js?v=20260921-1645');
-    load('manutencao-ui-v3.js?v=20260913-1740');
-    load('manutencao-ui-v4.js?v=20260913-2256');
-    load('manutencao-ui-v5.js?v=20260914-0005');
-    load('manutencao-recovery.js?v=20260916-0945');
-    load('manutencao-tv-v27.js?v=20260921-1715');
+
+  function load(src,required=false){
+    return new Promise((resolve,reject)=>{
+      const existing=document.querySelector('script[src="'+src+'"]');
+      if(existing){resolve();return}
+      const s=document.createElement('script');
+      s.src=src;
+      s.async=false;
+      s.onload=()=>resolve();
+      s.onerror=()=>{
+        console.error('[manutencao] Falha ao carregar',src);
+        required?reject(new Error('Falha ao carregar '+src)):resolve();
+      };
+      document.body.appendChild(s);
+    });
+  }
+
+  try{
+    if(!publicMode)await load('manutencao-notification-guard-v26.js?v=20260921-1445');
+    await load('manutencao-app.js?v=20260921-1555',true);
+
+    if(!publicMode){
+      await load('manutencao-custom-siren-v14.js?v=20260921-1605');
+      await load('manutencao-siren-presets-v25.js?v=20260921-1605');
+      await load('manutencao-alert-config-v25.js?v=20260921-1645');
+      await load('manutencao-audio-v8.js?v=20260921-1605');
+      await load('manutencao-categories-v12.js?v=20260921-1645');
+      await load('manutencao-settings-organizer-v1.js?v=20260915-1715');
+      await load('manutencao-settings-fix-v28.js?v=20260921-1645');
+      await load('manutencao-ui-v3.js?v=20260913-1740');
+      await load('manutencao-ui-v4.js?v=20260913-2256');
+      await load('manutencao-ui-v5.js?v=20260914-0005');
+      await load('manutencao-tv-v27.js?v=20260921-1715');
+      await load('manutencao-recovery.js?v=20260921-1725');
+    }
+  }catch(e){
+    console.error('[manutencao] Falha crítica de inicialização',e);
+    const l=document.getElementById('loading');
+    if(l){
+      l.classList.remove('hide');
+      l.innerHTML='<div style="width:min(460px,88vw);text-align:center;background:#fff;border:1px solid #dbe3eb;border-radius:16px;padding:22px"><b>NÃO FOI POSSÍVEL INICIAR A MANUTENÇÃO</b><div style="margin-top:8px;color:#64748b">O arquivo principal do módulo não foi carregado. Atualize a página e tente novamente.</div></div>';
+    }
   }
 })();
 </script>

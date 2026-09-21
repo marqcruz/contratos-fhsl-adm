@@ -76,7 +76,7 @@ function css(){
 `;document.head.appendChild(s);
 }
 function classifyKpis(){
- $('#page-dashboard .kpi,#page-dashboard .ops-card').forEach(card=>{
+ $$('#page-dashboard .kpi,#page-dashboard .ops-card').forEach(card=>{
    card.classList.remove('tv-danger','tv-warning','tv-success','tv-info','tv-live-pulse');
    const label=(card.querySelector('span')?.textContent||'').toUpperCase();
    const n=Number((card.querySelector('b')?.textContent||'0').replace(/\D/g,''))||0;

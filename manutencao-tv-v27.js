@@ -8,9 +8,11 @@ function css(){
 #page-dashboard .page-head{align-items:center;margin-bottom:12px}
 #page-dashboard .page-head h2{font-size:25px;letter-spacing:-.02em;margin-bottom:3px}
 #page-dashboard .page-head p{font-size:12px}
-#page-dashboard .page-head .actions{align-items:center;flex-wrap:wrap}
-#page-dashboard .tv-clock{min-width:148px;padding:8px 12px;border:1px solid var(--tv-border);border-radius:12px;background:#fff;text-align:right;box-shadow:0 1px 2px rgba(15,23,42,.04)}
-#page-dashboard .tv-clock strong{display:block;font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
+#page-dashboard .page-head{display:flex!important;justify-content:space-between!important;gap:16px!important}
+#page-dashboard .page-head>div:first-child{min-width:0}
+#page-dashboard .page-head .actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;flex-wrap:nowrap!important;margin-left:auto!important}
+#page-dashboard .tv-clock{flex:0 0 auto;min-width:132px;padding:7px 11px;border:1px solid var(--tv-border);border-radius:12px;background:#fff;text-align:center;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+#page-dashboard .tv-clock strong{display:block;font-size:20px;line-height:1.05;font-variant-numeric:tabular-nums;white-space:nowrap}
 #page-dashboard .tv-clock span{display:block;margin-top:4px;font-size:9px;color:#64748b;text-transform:uppercase;font-weight:800;letter-spacing:.04em}
 #page-dashboard .live-banner{min-height:44px;padding:10px 13px;border-radius:12px;font-size:11px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
 #page-dashboard .live-banner .tv-last-update{margin-left:auto;white-space:nowrap;font-weight:800;color:#315a7f}
@@ -87,7 +89,14 @@ function classifyKpis(){
 function ensureClock(){
  const actions=$('#page-dashboard .page-head .actions');if(!actions)return;
  let box=$('#page-dashboard .tv-clock');
- if(!box){box=document.createElement('div');box.className='tv-clock';box.innerHTML='<strong>--:--</strong><span>--</span>';actions.prepend(box)}
+ $('#page-dashboard .tv-clock').slice(1).forEach(x=>x.remove());
+ if(!box){
+   box=document.createElement('div');
+   box.className='tv-clock';
+   box.innerHTML='<strong>--:--:--</strong><span>--</span>';
+ }
+ if(box.parentElement!==actions)actions.prepend(box);
+ else if(actions.firstElementChild!==box)actions.prepend(box);
 }
 function tick(){
  const box=$('#page-dashboard .tv-clock');if(!box)return;

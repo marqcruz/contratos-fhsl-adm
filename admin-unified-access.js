@@ -69,6 +69,14 @@ function renderAccessMatrix(){
   modsEl.querySelectorAll('.ua-mod').forEach(c=>c.addEventListener('change',()=>toggleModule(c.value)));
 }
 function patchDom(){
+  const qu=document.getElementById('qu');
+  if(qu){
+    qu.setAttribute('type','search');
+    qu.setAttribute('name','tdngo_admin_user_search');
+    qu.setAttribute('autocomplete','off');
+    qu.setAttribute('data-lpignore','true');
+    qu.setAttribute('data-1p-ignore','true');
+  }
   addStyle();
   document.querySelectorAll('a[href="acessos.html"],a[href^="acessos.html?"]').forEach(a=>a.remove());
   const nav=document.querySelector('[data-page="usuarios"]');if(nav)nav.textContent='👤 Usuários e acessos';
@@ -95,10 +103,14 @@ function patchDom(){
 
 window.openUser=async function(id=''){
   patchDom();
+  const filtro=document.getElementById('qu');
+  const filtroAtual=filtro?.value||'';
+  const filtroManual=filtro?.dataset.userTyped||'';
   try{await loadAccess()}catch(e){toast('Não foi possível carregar unidades e módulos: '+e.message,'err');return}
   const u=(users||[]).find(x=>String(x.ID)===String(id));
   uid.value=id;unome.value=u?.Nome||'';uemail.value=u?.Email||'';upass.value='';uperfil.value=u?.Role||'visualizador';uativo.value=bool(u?.Ativo??true)?'true':'false';
   renderAccessMatrix();mu.classList.add('open');
+  queueMicrotask(()=>{if(filtro){filtro.value=filtroAtual;if(filtroManual)filtro.dataset.userTyped=filtroManual}});
 };
 window.renderMods=renderAccessMatrix;
 

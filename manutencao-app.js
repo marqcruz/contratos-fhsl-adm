@@ -15,7 +15,18 @@ function statusPill(s){const c=s==='CONCLUIDO'?'ok':s==='CANCELADO'?'bad':['ABER
 function priPill(p){return `<span class="pill ${String(p||'p3').toLowerCase()}">${esc(p||'P3')}</span>`}
 function session(){try{const raw=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');if(!raw)return null;const x=JSON.parse(raw);return x&&x.tdngoToken?x:null}catch{return null}}
 function clearSession(){try{sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session')}catch{}}
-function validCpfClient(v){return String(v||'').replace(/\D/g,'').length===11}
+function validCpfClient(v){
+  const cpf=String(v||'').replace(/\D/g,'');
+  if(cpf.length!==11||/^(\d)\1{10}$/.test(cpf))return false;
+  let soma=0;
+  for(let i=0;i<9;i++)soma+=Number(cpf[i])*(10-i);
+  let d1=(soma*10)%11;if(d1===10)d1=0;
+  if(d1!==Number(cpf[9]))return false;
+  soma=0;
+  for(let i=0;i<10;i++)soma+=Number(cpf[i])*(11-i);
+  let d2=(soma*10)%11;if(d2===10)d2=0;
+  return d2===Number(cpf[10]);
+}
 function publicError(msg,fieldId=''){
   const box=$('public-form-error');
   if(box){box.textContent=msg;box.classList.remove('hide');box.setAttribute('role','alert');}

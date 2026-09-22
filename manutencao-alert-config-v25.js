@@ -1,6 +1,19 @@
 (()=>{'use strict';if(window.__TDNGO_ALERT_CONFIG_V25__)return;window.__TDNGO_ALERT_CONFIG_V25__=true;
 const API='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-manutencao-config-api';let rows=[],canEdit=false;
 function token(){try{return JSON.parse(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'{}').tdngoToken||''}catch{return''}}
+function notify(msg,type=''){
+  if(typeof window.__tdngoToast==='function'){try{window.__tdngoToast(msg,type);return}catch{}}
+  const e=document.getElementById('toast');
+  if(e){
+    e.textContent=msg;
+    e.className='toast '+type;
+    e.style.display='block';
+    clearTimeout(e.__alertTimer);
+    e.__alertTimer=setTimeout(()=>{e.style.display='none'},3600);
+    return;
+  }
+  console[type==='err'?'error':'log']('[Manutenção]',msg);
+}
 async function post(action,p={}){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token()},body:JSON.stringify({action,...p}),cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok||d.ok===false)throw new Error(d.message||'Falha ao carregar alertas.');return d}
 function cfg(pri){return rows.find(x=>x.prioridade===pri)||{prioridade:pri,atraso_inicial_seg:0,repetir_cada_seg:300,max_repeticoes:1,som:'PERSONALIZADO',volume_percent:100,ativo:true}}
 window.tdngoGetAlertConfig=(pri='P3')=>cfg(pri);
@@ -26,18 +39,18 @@ window.tdngoSaveAlertConfig=async function(){
   const d=await post('alert_save',{rows:out});rows=d.data||out;window.tdngoAlertConfigs=rows;
   const hora=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});render();
   const st2=document.getElementById('alert25-save-status');if(st2){st2.textContent='Salvo às '+hora;st2.className='alert25-save-status ok'}
-  window.toast?.('Configurações de alertas e SLA salvas com sucesso.','ok');
- }catch(e){const sx=document.getElementById('alert25-save-status');if(sx){sx.textContent='Falha ao salvar';sx.className='alert25-save-status err'}window.toast?.(e.message||'Não foi possível salvar as configurações.','err')}
+  notify('Configurações de alertas e SLA salvas com sucesso.','ok');
+ }catch(e){const sx=document.getElementById('alert25-save-status');if(sx){sx.textContent='Falha ao salvar';sx.className='alert25-save-status err'}notify(e.message||'Não foi possível salvar as configurações.','err')}
  finally{const b=document.getElementById('alert25-save');if(b){b.disabled=false;b.textContent='Salvar alertas'}}
 };
 window.tdngoTestConfiguredSiren=async function(pr){
   const som=document.querySelector(`[data-a="som"][data-pr="${pr}"]`)?.value||cfg(pr).som||'PERSONALIZADO';
   const vol=Number(document.querySelector(`[data-a="vol"][data-pr="${pr}"]`)?.value??cfg(pr).volume_percent??100);
-  if(som==='SEM_SOM'||vol<=0){window.toast?.('Selecione um som e volume acima de 0% para testar.','err');return}
+  if(som==='SEM_SOM'||vol<=0){notify('Selecione um som e volume acima de 0% para testar.','err');return}
   try{
     const ok=await window.tdngoPlaySirenPreset?.(som,vol);
-    window.toast?.(ok===false?'O navegador bloqueou o áudio. Clique novamente em Testar.':`Teste ${pr} executado.`,ok===false?'err':'ok');
-  }catch(e){window.toast?.('Não foi possível reproduzir o alerta.','err')}
+    notify(ok===false?'O navegador bloqueou o áudio. Clique novamente em Testar.':`Teste ${pr} executado.`,ok===false?'err':'ok');
+  }catch(e){notify('Não foi possível reproduzir o alerta.','err')}
 }
 function install(){css();load();document.addEventListener('input',e=>{const x=e.target;if(!(x instanceof HTMLInputElement||x instanceof HTMLSelectElement))return;if(!x.closest('#alert25-card'))return;const st=document.getElementById('alert25-save-status');if(st){st.textContent='Alterações pendentes';st.className='alert25-save-status pending'}});document.addEventListener('change',e=>{const x=e.target;if(!(x instanceof HTMLInputElement)||x.dataset.a!=='ativo'||!x.checked)return;const pr=x.dataset.pr;const som=document.querySelector(`[data-a="som"][data-pr="${pr}"]`),vol=document.querySelector(`[data-a="vol"][data-pr="${pr}"]`);if(som&&som.value==='SEM_SOM')som.value=pr==='P1'?'GRAVE':pr==='P2'?'DUPLO':'SUAVE';if(vol&&Number(vol.value)<=0)vol.value=pr==='P4'?'80':'100'});const mo=new MutationObserver(()=>{if(document.querySelector('#page-settings .settings-grid')&&!document.getElementById('alert25-card'))render()});mo.observe(document.body,{childList:true,subtree:true})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();

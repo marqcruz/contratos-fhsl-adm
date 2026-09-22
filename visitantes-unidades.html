@@ -69,7 +69,7 @@
  }
  html=html.replace('</style>\n\n\n<style>\n/* ===== VISITANTES SEDE — v2 funcional ===== */',`.unit-access-select{min-width:230px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-weight:650}.unit-access-badge{font-size:10px;color:var(--text2);margin-top:2px}\n</style>\n\n\n<style>\n/* ===== VISITANTES SEDE — v2 funcional ===== */`);
  html=html.replace('<div><div class="logo-text">Controle de Acesso</div><div class="logo-sub">Sede Administrativa</div></div>','<div><div class="logo-text">Controle de Acesso</div><div class="logo-sub" id="side-unit-name">Unidade</div></div>');
- html=html.replace('<div class="topbar-right">\n      <button class="bell-btn" id="theme-btn"',`<div class="topbar-right">\n      <select id="unidade-top" class="unit-access-select" onchange="trocarUnidadeVisitantes()" title="Unidade ativa"></select>\n      <button class="bell-btn" id="theme-btn"`);
+ html=html.replace('<div class="topbar-right">','<div class="topbar-right"><select id="unidade-top" class="unit-access-select" onchange="trocarUnidadeVisitantes()" title="Unidade ativa" aria-label="Unidade ativa"></select>');
  html=html.replace("let currentUser=null, visitantes=[], config={tipos:[],locais:[],setores:[],motivos:[]}, relDados=[], unidadesAcesso=[];","let currentUser=null, visitantes=[], config={tipos:[],locais:[],setores:[],motivos:[]}, relDados=[], unidadesAcesso=[], unidadeAtual=new URLSearchParams(location.search).get('unidade')||'';");
 
  // Datas visíveis sempre em padrão brasileiro DD/MM/AAAA.
@@ -117,7 +117,7 @@ function fmtDT(v){`);
  html=html.replace(/visitantes-telemedicina-v1\.js\?v=[^"']+/g,'visitantes-telemedicina-v1.js?v=20260918-0115');
  html=html.replace(/visitantes-telemedicina-v3-overrides\.js\?v=[^"']+/g,'visitantes-telemedicina-v3-overrides.js?v=20260918-0115');
  html=html.replace('</body>','<script src="visitantes-relatorio-v2.js?v=20260918-0240"><\\/script></body>');
- if(!html.includes('trocarUnidadeVisitantes'))throw new Error('Separação por unidade não aplicada.');
+ if(!html.includes('id="unidade-top"')||!html.includes('function trocarUnidadeVisitantes'))throw new Error('Separação por unidade não aplicada.');
  html=html.replace('</body>','</body>');
  document.open();document.write(html);document.close();
 }catch(e){document.getElementById('loading-unit').textContent='Falha ao carregar Visitantes: '+e.message;console.error(e)}})();

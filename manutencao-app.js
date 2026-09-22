@@ -120,7 +120,60 @@ window.openClose=function(id){$('action-title').textContent='Concluir chamado';$
 window.closeTicket=async function(id){const b=$('close-save');b.disabled=true;try{const photos=await filesToPhotos($('close-files').files,5);if(!photos.length)throw new Error('Envie ao menos uma foto da solução.');await call('close',{id,solucao:$('close-text').value,fotos:photos});closeModal('action-modal');closeModal('detail-modal');toast('Chamado concluído.','ok');await refreshAll()}catch(e){toast(e.message,'err')}finally{b.disabled=false}}
 window.viewAudit=async function(id){try{const d=await call('origin_audit',{id}),x=d.data;$('action-title').textContent='Auditoria de origem';$('action-body').innerHTML=`<div class="notice"><b>Dados de uso restrito à gestão.</b><div class="small muted">Utilize estas informações apenas quando necessário para segurança, auditoria e apuração autorizada.</div></div><div class="detail-grid" style="margin-top:10px"><div class="kv"><span>CPF informado</span><b>${esc(maskCpf(x.cpf))}</b></div><div class="kv"><span>Telefone</span><b>${esc(formatPhone(x.telefone))}</b></div><div class="kv"><span>IP registrado</span><b>${esc(x.ip||'—')}</b></div><div class="kv"><span>Aceite do termo</span><b>${fmtDate(x.termo_aceite_em)}</b></div><div class="kv full"><span>Navegador</span><b>${esc(x.user_agent||'—')}</b></div>${x.geo?`<div class="kv"><span>Latitude</span><b>${esc(x.geo.lat)}</b></div><div class="kv"><span>Longitude</span><b>${esc(x.geo.lng)}</b></div><div class="kv"><span>Precisão</span><b>${esc(x.geo.accuracy)} m</b></div>`:''}</div>`;$('action-footer').innerHTML=`<button class="btn primary" onclick="closeModal('action-modal')">Fechar</button>`;$('action-modal').classList.add('open')}catch(e){toast(e.message,'err')}}
 
-window.loadReports=async function(){if(!S.permissions.ve_todos){$('report-kpis').innerHTML='<div class="notice">Seu perfil não possui acesso aos indicadores consolidados.</div>';return}try{const from=$('r-from').value?new Date($('r-from').value+'T00:00:00').toISOString():new Date(Date.now()-30*86400000).toISOString(),to=$('r-to').value?new Date($('r-to').value+'T23:59:59').toISOString():new Date().toISOString(),d=await call('reports',{from,to}),m=d.metrics;$('report-kpis').innerHTML=kpi(m.total,'Chamados no período')+kpi(m.pending,'Pendentes')+kpi(m.overdue,'SLA vencido')+kpi(m.closure_rate+'%','Taxa de conclusão')+kpi(fmtMin(m.avg_response_min),'Tempo médio de resposta')+kpi(fmtMin(m.avg_resolution_min),'Tempo médio de resolução')+kpi(m.after_hours,'Chamados em sobreaviso')+kpi(m.reopened,'Reaberturas');renderBars('report-units',d.by_unit,id=>unitName(id));renderBars('report-cats',d.by_category,id=>catName(id));renderBars('report-priority',d.by_priority,id=>id);renderBars('report-status',d.by_status,id=>statusLabel(id))}catch(e){toast(e.message,'err')}}
+window.loadReports=async function(){
+ if(!S.permissions.ve_todos){
+  $('report-kpis').innerHTML='<div class="notice">Seu perfil não possui acesso aos indicadores consolidados.</div>';
+  const p=$('report-production');if(p)p.innerHTML='';
+  return
+ }
+ try{
+  const from=$('r-from').value?new Date($('r-from').value+'T00:00:00').toISOString():new Date(Date.now()-30*86400000).toISOString(),
+        to=$('r-to').value?new Date($('r-to').value+'T23:59:59').toISOString():new Date().toISOString(),
+        d=await call('reports',{from,to}),m=d.metrics;
+  $('report-kpis').innerHTML=
+   kpi(m.total,'Chamados no período')+
+   kpi(m.closed,'Concluídos')+
+   kpi(m.pending,'Pendentes')+
+   kpi(m.overdue,'SLA vencido')+
+   kpi((m.sla_compliance??0)+'%','Cumprimento do SLA')+
+   kpi(m.closure_rate+'%','Taxa de conclusão')+
+   kpi(fmtMin(m.avg_response_min),'Tempo médio de resposta')+
+   kpi(fmtMin(m.avg_resolution_min),'Tempo médio de resolução')+
+   kpi(m.waiting_third||0,'Aguardando terceiros')+
+   kpi(m.waiting_material||0,'Aguardando material')+
+   kpi(m.p1_p2||0,'Chamados P1 / P2')+
+   kpi(m.reopened,'Reaberturas');
+
+  renderProduction(d.production||[]);
+  renderBars('report-units',d.by_unit,id=>unitName(id));
+  renderBars('report-cats',d.by_category,id=>catName(id));
+  renderBars('report-priority',d.by_priority,id=>id);
+  renderBars('report-status',d.by_status,id=>statusLabel(id))
+ }catch(e){toast(e.message,'err')}
+}
+function renderProduction(rows){
+ const e=$('report-production');if(!e)return;
+ if(!rows.length){e.innerHTML='<div class="empty">Sem produção registrada no período.</div>';return}
+ e.innerHTML=`<table class="table"><thead><tr>
+ <th>Colaborador</th><th>Atribuídos</th><th>Concluídos</th><th>Em aberto</th><th>Aguard. terceiro</th><th>Aguard. material</th><th>SLA no prazo</th><th>Média resposta</th><th>Média resolução</th><th>Conclusão</th>
+ </tr></thead><tbody>${rows.map(r=>{
+   const closure=r.total?Math.round((r.concluidos/r.total)*1000)/10:0;
+   const sla=r.sla_percent==null?'—':r.sla_percent+'%';
+   const slaClass=r.sla_percent==null?'':r.sla_percent>=90?'prod-good':r.sla_percent>=75?'prod-warn':'prod-bad';
+   return `<tr>
+    <td data-main="1"><b>${esc(r.nome||'—')}</b></td>
+    <td data-label="Atribuídos">${r.total}</td>
+    <td data-label="Concluídos"><b>${r.concluidos}</b></td>
+    <td data-label="Em aberto">${r.abertos}</td>
+    <td data-label="Aguard. terceiro">${r.aguardando_terceiro}</td>
+    <td data-label="Aguard. material">${r.aguardando_material}</td>
+    <td data-label="SLA"><span class="${slaClass}">${sla}</span></td>
+    <td data-label="Média resposta">${fmtMin(r.avg_response_min)}</td>
+    <td data-label="Média resolução">${fmtMin(r.avg_resolution_min)}</td>
+    <td data-label="Conclusão">${closure}%</td>
+   </tr>`
+ }).join('')}</tbody></table>`
+}
 function renderBars(id,obj,label){const e=$(id),entries=Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]),max=Math.max(1,...entries.map(x=>x[1]));e.innerHTML=entries.length?entries.map(([k,v])=>`<div class="bar-row"><span>${esc(label(k))}</span><div class="bar-track"><i style="width:${Math.max(3,Math.round(v/max*100))}%"></i></div><b>${v}</b></div>`).join(''):'<div class="muted small">Sem dados no período.</div>'}
 function defaultReportDates(){const now=new Date(),from=new Date(now.getTime()-29*86400000);$('r-to').value=now.toISOString().slice(0,10);$('r-from').value=from.toISOString().slice(0,10)}
 

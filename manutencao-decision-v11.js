@@ -6,8 +6,8 @@ let improcedentIds=new Set();
 const $=id=>document.getElementById(id);
 function token(){try{const raw=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');return raw?JSON.parse(raw)?.tdngoToken||'':''}catch{return''}}
 function role(){return String($('user-role')?.textContent||'').trim().toUpperCase()}
-function isMgmt(){return['GERENTE','SUPERVISOR','ADMINISTRATIVO'].includes(role())}
-function canImprocedent(){return['GERENTE','SUPERVISOR','ADMINISTRATIVO','TECNICO','AUXILIAR'].includes(role())}
+function isMgmt(){return role()==='SUPERVISOR'}
+function canImprocedent(){return['SUPERVISOR','AUXILIAR'].includes(role())}
 function toast(msg,type=''){const e=$('toast');if(!e)return;e.textContent=String(msg||'').toLocaleUpperCase('pt-BR');e.className='toast '+type;e.style.display='block';clearTimeout(e._decision);e._decision=setTimeout(()=>e.style.display='none',4200)}
 async function call(action,p={}){const t=token();if(!t)throw new Error('Sessão não encontrada.');const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({action,...p}),cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok||d.ok===false)throw new Error(d.message||'Falha na operação.');return d}
 function currentTicketId(){const f=$('detail-footer');if(!f)return'';const html=f.innerHTML||'';const m=html.match(/\('([0-9a-f-]{36})'/i);return m?.[1]||''}

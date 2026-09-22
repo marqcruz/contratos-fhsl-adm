@@ -5,7 +5,7 @@ const API='https://nsbhhmrhzkqkaoznaeif.supabase.co/functions/v1/tdngo-manutenca
 let ids=new Set(),busy=false,observer=null;
 const $=id=>document.getElementById(id);
 function token(){try{const raw=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session');return raw?JSON.parse(raw)?.tdngoToken||'':''}catch{return''}}
-function isManager(){return String($('user-role')?.textContent||'').trim().toUpperCase()==='GERENTE'}
+function isManager(){return String($('user-role')?.textContent||'').trim().toUpperCase()==='SUPERVISOR'}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function fmt(v){if(!v)return'—';const d=new Date(v);return isNaN(d)?'—':d.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}
 function toast(msg,type=''){const e=$('toast');if(!e)return;e.textContent=String(msg||'').toLocaleUpperCase('pt-BR');e.className='toast '+type;e.style.display='block';clearTimeout(e._arch);e._arch=setTimeout(()=>e.style.display='none',4200)}

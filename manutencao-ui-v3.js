@@ -33,6 +33,10 @@ function installPriorityVisuals(){
  .field-ticket.mn-pr-p2{border-left:6px solid var(--mn-p2);background:linear-gradient(90deg,var(--mn-p2-soft),#fff 28%)}
  .field-ticket.mn-pr-p3{border-left:6px solid var(--mn-p3);background:linear-gradient(90deg,var(--mn-p3-soft),#fff 28%)}
  .field-ticket.mn-pr-p4{border-left:6px solid var(--mn-p4);background:linear-gradient(90deg,var(--mn-p4-soft),#fff 28%)}
+ .mn-ticket-row.mn-pr-p1 td:first-child{border-left:5px solid var(--mn-p1)} .mn-ticket-row.mn-pr-p1{background:#fff7f7}
+ .mn-ticket-row.mn-pr-p2 td:first-child{border-left:5px solid var(--mn-p2)} .mn-ticket-row.mn-pr-p2{background:#fffaf5}
+ .mn-ticket-row.mn-pr-p3 td:first-child{border-left:5px solid var(--mn-p3)} .mn-ticket-row.mn-pr-p3{background:#f8fbff}
+ .mn-ticket-row.mn-pr-p4 td:first-child{border-left:5px solid var(--mn-p4)} .mn-ticket-row.mn-pr-p4{background:#f8fff9}
  .mn-screen-flash{position:fixed;inset:0;z-index:99999;pointer-events:none;display:grid;place-items:start center;padding-top:28px;opacity:0}
  .mn-screen-flash .mn-flash-label{font:900 18px/1.2 system-ui,-apple-system,Segoe UI,sans-serif;padding:12px 18px;border-radius:999px;color:#fff;box-shadow:0 10px 32px rgba(0,0,0,.25);text-transform:uppercase;letter-spacing:.05em}
  .mn-screen-flash.mn-pr-p1{background:rgba(220,38,38,.30)} .mn-screen-flash.mn-pr-p1 .mn-flash-label{background:#b91c1c}

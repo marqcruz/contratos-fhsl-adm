@@ -144,6 +144,8 @@ window.loadReports=async function(){
    kpi(m.waiting_third||0,'Aguardando terceiros')+
    kpi(m.waiting_material||0,'Aguardando material')+
    kpi(m.p1_p2||0,'Chamados P1 / P2')+
+   kpi(m.cancelled||0,'Cancelados')+
+   kpi(m.improper||0,'Improcedentes')+
    kpi(m.reopened,'Reaberturas');
 
   renderProduction(d.production||[]);

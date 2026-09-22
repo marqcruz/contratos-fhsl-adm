@@ -106,17 +106,15 @@
  // Normalização final do fluxo de autenticação/logout, aplicada sobre o HTML já transformado.
  html=html.replace(/function doLogout\(\)\{[\s\S]*?\n\}/,
    "function doLogout(){\n"+
-   "  try{sessionStorage.removeItem('fhsl_session');localStorage.removeItem('fhsl_session');sessionStorage.removeItem('tdngo_logged_out');sessionStorage.removeItem('tdngo_explicit_nav');}catch(e){}\n"+
+   "  try{\n"+
+   "    sessionStorage.removeItem('fhsl_session');\n"+
+   "    localStorage.removeItem('fhsl_session');\n"+
+   "    sessionStorage.removeItem('tdngo_explicit_nav');\n"+
+   "    sessionStorage.setItem('tdngo_logged_out','1');\n"+
+   "  }catch(e){}\n"+
    "  currentUser=null;\n"+
-   "  try{if(typeof telaCarregando==='function')telaCarregando(false)}catch(e){}\n"+
-   "  var app=document.getElementById('app');if(app)app.style.display='none';\n"+
-   "  var login=document.getElementById('login-screen');if(login){login.classList.remove('hide');login.style.setProperty('display','flex','important');login.style.setProperty('visibility','visible','important');login.style.setProperty('opacity','1','important');}\n"+
-   "  var st=document.getElementById('login-status');if(st){st.textContent='';st.className='login-status';}\n"+
-   "  var er=document.getElementById('login-err');if(er){er.textContent='';er.style.display='none';}\n"+
-   "  var p=document.getElementById('login-pass');if(p){p.value='';setTimeout(function(){try{p.focus()}catch(e){}},50);}\n"+
-   "  document.body.setAttribute('data-theme','light');document.body.style.background='#eef3f7';document.documentElement.style.background='#eef3f7';\n"+
-   "  try{history.replaceState({tdngo:'login'},'',location.pathname);}catch(e){}\n"+
-   "  try{window.scrollTo(0,0)}catch(e){}\n"+
+   "  var destino=location.pathname+'?logout=1&r='+Date.now();\n"+
+   "  location.replace(destino);\n"+
    "}"
  )
  if(new URLSearchParams(location.search).get('logout')==='1'){

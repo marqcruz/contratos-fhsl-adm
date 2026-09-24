@@ -12,8 +12,8 @@ let accessData={usuarios:[],unidades:[],links:[],modulos:[]};
 let accessLoaded=false;
 function escU(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function myRole(){return String(me?.role||me?.Role||'').toLowerCase()}
-function canManageAccess(){return ['desenvolvedor','developer','master','admin'].includes(myRole())}
-function isFullRole(r){return ['desenvolvedor','developer','master'].includes(String(r||'').toLowerCase())}
+function canManageAccess(){return myRole()==='admin'}
+function isFullRole(r){return String(r||'').toLowerCase()==='admin'}
 function addStyle(){
   if(document.getElementById('tdngo-unified-access-style'))return;
   const s=document.createElement('style');s.id='tdngo-unified-access-style';s.textContent=`
@@ -60,7 +60,7 @@ function renderAccessMatrix(){
   const list=(accessData.unidades?.length?accessData.unidades:(units||[]).map(x=>({id:x.Uuid||x.ID,nome:x.Nome,tipo:x.Tipo})));
   const modsEl=document.getElementById('mods');if(!modsEl)return;
   modsEl.className='ua-grid';
-  modsEl.innerHTML=(modules||[]).map(m=>{
+  modsEl.innerHTML=(modules||[]).filter(m=>m[0]!=='admin').map(m=>{
     const mod=m[0],enabled=selected.includes(mod);
     const linked=new Set((accessData.links||[]).filter(l=>String(l.usuario_id)===String(uuid)&&String(l.modulo)===String(mod)).map(l=>String(l.unidade_id)));
     const unitHtml=list.length?list.map(n=>'<label><input type="checkbox" class="ua-unit" data-mod="'+escU(mod)+'" value="'+escU(n.id)+'" '+(linked.has(String(n.id))?'checked':'')+' '+(enabled&&canManageAccess()?'':'disabled')+'>'+escU(n.nome)+'</label>').join(''):'<span class="ua-no-units">Nenhuma unidade ativa cadastrada.</span>';

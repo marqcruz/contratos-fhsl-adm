@@ -26,6 +26,7 @@ if not MASTER_KEY:
     raise RuntimeError("TDN_MAIL_MASTER_KEY não configurada.")
 
 REST = SUPABASE_URL + "/rest/v1"
+AUTH_API = SUPABASE_URL + "/functions/v1/tdngo-auth-api"
 DB_HEADERS = {
     "apikey": SERVICE_KEY,
     "Authorization": "Bearer " + SERVICE_KEY,
@@ -77,21 +78,53 @@ def current_user():
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
         return None
+
     token = auth[7:].strip()
+    if not token:
+        return None
+
+    # A própria API de autenticação do TDN valida assinatura e expiração.
+    # Uma ação inexistente só é alcançada depois que a sessão foi validada.
+    try:
+        vr = requests.post(
+            AUTH_API,
+            headers={
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json",
+            },
+            json={"action": "__tdngo_mail_session_check__"},
+            timeout=HTTP_TIMEOUT,
+        )
+    except requests.RequestException:
+        return None
+
+    if vr.status_code == 401:
+        return None
+
+    try:
+        vj = vr.json()
+    except Exception:
+        return None
+
+    # No auth-api atual, uma sessão válida com ação desconhecida retorna 400.
+    # Qualquer outro retorno inesperado é rejeitado.
+    if not (vr.status_code == 400 and str(vj.get("message") or "") == "Ação desconhecida."):
+        return None
+
+    # A assinatura já foi validada pelo auth-api; daqui extraímos somente o e-mail
+    # para carregar o usuário real no banco.
     parts = token.split(".")
     if len(parts) != 2:
         return None
-    payload, signature = parts
-    expected = b64url(hmac.new(SERVICE_KEY.encode(), payload.encode(), hashlib.sha256).digest())
-    if not hmac.compare_digest(signature, expected):
-        return None
     try:
-        data = decode_payload(payload)
+        data = decode_payload(parts[0])
     except Exception:
         return None
+
     email = str(data.get("email") or "").strip().lower()
-    if not email or int(data.get("exp") or 0) < int(time.time() * 1000):
+    if not email:
         return None
+
     rows = db(
         "GET",
         "usuarios?email=eq." + quote(email, safe="") +
@@ -99,12 +132,15 @@ def current_user():
     ) or []
     if not rows:
         return None
+
     user = rows[0]
     mods = user.get("modulos") or []
     if isinstance(mods, str):
         mods = [x.strip() for x in mods.split(",") if x.strip()]
+
     if str(user.get("role") or "").lower() not in ADMIN_ROLES and mods and "contratos" not in mods:
         return None
+
     return user
 
 def require_user():

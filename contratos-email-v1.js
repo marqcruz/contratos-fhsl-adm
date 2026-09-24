@@ -161,9 +161,13 @@
     f.insertBefore(b,f.firstChild);
   }
   function idFromOnclick(el){
-    var s=el&&el.getAttribute?String(el.getAttribute('onclick')||''):'',m=s.match(/showDetail\(['"]([^'"]+)['"]\)/);return m?m[1]:'';
+    if(!el||!el.getAttribute)return'';
+    var direct=String(el.getAttribute('data-detail')||'').trim();
+    if(direct)return direct;
+    var s=String(el.getAttribute('onclick')||''),m=s.match(/showDetail\(['"]([^'"]+)['"]\)/);
+    return m?m[1]:'';
   }
-  function decorateList(){
+    function decorateList(){
     if(!canSend())return;
     document.querySelectorAll('#lista-body tr').forEach(function(tr){
       if(tr.querySelector('.email-v1-list-btn'))return;

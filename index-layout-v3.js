@@ -28,6 +28,8 @@
 })();
 
 function navMark(href){try{sessionStorage.setItem('tdngo_explicit_nav',Date.now()+'|'+href)}catch(e){}}
+function tdngoCurrentRole(){try{var raw=sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'{}',u=JSON.parse(raw);return String(u&&(u.role||u.Role)||'').toLowerCase()}catch(e){return''}}
+function tdngoIsAdmin(){return tdngoCurrentRole()==='admin'}
 function addCard(def,before){
   var grid=document.getElementById('hub-grid');if(!grid||grid.querySelector('[data-mod="'+def.mod+'"]'))return;
   var a=document.createElement('a');a.className='hub-card';a.setAttribute('data-mod',def.mod);a.setAttribute('data-cat',def.cat||'gestao');a.setAttribute('data-search',def.search||'');a.href=def.href;
@@ -37,7 +39,8 @@ function addCard(def,before){
 }
 function completeModules(){
   document.querySelectorAll('#hub-grid [data-mod="risco"],#hub-grid a[href="risco.html"]').forEach(function(x){x.remove()});
-  addCard({mod:'admin',href:'admin.html',ico:'⚙️',title:'Administração',desc:'Usuários, permissões, unidades, listas e auditoria.',cat:'gestao',search:'administracao administração admin usuarios usuários acessos permissões unidades auditoria'},'[data-mod="contratos"]');
+  if(tdngoIsAdmin()) addCard({mod:'admin',href:'admin.html',ico:'⚙️',title:'Administração',desc:'Usuários, permissões, unidades, listas e auditoria.',cat:'gestao',search:'administracao administração admin usuarios usuários acessos permissões unidades auditoria'},'[data-mod="contratos"]');
+  else document.querySelectorAll('#hub-grid [data-mod="admin"],#hub-grid a[href^="admin.html"]').forEach(function(x){x.remove()});
   addCard({mod:'patrimonios',href:'patrimonios.html',ico:'🏷️',title:'Patrimônios',desc:'Bens, QR Code, localização, inventário, fotos e depreciação.',cat:'gestao',search:'patrimonio patrimônios bens inventário depreciação qr code equipamentos móveis ativos unidade localização'},'[data-mod="manutencao"]');
   addCard({mod:'manutencao',href:'manutencao.html',ico:'🛠️',title:'Manutenção',desc:'Chamados 24h, triagem, sobreaviso, SLA, fotos e indicadores.',cat:'operacao',search:'manutencao manutenção chamados ordens serviço predial eletrica hidraulica climatizacao sobreaviso reparos suporte'});
   updateCount();

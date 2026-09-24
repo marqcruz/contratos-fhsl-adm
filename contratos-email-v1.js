@@ -16,8 +16,18 @@
     var h=Object.assign({'Content-Type':'application/json'},options.headers||{});
     h.Authorization='Bearer '+token();
     var r=await fetch(BASE+path,{method:options.method||'GET',headers:h,body:options.body?JSON.stringify(options.body):undefined,cache:'no-store'});
-    var t=await r.text(),j;
-    try{j=JSON.parse(t)}catch(e){j={ok:false,message:t||('HTTP '+r.status)}}
+    var t=await r.text(),j=null,ctype=String(r.headers.get('content-type')||'').toLowerCase();
+    if(ctype.indexOf('application/json')>=0){
+      try{j=JSON.parse(t)}catch(e){}
+    }else{
+      try{j=JSON.parse(t)}catch(e){}
+    }
+    if(!j){
+      if(/<!doctype html|<html/i.test(t)){
+        throw new Error('Serviço de e-mail indisponível neste endereço. Acesse o TDN pelo servidor interno e confirme a rota /tdn/api/email/.');
+      }
+      throw new Error(t&&t.length<300?t:('HTTP '+r.status));
+    }
     if(!r.ok||!j.ok)throw new Error(j.message||('HTTP '+r.status));
     return j;
   }

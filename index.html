@@ -6,6 +6,7 @@
  function cachedSession(){try{return JSON.parse(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'null')}catch(e){return null}}
  function validCached(){try{const s=cachedSession(),t=s&&(s.tdngoToken||s.token);if(!t)return false;let p=String(t).split('.')[0].replace(/-/g,'+').replace(/_/g,'/');while(p.length%4)p+='=';const j=JSON.parse(decodeURIComponent(escape(atob(p)))),e=Number(j.exp||0);return !e||e>(e<1e12?Date.now()/1000:Date.now())}catch(e){return false}}
  const preauth=validCached();
+ const preauthRole=(()=>{try{const u=cachedSession();return String(u&&(u.role||u.Role)||'').toLowerCase()}catch(e){return''}})();
  const saiuAgora=new URLSearchParams(location.search).get('logout')==='1'||sessionStorage.getItem('tdngo_logged_out')==='1';
  if(saiuAgora){try{sessionStorage.removeItem('tdngo_logged_out')}catch(e){};try{history.replaceState({tdngo:'login'},'',location.pathname+location.hash)}catch(e){}}
  const base='https://raw.githubusercontent.com/marqcruz/contratos-fhsl-adm/a3a45ed9045cb27c196e05409660ff6fcca326e1/index.html';
@@ -66,7 +67,7 @@
 </div>`;
  if(!html.includes(loginAntigo))throw new Error('Estrutura atual da tela de login não localizada.');
  html=html.replace(loginAntigo,loginCorporativo);
- html=html.replace('</head>',`<link rel="icon" type="image/svg+xml" href="tdngo-favicon.svg?v=20260918-1010"><style>.hub-filters,.hub-category-label{display:none!important}${preauth?'.login-screen{visibility:hidden!important}':''}.user-logout svg{display:block}
+ html=html.replace('</head>',`<link rel="icon" type="image/svg+xml" href="tdngo-favicon.svg?v=20260918-1010"><style>.hub-filters,.hub-category-label{display:none!important}${preauth?'.login-screen{visibility:hidden!important}':''}${preauthRole&&preauthRole!=='admin'?'.hub-card[data-mod="admin"],a[href^="admin.html"]{display:none!important}':''}.user-logout svg{display:block}
 .corp-login{width:min(980px,calc(100vw - 40px));min-height:580px;background:#fff;border:1px solid #dce4eb;border-radius:20px;box-shadow:0 28px 80px rgba(23,45,68,.16);overflow:hidden;display:grid;grid-template-columns:1.03fr .97fr}
 .corp-brand{position:relative;padding:42px 44px;background:linear-gradient(145deg,#155a98 0%,#1d6aad 55%,#2d7fc1 100%);color:#fff;display:flex;flex-direction:column;min-width:0}
 .corp-brand:before,.corp-brand:after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none}.corp-brand:before{width:280px;height:280px;right:-110px;top:-100px}.corp-brand:after{width:210px;height:210px;left:-95px;bottom:-95px}

@@ -8,7 +8,8 @@
     let sess=null;
     try{sess=JSON.parse(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'null')}catch(e){}
     if(!sess||!(sess.tdngoToken||sess.token)){location.replace('index.html');return;}
-    const r=await fetch('admin-base-current.html?v=20260921-1335',{cache:'no-store'});
+    if(String(sess.role||sess.Role||'').toLowerCase()!=='admin'){location.replace('index.html?access=denied');return;}
+    const r=await fetch('admin-base-current.html?v=20260924-1810',{cache:'no-store'});
     if(!r.ok)throw new Error('HTTP '+r.status);
     let html=await r.text();
     html=html.replace('id="tb-users"','id="tb_users"').replace('id="tb-units"','id="tb_units"').replace('id="tb-locals"','id="tb_locals"').replace('id="tb-audit"','id="tb_audit"').replace(/\blogin\(\)/g,'doLogin()');

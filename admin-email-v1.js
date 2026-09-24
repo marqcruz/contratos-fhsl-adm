@@ -6,9 +6,6 @@
   function session(){
     try{return JSON.parse(sessionStorage.getItem('fhsl_session')||localStorage.getItem('fhsl_session')||'null')}catch(e){return null}
   }
-  var s=session();
-  if(!s || String(s.role||'').toLowerCase()!=='admin') return;
-
   var BASE = new URL('api/email/', location.href).toString();
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
   function token(){var x=session();return x&&x.tdngoToken?x.tdngoToken:''}
@@ -33,6 +30,8 @@
     document.head.appendChild(st);
   }
   function installPage(){
+    var cur=session();
+    if(!cur || String(cur.role||'').toLowerCase()!=='admin')return;
     if(document.getElementById('p-email'))return;
     installCss();
     var nav=document.querySelector('.nav');
@@ -140,6 +139,15 @@
     if(sub)sub.textContent='Servidor de envio e comunicação de contratos';
     load();
   }
-  window.tdngoEmailAdmin={show:show,load:load};
-  installPage();
+  function ensureInstalled(){installPage()}
+  window.tdngoEmailAdmin={show:show,load:load,install:ensureInstalled};
+  var originalStart=window.start;
+  if(typeof originalStart==='function'){
+    window.start=function(){var r=originalStart.apply(this,arguments);setTimeout(ensureInstalled,0);return r};
+  }
+  var originalLogin=window.login;
+  if(typeof originalLogin==='function'){
+    window.login=async function(){var r=await originalLogin.apply(this,arguments);setTimeout(ensureInstalled,0);return r};
+  }
+  ensureInstalled();
 })();

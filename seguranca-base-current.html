@@ -51,7 +51,7 @@ tr.deleted td{opacity:.72;background:#fafafa}
 </style></head>
 <body>
 <div class="shell">
-  <div class="top"><div><div class="eyebrow">TDNGo · Segurança Institucional</div><h1>Registro de Segurança Institucional</h1><div class="sub" id="who">Carregando perfil...</div></div><div class="actions"><button class="btn primary" onclick="novaOcorrencia()">+ Nova ocorrência</button><button class="btn" onclick="bootstrap()">Atualizar</button></div></div>
+  <div class="top"><div><div class="eyebrow">TDNGo · Segurança Institucional</div><h1>Registro de Segurança Institucional</h1><div class="sub" id="who">Carregando perfil...</div></div><div class="actions"><a href="index.html" target="_top" class="btn" style="text-decoration:none">Central TDNGo</a><button class="btn primary" onclick="novaOcorrencia()">+ Nova ocorrência</button><button class="btn" onclick="bootstrap()">Atualizar</button></div></div>
   <div class="seg-purpose"><div><strong>Registro institucional e rastreabilidade</strong><p>O coordenador registra a ocorrência, pode corrigir ou complementar o próprio processo e toda alteração permanece registrada no histórico. Gestores podem tratar, editar e excluir logicamente registros, sempre com rastreabilidade.</p></div><span class="audit-pill">✓ Histórico auditável</span></div>
 <div class="tabs"><button class="tab active" data-tab="oc" onclick="showTab('oc')">Registros</button><button class="tab" id="tab-gestao" data-tab="gestao" onclick="showTab('gestao')" style="display:none">Painel gerencial</button></div>
   <section class="panel active" id="panel-oc">
@@ -60,7 +60,6 @@ tr.deleted td{opacity:.72;background:#fafafa}
     <div class="card"><div class="card-head"><b>Registros</b><span class="sub" id="count"></span></div><div class="table-wrap"><table><thead><tr><th>Número</th><th>Data</th><th>Unidade</th><th>Tipo</th><th>Gravidade</th><th>Status</th><th>Local</th><th>Atualização</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div><div id="seg-pager"></div></div>
   </section>
   <section class="panel" id="panel-gestao"><div class="stats"><div class="stat"><strong id="st-total">0</strong><span>Total</span></div><div class="stat"><strong id="st-abertas">0</strong><span>Abertas</span></div><div class="stat"><strong id="st-analise">0</strong><span>Em análise</span></div><div class="stat"><strong id="st-criticas">0</strong><span>Alta/Crítica</span></div><div class="stat"><strong id="st-concluidas">0</strong><span>Concluídas</span></div></div><div class="grid2"><div class="card"><div class="card-head"><b>Ocorrências por unidade</b></div><div class="card-body rank" id="rank-unidades"></div></div><div class="card"><div class="card-head"><b>Ocorrências por tipo</b></div><div class="card-body rank" id="rank-tipos"></div></div></div></section>
-  <div class="sidebar-footer"><a href="index.html" target="_top" class="sidebar-home">Central TDNGo</a></div>
 </div>
 
 <div class="modal" id="modal-form"><div class="box"><div class="box-head"><b id="form-title">Nova ocorrência</b><button class="btn" onclick="closeModal('modal-form')">Fechar</button></div><div class="box-body">
@@ -106,7 +105,7 @@ function closeModal(id){$(id).classList.remove('open')}
 let editandoId='',segPage=1,segPer=25;
 
 function podeEditarAtual(){return !!atual&&!atual.Excluido&&(user?.fullAccess||String(atual.CriadoPorId||'')===String(user?.id||''))}
-function podeComplementarAtual(){return podeEditarAtual()}
+function podeComplementarAtual(){return podeEditarAtual()&&String(atual?.Status||'').toUpperCase()!=='CONCLUÍDA'}
 function dataLocal(v){if(!v)return'';const d=new Date(v);if(isNaN(d))return'';const z=new Date(d.getTime()-d.getTimezoneOffset()*60000);return z.toISOString().slice(0,16)}
 function formatBytes(n){n=Number(n||0);if(n<1024)return n+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB';return(n/1048576).toFixed(1)+' MB'}
 function historyLabel(t){return({CRIACAO:'Criação',EDICAO:'Correção / edição',TRATATIVA:'Tratativa gerencial',COMPLEMENTO:'Complemento',EXCLUSAO:'Exclusão',RESTAURACAO:'Restauração',ANEXO_ADICIONADO:'Anexo adicionado',ANEXO_REMOVIDO:'Anexo removido',LEGADO:'Registro preexistente'})[t]||t||'Registro'}
@@ -210,7 +209,7 @@ renderFotos=function(arr){
 };
 window.removerAnexo=async function(id){if(!user.fullAccess)return;if(!confirm('Remover este anexo? A remoção ficará registrada no histórico.'))return;try{await api('deleteAttachment',{id});await abrirDetalhe(atual.ID);toast('Anexo removido e auditado.')}catch(e){toast(e.message)}};
 
-window.abrirComplemento=function(){if(!podeComplementarAtual())return;$('c-texto').value='';$('modal-complement').classList.add('open');setTimeout(()=>$('c-texto').focus(),50)};
+window.abrirComplemento=function(){if(!atual)return;if(String(atual.Status||'').toUpperCase()==='CONCLUÍDA'){toast('Ocorrências concluídas não podem receber complementos.');return}if(!podeComplementarAtual())return;$('c-texto').value='';$('modal-complement').classList.add('open');setTimeout(()=>$('c-texto').focus(),50)};
 window.salvarComplemento=async function(){if(!atual)return;const texto=$('c-texto').value.trim();if(!texto){toast('Informe o complemento.');return}const b=$('btn-save-complement');b.disabled=true;try{await api('addComplement',{ocorrenciaId:atual.ID,texto});closeModal('modal-complement');await bootstrap();atual=ocorrencias.find(x=>x.ID===atual.ID)||atual;await abrirDetalhe(atual.ID);toast('Complemento incluído no histórico.')}catch(e){toast(e.message)}finally{b.disabled=false}};
 
 window.abrirExclusao=function(){if(!user.fullAccess||!atual)return;$('del-motivo').value='';$('modal-delete').classList.add('open');setTimeout(()=>$('del-motivo').focus(),50)};

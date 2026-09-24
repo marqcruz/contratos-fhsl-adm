@@ -1,8 +1,10 @@
 import base64
 import hashlib
 import hmac
+import html
 import json
 import os
+import secrets
 import smtplib
 import ssl
 import time
@@ -11,7 +13,7 @@ from urllib.parse import quote
 
 import requests
 from cryptography.fernet import Fernet, InvalidToken
-from flask import Flask, jsonify, request
+from flask import Flask, Response, jsonify, request
 
 app = Flask(__name__)
 
@@ -19,6 +21,7 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://nsbhhmrhzkqkaoznaeif.supa
 SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 MASTER_KEY = os.environ.get("TDN_MAIL_MASTER_KEY", "")
 HTTP_TIMEOUT = float(os.environ.get("HTTP_TIMEOUT", "15"))
+PUBLIC_BASE_URL = os.environ.get("TDN_MAIL_PUBLIC_BASE_URL", "https://app.hospitalsantalydia.com.br/tdn/api/email").rstrip("/")
 
 if not SERVICE_KEY:
     raise RuntimeError("SUPABASE_SERVICE_ROLE_KEY não configurada.")
@@ -36,6 +39,7 @@ DB_HEADERS = {
 ADMIN_ROLES = {"admin", "desenvolvedor", "developer", "master"}
 SEND_ROLES = ADMIN_ROLES | {"gestor"}
 VALID_TYPES = {"NOVO_CONTRATO", "ADITIVO", "VENCIMENTO", "PERSONALIZADO", "TESTE"}
+PIXEL_GIF = base64.b64decode("R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==")
 
 def ok(**data):
     return jsonify({"ok": True, **data})
@@ -256,7 +260,7 @@ def smtp_connect(cfg):
         client.login(username, password)
     return client
 
-def send_message(cfg, to_list, cc_list, subject, body):
+def send_message(cfg, to_list, cc_list, subject, body, tracking_token=None):
     sender = str(cfg.get("from_email") or cfg.get("smtp_username") or "").strip()
     if not sender:
         raise RuntimeError("E-mail remetente não configurado.")
@@ -269,6 +273,19 @@ def send_message(cfg, to_list, cc_list, subject, body):
         msg["Reply-To"] = str(cfg["reply_to"]).strip()
     msg["Subject"] = subject
     msg.set_content(body)
+
+    if tracking_token:
+        safe_body = html.escape(body).replace("\n", "<br>\n")
+        pixel_url = PUBLIC_BASE_URL + "/open/" + quote(tracking_token, safe="")
+        html_body = (
+            '<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5">'
+            + safe_body
+            + '</div>'
+            + '<img src="' + html.escape(pixel_url, quote=True) + '" width="1" height="1" alt="" '
+              'style="display:block;width:1px;height:1px;border:0;opacity:0" />'
+        )
+        msg.add_alternative(html_body, subtype="html")
+
     client = smtp_connect(cfg)
     try:
         client.send_message(msg)
@@ -299,7 +316,7 @@ def audit(user, action, entity_id, details, modulo="CONTRATOS"):
     except Exception:
         pass
 
-def save_history(user, contract, communication_type, to_list, cc_list, subject, body, status, error=None):
+def save_history(user, contract, communication_type, to_list, cc_list, subject, body, status, error=None, tracking_token=None):
     payload = {
         "contrato_id": contract.get("id") if contract else None,
         "contrato_legacy_id": contract.get("legacy_id") if contract else None,
@@ -317,12 +334,42 @@ def save_history(user, contract, communication_type, to_list, cc_list, subject, 
         "enviado_por_nome": user.get("nome") or "",
         "enviado_por_email": user.get("email") or "",
         "enviado_em": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()) if status == "ENVIADO" else None,
+        "tracking_token": tracking_token,
     }
-    db("POST", "contrato_email_historico", payload, "return=minimal")
+    rows = db("POST", "contrato_email_historico", payload, "return=representation") or []
+    return rows[0] if isinstance(rows, list) and rows else None
+
+def update_history(history_id, **changes):
+    if not history_id:
+        return
+    db(
+        "PATCH",
+        "contrato_email_historico?id=eq." + quote(str(history_id), safe=""),
+        changes,
+        "return=minimal",
+    )
 
 @app.get("/health")
 def health():
     return ok(service="tdngo-mail-api")
+
+@app.get("/open/<token>")
+def register_open(token):
+    # Endpoint público usado apenas pelo pixel 1x1. O token é aleatório e não
+    # contém e-mail, contrato ou outro dado identificável.
+    if 20 <= len(token) <= 128 and all(ch.isalnum() or ch in "-_" for ch in token):
+        try:
+            db("POST", "rpc/contrato_email_registrar_abertura", {"p_token": token})
+        except Exception:
+            # O carregamento da imagem nunca deve revelar se o token existe.
+            app.logger.exception("Falha ao registrar abertura de e-mail")
+
+    response = Response(PIXEL_GIF, mimetype="image/gif")
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0, private"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
 
 @app.get("/config")
 def get_config():
@@ -449,14 +496,31 @@ def send_contract_email():
     text = str(body.get("body") or "").strip()
     if not subject or not text:
         return fail("Assunto e mensagem são obrigatórios.")
+    tracking_token = secrets.token_urlsafe(32)
+    history_row = None
     try:
-        send_message(cfg, to_list, cc_list, subject, text)
-        save_history(user, contract, communication_type, to_list, cc_list, subject, text, "ENVIADO")
+        history_row = save_history(
+            user, contract, communication_type, to_list, cc_list,
+            subject, text, "PENDENTE", tracking_token=tracking_token
+        )
+        if not history_row or not history_row.get("id"):
+            raise RuntimeError("Não foi possível criar o registro da comunicação.")
+
+        send_message(cfg, to_list, cc_list, subject, text, tracking_token=tracking_token)
+        update_history(
+            history_row["id"],
+            status="ENVIADO",
+            erro=None,
+            enviado_em=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        )
         audit(user, "Enviou comunicação por e-mail", legacy_id, subject + " | " + ", ".join(to_list))
         return ok(message="E-mail enviado e registrado no histórico.")
     except Exception as exc:
         try:
-            save_history(user, contract, communication_type, to_list, cc_list, subject, text, "ERRO", exc)
+            if history_row and history_row.get("id"):
+                update_history(history_row["id"], status="ERRO", erro=str(exc)[:2000])
+            else:
+                save_history(user, contract, communication_type, to_list, cc_list, subject, text, "ERRO", exc)
         except Exception:
             pass
         audit(user, "Falha no envio de e-mail", legacy_id, subject + " | " + str(exc))
@@ -477,7 +541,8 @@ def history():
         "GET",
         "contrato_email_historico?contrato_legacy_id=eq." + quote(legacy_id, safe="") +
         "&select=id,tipo_comunicacao,destinatarios,cc,assunto,corpo,status,erro,"
-        "enviado_por_nome,enviado_por_email,enviado_em,criado_em&order=criado_em.desc&limit=100",
+        "enviado_por_nome,enviado_por_email,enviado_em,criado_em,primeira_abertura_em,"
+        "ultima_abertura_em,quantidade_aberturas&order=criado_em.desc&limit=100",
     ) or []
     return ok(data=rows)
 
